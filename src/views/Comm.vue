@@ -1,7 +1,8 @@
 <template>
-  <div class="flex bg-gray-50 dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white transition-colors duration-200">
+  <div class="flex bg-white dark:bg-gray-900 min-h-screen text-gray-900 dark:text-white transition-colors duration-200">
+
     <!-- Main Content -->
-    <div class="flex-1 p-5 max-w-4xl">
+    <div class="flex-1 px-6 pt-8">
       <!-- Communities Grid (Top Section) -->
       <div class="grid grid-cols-4 gap-2 mb-6">
         <div 
@@ -100,22 +101,64 @@
           </div>
 
           <!-- Post Footer -->
-          <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center gap-4">
-              <span class="text-gray-500 dark:text-gray-400 text-sm">{{ post.notes }} notes</span>
-              <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
-                <i class="fas fa-retweet"></i>
-              </button>
-              <button class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
+          <div class="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181c23]">
+            <div class="flex items-center gap-6">
+              <button
+                class="flex items-center gap-1 text-blue-500 bg-blue-100 dark:bg-[#232b3e] px-2 py-1 rounded-full font-semibold"
+                @click="toggleComments(post.id)"
+              >
                 <i class="fas fa-comment"></i>
+                <span>{{ comments[post.id]?.length || 0 }}</span>
               </button>
-              <button class="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+              <span class="flex items-center gap-1 text-gray-500 dark:text-gray-400">
+                <i class="fas fa-retweet"></i>
+                <span>64</span>
+              </span>
+              <button
+                class="flex items-center gap-1"
+                :class="{'text-red-500': likedPosts[post.id], 'text-gray-500 dark:text-gray-400': !likedPosts[post.id]}"
+                @click="toggleLike(post.id)"
+              >
                 <i class="fas fa-heart"></i>
+                <span>{{ likes[post.id] }}</span>
               </button>
             </div>
-            <div class="flex items-center text-gray-500 dark:text-gray-400">
-              <i class="fas fa-fire mr-1"></i>
-              <span class="text-sm">Blaze</span>
+          </div>
+
+          <!-- Comments Section -->
+          <div v-if="commentsOpen[post.id]" class="bg-gray-50 dark:bg-[#181c23] px-4 py-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center gap-3 mb-4">
+              <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="w-8 h-8 rounded-full" />
+              <input
+                v-model="newComment[post.id]"
+                @keyup.enter="addComment(post.id)"
+                type="text"
+                placeholder="Reply as @yassineelaouni"
+                class="flex-1 bg-transparent border border-gray-300 dark:border-gray-700 rounded-full px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <button
+                @click="addComment(post.id)"
+                class="ml-2 px-3 py-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+              >
+                Send
+              </button>
+            </div>
+            <div v-if="comments[post.id]?.length" class="space-y-6">
+              <div v-for="(comment, idx) in comments[post.id]" :key="idx" class="flex items-start gap-3">
+                <img :src="comment.avatar" alt="avatar" class="w-8 h-8 rounded-full" />
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-semibold text-blue-400">@{{ comment.user }}</span>
+                    <span class="text-xs text-gray-400">{{ comment.date }}</span>
+                  </div>
+                  <div class="text-sm text-gray-900 dark:text-white">{{ comment.text }}</div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="flex flex-col items-center justify-center py-10">
+              <i class="fas fa-comment-dots text-4xl text-gray-400 mb-4"></i>
+              <div class="text-gray-400 mb-2">Be the first to Reply! Or...</div>
+              <a href="#" class="text-blue-500 hover:underline font-medium">Check out the Reblogs</a>
             </div>
           </div>
         </div>
@@ -123,40 +166,52 @@
     </div>
 
     <!-- Right Sidebar -->
-    <div class="w-80 p-5 bg-gray-100 dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 transition-colors duration-200">
-      <!-- Following Section -->
-      <div class="mb-8">
+    <div class="w-80 flex-shrink-0 min-h-screen flex flex-col gap-4 px-2 py-6 bg-transparent">
+      <!-- Following Card -->
+      <div class="bg-white text-gray-900 rounded-2xl shadow-lg p-4 mb-2 dark:bg-[#11161f] dark:text-white">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-gray-900 dark:text-white font-bold text-lg">Following</h3>
-          <button class="text-red-500 hover:text-red-400 font-medium transition-colors">Manage</button>
+          <h3 class="font-bold text-lg">Following</h3>
+          <button class="text-blue-500 hover:text-blue-400 font-medium transition-colors">Manage</button>
         </div>
         <div class="space-y-3">
-          <div v-for="user in followingUsers" :key="user.username" class="flex items-center hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-2 transition-colors cursor-pointer">
+          <div v-for="user in followingUsers" :key="user.username"
+            class="flex items-center hover:bg-gray-100 dark:hover:bg-[#232b3e] rounded-md p-2 transition-colors cursor-pointer">
             <img :src="user.avatar" :alt="user.username" class="w-8 h-8 rounded mr-3" />
-            <div class="flex-1">
-              <div class="text-gray-900 dark:text-white font-medium">{{ user.username }}</div>
-              <div class="text-gray-500 dark:text-gray-400 text-xs">{{ user.posts }} recent posts</div>
+            <div class="flex-1 min-w-0">
+              <div class="font-medium truncate">{{ user.username }}</div>
+              <div class="text-gray-500 dark:text-gray-400 text-xs truncate">{{ user.posts }} recent posts</div>
             </div>
           </div>
         </div>
-        <button class="text-red-500 hover:text-red-400 text-sm mt-4 transition-colors">Show more tags</button>
+        <div class="border-t border-gray-200 dark:border-[#232b3e] my-4"></div>
+        <button class="w-full text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors text-center">
+          Show more tags
+        </button>
       </div>
 
-      <!-- Trending Blogs -->
-      <div>
-        <h3 class="text-gray-900 dark:text-white font-bold text-lg mb-4">Trending Blogs</h3>
-        <div class="space-y-3">
-          <div v-for="blog in trendingBlogs" :key="blog.username" class="flex items-center justify-between hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-2 transition-colors">
-            <div class="flex items-center">
+      <!-- Trending Blogs Card -->
+      <div class="bg-white text-gray-900 rounded-2xl shadow-lg p-4 dark:bg-[#11161f] dark:text-white">
+        <h3 class="font-bold text-base mb-3">Trending Blogs</h3>
+        <div class="divide-y divide-gray-200 dark:divide-[#232b3e]">
+          <div v-for="blog in trendingBlogs" :key="blog.username" class="flex items-center justify-between py-2">
+            <div class="flex items-center min-w-0">
               <img :src="blog.avatar" :alt="blog.username" class="w-8 h-8 rounded mr-3" />
-              <div>
-                <div class="text-gray-900 dark:text-white font-medium">{{ blog.username }}</div>
-                <div class="text-gray-500 dark:text-gray-400 text-xs">{{ blog.description }}</div>
+              <div class="min-w-0">
+                <div class="font-semibold truncate">{{ blog.username }}</div>
+                <div class="text-gray-500 dark:text-gray-400 text-xs truncate">{{ blog.description }}</div>
               </div>
             </div>
-            <button class="text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 text-sm font-medium transition-colors">Follow</button>
+            <div class="flex items-center gap-2">
+              <button class="text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors">Follow</button>
+              <button class="text-gray-400 hover:text-red-500 text-lg px-1" title="Remove">
+                &times;
+              </button>
+            </div>
           </div>
         </div>
+        <button class="w-full mt-3 text-blue-500 hover:text-blue-400 text-sm font-medium transition-colors text-center">
+          Show more blogs
+        </button>
       </div>
     </div>
   </div>
@@ -193,7 +248,7 @@ const posts = ref([
 Muzan: (laughing) That's Right! No demon slayer can ever defeat me!`,
     notes: '24',
     verified: false,
-    badges: ['🏳️‍🌈', '⚧️']
+    badges: ['⚧️']
   },
   {
     id: 2,
@@ -264,6 +319,41 @@ const trendingBlogs = ref([
 // Navigation function
 const navigateToCommunity = (communityName) => {
   router.push({ name: 'Community', params: { name: communityName.toLowerCase() } })
+}
+
+const commentsOpen = ref({})
+const likedPosts = ref({})
+const likes = ref({})
+const comments = ref({})
+const newComment = ref({})
+
+// Initialize likes and comments for each post
+posts.value.forEach(post => {
+  likes.value[post.id] = Number((post.notes || '0').replace(/,/g, ''))
+  comments.value[post.id] = []
+  newComment.value[post.id] = ''
+  likedPosts.value[post.id] = false
+})
+
+function toggleComments(postId) {
+  commentsOpen.value[postId] = !commentsOpen.value[postId]
+}
+
+function toggleLike(postId) {
+  likedPosts.value[postId] = !likedPosts.value[postId]
+  likes.value[postId] += likedPosts.value[postId] ? 1 : -1
+}
+
+function addComment(postId) {
+  const text = (newComment.value[postId] || '').trim()
+  if (!text) return
+  comments.value[postId].push({
+    user: 'yassineelaouni',
+    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+    text
+  })
+  newComment.value[postId] = ''
 }
 </script>
 

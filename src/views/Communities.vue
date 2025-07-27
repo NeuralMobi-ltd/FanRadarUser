@@ -1,33 +1,33 @@
 <template>
-  <div class="min-h-screen bg-gray-900 dark:bg-gray-900 text-white">
+  <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white left-0">
     <!-- Header -->
-    <div class="border-b border-gray-700 px-6 py-4">
+    <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5">
       <div class="flex items-center justify-between max-w-7xl mx-auto">
-        <h1 class="text-xl font-bold text-white">Browse communities</h1>
-        <div class="flex items-center gap-4">
-          <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
-            Create a community
-          </button>
+        <h1 class="text-2xl font-bold text-white">Browse communities</h1>
+        <div class="flex items-center gap-5">
           <div class="relative">
             <input 
               type="text" 
               placeholder="Search communities..." 
-              class="bg-gray-800 border border-gray-600 rounded-md py-2 px-4 pl-10 text-white text-sm w-64 outline-none focus:border-blue-500 transition-colors placeholder-gray-400"
+              class="bg-gray-800/50 border border-gray-600/50 rounded-full py-2.5 px-5 pl-11 text-white text-sm w-72 outline-none focus:border-blue-500/50 transition-colors placeholder-gray-400"
             />
-            <i class="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
           </div>
+          <button class="bg-[#00B8FF] hover:bg-[#00A3E2] text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors">
+            Create a community
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Communities Grid -->
-    <div class="max-w-7xl mx-auto p-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div class="px-4 py-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         <!-- Community Cards -->
         <div 
           v-for="(community, index) in communities" 
           :key="index"
-          class="group relative rounded-lg overflow-hidden cursor-pointer transition-transform hover:scale-105"
+          class="group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
           @click="navigateToCommunity(community.title)"
         >
           <!-- Background Image -->
@@ -42,10 +42,10 @@
             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
             
             <!-- Content -->
-            <div class="absolute bottom-0 left-0 right-0 p-4">
-              <h3 class="text-white font-bold text-lg mb-1">{{ community.title }}</h3>
-              <p v-if="community.description" class="text-gray-300 text-sm">{{ community.description }}</p>
-              <div v-if="community.memberCount" class="text-gray-400 text-xs mt-1">
+            <div class="absolute bottom-0 left-0 right-0 p-5">
+              <h3 class="text-white font-bold text-xl mb-2 leading-tight">{{ community.title }}</h3>
+              <p v-if="community.description" class="text-gray-200 text-sm leading-snug mb-2">{{ community.description }}</p>
+              <div v-if="community.memberCount" class="text-gray-300 text-sm font-medium">
                 {{ community.memberCount }} members
               </div>
             </div>
@@ -217,12 +217,6 @@ const navigateToCommunity = (communityName) => {
   background: theme('colors.gray.900');
 }
 
-/* Light mode override */
-:global(.light) .min-h-screen {
-  background: theme('colors.white');
-  color: theme('colors.gray.900');
-}
-
 /* Community card hover effects */
 .group:hover {
   transform: scale(1.02);
@@ -231,7 +225,13 @@ const navigateToCommunity = (communityName) => {
 
 /* Gradient overlays for better text readability */
 .bg-gradient-to-t {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+  background: linear-gradient(to top, 
+    rgba(0, 0, 0, 0.9) 0%,
+    rgba(0, 0, 0, 0.7) 20%,
+    rgba(0, 0, 0, 0.4) 40%,
+    rgba(0, 0, 0, 0.1) 60%,
+    transparent 100%
+  );
 }
 
 /* Custom scrollbar */
@@ -294,50 +294,55 @@ input:focus {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Light mode specific styles */
-:global(.light) .bg-gray-900 {
-  background-color: theme('colors.white') !important;
+/* Dark mode specific styles */
+.dark .min-h-screen {
+  background: theme('colors.gray.900');
+  color: theme('colors.white');
 }
 
-:global(.light) .text-white {
+.dark .bg-gray-900 {
+  background-color: theme('colors.gray.800') !important;
+}
+
+.dark .text-white {
   color: theme('colors.gray.900') !important;
   text-shadow: none;
 }
 
-:global(.light) .border-gray-700 {
-  border-color: theme('colors.gray.200') !important;
+.dark .border-gray-700 {
+  border-color: theme('colors.gray.600') !important;
 }
 
-:global(.light) .bg-gray-800 {
-  background-color: theme('colors.gray.100') !important;
+.dark .bg-gray-800 {
+  background-color: theme('colors.gray.900') !important;
 }
 
-:global(.light) .border-gray-600 {
-  border-color: theme('colors.gray.300') !important;
+.dark .border-gray-600 {
+  border-color: theme('colors.gray.500') !important;
 }
 
-:global(.light) .placeholder-gray-400 {
-  color: theme('colors.gray.500') !important;
+.dark .placeholder-gray-400 {
+  color: theme('colors.gray.300') !important;
 }
 
-:global(.light) .text-gray-400 {
-  color: theme('colors.gray.600') !important;
+.dark .text-gray-400 {
+  color: theme('colors.gray.300') !important;
 }
 
-:global(.light) .text-gray-300 {
-  color: theme('colors.gray.700') !important;
+.dark .text-gray-300 {
+  color: theme('colors.gray.200') !important;
 }
 
-/* Light mode button styles */
-:global(.light) .bg-blue-500 {
+/* Dark mode button styles */
+.dark .bg-blue-500 {
+  background-color: theme('colors.blue.500') !important;
+}
+
+.dark .hover\:bg-blue-600:hover {
   background-color: theme('colors.blue.600') !important;
 }
 
-:global(.light) .hover\:bg-blue-600:hover {
-  background-color: theme('colors.blue.700') !important;
-}
-
-:global(.light) .hover\:bg-gray-700:hover {
-  background-color: theme('colors.gray.200') !important;
+.dark .hover\:bg-gray-700:hover {
+  background-color: theme('colors.gray.700') !important;
 }
 </style>

@@ -134,6 +134,9 @@
 </template>
 
 <script>
+import { useAuthStore } from '@/store/auth'
+import { useRouter } from 'vue-router'
+
 export default {
   name: 'Sidebar',
   data() {
@@ -141,13 +144,23 @@ export default {
       isSettingsOpen: false
     }
   },
+  setup() {
+    const auth = useAuthStore()
+    const router = useRouter()
+    
+    const logout = () => {
+      auth.logout() // This will clear localStorage and user state
+      router.push('/') // Redirect to home page which will show GuestHomeLayout
+    }
+    
+    return {
+      auth,
+      logout
+    }
+  },
   methods: {
     toggleTheme() {
       document.documentElement.classList.toggle('dark')
-    },
-    logout() {
-      // Implement logout logic here
-      this.$router.push('/login')
     }
   }
 }

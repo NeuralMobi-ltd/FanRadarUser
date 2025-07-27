@@ -1,11 +1,10 @@
 <template>
-  <div class="flex min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-200">
+  <div class="flex min-h-screen bg-white dark:bg-black transition-colors duration-200">
     <!-- Guest Layout Components -->
     <GuestSidebar @open-auth="openAuthModal" />
-    <div class="ml-52 flex-1">
-      <GuestHeader />
-      <!-- Main Content with padding for header -->
-      <main class="pt-16 min-h-screen">
+    <div class="ml-64 flex-1">
+      <!-- Main Content -->
+      <main class="w-full">
         <router-view />
       </main>
     </div>
@@ -23,7 +22,6 @@
 import { ref } from 'vue'
 import AuthModal from '@/components/AuthModal.vue'
 import GuestSidebar from '@/components/layout/GuestSidebar.vue'
-import GuestHeader from '@/components/layout/GuestHeader.vue'
 
 // Auth modal state
 const showAuthModal = ref(false)
