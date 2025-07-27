@@ -1,19 +1,19 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white left-0">
+  <div class="min-h-screen bg-white dark:bg-black text-gray-900 dark:text-white left-0 transition-colors duration-200">
     <!-- Header -->
-    <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5">
+    <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-5 bg-white dark:bg-black">
       <div class="flex items-center justify-between max-w-7xl mx-auto">
-        <h1 class="text-2xl font-bold text-white">Browse communities</h1>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Browse communities</h1>
         <div class="flex items-center gap-5">
           <div class="relative">
             <input 
               type="text" 
               placeholder="Search communities..." 
-              class="bg-gray-800/50 border border-gray-600/50 rounded-full py-2.5 px-5 pl-11 text-white text-sm w-72 outline-none focus:border-blue-500/50 transition-colors placeholder-gray-400"
+              class="bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full py-2.5 px-5 pl-11 text-gray-900 dark:text-white text-sm w-72 outline-none focus:border-blue-500 transition-colors placeholder-gray-400 dark:placeholder-gray-500"
             />
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-sm"></i>
+            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
           </div>
-          <button class="bg-[#00B8FF] hover:bg-[#00A3E2] text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors">
+          <button class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors">
             Create a community
           </button>
         </div>
@@ -79,7 +79,7 @@
 
       <!-- Load More Button -->
       <div class="text-center mt-8">
-        <button class="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
+        <button class="bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white px-6 py-2 rounded-md text-sm font-medium transition-colors">
           Load more communities
         </button>
       </div>
@@ -212,10 +212,7 @@ const navigateToCommunity = (communityName) => {
 </script>
 
 <style scoped>
-/* Tumblr-inspired design with dark/light mode support */
-.min-h-screen {
-  background: theme('colors.gray.900');
-}
+/* Remove custom dark/light CSS, use Tailwind classes only */
 
 /* Community card hover effects */
 .group:hover {

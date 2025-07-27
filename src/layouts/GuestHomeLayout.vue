@@ -2,7 +2,7 @@
   <div class="flex min-h-screen bg-white dark:bg-black transition-colors duration-200">
     <!-- Guest Layout Components -->
     <GuestSidebar @open-auth="openAuthModal" />
-    <div class="ml-64 flex-1">
+    <div class="ml-32 flex-1">
       <!-- Main Content -->
       <main class="w-full">
         <router-view />

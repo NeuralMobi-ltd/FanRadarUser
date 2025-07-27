@@ -1,10 +1,5 @@
 <template>
   <div class="dashboard-layout">
-    <header class="topbar">
-      <slot name="topbar">
-        <!-- Default topbar content -->
-      </slot>
-    </header>
     <div class="main-content">
       <aside class="sidebar">
         <slot name="sidebar"></slot>
@@ -21,13 +16,6 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-} 
-
-.topbar {
-  background: #001935;
-  color: white;
-  padding: 15px 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 .main-content {

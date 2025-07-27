@@ -2,7 +2,6 @@
   <div class="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-200">
     <!-- Authenticated user layout -->
     <div v-if="isAuthenticated" class="authenticated-layout">
-      <Header @toggle-theme="toggleTheme" />
       <div class="main-layout">
         <Sidebar />
         <main class="main-content with-sidebar">
@@ -12,7 +11,9 @@
     </div>
 
     <!-- Guest user layout -->
-    <GuestHomeLayout v-else />
+    <component
+      :is="isAuthenticated ? 'DashboardLayout' : 'GuestHomeLayout'"
+    />
   </div>
 </template>
 
@@ -22,6 +23,7 @@ import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
+import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import GuestHomeLayout from '@/layouts/GuestHomeLayout.vue'
 
 const auth = useAuthStore()
