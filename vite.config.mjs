@@ -4,8 +4,10 @@ import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [vue()],
-  server: {
+  plugins: [vue({
+    reactivityTransform: true
+  })],
+    server: {
     port: 5173,
     open: true
   },
