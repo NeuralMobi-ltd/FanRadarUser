@@ -38,8 +38,7 @@
             class="flex items-center gap-3 px-4 py-3 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-[#1A1A1A] rounded-md transition-colors w-full"
           >
             <i class="fas fa-palette text-xl w-6"></i>
-            <span class="font-medium">Cement</span>
-            <span class="ml-auto text-gray-400 dark:text-gray-500 text-sm">(4/12)</span>
+            <span class="font-medium">Change Theme</span>
           </button>
         </li>
       </ul>

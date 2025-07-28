@@ -1,10 +1,10 @@
 <template>
-  <div class="dashboard-layout">
+  <div class="dashboard-layout bg-white dark:bg-black text-gray-900 dark:text-white transition-colors duration-200">
     <div class="main-content">
-      <aside class="sidebar">
+      <aside class="sidebar bg-gray-100 dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
         <slot name="sidebar"></slot>
       </aside>
-      <main class="content">
+      <main class="content" style="height:auto;min-height:unset;">
         <slot name="content"></slot>
       </main>
     </div>
@@ -26,8 +26,7 @@
 
 .sidebar {
   width: 250px;
-  background: #f8f9fa;
-  border-right: 1px solid #e0e0e0;
+  /* bg and border handled by Tailwind classes */
   overflow-y: auto;
 }
 
@@ -35,5 +34,7 @@
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  height: auto;
+  /* bg handled by Tailwind classes */
 }
 </style>

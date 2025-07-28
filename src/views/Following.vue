@@ -1,47 +1,97 @@
 <template>
-  <div class="following-page">
-    <div class="page-header">
-      <h1 class="page-title">4 Following</h1>
-      <div class="header-controls">
-        <div class="search-box">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" v-model="searchQuery" placeholder="Search following..." />
+  <div class="following-page sm:px-10">
+    <div class="pt-8 px-4 pb-8">
+      <!-- Header -->
+      <div class="flex flex-col gap-6 mb-8 pb-6 border-b border-gray-200 dark:border-gray-800">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ following.length }} Following</h1>
         </div>
-        <div class="follow-input">
-          <input type="text" placeholder="Enter a username or URL to follow" />
-          <button class="follow-btn">Follow</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="main-content">
-      <div class="following-list">
-        <div v-for="user in filteredFollowing" :key="user.id" class="following-item">
-          <div class="user-avatar" :style="{ backgroundColor: user.avatarColor }">
-            {{ user.avatar }}
-          </div>
-          <div class="user-info">
-            <h3 class="user-name">{{ user.name }}</h3>
-            <p class="last-update">Updated {{ user.lastUpdate }}</p>
-          </div>
-          <button class="unfollow-btn">Unfollow</button>
-        </div>
+        <form @submit.prevent="followUser" class="flex gap-2 w-full">
+          <input
+            v-model="followInput"
+            type="text"
+            placeholder="Follow"
+            class="flex-1 min-w-0 block w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-md bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 transition-all"
+          />
+          <button
+            type="submit"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-blue-500 transition-colors"
+          >
+            Follow
+          </button>
+        </form>
       </div>
 
-      <div class="sidebar-section">
-        <div class="recommended-blogs">
-          <h2>Check out these blogs</h2>
-          <div class="blog-list">
-            <div v-for="blog in recommendedBlogs" :key="blog.id" class="blog-item">
-              <img :src="blog.avatar" :alt="blog.name" class="blog-avatar" />
-              <div class="blog-info">
-                <span class="blog-name">{{ blog.name }}</span>
-                <span class="blog-description">{{ blog.description }}</span>
+      <!-- Following List -->
+      <div class="flex flex-col" style="height: 70vh;">
+        <div v-if="filteredFollowing.length" class="space-y-4" style="height:100%;">
+          <div class="overflow-y-auto" style="height:100%;">
+            <div
+              v-for="user in filteredFollowing"
+              :key="user.id"
+              class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 border-b border-gray-100 dark:border-gray-800"
+            >
+              <div class="flex items-center gap-3">
+                <div
+                  class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                  :style="{ backgroundColor: user.avatarColor }"
+                >
+                  <span v-if="user.avatarImg">
+                    <img :src="user.avatarImg" :alt="user.name" class="w-8 h-8 rounded-full object-cover" />
+                  </span>
+                  <span v-else class="text-white">{{ user.avatar }}</span>
+                </div>
+                <div>
+                  <div class="font-medium text-gray-900 dark:text-white">{{ user.name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">Updated {{ user.lastUpdate }}</div>
+                </div>
               </div>
-              <button class="follow-btn">Follow</button>
+              <button
+                class="px-3 py-1 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all"
+                @click="unfollowUser(user.id)"
+              >
+                Unfollow
+              </button>
             </div>
           </div>
-          <a href="#" class="explore-link">Explore all of Tumblr</a>
+        </div>
+        <div v-else class="flex flex-col flex-1 min-h-0">
+          <div class="flex flex-col items-center justify-center mb-8">
+            <h3 class="text-lg font-medium text-gray-500 dark:text-gray-400 mb-1">No one here by that name.</h3>
+            <p class="text-gray-400 dark:text-gray-500 text-sm">That was a cool thing to type but it's not a FanRadar.</p>
+          </div>
+          <div class="flex flex-col flex-1 min-h-0">
+            <div class="text-base font-semibold text-gray-700 dark:text-gray-300 mb-3">Your following:</div>
+            <div class="overflow-y-auto flex-1 min-h-0" style="height:100%;">
+              <div
+                v-for="user in following"
+                :key="user.id"
+                class="flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-150 border-b border-gray-100 dark:border-gray-800"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
+                    :style="{ backgroundColor: user.avatarColor }"
+                  >
+                    <span v-if="user.avatarImg">
+                      <img :src="user.avatarImg" :alt="user.name" class="w-8 h-8 rounded-full object-cover" />
+                    </span>
+                    <span v-else class="text-white">{{ user.avatar }}</span>
+                  </div>
+                  <div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ user.name }}</div>
+                    <div class="text-xs text-gray-500 dark:text-gray-400">Updated {{ user.lastUpdate }}</div>
+                  </div>
+                </div>
+                <button
+                  class="px-3 py-1 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-red-500 transition-all"
+                  @click="unfollowUser(user.id)"
+                >
+                  Unfollow
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -52,324 +102,144 @@
 import { ref, computed } from 'vue'
 
 const searchQuery = ref('')
+const followInput = ref('')
 
-// Mock data for following
-const recommendedBlogs = ref([
+// All users in the site (mock database)
+const allUsers = ref([
   {
     id: 1,
-    name: 'oldpaintings',
-    description: 'Old Paintings',
-    avatar: 'https://64.media.tumblr.com/avatar_1234567890_128.png'
-  },
-  {
-    id: 2,
-    name: 'cherryandpudding',
-    description: 'Cherry and Pudding',
-    avatar: 'https://64.media.tumblr.com/avatar_2345678901_128.png'
-  },
-  {
-    id: 3,
-    name: 'twisted-cat',
-    description: 'Twisted-cat',
-    avatar: 'https://64.media.tumblr.com/avatar_3456789012_128.png'
-  },
-  {
-    id: 4,
-    name: 'iamspooky',
-    description: 'Horror-Love',
-    avatar: 'https://64.media.tumblr.com/avatar_4567890123_128.png'
-  }
-])
-
-const following = ref([
-  {
-    id: 1,
-    name: 'dailyralsei',
+    name: 'daliyraisei',
     avatar: 'D',
-    avatarColor: '#FF3B5C',  // Coral red
-    lastUpdate: '3 hours ago'
+    avatarColor: '#FF3B5C',
+    lastUpdate: '7 hours ago',
+    avatarImg: ''
   },
   {
     id: 2,
-    name: 'esraljahanofficial',
+    name: 'esratjahanofficial',
     avatar: 'E',
-    avatarColor: '#4A6BDF',  // Royal blue
-    lastUpdate: '1 day ago'
+    avatarColor: '#4A6BDF',
+    lastUpdate: '2 days ago',
+    avatarImg: ''
   },
   {
     id: 3,
-    name: 'cma195',
+    name: 'cmal95',
     avatar: 'C',
-    avatarColor: '#00B94F',  // Green
-    lastUpdate: '2 hours ago'
+    avatarColor: '#00B94F',
+    lastUpdate: '18 hours ago',
+    avatarImg: ''
   },
   {
     id: 4,
     name: 'staff',
     avatar: 'S',
-    avatarColor: '#001935',  // Navy blue
-    lastUpdate: '4 days ago'
+    avatarColor: '#001935',
+    lastUpdate: '5 days ago',
+    avatarImg: 'https://c.files.bbci.co.uk/2ff8/live/2c67f6a0-57ea-11f0-960d-e9f1088a89fe.jpg'
+  },
+  {
+    id: 5,
+    name: 'hhhhhhhhhhhhhjjjjjjjj',
+    avatar: 'H',
+    avatarColor: '#F59E0B',
+    lastUpdate: '8 years ago',
+    avatarImg: ''
+  },
+  {
+    id: 6,
+    name: 'kkkkkkkkkkkkkkkk',
+    avatar: 'K',
+    avatarColor: '#6366F1',
+    lastUpdate: '11 years ago',
+    avatarImg: ''
+  },
+  {
+    id: 7,
+    name: 'hhh',
+    avatar: 'H',
+    avatarColor: '#E11D48',
+    lastUpdate: '13 years ago',
+    avatarImg: ''
+  },
+  {
+    id: 8,
+    name: 'jaaaaaaa',
+    avatar: 'J',
+    avatarColor: '#10B981',
+    lastUpdate: '10 years ago',
+    avatarImg: ''
+  },
+  {
+    id: 9,
+    name: 'vvv',
+    avatar: 'V',
+    avatarColor: '#8B4513',
+    lastUpdate: '11 years ago',
+    avatarImg: ''
   }
 ])
+
+// Only followed users
+const following = ref([...allUsers.value])
 
 const filteredFollowing = computed(() => {
   if (!searchQuery.value) return following.value
   const query = searchQuery.value.toLowerCase()
-  return following.value.filter(user => 
+  return following.value.filter(user =>
     user.name.toLowerCase().includes(query)
   )
 })
+
+function followUser() {
+  const value = followInput.value.trim()
+  if (!value) return
+  const user = allUsers.value.find(u => u.name.toLowerCase() === value.toLowerCase())
+  if (!user) {
+    searchQuery.value = value
+    followInput.value = ''
+    return
+  }
+  if (!following.value.some(u => u.name.toLowerCase() === value.toLowerCase())) {
+    following.value.unshift(user)
+  }
+  followInput.value = ''
+}
+
+function unfollowUser(id) {
+  following.value = following.value.filter(user => user.id !== id)
+}
 </script>
 
 <style scoped>
 .following-page {
-  padding: 20px;
-  min-height: calc(100vh - 60px);
-  background: #001935;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  flex-direction: column;
 }
 
-.page-header {
+.max-w-2xl {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid rgba(44, 90, 160, 0.2);
-}
-
-.page-title {
-  color: #ffffff;
-  font-size: 24px;
-  font-weight: 600;
-  margin: 0;
-}
-
-.header-controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.follow-input {
-  display: flex;
   flex: 1;
-  gap: 10px;
+  min-height: 0;
 }
 
-.follow-input input {
-  flex: 1;
-  background: rgba(0, 18, 40, 0.8);
-  border: 1px solid rgba(44, 90, 160, 0.2);
-  border-radius: 3px;
-  padding: 8px 12px;
-  color: #ffffff;
-  font-size: 14px;
-  outline: none;
-}
-
-.follow-input input:focus {
-  border-color: rgba(44, 90, 160, 0.4);
-  background: #001228;
-}
-
-.follow-btn {
-  background: #4A6BDF;
-  color: #ffffff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 3px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-
-.follow-btn:hover {
-  background: #5476E5;
-}
-
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.search-box .icon {
-  position: absolute;
-  left: 15px;
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 14px;
-  z-index: 1;
-}
-
-.search-box input {
-  background: rgba(0, 18, 40, 0.8);
-  border: 1px solid rgba(44, 90, 160, 0.2);
-  border-radius: 20px;
-  padding: 8px 15px 8px 40px;
-  color: #ffffff;
-  font-size: 14px;
-  width: 250px;
-  outline: none;
-}
-
-.search-box input:focus {
-  border-color: rgba(44, 90, 160, 0.4);
-  background: #001228;
-}
-
-.following-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.following-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
+button, input, a {
   transition: all 0.2s ease;
-  background: transparent;
 }
 
-.following-item:hover {
-  background: rgba(44, 90, 160, 0.1);
+input:focus, button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
 }
 
-.user-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 3px;
+.avatar-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #ffffff;
-  font-weight: 500;
-  font-size: 16px;
-  margin-right: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.user-info {
-  flex: 1;
-}
-
-.user-name {
-  color: #ffffff;
-  font-size: 15px;
-  font-weight: 500;
-  margin: 0 0 4px 0;
-}
-
-.last-update {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-  margin: 0;
-}
-
-.unfollow-btn {
-  background: transparent;
-  border: none;
-  color: rgba(255, 59, 92, 0.9);
-  font-size: 14px;
-  font-weight: 500;
-  padding: 6px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  opacity: 0;
-}
-
-.following-item:hover .unfollow-btn {
-  opacity: 1;
-}
-
-.unfollow-btn:hover {
-  background: rgba(255, 59, 92, 0.1);
-  color: #FF3B5C;
-}
-
-.main-content {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 30px;
-  align-items: start;
-}
-
-.sidebar-section {
-  position: sticky;
-  top: 20px;
-}
-
-.recommended-blogs {
-  background: rgba(0, 18, 40, 0.8);
-  border-radius: 3px;
-  overflow: hidden;
-}
-
-.recommended-blogs h2 {
-  font-size: 16px;
   font-weight: 600;
-  color: #ffffff;
-  padding: 16px;
-  margin: 0;
-  border-bottom: 1px solid rgba(44, 90, 160, 0.2);
+  color: white;
 }
-
-.blog-list {
-  padding: 8px;
-}
-
-.blog-list .blog-item {
-  display: flex;
-  align-items: center;
-  padding: 8px;
-  gap: 12px;
-}
-
-.blog-list .blog-avatar {
-  width: 35px;
-  height: 35px;
-  border-radius: 3px;
-  object-fit: cover;
-}
-
-.blog-list .blog-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.blog-list .blog-name {
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.blog-list .blog-description {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 12px;
-}
-
-.blog-list .follow-btn {
-  padding: 6px 12px;
-  font-size: 13px;
-}
-
-.explore-link {
-  display: block;
-  padding: 16px;
-  text-align: center;
-  color: #FF3B5C;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 500;
-  border-top: 1px solid rgba(44, 90, 160, 0.2);
-}
-
-.explore-link:hover {
-  text-decoration: underline;
-}
-</style>]]>
+</style>

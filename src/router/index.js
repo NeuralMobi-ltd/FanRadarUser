@@ -1,8 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthLayout from '@/layouts/AuthLayout.vue'
 import GuestHomeLayout from '@/layouts/GuestHomeLayout.vue'
-import Profile from '@/views/Profile.vue'
 import { useAuthStore } from '@/store/auth'
+import CommunitiesBrowse from '@/views/CommunitiesBrowse.vue'
+import Account from '@/views/Account.vue'
+import EditAccount from '@/views/EditAccount.vue'
+import Mart from '@/views/Mart.vue'
 
 const routes = [
   {
@@ -31,16 +34,10 @@ const routes = [
       {
         path: '',
         name: 'Explore',
-        component: () => import('@/views/Comm.vue'),
+        component: () => import('@/views/GestExplore.vue'),
         meta: { requiresAuth: false, guestOnly: true }
       }
     ]
-  },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { requiresAuth: true }
   },
   {
     path: '/likes',
@@ -59,7 +56,35 @@ const routes = [
     name: 'Dashboard',
     component: () => import('@/views/Home.vue'),
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/user/explore',
+    name: 'UserExplore',
+    component: () => import('@/views/UserExplore.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/communities/browse',
+    name: 'CommunitiesBrowse',
+    component: CommunitiesBrowse,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/account/:username',
+    name: 'Account',
+    component: Account
+  },
+  {
+    path: '/edit-account',
+    name: 'EditAccount',
+    component: EditAccount
+  },
+  {
+    path: '/mart',
+    name: 'Mart',
+    component: Mart
   }
+
 ]
 
 const router = createRouter({

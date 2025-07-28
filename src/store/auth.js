@@ -7,7 +7,7 @@ const mockUsers = [
     name: 'John Doe',
     email: 'john@fanradar.com',
     password: 'password123',
-    avatar: 'https://via.placeholder.com/40',
+    avatar: '/public/images/me.png',
     followers: 1250,
     following: 892,
     posts: 156
@@ -17,17 +17,17 @@ const mockUsers = [
     name: 'Jane Smith',
     email: 'jane@fanradar.com',
     password: 'password123',
-    avatar: 'https://via.placeholder.com/40',
+    avatar:  '/public/images/me.png',
     followers: 2340,
     following: 567,
     posts: 289
   },
   {
     id: 3,
-    name: 'Admin User',
-    email: 'admin@fanradars.com',
-    password: 'admin123',
-    avatar: 'https://via.placeholder.com/40',
+    name: 'yassineelaouni',
+    email: 'yss@fanradars.com',
+    password: 'ysselhhh123',
+    avatar:  '/public/images/me.png',
     followers: 5670,
     following: 234,
     posts: 1024
@@ -37,7 +37,7 @@ const mockUsers = [
     name: 'Test User',
     email: 'test@test.com',
     password: 'test123',
-    avatar: 'https://via.placeholder.com/40',
+    avatar:  '/public/images/me.png',
     followers: 100,
     following: 150,
     posts: 25
@@ -76,7 +76,7 @@ export const useAuthStore = defineStore('auth', {
             name: email.split('@')[0] || 'User',
             email,
             password,
-            avatar: 'https://via.placeholder.com/40',
+            avatar:  '/public/images/me.png',
             followers: Math.floor(Math.random() * 500),
             following: Math.floor(Math.random() * 300),
             posts: Math.floor(Math.random() * 50)

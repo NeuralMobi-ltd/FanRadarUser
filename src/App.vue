@@ -12,7 +12,7 @@
 
     <!-- Guest user layout -->
     <component
-      :is="isAuthenticated ? 'DashboardLayout' : 'GuestHomeLayout'"
+      :is="isAuthenticated ? DashboardLayout : GuestHomeLayout"
     />
   </div>
 </template>
@@ -21,7 +21,6 @@
 import { computed } from 'vue'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
-import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
 import DashboardLayout from '@/layouts/DashboardLayout.vue'
 import GuestHomeLayout from '@/layouts/GuestHomeLayout.vue'
@@ -33,6 +32,7 @@ const isAuthenticated = computed(() => auth.isAuthenticated)
 const themeStore = useThemeStore()
 const toggleTheme = themeStore.toggleTheme
 </script>
+
 
 <style>
 .main-layout {

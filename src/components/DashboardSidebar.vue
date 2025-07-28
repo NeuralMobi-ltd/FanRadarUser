@@ -33,7 +33,6 @@ export default {
         { name: 'Explore', path: '/explore' },
         { name: 'Communities', path: '/communities' },
         { name: 'Messages', path: '/messages' },
-        { name: 'Profile', path: '/profile' },
         { name: 'Settings', path: '/settings' }
       ],
       recommendedCommunities: [

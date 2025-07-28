@@ -8,5 +8,9 @@
       "@/*": ["src/*"]
     },
     "lib": ["esnext", "dom", "dom.iterable", "scripthost"]
-  }
+  },
+  "exclude": [
+    "src/components/Header.vue",
+    "src/views/Explore.vue"
+  ]
 }
