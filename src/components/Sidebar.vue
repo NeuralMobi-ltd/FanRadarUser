@@ -27,7 +27,7 @@
           <router-link 
             to="/user/explore" 
             class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': $route.path === 'user/explore' }"
+            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === 'user/explore' }"
           >
             <i class="fas fa-compass text-xl"></i>
             <span>Explore</span>
@@ -37,7 +37,7 @@
           <router-link 
             to="/likes" 
             class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': $route.path === '/likes' }"
+            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/likes' }"
           >
             <i class="fas fa-heart text-xl"></i>
             <span class="flex items-center justify-between flex-1">
@@ -50,7 +50,7 @@
           <router-link 
             to="/following" 
             class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': $route.path === '/following' }"
+            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/following' }"
           >
             <i class="fas fa-user-friends text-xl"></i>
             <span class="flex items-center justify-between flex-1">
@@ -63,7 +63,6 @@
           <button 
             @click="isAccountOpen = !isAccountOpen"
             class="nav-link w-full text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': isAccountOpen }"
           >
             <i class="fas fa-user text-xl"></i>
             <span class="flex items-center justify-between flex-1">
@@ -105,7 +104,7 @@
         <router-link
           to="/mart"
           class="nav-link text-gray-900 dark:text-white"
-          :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': $route.path === '/mart' }"
+          :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/mart' }"
         >
           <i class="fas fa-store text-xl"></i>
           <span class="text-sm font-medium">FanRadarMart</span>

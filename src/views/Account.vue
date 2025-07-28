@@ -37,81 +37,19 @@
       <!-- Posts List and Following List -->
       <div>
         <div v-if="tab === 'posts'" class="space-y-6">
-          <div
+          <Post
             v-for="post in posts"
             :key="post.id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700"
-          >
-            <div class="flex items-center p-4 border-b border-gray-200 dark:border-gray-700">
-              <img :src="user.avatar" alt="avatar" class="w-10 h-10 rounded-full mr-3" />
-              <div>
-                <div class="font-bold text-gray-900 dark:text-white">{{ user.name }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400">@{{ user.username }} · {{ post.date }}</div>
-              </div>
-              <button class="ml-auto text-gray-400 hover:text-gray-700 dark:hover:text-white"><i class="fas fa-ellipsis-h"></i></button>
-            </div>
-            <div v-if="post.image">
-              <img :src="post.image" class="w-full rounded-b-xl" />
-            </div>
-            <div v-if="post.text" class="px-4 py-3 text-gray-900 dark:text-white">{{ post.text }}</div>
-            <div class="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-[#181c23]">
-              <div class="flex gap-4">
-                <button
-                  class="flex items-center gap-1 text-blue-500 bg-blue-100 dark:bg-[#232b3e] px-2 py-1 rounded-full font-semibold"
-                  @click="toggleComments(post.id)"
-                >
-                  <i class="fas fa-comment"></i>
-                  <span>{{ comments[post.id]?.length || 0 }}</span>
-                </button>
-                <button class="text-gray-400 hover:text-green-400"><i class="fas fa-retweet"></i></button>
-                <button
-                  class="flex items-center gap-1"
-                  :class="{'text-red-500': likedPosts[post.id], 'text-gray-400': !likedPosts[post.id]}"
-                  @click="toggleLike(post.id)"
-                >
-                  <i class="fas fa-heart"></i>
-                  <span>{{ likes[post.id] }}</span>
-                </button>
-                <button class="text-gray-400 hover:text-yellow-400"><i class="fas fa-bolt"></i></button>
-              </div>
-              <span class="text-xs text-gray-400">{{ likes[post.id] }} notes</span>
-            </div>
-            <div v-if="commentsOpen[post.id]" class="bg-gray-50 dark:bg-[#181c23] px-4 py-6 border-t border-gray-200 dark:border-gray-700">
-              <div class="flex items-center gap-3 mb-4">
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="avatar" class="w-8 h-8 rounded-full" />
-                <input
-                  v-model="newComment[post.id]"
-                  @keyup.enter="addComment(post.id)"
-                  type="text"
-                  placeholder="Reply as @yassineelaouni"
-                  class="flex-1 bg-transparent border border-gray-300 dark:border-gray-700 rounded-full px-4 py-2 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                  @click="addComment(post.id)"
-                  class="ml-2 px-3 py-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                >
-                  Send
-                </button>
-              </div>
-              <div v-if="comments[post.id]?.length" class="space-y-6">
-                <div v-for="(comment, idx) in comments[post.id]" :key="idx" class="flex items-start gap-3">
-                  <img :src="comment.avatar" alt="avatar" class="w-8 h-8 rounded-full" />
-                  <div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-semibold text-blue-400">@{{ comment.user }}</span>
-                      <span class="text-xs text-gray-400">{{ comment.date }}</span>
-                    </div>
-                    <div class="text-sm text-gray-900 dark:text-white">{{ comment.text }}</div>
-                  </div>
-                </div>
-              </div>
-              <div v-else class="flex flex-col items-center justify-center py-10">
-                <i class="fas fa-comment-dots text-4xl text-gray-400 mb-4"></i>
-                <div class="text-gray-400 mb-2">Be the first to Reply! Or...</div>
-                <a href="#" class="text-blue-500 hover:underline font-medium">Check out the Likes</a>
-              </div>
-            </div>
-          </div>
+            :post="post"
+            :is-liked="likedPosts[post.id]"
+            :is-comments-open="commentsOpen[post.id]"
+            :comments="comments[post.id]"
+            :likes-count="likes[post.id]"
+            :comments-count="comments[post.id]?.length || 0"
+            @toggle-comments="toggleComments(post.id)"
+            @toggle-like="toggleLike(post.id)"
+            @add-comment="(text) => addComment(post.id, text)"
+          />
         </div>
         <div v-else-if="tab === 'following'" class="space-y-6">
           <div v-for="follow in following" :key="follow.id" class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 flex items-center p-4">
@@ -133,6 +71,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import Post from '@/components/Post.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -164,6 +103,14 @@ const posts = ref([
     image: 'https://www.eatingwell.com/thmb/088YHsNmHkUQ7iNGP4375MiAXOY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_7866255_foods-you-should-eat-every-week-to-lose-weight_-04-d58e9c481bce4a29b47295baade4072d.jpg'
   }
 ])
+
+// Mock likes
+// Removed duplicate 'likes' declaration to fix redeclaration error
+
+// Mock following
+// (duplicate declaration removed)
+
+// (Duplicate block removed)
 
 // Mock likes
 // Removed duplicate 'likes' declaration to fix redeclaration error

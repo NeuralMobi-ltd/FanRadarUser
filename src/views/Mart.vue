@@ -37,11 +37,11 @@ import { ref } from 'vue'
 const trendingProducts = ref([
   {
     id: 1,
-    title: "CR7 T-shirt",
+    title: "Messi T-shirt",
     category: "Football",
-    description: "Official Cristiano Ronaldo fan t-shirt. Limited edition.",
+    description: "Official Lionel Messi fan t-shirt. Limited edition.",
     price: 29.99,
-    image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh0CcmXcYZo1qCkofBQdsAZvWHDZyjt-g_GQ&s"
   },
   {
     id: 2,
@@ -65,7 +65,7 @@ const trendingProducts = ref([
     category: "Music",
     description: "High quality poster of Taylor Swift's Eras Tour.",
     price: 14.99,
-    image: "https://images.unsplash.com/photo-1494790108755-2616b612b47c?auto=format&fit=crop&w=400&q=80"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4dFsdNGRuRz-PlDdHaB69hqOfbRSshrM2ZA&s"
   },
   {
     id: 5,
