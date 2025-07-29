@@ -28,23 +28,7 @@
 
       <!-- Posts Feed -->
       <div class="space-y-4">
-        <!-- Introducing Communities Card -->
-        <div class="bg-red-500 dark:bg-red-600 rounded-md p-6 text-white shadow-md">
-          <div class="flex items-start mb-4">
-            <i class="fas fa-users text-2xl mr-3"></i>
-            <div>
-              <h2 class="text-xl font-bold mb-2">Introducing Communities on FanRadar</h2>
-              <p class="text-sm leading-relaxed mb-4">
-                Communities are public and private spaces you can create on FanRadar — for you, your people, 
-                and the things you love. Frogs! Daleks! K-pop! The possibilities are endless.
-              </p>
-              <button class="bg-black dark:bg-gray-800 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-800 dark:hover:bg-gray-700 transition-colors">
-                Browse communities
-              </button>
-            </div>
-          </div>
-        </div>
-
+       
         <!-- User Posts -->
         <div v-for="post in posts" :key="post.id" class="bg-white dark:bg-gray-800 rounded-md overflow-hidden shadow-md border border-gray-200 dark:border-gray-700">
           <!-- Post Header -->
@@ -248,7 +232,7 @@ const posts = ref([
 Muzan: (laughing) That's Right! No demon slayer can ever defeat me!`,
     notes: '24',
     verified: false,
-    badges: ['⚧️']
+    badges: ['']
   },
   {
     id: 2,
@@ -276,7 +260,7 @@ I've never seen anyone go from All-Knowing Evil to Absolute Fucking Loser so fas
     tags: ['miraculous ladybug', 'mlb incorrect quotes', 'ladybug', 'cat noir', 'ladynoir'],
     notes: '24',
     verified: true,
-    badges: ['🏳️‍🌈', '✨']
+    badges: ['✨']
   },
   {
     id: 4,

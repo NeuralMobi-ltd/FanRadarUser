@@ -1,7 +1,28 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
     <div class="max-w-7xl mx-auto py-10 px-4">
-      <h1 class="text-3xl font-bold mb-8 text-center">FanRadarMart</h1>
+      <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold">FanRadarMart</h1>
+        
+        <!-- Cart Button -->
+        <button 
+          @click="$router.push('/cart')"
+          class="fixed bottom-8 right-8 bg-blue-500 hover:bg-blue-600 text-white rounded-full p-4 shadow-lg flex items-center gap-3 group transition-all duration-300 hover:scale-105 z-50"
+        >
+          <div class="relative">
+            <i class="fas fa-shopping-cart text-xl"></i>
+            <span v-if="cartItemCount" 
+              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              {{ cartItemCount }}
+            </span>
+          </div>
+          <span class="font-medium max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">
+            View Cart
+          </span>
+        </button>
+      </div>
+
+      <!-- Products Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-3 gap-8">
         <div
           v-for="product in trendingProducts"
@@ -20,8 +41,12 @@
             <p class="text-gray-700 dark:text-gray-300 text-sm mb-3">{{ product.description }}</p>
             <div class="flex items-center justify-between">
               <span class="font-bold text-blue-500 text-lg">${{ product.price }}</span>
-              <button class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors">
-                Buy
+              <button 
+                @click.stop="addToCart(product)"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-2"
+              >
+                <span>Add to Cart</span>
+                <i class="fas fa-cart-plus"></i>
               </button>
             </div>
           </div>
@@ -32,8 +57,17 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useCartStore } from '@/store/cart'
 
+const cartStore = useCartStore()
+const cartItemCount = computed(() => cartStore.count)
+
+function addToCart(product) {
+  cartStore.addItem(product)
+}
+
+// Products data
 const trendingProducts = ref([
   {
     id: 1,
@@ -65,7 +99,7 @@ const trendingProducts = ref([
     category: "Music",
     description: "High quality poster of Taylor Swift's Eras Tour.",
     price: 14.99,
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4dFsdNGRuRz-PlDdHaB69hqOfbRSshrM2ZA&s"
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4dFsdNGRuRz-PlDdHaB69hqOfbRSshrM2ZA&sadd"
   },
   {
     id: 5,
@@ -99,7 +133,7 @@ const trendingProducts = ref([
     price: 19.99,
     image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=400&q=80"
   },
-    {
+  {
     id: 9,
     title: "Yassine Potter Wand",
     category: "Books",
@@ -109,3 +143,10 @@ const trendingProducts = ref([
   }
 ])
 </script>
+
+<style scoped>
+/* Animation for cart button hover */
+.group:hover .group-hover\:max-w-xs {
+  max-width: 200px;
+}
+</style>

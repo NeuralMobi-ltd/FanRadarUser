@@ -6,6 +6,9 @@ import CommunitiesBrowse from '@/views/CommunitiesBrowse.vue'
 import Account from '@/views/Account.vue'
 import EditAccount from '@/views/EditAccount.vue'
 import Mart from '@/views/Mart.vue'
+import MyCart from '@/components/MyCart.vue'
+import CreateFandom from '@/views/CreateFandom.vue'
+import FandomDetail from '@/views/FandomDetail.vue'
 
 const routes = [
   {
@@ -70,7 +73,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/account/:username',
+    path: '/account/:user',
     name: 'Account',
     component: Account
   },
@@ -83,6 +86,22 @@ const routes = [
     path: '/mart',
     name: 'Mart',
     component: Mart
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: MyCart
+  },
+  {
+    path: '/create-fandom',
+    name: 'CreateFandom',
+    component: CreateFandom
+  },
+  {
+    path: '/fandom/:name',
+    name: 'FandomDetail',
+    component: FandomDetail,
+    meta: { requiresAuth: false }
   }
 
 ]

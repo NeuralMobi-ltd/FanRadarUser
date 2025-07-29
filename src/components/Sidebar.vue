@@ -33,6 +33,41 @@
             <span>Explore</span>
           </router-link>
         </li>
+        <!-- Fandom (Communities) Section -->
+        <li>
+          <div
+            class="nav-link text-gray-900 dark:text-white font-bold cursor-pointer select-none"
+            @click="isFandomOpen = !isFandomOpen"
+          >
+            <i class="fas fa-users text-xl"></i>
+            <span>Fandom</span>
+            <i :class="['fas', isFandomOpen ? 'fa-chevron-up' : 'fa-chevron-down', 'ml-auto', 'text-sm', 'opacity-60']"></i>
+          </div>
+          <ul v-show="isFandomOpen" class="ml-2 mt-1 space-y-1">
+            <li>
+              <router-link 
+                to="/communities/browse" 
+                class="nav-link pt-2 text-gray-900 dark:text-white font-normal"
+                :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/communities' }"
+              >
+                <i class="fas fa-book-open text-base"></i>
+                <span class="font-normal">Browse fandoms</span>
+              </router-link>
+            </li>
+            <li>
+            </li>
+            <li>
+              <router-link 
+                to="/fandom/ilia-hahh" 
+                class="nav-link-normal text-gray-900 dark:text-white"
+                :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/fandom/ilia-hahh' }"
+              >
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-6 h-6 rounded-full object-cover mr-2" />
+                <span>ilia hahh</span>
+              </router-link>
+            </li>
+          </ul>
+        </li>
         <li>
           <router-link 
             to="/likes" 
@@ -82,7 +117,7 @@
          :to="`/account/${userName}`" 
           class="flex items-center gap-3 px-0 py-2 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] rounded-md transition-colors"
         >
-          <div class="w-8 h-8 bg-purple-500 rounded flex items-center justify-center overflow-hidden">
+          <div class="nav-link-me w-8 h-8 bg-purple-500 rounded flex items-center justify-center overflow-hidden">
             <img
               v-if="userAvatar && userAvatar !== '/public/images/me.png'"
               :src="userAvatar"
@@ -120,15 +155,26 @@
         <i class="fas fa-palette"></i>
         Change Theme
       </button>
-      <button class="w-full flex items-center justify-center gap-2 bg-[#00BFFF] hover:bg-[#0099cc] text-black rounded-full py-3 font-medium transition-colors">
+      <button 
+        @click="showCreatePost = true"
+        class="w-full flex items-center justify-center gap-2 bg-[#00BFFF] hover:bg-[#0099cc] text-black rounded-full py-3 font-medium transition-colors"
+      >
         <i class="fas fa-pen"></i>
         Create
       </button>
     </div>
   </aside>
+
+  <!-- Create Post Modal -->
+  <CreatePostModal 
+    :is-visible="showCreatePost"
+    @close="showCreatePost = false"
+    @create="handleCreatePost"
+  />
 </template>
 
 <script>
+import CreatePostModal from '@/components/CreatePostModal.vue'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store'
 import { useRouter } from 'vue-router'
@@ -136,9 +182,14 @@ import { ref, computed, onMounted } from 'vue'
 
 export default {
   name: 'Sidebar',
+  components: {
+    CreatePostModal
+  },
   data() {
     return {
-      isAccountOpen: true
+      isAccountOpen: true,
+      showCreatePost: false,
+      isFandomOpen: true
     }
   },
   setup() {
@@ -146,10 +197,9 @@ export default {
     const router = useRouter()
     const avatarError = ref(false)
 
-    // Theme/logo logic (from GuestSidebar)
-    const themeStore = useThemeStore()
-    const logoSrcWhite = '/images/FanRadarWhite.png'
-    const logoSrc = '/images/FanRadar.png'
+    // Fix logo paths
+    const logoSrcWhite = new URL('/images/FanRadarWhite.png', import.meta.url).href
+    const logoSrc = new URL('/images/FanRadar.png', import.meta.url).href
     const isDark = ref(document.documentElement.classList.contains('dark'))
 
     // Watch for dark mode changes
@@ -195,11 +245,17 @@ export default {
       userAvatar,
       userStats,
       avatarError,
-      // theme/logo
       toggleThemeMode,
       logoSrc,
       logoSrcWhite,
       isDark
+    }
+  },
+  methods: {
+    handleCreatePost(post) {
+      console.log('New post:', post)
+      // Here you would typically send the post to your backend
+      this.showCreatePost = false
     }
   }
 }
@@ -217,8 +273,24 @@ export default {
   transition-duration: 150ms;
 }
 
+.nav-link-normal {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  transition-property: background-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+  font-weight: 500;
+}
+
 /* Light mode hover */
 .nav-link:hover {
+  background-color: #f3f4f6; /* Tailwind gray-100 */
+}
+
+.nav-link-me:hover {
   background-color: #f3f4f6; /* Tailwind gray-100 */
 }
 
@@ -234,4 +306,5 @@ export default {
 .nav-link span {
   font-weight: 500;
 }
+
 </style>

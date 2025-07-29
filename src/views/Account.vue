@@ -15,7 +15,7 @@
         <div class="flex gap-4 text-sm text-gray-500 dark:text-gray-400 mb-2">
           <span>{{ user.followers }} followers</span>
           <span>{{ user.following }} following</span>
-          <span>{{ posts.length }} posts</span>
+          <span>{{ userPosts?.length || 0 }} posts</span>
         </div>
         <button
           class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors"
@@ -36,21 +36,54 @@
       </div>
       <!-- Posts List and Following List -->
       <div>
+        <!-- Posts List -->
         <div v-if="tab === 'posts'" class="space-y-6">
-          <Post
-            v-for="post in posts"
-            :key="post.id"
-            :post="post"
-            :is-liked="likedPosts[post.id]"
-            :is-comments-open="commentsOpen[post.id]"
-            :comments="comments[post.id]"
-            :likes-count="likes[post.id]"
-            :comments-count="comments[post.id]?.length || 0"
-            @toggle-comments="toggleComments(post.id)"
-            @toggle-like="toggleLike(post.id)"
-            @add-comment="(text) => addComment(post.id, text)"
-          />
+          <div v-for="post in mockPosts" :key="post.id" class="relative group">
+            <!-- Custom rendering for post content -->
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 p-4 mb-2">
+              <div class="flex items-center gap-3 mb-2">
+                <img :src="user.avatar" alt="avatar" class="w-10 h-10 rounded-full" />
+                <div>
+                  <div class="font-bold text-gray-900 dark:text-white">{{ user.name }}</div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">@{{ user.username }}</div>
+                  <div class="text-xs text-gray-400">{{ new Date(post.date).toLocaleString() }}</div>
+                </div>
+              </div>
+              <div class="space-y-3 mt-2">
+                <div v-for="(item, idx) in post.content" :key="idx">
+                  <div v-if="item.type === 'text'" class="whitespace-pre-line text-base text-gray-900 dark:text-white">
+                    {{ item.content }}
+                  </div>
+                  <div v-else-if="item.type === 'image'" class="my-2">
+                    <img :src="item.content" class="rounded-lg max-w-full max-h-80" />
+                  </div>
+                  <div v-else-if="item.type === 'video'" class="my-2">
+                    <video :src="item.content" controls class="rounded-lg max-w-full max-h-80"></video>
+                  </div>
+                </div>
+                <div v-if="post.tags && post.tags.length" class="flex flex-wrap gap-2 mt-2">
+                  <span v-for="tag in post.tags" :key="tag" class="text-blue-500 dark:text-blue-400 text-sm font-medium">#{{ tag }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- Edit/Delete Controls -->
+            <div class="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                @click="editPost(post)"
+                class="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+              >
+                <i class="fas fa-edit"></i>
+              </button>
+              <button
+                @click="deletePost(post.id)"
+                class="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
         </div>
+
         <div v-else-if="tab === 'following'" class="space-y-6">
           <div v-for="follow in following" :key="follow.id" class="bg-white dark:bg-gray-800 rounded-xl shadow border border-gray-200 dark:border-gray-700 flex items-center p-4">
             <img :src="follow.avatar" alt="avatar" class="w-10 h-10 rounded-full mr-3" />
@@ -65,71 +98,45 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Post Modal -->
+    <CreatePostModal
+      v-if="showEditModal"
+      :is-visible="showEditModal"
+      :initial-content="editingPost"
+      @close="closeEditModal"
+      @create="handleEditPost"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watchEffect } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { usePostsStore } from '@/store/posts'
+import { useAuthStore } from '@/store/auth'
 import Post from '@/components/Post.vue'
+import CreatePostModal from '@/components/CreatePostModal.vue'
 
 const route = useRoute()
 const router = useRouter()
-const username = route.params.username || 'yassineelaouni'
+const postsStore = usePostsStore()
+const authStore = useAuthStore()
+const username = 'admin'
 
 // Mock user info
 const user = ref({
-  name: 'Ysselhhhhhhhhhhhhhhhhh',
+  name: authStore.userName || 'User',
   username,
-  avatar: 'https://ui-avatars.com/api/?name=Yssel&background=6366f1&color=fff&size=128',
-  followers: 1234,
-  following: 567,
+  avatar: authStore.user?.avatar || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=128',
+  followers: authStore.user?.followers || 0,
+  following: authStore.user?.following || 0,
 })
 
-// Mock posts
-const posts = ref([
-  {
-    id: 1,
-    date: '3d',
-    text: 'hhhhhhhhhhhhhhhhhhhhhhh\n\n#ijjj',
-    notes: 0,
-    image: null
-  },
-  {
-    id: 2,
-    date: '3d',
-    text: null,
-    notes: 0,
-    image: 'https://www.eatingwell.com/thmb/088YHsNmHkUQ7iNGP4375MiAXOY=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/article_7866255_foods-you-should-eat-every-week-to-lose-weight_-04-d58e9c481bce4a29b47295baade4072d.jpg'
-  }
-])
-
-// Mock likes
-// Removed duplicate 'likes' declaration to fix redeclaration error
-
-// Mock following
-// (duplicate declaration removed)
-
-// (Duplicate block removed)
-
-// Mock likes
-// Removed duplicate 'likes' declaration to fix redeclaration error
-
-// Mock following
-const following = ref([
-  {
-    id: 1,
-    name: 'fanradaruser',
-    username: 'fanradaruser',
-    avatar: 'https://ui-avatars.com/api/?name=FanRadar&background=6366f1&color=fff&size=128'
-  },
-  {
-    id: 2,
-    name: 'Blaze',
-    username: 'blaze',
-    avatar: 'https://ui-avatars.com/api/?name=Blaze&background=6366f1&color=fff&size=128'
-  }
-])
+// Get posts from store
+const userPosts = computed(() => {
+  return postsStore.posts.filter(post => post.author === username)
+})
 
 const tab = ref('posts')
 const commentsOpen = ref({})
@@ -137,13 +144,42 @@ const likedPosts = ref({})
 const likes = ref({})
 const comments = ref({})
 const newComment = ref({})
+const showEditModal = ref(false)
+const editingPost = ref(null)
+
+// Mock posts data
+const mockPosts = [
+  {
+    id: 1,
+    content: [
+      { type: 'text', content: 'This is a mock text post.' },
+      { type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80' }
+    ],
+    tags: ['mock', 'demo'],
+    date: new Date().toISOString()
+  },
+  {
+    id: 2,
+    content: [
+      { type: 'image', content: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?auto=format&fit=crop&w=400&q=80' }
+    ],
+    tags: ['image', 'sample'],
+    date: new Date().toISOString()
+  }
+]
 
 // Initialize likes and comments for each post
-posts.value.forEach(post => {
-  likes.value[post.id] = Number((post.notes || '0').replace(/,/g, ''))
-  comments.value[post.id] = []
-  newComment.value[post.id] = ''
-  likedPosts.value[post.id] = false
+watchEffect(() => {
+  if (userPosts.value) {
+    userPosts.value.forEach(post => {
+      if (!likes.value[post.id]) {
+        likes.value[post.id] = Number((post.notes || '0').replace(/,/g, ''))
+        comments.value[post.id] = []
+        newComment.value[post.id] = ''
+        likedPosts.value[post.id] = false
+      }
+    })
+  }
 })
 
 function toggleComments(postId) {
@@ -169,5 +205,28 @@ function addComment(postId) {
 
 function editProfile() {
   router.push('/edit-account')
+}
+
+function deletePost(postId) {
+  if (confirm('Are you sure you want to delete this post?')) {
+    postsStore.deletePost(postId)
+  }
+}
+
+function editPost(post) {
+  editingPost.value = { ...post }
+  showEditModal.value = true
+}
+
+function closeEditModal() {
+  showEditModal.value = false
+  editingPost.value = null
+}
+
+function handleEditPost(updatedContent) {
+  if (editingPost.value) {
+    postsStore.updatePost(editingPost.value.id, updatedContent)
+  }
+  closeEditModal()
 }
 </script>

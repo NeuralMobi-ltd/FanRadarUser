@@ -13,8 +13,11 @@
             />
             <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 text-sm"></i>
           </div>
-          <button class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors">
-            Create a community
+          <button
+            class="bg-blue-500 hover:bg-blue-600 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors"
+            @click="$router.push('/create-fandom')"
+          >
+            Create a fandom
           </button>
         </div>
       </div>

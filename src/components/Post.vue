@@ -41,7 +41,6 @@
           <span>{{ likesCount }}</span>
         </button>
       </div>
-      <span class="text-xs text-gray-400">{{ commentsCount }} comments</span>
     </div>
 
     <!-- Comments Section -->
