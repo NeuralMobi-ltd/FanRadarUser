@@ -7,6 +7,8 @@ import Account from '@/views/Account.vue'
 import EditAccount from '@/views/EditAccount.vue'
 import Mart from '@/views/Mart.vue'
 import MyCart from '@/components/MyCart.vue'
+import MyOrder from '@/components/MyOrder.vue'
+import orderDetails from '@/components/orderDetails.vue'
 import CreateFandom from '@/views/CreateFandom.vue'
 import FandomDetail from '@/views/FandomDetail.vue'
 
@@ -31,7 +33,7 @@ const routes = [
     ]
   },
   {
-    path: '/explore',
+    path: '/guest/explore',
     component: GuestHomeLayout,
     children: [
       {
@@ -61,7 +63,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/user/explore',
+    path: '/exploree',
     name: 'UserExplore',
     component: () => import('@/views/UserExplore.vue'),
     meta: { requiresAuth: true }
@@ -91,6 +93,16 @@ const routes = [
     path: '/cart',
     name: 'Cart',
     component: MyCart
+  },
+  {
+    path: '/orders',
+    name: 'Orders',
+    component: MyOrder
+  },
+  {
+    path: '/orders/:id',
+    name: 'OrderDetails',
+    component: orderDetails
   },
   {
     path: '/create-fandom',

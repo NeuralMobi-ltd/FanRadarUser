@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-dark-950 transition-colors duration-200">
+  <div class="min-h-screen bg-gray-50 dark:bg-dark-960 transition-colors duration-200">
     <!-- Choose correct layout based on authentication status -->
     <div v-if="isAuthenticated" class="flex">
       <!-- Authenticated user layout -->

@@ -1,176 +1,215 @@
 <template>
-  <aside class="fixed left-0 top-0 w-64 h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-r border-gray-200 dark:border-gray-800 flex flex-col">
-    <!-- Logo -->
-    <div class="px-5 py-4">
-      <router-link to="/" class="text-black dark:text-white hover:opacity-80 transition-opacity flex items-center">
+  <aside class="fixed left-0 top-0 w-64 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col z-50">
+    <!-- Logo Section -->
+    <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-center">
+      <router-link to="/" class="flex items-center justify-center">
         <img
           :src="isDark ? logoSrcWhite : logoSrc"
           alt="FanRadar Logo"
-          class="h-14 object-contain"
+          class="h-12 transition-all hover:scale-105"
         />
       </router-link>
     </div>
+
     <!-- Main Navigation -->
-    <nav class="flex-1 px-2">
+    <nav class="flex-1 px-3 py-4 overflow-y-auto custom-scrollbar">
       <ul class="space-y-1">
+        <!-- Home -->
         <li>
           <router-link 
             to="/" 
-            class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1A1A1A]': $route.path === '/' }"
+            class="nav-link group"
+            :class="{ 'active-link': $route.path === '/' }"
           >
-            <i class="fas fa-home text-xl"></i>
+            <div class="nav-icon">
+              <i class="fas fa-home"></i>
+            </div>
             <span>Home</span>
+            <div class="nav-highlight"></div>
           </router-link>
         </li>
+
+        <!-- Explore -->
         <li>
           <router-link 
-            to="/user/explore" 
-            class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === 'user/explore' }"
+            to="/exploree" 
+            class="nav-link group"
+            :class="{ 'active-link': $route.path === '/exploree' }"
           >
-            <i class="fas fa-compass text-xl"></i>
+            <div class="nav-icon">
+              <i class="fas fa-compass"></i>
+            </div>
             <span>Explore</span>
+            <div class="nav-highlight"></div>
           </router-link>
         </li>
-        <!-- Fandom (Communities) Section -->
+
+        <!-- Fandom Section -->
         <li>
           <div
-            class="nav-link text-gray-900 dark:text-white font-bold cursor-pointer select-none"
+            class="nav-link group cursor-pointer"
             @click="isFandomOpen = !isFandomOpen"
           >
-            <i class="fas fa-users text-xl"></i>
+            <div class="nav-icon">
+              <i class="fas fa-users"></i>
+            </div>
             <span>Fandom</span>
-            <i :class="['fas', isFandomOpen ? 'fa-chevron-up' : 'fa-chevron-down', 'ml-auto', 'text-sm', 'opacity-60']"></i>
+            <i :class="['fas transition-transform dark:text-white', isFandomOpen ? 'fa-chevron-up rotate-180' : 'fa-chevron-down', 'ml-auto text-xs opacity-60']"></i>
           </div>
-          <ul v-show="isFandomOpen" class="ml-2 mt-1 space-y-1">
-            <li>
-              <router-link 
-                to="/communities/browse" 
-                class="nav-link pt-2 text-gray-900 dark:text-white font-normal"
-                :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/communities' }"
-              >
-                <i class="fas fa-book-open text-base"></i>
-                <span class="font-normal">Browse fandoms</span>
-              </router-link>
-            </li>
-            <li>
-            </li>
-            <li>
-              <router-link 
-                to="/fandom/ilia-hahh" 
-                class="nav-link-normal text-gray-900 dark:text-white"
-                :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/fandom/ilia-hahh' }"
-              >
-                <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-6 h-6 rounded-full object-cover mr-2" />
-                <span>ilia hahh</span>
-              </router-link>
-            </li>
-          </ul>
+          
+          <transition name="slide">
+            <ul v-show="isFandomOpen" class="ml-2 mt-1 space-y-1 pl-7 border-l-2 border-gray-200 dark:border-gray-700">
+              <li>
+                <router-link 
+                  to="/communities/browse" 
+                  class="subnav-link"
+                  :class="{ 'active-subnav': $route.path === '/communities/browse ' }"
+                >
+                  <i class="fas fa-book-open text-sm"></i>
+                  <span>Browse Fandoms</span>
+                </router-link>
+              </li>
+              <li>
+                <router-link 
+                  to="/fandom/ilia-hahh" 
+                  class="subnav-link"
+                  :class="{ 'active-subnav': $route.path === '/fandom/ilia-hahh' }"
+                >
+                  <img src="https://randomuser.me/api/portraits/men/32.jpg" class="w-5 h-5 rounded-full object-cover" />
+                  <span>ilia hahh</span>
+                </router-link>
+              </li>
+            </ul>
+          </transition>
         </li>
+
+        <!-- FanRadarMart -->
         <li>
           <router-link 
-            to="/likes" 
-            class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/likes' }"
+            to="/mart" 
+            class="nav-link group"
+            :class="{ 'active-link': $route.path === '/mart' }"
           >
-            <i class="fas fa-heart text-xl"></i>
-            <span class="flex items-center justify-between flex-1">
-              Likes
-              <span class="text-xs bg-gray-100 dark:bg-[#1A1A1A] px-2 py-0.5 rounded">3</span>
-            </span>
+            <div class="nav-icon">
+              <i class="fas fa-store"></i>
+            </div>
+            <span>FanRadarMart</span>
+            <div class="nav-highlight"></div>
           </router-link>
         </li>
+
+        <!-- My Cart Section -->
         <li>
-          <router-link 
-            to="/following" 
-            class="nav-link text-gray-900 dark:text-white"
-            :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/following' }"
+          <div
+            class="nav-link group cursor-pointer"
+            @click="isMartOpen = !isMartOpen"
           >
-            <i class="fas fa-user-friends text-xl"></i>
-            <span class="flex items-center justify-between flex-1">
-              Following
-              <span class="text-xs bg-gray-100 dark:bg-[#1A1A1A] px-2 py-0.5 rounded">6</span>
-            </span>
-          </router-link>
-        </li>
-        <li>
-          <button 
-            @click="isAccountOpen = !isAccountOpen"
-            class="nav-link w-full text-gray-900 dark:text-white"
-          >
-            <i class="fas fa-user text-xl"></i>
-            <span class="flex items-center justify-between flex-1">
-              Account
-              <i :class="['fas', isAccountOpen ? 'fa-chevron-up' : 'fa-chevron-down', 'text-sm opacity-60']"></i>
-            </span>
-          </button>
+            <div class="nav-icon">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <span>My Cart</span>
+            <i :class="['fas transition-transform dark:text-white', isMartOpen ? 'fa-chevron-up rotate-180' : 'fa-chevron-down', 'ml-auto text-xs opacity-60']"></i>
+          </div>
+          
+          <transition name="slide">
+            <ul v-show="isMartOpen" class="ml-2 mt-1 space-y-1 pl-7 border-l-2 border-gray-200 dark:border-gray-700">
+              <li>
+                <router-link 
+                  to="/cart" 
+                  class="subnav-link"
+                  :class="{ 'active-subnav': $route.path === '/cart' }"
+                >
+                  <i class="fas fa-shopping-basket text-sm"></i>
+                  <span>My Cart</span>
+                </router-link>
+              </li>
+              <li>
+                <router-link 
+                  to="/orders" 
+                  class="subnav-link"
+                  :class="{ 'active-subnav': $route.path === '/orders' }"
+                >
+                  <i class="fas fa-box text-sm"></i>
+                  <span>My Orders</span>
+                </router-link>
+              </li>
+            </ul>
+          </transition>
         </li>
       </ul>
-
-      <!-- Account Dropdown -->
-      <div v-if="isAccountOpen" class="mt-1 pl-6 space-y-2">
-        <button @click="logout" class="block py-2 text-sm opacity-80 hover:opacity-100 w-full text-left text-red-500">
-          Log out
-        </button>
-        <router-link 
-         :to="`/account/${userName}`" 
-          class="flex items-center gap-3 px-0 py-2 hover:bg-gray-100 dark:hover:bg-[#1A1A1A] rounded-md transition-colors"
-        >
-          <div class="nav-link-me w-8 h-8 bg-purple-500 rounded flex items-center justify-center overflow-hidden">
-            <img
-              v-if="userAvatar && userAvatar !== '/public/images/me.png'"
-              :src="userAvatar"
-              alt="avatar"
-              class="w-8 h-8 object-cover rounded"
-              @error="avatarError = true"
-            />
-            <span v-else class="text-white font-bold text-lg">
-              {{ userName ? userName.charAt(0).toUpperCase() : 'U' }}
-            </span>
-          </div>
-          <div>
-            <div class="text-sm font-medium truncate">{{ userName }}</div>
-          </div>
-        </router-link>
-      </div>
-
-        <!-- FanRadarMart Link -->
-        <router-link
-          to="/mart"
-          class="nav-link text-gray-900 dark:text-white"
-          :class="{ 'bg-gray-100 dark:bg-[#1a1a1a72]': $route.path === '/mart' }"
-        >
-          <i class="fas fa-store text-xl"></i>
-          <span class="text-sm font-medium">FanRadarMart</span>
-        </router-link>
     </nav>
 
-    <!-- Create Post Button -->
-    <div class="p-4">
-      <button
-        class="w-full flex items-center justify-center gap-2 bg-[#00BFFF] hover:bg-[#0099cc] text-black rounded-full py-3 font-medium transition-colors mb-2"
-        @click="toggleThemeMode"
-      >
-        <i class="fas fa-palette"></i>
-        Change Theme
-      </button>
-      <button 
-        @click="showCreatePost = true"
-        class="w-full flex items-center justify-center gap-2 bg-[#00BFFF] hover:bg-[#0099cc] text-black rounded-full py-3 font-medium transition-colors"
-      >
-        <i class="fas fa-pen"></i>
-        Create
-      </button>
-    </div>
-  </aside>
+    <!-- User & Actions Section -->
+    <div class="p-4 border-t border-gray-200 dark:border-gray-800">
+      <!-- Account Dropdown -->
+      <div class="mb-4">
+        <button 
+          @click="isAccountOpen = !isAccountOpen"
+          class="w-full flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        >
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <img
+                v-if="userAvatar"
+                :src="userAvatar"
+                alt="avatar"
+                class="w-9 h-9 rounded-full object-cover border-2 border-blue-400"
+              />
+              <div v-else class="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
+                {{ userName ? userName.charAt(0).toUpperCase() : 'U' }}
+              </div>
+              <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></span>
+            </div>
+            <div class="text-left">
+              <div class="font-medium text-sm dark:text-white truncate max-w-[120px]">yassinelaouni</div>
+              <div class="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[120px]">yassinelouni581@gmail.com</div>
+            </div>
+          </div>
+          <i :class="['fas text-xs transition-transform dark:text-white', isAccountOpen ? 'fa-chevron-up' : 'fa-chevron-down']"></i>
+        </button>
 
-  <!-- Create Post Modal -->
-  <CreatePostModal 
-    :is-visible="showCreatePost"
-    @close="showCreatePost = false"
-    @create="handleCreatePost"
-  />
+        <transition name="slide">
+          <div v-show="isAccountOpen" class="mt-2 pl-2 space-y-1">
+            <router-link 
+              :to="`/account/${userName}`"
+              class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <i class="fas fa-user-circle text-gray-500 dark:text-gray-400"></i>
+              <span>Profile</span>
+            </router-link>
+            
+         
+            
+            <button 
+              @click="logout"
+              class="flex items-center gap-2 px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-red-500 w-full text-left"
+            >
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Log out</span>
+            </button>
+          </div>
+        </transition>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2">
+        <button
+          @click="toggleThemeMode"
+          class="action-btn bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white"
+        >
+          <i class="fas fa-palette"></i>
+          <span>Theme</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Create Post Modal -->
+    <CreatePostModal 
+      :is-visible="showCreatePost"
+      @close="showCreatePost = false"
+      @create="handleCreatePost"
+    />
+  </aside>
 </template>
 
 <script>
@@ -187,22 +226,22 @@ export default {
   },
   data() {
     return {
-      isAccountOpen: true,
+      isAccountOpen: false,
       showCreatePost: false,
-      isFandomOpen: true
+      isFandomOpen: true,
+      isMartOpen: false // Added this property
     }
   },
   setup() {
     const auth = useAuthStore()
+    const themeStore = useThemeStore()
     const router = useRouter()
     const avatarError = ref(false)
 
-    // Fix logo paths
     const logoSrcWhite = new URL('/images/FanRadarWhite.png', import.meta.url).href
     const logoSrc = new URL('/images/FanRadar.png', import.meta.url).href
     const isDark = ref(document.documentElement.classList.contains('dark'))
 
-    // Watch for dark mode changes
     const updateIsDark = () => {
       isDark.value = document.documentElement.classList.contains('dark')
     }
@@ -221,21 +260,15 @@ export default {
 
     const logout = () => {
       auth.logout()
-      window.location.href = '/communities'
+      router.push('/login')
     }
 
     const userName = computed(() => auth.user?.name || 'yassineelaouni')
     const userEmail = computed(() => auth.user?.email || 'yassineelaouni@fanradar.com')
     const userAvatar = computed(() => {
       if (avatarError.value) return ''
-      if (auth.user?.avatar && auth.user.avatar !== '/public/images/me.png') return auth.user.avatar
-      return '/images/me.png'
+      return auth.user?.avatar || 'https://randomuser.me/api/portraits/men/32.jpg'
     })
-    const userStats = computed(() => ({
-      followers: auth.user?.followers ?? 0,
-      following: auth.user?.following ?? 0,
-      posts: auth.user?.posts ?? 0
-    }))
 
     return {
       auth,
@@ -243,7 +276,6 @@ export default {
       userName,
       userEmail,
       userAvatar,
-      userStats,
       avatarError,
       toggleThemeMode,
       logoSrc,
@@ -254,7 +286,6 @@ export default {
   methods: {
     handleCreatePost(post) {
       console.log('New post:', post)
-      // Here you would typically send the post to your backend
       this.showCreatePost = false
     }
   }
@@ -262,49 +293,87 @@ export default {
 </script>
 
 <style scoped>
+/* Navigation Links */
 .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  transition-property: background-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
+  @apply flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors relative overflow-hidden;
 }
 
-.nav-link-normal {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.375rem;
-  transition-property: background-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-  font-weight: 500;
-}
-
-/* Light mode hover */
-.nav-link:hover {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
-}
-
-.nav-link-me:hover {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
-}
-
-/* Dark mode hover: use a slightly lighter dark shade for contrast */
-.dark .nav-link:hover {
-  background-color: #232b3e !important; /* matches dark hover in GuestSidebar */
-}
-
-.nav-link i {
-  width: 1.5rem;
+.nav-icon {
+  @apply w-6 h-6 flex items-center justify-center text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors;
 }
 
 .nav-link span {
-  font-weight: 500;
+  @apply text-gray-700 dark:text-gray-300 font-medium group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors;
 }
 
+.nav-highlight {
+  @apply absolute left-0 top-0 h-full w-1 bg-blue-500 dark:bg-blue-400 rounded-r-lg opacity-0 group-hover:opacity-100 transition-opacity;
+}
+
+/* Active States */
+.active-link {
+  @apply bg-blue-50 dark:bg-gray-800;
+}
+
+.active-link .nav-icon {
+  @apply text-blue-500 dark:text-blue-400;
+}
+
+.active-link span {
+  @apply text-blue-600 dark:text-blue-400 font-semibold;
+}
+
+.active-link .nav-highlight {
+  @apply opacity-100;
+}
+
+/* Sub Navigation */
+.subnav-link {
+  @apply flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors;
+}
+
+.active-subnav {
+  @apply text-blue-500 dark:text-blue-400 font-medium;
+}
+
+/* Badges */
+.badge {
+  @apply text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-1.5 py-0.5 rounded-full;
+}
+
+/* Action Buttons */
+.action-btn {
+  @apply w-full flex items-center justify-center gap-2 rounded-lg py-2.5 font-medium transition-all hover:shadow-lg;
+}
+
+/* Transitions */
+.slide-enter-active,
+.slide-leave-active {
+  transition: all 0.2s ease;
+  max-height: 300px;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  opacity: 0;
+  max-height: 0;
+  transform: translateY(-10px);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  @apply w-1;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
 </style>

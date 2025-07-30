@@ -1,264 +1,268 @@
 <template>
   <div class="flex min-h-screen bg-black text-white">
-    <!-- Main Feed -->
-    <main class="flex-1 flex flex-col mx-auto max-w-2xl w-full">
+    <!-- Main Content -->
+    <div class="flex-1 max-w-2xl mx-auto p-4">
       <!-- Stories/News Ticker -->
-      <div class="flex gap-2 p-2 overflow-x-auto scrollbar-hide bg-[#121212]">
-        <div v-for="(story, index) in trendingNews" :key="index" 
-             class="flex-shrink-0 w-24 h-32 rounded-lg overflow-hidden relative group">
+      <div class="flex gap-3 overflow-x-auto pb-3 mb-4 scrollbar-hide">
+        <div 
+          v-for="(story, idx) in trendingStories" 
+          :key="idx" 
+          class="flex-shrink-0 w-28 h-36 rounded-xl overflow-hidden relative group cursor-pointer hover:scale-105 transition-transform"
+        >
           <img :src="story.image" class="w-full h-full object-cover" />
           <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
             <p class="text-xs font-medium truncate">{{ story.title }}</p>
           </div>
-          <div v-if="story.breaking" class="absolute top-1 left-1 bg-red-600 text-white text-xs px-1 rounded">
-            BREAKING
+          <div v-if="story.live" class="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 rounded-full flex items-center">
+            <span class="relative flex h-2 w-2 mr-1">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            LIVE
           </div>
         </div>
       </div>
-      
-      <!-- Compact Tabs -->
-      <div class="flex border-b border-[#2a2a2a] sticky top-0 bg-black z-10">
-        <button
-          v-for="(tabItem, idx) in tabs"
-          :key="idx"
-          class="flex-1 py-3 text-sm font-medium relative"
-          :class="activeTab === idx ? 'text-white' : 'text-gray-400 hover:text-white'"
-          @click="activeTab = idx"
-        >
-          {{ tabItem }}
-          <span v-if="activeTab === idx" class="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-6 h-0.5 bg-blue-500 rounded-full"></span>
-        </button>
-      </div>
-      
-      <!-- Posts Feed -->
-      <div class="flex flex-col">
-        <!-- Create Post - Compact -->
-        <div class="p-3 border-b border-[#2a2a2a]">
-          <div class="flex items-center gap-2">
-            <img :src="currentUser.avatar" class="w-8 h-8 rounded-full" />
-            <input 
-              type="text" 
-              placeholder="What's happening?"
-              class="flex-1 bg-[#2a2a2a] rounded-full px-4 py-2 text-sm focus:outline-none"
-              @click="showPostModal = true"
-            />
-          </div>
-          <div class="flex justify-between mt-2 px-2">
-            <div class="flex gap-4">
-              <button class="text-blue-400 text-sm flex items-center gap-1">
-                <i class="fas fa-image text-xs"></i>
-                <span>Media</span>
-              </button>
-              <button class="text-green-400 text-sm flex items-center gap-1">
-                <i class="fas fa-link text-xs"></i>
-                <span>Link</span>
-              </button>
-            </div>
-            <button class="text-xs bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full">
-              Post
+
+      <!-- Create Post -->
+      <div class="bg-[#181c23] rounded-xl p-3 mb-4 border border-gray-700">
+        <div class="flex items-center gap-2">
+          <img :src="currentUser.avatar" class="w-10 h-10 rounded-full" />
+          <input 
+            type="text" 
+            placeholder="What's happening?"
+            class="flex-1 bg-[#232b3e] border-none rounded-full px-4 py-2 text-sm text-white focus:outline-none"
+            @click="showPostModal = true"
+          />
+        </div>
+        <div class="flex justify-between mt-3 px-1">
+          <div class="flex gap-4">
+            <button class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
+              <i class="fas fa-image"></i>
+              <span class="hidden sm:inline">Media</span>
+            </button>
+            <button class="text-green-400 hover:text-green-300 text-sm flex items-center gap-1">
+              <i class="fas fa-poll"></i>
+              <span class="hidden sm:inline">Poll</span>
             </button>
           </div>
-        </div>
-
-        <!-- Posts - Compact Design -->
-        <div v-for="post in filteredPosts" :key="post.id" class="p-3 border-b border-[#2a2a2a] hover:bg-[#121212] transition-colors">
-          <!-- News Type Post -->
-          <div v-if="post.type === 'news'" class="space-y-2">
-            <div class="flex items-center gap-2 text-sm">
-              <span class="font-bold text-blue-400">{{ post.source }}</span>
-              <span class="text-gray-400">· {{ post.time }}</span>
-              <button class="ml-auto text-gray-400 hover:text-white">
-                <i class="fas fa-ellipsis-h text-sm"></i>
-              </button>
-            </div>
-            <div class="flex gap-3">
-              <div class="flex-1">
-                <h3 class="font-medium">{{ post.title }}</h3>
-                <p class="text-sm text-gray-400 mt-1 line-clamp-2">{{ post.summary }}</p>
-                <div class="flex gap-3 mt-2 text-xs text-gray-400">
-                  <span>{{ post.views }} views</span>
-                  <span>{{ post.comments }} comments</span>
-                </div>
-              </div>
-              <img :src="post.image" class="w-20 h-20 object-cover rounded-lg" />
-            </div>
-          </div>
-          
-          <!-- Regular Post -->
-          <div v-else class="space-y-2">
-            <div class="flex items-center gap-2">
-              <img :src="post.avatar" class="w-8 h-8 rounded-full" />
-              <div class="flex-1">
-                <span class="font-bold text-sm">{{ post.username }}</span>
-                <span class="text-gray-400 text-xs ml-2">{{ post.date }}</span>
-              </div>
-              <button class="text-gray-400 hover:text-white">
-                <i class="fas fa-ellipsis-h text-sm"></i>
-              </button>
-            </div>
-            
-            <p class="text-sm">{{ post.text }}</p>
-            
-            <div v-if="post.image" class="mt-2">
-              <img :src="post.image" class="w-full rounded-lg" />
-            </div>
-            
-            <div class="flex justify-between mt-2 text-xs text-gray-400">
-              <button class="flex items-center gap-1 hover:text-blue-400">
-                <i class="far fa-comment"></i>
-                <span>{{ post.comments }}</span>
-              </button>
-              <button class="flex items-center gap-1 hover:text-green-400">
-                <i class="fas fa-retweet"></i>
-                <span>{{ post.shares }}</span>
-              </button>
-              <button 
-                class="flex items-center gap-1"
-                :class="{'text-red-500': post.liked, 'hover:text-red-400': !post.liked}"
-                @click="post.liked = !post.liked"
-              >
-                <i class="far fa-heart"></i>
-                <span>{{ post.likes + (post.liked ? 1 : 0) }}</span>
-              </button>
-              <button class="flex items-center gap-1 hover:text-blue-400">
-                <i class="far fa-share-square"></i>
-              </button>
-            </div>
-          </div>
+          <button class="text-xs bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full">
+            Post
+          </button>
         </div>
       </div>
-    </main>
 
-    <!-- Right Sidebar - Compact -->
-    <aside class="hidden lg:block w-80 border-l border-[#2a2a2a] p-3 overflow-y-auto sticky top-0 h-screen">
+      <!-- Content Feed -->
+      <div class="space-y-4">
+        <!-- Breaking News Post -->
+        <NewsPost :news="{
+          id: 101,
+          source: 'BBC Breaking',
+          sourceLogo: 'https://logo.clearbit.com/bbc.com',
+          title: 'Major earthquake strikes Pacific region',
+          summary: 'A 7.8 magnitude earthquake has hit the Pacific islands, triggering tsunami warnings across the region.',
+          image: 'https://images.unsplash.com/photo-1506259091721-347e791bab0f',
+          date: new Date(Date.now() - 3600000 * 1), // 1 hour ago
+          views: '42.8K',
+          comments: 892,
+          breaking: true
+        }" />
+
+        <!-- Popular Post -->
+        <Post :post="{
+          id: 101,
+          username: 'tech_enthusiast',
+          avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
+          date: new Date(Date.now() - 3600000 * 3), // 3 hours ago
+          text: 'Just upgraded to the new AI assistant - it can now write full code modules! The auto-debugging feature is a game changer for developers. #AI #Programming',
+          image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485',
+          tags: ['AI', 'Programming', 'Tech'],
+          likes: 1243,
+          comments: 287
+        }" />
+
+        <!-- News Post -->
+        <NewsPost :news="{
+          id: 102,
+          source: 'Tech Today',
+          sourceLogo: 'https://logo.clearbit.com/techtoday.com',
+          title: 'Microsoft unveils new Copilot+ PCs with AI acceleration',
+          summary: 'New laptop line features neural processing units capable of 40+ TOPS for on-device AI tasks.',
+          image: 'https://images.unsplash.com/photo-1593642634524-b40b5baae6bb',
+          date: new Date(Date.now() - 3600000 * 5), // 5 hours ago
+          views: '28.3K',
+          comments: 421
+        }" />
+
+        <!-- Photo Post -->
+        <Post :post="{
+          id: 102,
+          username: 'travel_guru',
+          avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
+          date: new Date(Date.now() - 3600000 * 8), // 8 hours ago
+          text: 'Sunrise at Angkor Wat - worth waking up at 4am for this view! #Cambodia #Travel',
+          image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a',
+          tags: ['Travel', 'Photography', 'Cambodia'],
+          likes: 892,
+          comments: 134
+        }" />
+
+        <!-- Text Post -->
+        <Post :post="{
+          id: 103,
+          username: 'bookworm',
+          avatar: 'https://randomuser.me/api/portraits/women/45.jpg',
+          date: new Date(Date.now() - 3600000 * 12), // 12 hours ago
+          text: 'Just finished Project Hail Mary by Andy Weir. Absolutely mind-blowing science fiction with such believable science! Anyone else read it? What did you think? #Books #SciFi',
+          tags: ['Books', 'Reading', 'SciFi'],
+          likes: 456,
+          comments: 89
+        }" />
+
+        <!-- News Post -->
+        <NewsPost :news="{
+          id: 103,
+          source: 'Sports Network',
+          sourceLogo: 'https://logo.clearbit.com/espn.com',
+          title: 'Champions League final breaks viewership records',
+          summary: 'Over 450 million viewers tuned in worldwide for the dramatic final match that went to penalties.',
+          image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
+          date: new Date(Date.now() - 3600000 * 15), // 15 hours ago
+          views: '18.9K',
+          comments: 312
+        }" />
+
+        <!-- Video Game Post -->
+        <Post :post="{
+          id: 104,
+          username: 'gamer_4_life',
+          avatar: 'https://randomuser.me/api/portraits/men/76.jpg',
+          date: new Date(Date.now() - 3600000 * 18), // 18 hours ago
+          text: 'After 3 years of development, our indie game just launched on Steam! Check out the trailer and let us know what you think. #IndieDev #GameDev',
+          image: 'https://images.unsplash.com/photo-1551103782-8ab07afd45c1',
+          tags: ['Gaming', 'IndieDev', 'Steam'],
+          likes: 721,
+          comments: 156
+        }" />
+
+        <!-- News Post -->
+        <NewsPost :news="{
+          id: 104,
+          source: 'Health News',
+          sourceLogo: 'https://logo.clearbit.com/webmd.com',
+          title: 'New study reveals benefits of intermittent fasting',
+          summary: 'Research shows 14-16 hour fasting windows may improve metabolic health and longevity markers.',
+          image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352',
+          date: new Date(Date.now() - 3600000 * 24), // 24 hours ago
+          views: '15.2K',
+          comments: 287
+        }" />
+      </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="hidden lg:block w-80 p-4 border-l border-gray-800 sticky top-0 h-screen overflow-y-auto">
+      <!-- Search Bar -->
+      <div class="relative mb-6">
+        <input 
+          type="text" 
+          placeholder="Search"
+          class="w-full bg-[#232b3e] border-none rounded-full px-4 py-2 pl-10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+        >
+        <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
+      </div>
+
       <!-- Trending Now -->
-      <div class="bg-[#121212] rounded-lg p-3 mb-3">
-        <h3 class="font-bold text-sm mb-2">Trending Now</h3>
-        <div class="space-y-3">
-          <div v-for="(trend, idx) in trendingTopics" :key="idx" class="text-sm">
-            <div class="flex justify-between">
-              <span class="text-gray-400">{{ idx + 1 }} · {{ trend.category }}</span>
-              <button class="text-gray-400 hover:text-white">
-                <i class="fas fa-ellipsis-h text-xs"></i>
-              </button>
-            </div>
-            <p class="font-medium">{{ trend.title }}</p>
-            <p class="text-xs text-gray-400">{{ trend.posts }} posts</p>
+      <div class="bg-[#181c23] rounded-xl p-4 mb-4">
+        <h3 class="font-bold text-lg mb-3">Trending Now</h3>
+        <div class="space-y-4">
+          <div v-for="(trend, idx) in trendingTopics" :key="idx" class="group cursor-pointer">
+            <div class="text-xs text-gray-400">{{ trend.category }} · Trending</div>
+            <h4 class="font-bold group-hover:text-blue-400">{{ trend.title }}</h4>
+            <div class="text-xs text-gray-400">{{ trend.posts }} posts</div>
           </div>
         </div>
+        <button class="text-blue-400 text-sm mt-3 w-full text-left hover:text-blue-300">
+          Show more
+        </button>
       </div>
-      
+
       <!-- Who to follow -->
-      <div class="bg-[#121212] rounded-lg p-3">
-        <h3 class="font-bold text-sm mb-2">Who to follow</h3>
-        <div class="space-y-3">
+      <div class="bg-[#181c23] rounded-xl p-4 mb-4">
+        <h3 class="font-bold text-lg mb-3">Who to follow</h3>
+        <div class="space-y-4">
           <div v-for="user in suggestedUsers" :key="user.id" class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <img :src="user.avatar" class="w-8 h-8 rounded-full" />
+              <img :src="user.avatar" class="w-10 h-10 rounded-full" />
               <div>
-                <p class="text-sm font-medium">{{ user.name }}</p>
+                <p class="font-medium">{{ user.name }}</p>
                 <p class="text-xs text-gray-400">@{{ user.username }}</p>
               </div>
             </div>
             <button 
-              class="text-xs px-3 py-1 rounded-full"
-              :class="user.following ? 'bg-transparent border border-gray-600 text-white' : 'bg-white text-black'"
+              class="text-xs px-3 py-1 rounded-full transition-colors"
+              :class="user.following ? 'bg-transparent border border-gray-600 text-white' : 'bg-white text-black font-medium'"
               @click="user.following = !user.following"
             >
               {{ user.following ? 'Following' : 'Follow' }}
             </button>
           </div>
         </div>
+        <button class="text-blue-400 text-sm mt-3 w-full text-left hover:text-blue-300">
+          Show more
+        </button>
       </div>
-    </aside>
 
-    <!-- Post Modal -->
-    <div v-if="showPostModal" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <!-- Modal content remains the same -->
+      <!-- Suggested News -->
+      <div class="bg-[#181c23] rounded-xl p-4">
+        <h3 class="font-bold text-lg mb-3">Suggested News</h3>
+        <div class="space-y-4">
+          <div v-for="news in suggestedNews" :key="news.id" class="group cursor-pointer">
+            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
+              <span>{{ news.source }}</span>
+              <span>·</span>
+              <span>{{ formatTimeAgo(news.date) }}</span>
+            </div>
+            <h4 class="font-medium group-hover:text-blue-400 text-sm">{{ news.title }}</h4>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-
-const activeTab = ref(0)
-const tabs = ref(['For You', 'Following', 'News', 'Sports', 'Tech'])
-const showPostModal = ref(false)
+import { ref } from 'vue'
+import Post from '@/components/Post.vue'
+import NewsPost from '@/components/NewsPost.vue'
 
 const currentUser = ref({
   username: 'yassineelaouni',
   avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
 })
 
-const posts = ref([
-  {
-    id: 1,
-    type: 'post',
-    username: 'techupdates',
-    avatar: 'https://randomuser.me/api/portraits/men/44.jpg',
-    date: '2h ago',
-    text: 'Just tried the new AI coding assistant - it completely changed my workflow! Anyone else using it? #programming #AI',
-    image: 'https://images.unsplash.com/photo-1619410283995-43d9134e7656?w=500',
-    likes: 42,
-    comments: 8,
-    shares: 3,
-    liked: false
-  },
-  {
-    id: 2,
-    type: 'news',
-    source: 'TechCrunch',
-    time: '45m ago',
-    title: 'Apple announces new AI features coming to iOS 18',
-    summary: 'The new update will include on-device AI processing for enhanced privacy and several new Siri capabilities.',
-    image: 'https://images.unsplash.com/photo-1517059224940-d4af9eec41b7?w=500',
-    views: '12.4K',
-    comments: 342
-  },
-  {
-    id: 3,
-    type: 'post',
-    username: 'travelbug',
-    avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
-    date: '5h ago',
-    text: 'Sunset views in Santorini never get old. Where should I travel next?',
-    image: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500',
-    likes: 128,
-    comments: 24,
-    shares: 7,
-    liked: false
-  },
-  {
-    id: 4,
-    type: 'news',
-    source: 'BBC News',
-    time: '1h ago',
-    title: 'Scientists discover potential breakthrough in quantum computing',
-    summary: 'New research suggests a way to maintain quantum coherence for significantly longer periods.',
-    image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=500',
-    views: '8.7K',
-    comments: 213
-  }
-])
+const showPostModal = ref(false)
 
-const trendingNews = ref([
-  {
-    title: 'Stock markets hit record high',
-    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=500',
-    breaking: true
+const trendingStories = ref([
+  { 
+    title: 'Tech Conference', 
+    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678',
+    live: true
   },
-  {
-    title: 'New Marvel movie trailer drops',
-    image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=500'
+  { 
+    title: 'New Phone Launch', 
+    image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb' 
   },
-  {
-    title: 'World Cup qualifiers tonight',
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=500'
+  { 
+    title: 'Championship Final', 
+    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018' 
   },
-  {
-    title: 'Tech conference starts tomorrow',
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=500'
+  { 
+    title: 'Music Festival', 
+    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3' 
+  },
+  { 
+    title: 'Movie Premiere', 
+    image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba' 
   }
 ])
 
@@ -274,29 +278,59 @@ const suggestedUsers = ref([
     id: 1,
     name: 'NASA',
     username: 'nasa',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=500',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde',
     following: false
   },
   {
     id: 2,
     name: 'Elon Musk',
     username: 'elonmusk',
-    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=500',
+    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61',
     following: false
   },
   {
     id: 3,
     name: 'NatGeo',
     username: 'natgeo',
-    avatar: 'https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6?w=500',
+    avatar: 'https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6',
     following: false
   }
 ])
 
-const filteredPosts = computed(() => {
-  // Filter logic based on active tab
-  return posts.value
-})
+const suggestedNews = ref([
+  {
+    id: 1,
+    source: 'Tech Today',
+    title: 'Apple announces revolutionary new AI features coming to iOS 18',
+    date: new Date(Date.now() - 3600000 * 2) // 2 hours ago
+  },
+  {
+    id: 2,
+    source: 'Science Daily',
+    title: 'Breakthrough in quantum computing announced by researchers',
+    date: new Date(Date.now() - 3600000 * 5) // 5 hours ago
+  },
+  {
+    id: 3,
+    source: 'Business Insider',
+    title: 'Stock markets hit all-time high amid economic recovery',
+    date: new Date(Date.now() - 3600000 * 8) // 8 hours ago
+  }
+])
+
+const formatTimeAgo = (date) => {
+  const now = new Date()
+  const diffInHours = Math.floor((now - date) / (1000 * 60 * 60))
+  
+  if (diffInHours < 1) {
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+    return `${diffInMinutes}m ago`
+  } else if (diffInHours < 24) {
+    return `${diffInHours}h ago`
+  } else {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  }
+}
 </script>
 
 <style>
@@ -306,11 +340,5 @@ const filteredPosts = computed(() => {
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 </style>

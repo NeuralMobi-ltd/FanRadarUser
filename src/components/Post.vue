@@ -1,90 +1,144 @@
 <template>
-  <div class="w-full bg-[#181c23] rounded-xl shadow border border-gray-700">
+  <div class="w-full bg-[#181c23] rounded-xl shadow border border-gray-700 mb-4 transition-all hover:border-gray-600">
     <!-- Post Header -->
-    <div class="flex items-center p-4 border-b border-gray-700">
-      <img :src="post.avatar || post.authorAvatar" class="w-10 h-10 rounded-full mr-3" />
-      <div>
-        <div class="font-bold text-white">{{ post.username || post.author }}</div>
-        <div class="text-xs text-gray-400">{{ post.date }}</div>
+    <div class="flex items-center p-3 border-b border-gray-700">
+      <img :src="post.avatar" class="w-8 h-8 rounded-full mr-2" />
+      <div class="flex-1 min-w-0">
+        <div class="font-bold text-white text-sm truncate">{{ post.username }}</div>
+        <div class="text-xs text-gray-400">{{ formatDate(post.date) }}</div>
       </div>
-      <button class="ml-auto text-gray-400 hover:text-white"><i class="fas fa-ellipsis-h"></i></button>
+      <div class="relative">
+        <button 
+          class="ml-2 text-gray-400 hover:text-white p-1 rounded-full hover:bg-gray-700"
+          @click="showPostMenu = !showPostMenu"
+        >
+          <i class="fas fa-ellipsis-h text-sm"></i>
+        </button>
+        
+        <!-- Post Menu Dropdown (Admin Only) -->
+        <div 
+          v-if="showPostMenu && isAdmin"
+          class="absolute right-0 z-10 mt-1 w-40 bg-[#232b3e] rounded-md shadow-lg border border-gray-700"
+        >
+          <div class="py-1">
+            <button
+              @click="editPost"
+              class="w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white"
+            >
+              <i class="fas fa-pencil-alt mr-2"></i> Edit
+            </button>
+            <button
+              @click="deletePost"
+              class="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700 hover:text-red-300"
+            >
+              <i class="fas fa-trash-alt mr-2"></i> Delete
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Post Content -->
-    <div v-if="post.image || post.text" class="p-4">
-      <div v-if="post.text" class="px-4 py-3 text-white">{{ post.text }}</div>
-      <div v-if="post.image" class="w-full">
-        <img :src="post.image" class="w-full rounded-md" />
+    <div class="p-3">
+      <div v-if="!isEditing" class="text-white text-sm mb-3">{{ post.text }}</div>
+      
+      <!-- Edit Post Form -->
+      <div v-if="isEditing" class="mb-3">
+        <textarea
+          v-model="editText"
+          class="w-full bg-[#232b3e] border border-gray-700 rounded-lg p-3 text-white text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+          rows="3"
+        ></textarea>
+        <div class="flex justify-end gap-2 mt-2">
+          <button
+            @click="cancelEdit"
+            class="px-3 py-1 text-sm text-gray-300 hover:text-white"
+          >
+            Cancel
+          </button>
+          <button
+            @click="saveEdit"
+            class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+      
+      <div v-if="post.image" class="w-full rounded-lg overflow-hidden">
+        <img :src="post.image" class="w-full h-auto max-h-96 object-cover" />
+      </div>
+      
+      <!-- Tags -->
+      <div v-if="post.tags?.length" class="flex flex-wrap gap-1 mt-3">
+        <span v-for="(tag, idx) in post.tags" :key="idx" class="text-xs text-blue-400 hover:text-blue-300">
+          #{{ tag }}
+        </span>
       </div>
     </div>
 
-    <!-- Post Footer -->
-    <div class="flex items-center justify-between px-4 py-2 border-t border-[#232b3e] bg-[#1a1f2a]">
-      <div class="flex gap-4">
-        <button
-          class="flex items-center gap-1 px-2 py-1 rounded-full font-semibold"
-          :class="isCommentsOpen ? 'text-blue-500 bg-blue-900' : 'text-gray-400 hover:text-blue-400'"
-          @click="$emit('toggle-comments')"
-        >
-          <i class="fas fa-comment"></i>
-          <span>{{ commentsCount }}</span>
-        </button>
-        <button class="text-gray-400 hover:text-green-400">
-          <i class="fas fa-retweet"></i>
-        </button>
-        <button
-          class="flex items-center gap-1"
-          :class="{'text-red-500': isLiked, 'text-gray-400': !isLiked}"
-          @click="$emit('toggle-like')"
-        >
-          <i class="fas fa-heart"></i>
-          <span>{{ likesCount }}</span>
-        </button>
-      </div>
+    <!-- Post Stats -->
+    <div class="px-3 py-1 text-xs text-gray-400 border-t border-gray-700">
+      {{ likesCount }} likes · {{ commentsCount }} comments
+    </div>
+
+    <!-- Post Actions -->
+    <div class="flex items-center justify-between px-1 py-1 border-t border-gray-700 bg-[#1a1f2a]">
+      <button
+        class="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg hover:bg-gray-800"
+        @click="$emit('toggle-comments')"
+      >
+        <i class="far fa-comment" :class="{'text-blue-500': isCommentsOpen}"></i>
+        <span :class="{'text-blue-500': isCommentsOpen}">Comment</span>
+      </button>
+      <button class="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg hover:bg-gray-800">
+        <i class="fas fa-retweet"></i>
+        <span>Share</span>
+      </button>
+      <button
+        class="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg hover:bg-gray-800"
+        @click="$emit('toggle-like')"
+      >
+        <i class="far fa-heart" :class="{'text-red-500': isLiked}"></i>
+        <span :class="{'text-red-500': isLiked}">Like</span>
+      </button>
     </div>
 
     <!-- Comments Section -->
-    <div v-if="isCommentsOpen" class="bg-[#1a1f2a] px-4 py-6 border-t border-gray-700">
-      <div class="flex items-center gap-3 mb-4">
-        <img :src="currentUserAvatar" alt="avatar" class="w-8 h-8 rounded-full" />
+    <div v-if="isCommentsOpen" class="bg-[#1a1f2a] px-3 py-3 border-t border-gray-700">
+      <div class="flex items-center gap-2 mb-3">
+        <img :src="currentUserAvatar" class="w-8 h-8 rounded-full" />
         <input
           v-model="newComment"
           @keyup.enter="handleAddComment"
           type="text"
-          placeholder="Reply as @yassineelaouni"
-          class="flex-1 bg-transparent border border-gray-700 rounded-full px-4 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          placeholder="Write a comment..."
+          class="flex-1 bg-[#232b3e] border-none rounded-full px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
-        <button
-          @click="handleAddComment"
-          class="ml-2 px-3 py-1 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-        >
-          Send
-        </button>
       </div>
       
       <!-- Comments List -->
-      <div v-if="comments?.length" class="space-y-6">
-        <div v-for="(comment, idx) in comments" :key="idx" class="flex items-start gap-3">
-          <img :src="comment.avatar" alt="avatar" class="w-8 h-8 rounded-full" />
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="font-semibold text-blue-400">@{{ comment.user }}</span>
-              <span class="text-xs text-gray-400">{{ comment.date }}</span>
+      <div v-if="comments?.length" class="space-y-3">
+        <div v-for="(comment, idx) in comments" :key="idx" class="flex items-start gap-2">
+          <img :src="comment.avatar" class="w-6 h-6 rounded-full mt-1" />
+          <div class="flex-1 bg-[#232b3e] rounded-lg p-2">
+            <div class="flex items-center gap-1">
+              <span class="font-semibold text-blue-400 text-xs">@{{ comment.user }}</span>
+              <span class="text-gray-400 text-xs">{{ comment.date }}</span>
             </div>
-            <div class="text-sm text-white">{{ comment.text }}</div>
+            <div class="text-sm text-white mt-1">{{ comment.text }}</div>
           </div>
         </div>
       </div>
-      <div v-else class="flex flex-col items-center justify-center py-10">
-        <i class="fas fa-comment-dots text-4xl text-gray-400 mb-4"></i>
-        <div class="text-gray-400 mb-2">Be the first to Reply!</div>
+      <div v-else class="text-center py-4 text-gray-400 text-sm">
+        No comments yet. Be the first to comment!
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   post: {
@@ -114,23 +168,51 @@ const props = defineProps({
   currentUserAvatar: {
     type: String,
     default: 'https://randomuser.me/api/portraits/men/32.jpg'
+  },
+  isAdmin: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['toggle-comments', 'toggle-like', 'add-comment'])
+const emit = defineEmits(['toggle-comments', 'toggle-like', 'add-comment', 'edit-post', 'delete-post'])
+
+const showPostMenu = ref(false)
+const isEditing = ref(false)
+const editText = ref('')
 const newComment = ref('')
 
-function handleAddComment() {
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+const handleAddComment = () => {
   if (newComment.value.trim()) {
     emit('add-comment', newComment.value)
     newComment.value = ''
   }
 }
 
-function addNewComment() {
-  if (newCommentText.value.trim()) {
-    emit('add-comment', newCommentText.value)
-    newCommentText.value = ''
+const editPost = () => {
+  editText.value = props.post.text
+  isEditing.value = true
+  showPostMenu.value = false
+}
+
+const saveEdit = () => {
+  emit('edit-post', editText.value)
+  isEditing.value = false
+}
+
+const cancelEdit = () => {
+  isEditing.value = false
+}
+
+const deletePost = () => {
+  if (confirm('Are you sure you want to delete this post?')) {
+    emit('delete-post')
   }
+  showPostMenu.value = false
 }
 </script>
