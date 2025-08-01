@@ -76,7 +76,7 @@ export const useAuthStore = defineStore('auth', {
             name: email.split('@')[0] || 'User',
             email,
             password,
-            avatar:  '/images/me.png',
+            avatar: '/public/images/me.png', // Fix avatar path
             followers: Math.floor(Math.random() * 500),
             following: Math.floor(Math.random() * 300),
             posts: Math.floor(Math.random() * 50)

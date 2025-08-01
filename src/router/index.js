@@ -27,9 +27,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/exploree',
+    path: '/explore', // Changed from '/exploree' to '/explore'
     name: 'UserExplore',
     component: () => import('@/views/UserExplore.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/category/:category',
+    name: 'CategoryDetail',
+    component: () => import('@/views/CategoryDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/hashtag/:hashtag',
+    name: 'HashtagDetail',
+    component: () => import('@/views/HashtagDetail.vue'),
     meta: { requiresAuth: true }
   },
   {

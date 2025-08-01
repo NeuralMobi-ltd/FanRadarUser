@@ -28,6 +28,11 @@
         </div>
         
         <form @submit.prevent="onSignIn">
+          <!-- Show error message if any -->
+          <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
+            {{ errorMessage }}
+          </div>
+          
           <div class="mb-4">
             <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">Email</label>
             <input 
@@ -53,9 +58,16 @@
           </div>
           <button 
             type="submit" 
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
+            :disabled="loading"
           >
-            Sign In
+            <span v-if="loading" class="mr-2">
+              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </span>
+            {{ loading ? 'Signing In...' : 'Sign In' }}
           </button>
         </form>
         
@@ -77,17 +89,37 @@ const email = ref('')
 const password = ref('')
 const router = useRouter()
 const authStore = useAuthStore()
+const loading = ref(false)
+const errorMessage = ref('')
 
-function onSignIn() {
-  // Mock sign-in logic
-  authStore.user = { email: email.value }
-  // Use a mutation/method to set authenticated state
-  if (typeof authStore.setAuthenticated === 'function') {
-    authStore.setAuthenticated(true)
-  } else if ('_isAuthenticated' in authStore) {
-    authStore._isAuthenticated = true
+async function onSignIn() {
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Please enter both email and password'
+    return
   }
-  router.push('/dashboard')
+
+  loading.value = true
+  errorMessage.value = ''
+  
+  try {
+    // Use the login method from the auth store
+    const success = await authStore.login({
+      email: email.value,
+      password: password.value
+    })
+    
+    if (success) {
+      // If login is successful, navigate to dashboard
+      router.push('/dashboard')
+    } else {
+      // If login fails but no error was set in the store
+      errorMessage.value = authStore.error || 'Login failed. Please try again.'
+    }
+  } catch (error) {
+    errorMessage.value = error.message || 'An unexpected error occurred'
+  } finally {
+    loading.value = false
+  }
 }
 
 function signInWithGoogle() {

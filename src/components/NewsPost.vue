@@ -165,18 +165,29 @@ const showOptions = ref(false)
 
 // Methods
 const formatDate = (date) => {
-  const now = new Date()
-  const diff = now - date
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (minutes < 1) return 'just now'
-  if (minutes < 60) return `${minutes}m ago`
-  if (hours < 24) return `${hours}h ago`
-  if (days < 7) return `${days}d ago`
+  // Check if date is already a string
+  if (typeof date === 'string') {
+    return date;
+  }
   
-  return date.toLocaleDateString()
+  // If it's a Date object and valid, format it
+  if (date instanceof Date && !isNaN(date)) {
+    const now = new Date()
+    const diff = now - date
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 1) return 'just now'
+    if (minutes < 60) return `${minutes}m ago`
+    if (hours < 24) return `${hours}h ago`
+    if (days < 7) return `${days}d ago`
+    
+    return date.toLocaleDateString()
+  }
+  
+  // Fallback for any other type
+  return 'recently';
 }
 
 const handleImageError = (event) => {

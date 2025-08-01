@@ -321,7 +321,7 @@ const newsItems = ref([
     sourceLogo: 'https://logo.clearbit.com/esports.com',
     title: 'League of Legends World Championship 2024',
     summary: 'Les équipes se préparent pour l\'événement esports le plus attendu de l\'année. T1 défendra son titre face aux challengers européens et chinois.',
-    date: new Date(Date.now() - 3600000 * 2),
+    date: '2h ago', // Using string format instead of Date object
     views: '28.5K',
     breaking: true
   },
@@ -331,7 +331,7 @@ const newsItems = ref([
     sourceLogo: 'https://logo.clearbit.com/skysports.com',
     title: 'Tensions sur les pénalties en Ligue des Champions',
     summary: 'Les dernières controversies sur les décisions arbitrales en phase finale alimentent les débats entre supporters.',
-    date: new Date(Date.now() - 3600000 * 6),
+    date: '6h ago', // Using string format instead of Date object
     views: '12.3K'
   },
   {
