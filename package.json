@@ -11,6 +11,7 @@
     "@headlessui/vue": "^1.7.23",
     "@heroicons/vue": "^2.2.0",
     "chart.js": "^4.5.0",
+    "lucide-vue-next": "^0.535.0",
     "pinia": "^3.0.3",
     "vue": "^3.4.15",
     "vue-router": "^4.5.1",

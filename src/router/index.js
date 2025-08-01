@@ -1,6 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import AuthLayout from '@/layouts/AuthLayout.vue'
-import GuestHomeLayout from '@/layouts/GuestHomeLayout.vue'
 import { useAuthStore } from '@/store/auth'
 import CommunitiesBrowse from '@/views/CommunitiesBrowse.vue'
 import Account from '@/views/Account.vue'
@@ -8,53 +6,19 @@ import EditAccount from '@/views/EditAccount.vue'
 import Mart from '@/views/Mart.vue'
 import MyCart from '@/components/MyCart.vue'
 import MyOrder from '@/components/MyOrder.vue'
-import orderDetails from '@/components/orderDetails.vue'
+import orderDetails from '@/components/OrderDetails.vue'
 import CreateFandom from '@/views/CreateFandom.vue'
 import FandomDetail from '@/views/FandomDetail.vue'
+import SignIn from '@/views/SignIn.vue'
+import SignUp from '@/views/SignUp.vue'
+const ChooseCategories = () => import('@/views/ChooseCategories.vue')
 
 const routes = [
   {
     path: '/',
-    redirect: (to) => {
-      const auth = useAuthStore()
-      return auth.isAuthenticated ? '/dashboard' : '/communities'
-    }
-  },
-  {
-    path: '/communities',
-    component: GuestHomeLayout,
-    children: [
-      {
-        path: '',
-        name: 'Communities',
-        component: () => import('@/views/Communities.vue'),
-        meta: { requiresAuth: false, guestOnly: true }
-      },
-    ]
-  },
-  {
-    path: '/guest/explore',
-    component: GuestHomeLayout,
-    children: [
-      {
-        path: '',
-        name: 'Explore',
-        component: () => import('@/views/GestExplore.vue'),
-        meta: { requiresAuth: false, guestOnly: true }
-      }
-    ]
-  },
-  {
-    path: '/likes',
-    name: 'Likes',
-    component: () => import('@/views/Likes.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/following',
-    name: 'Following',
-    component: () => import('@/views/Following.vue'),
-    meta: { requiresAuth: true }
+    name: 'Home',
+    component: () => import('@/views/LandingPage.vue'),
+    meta: { requiresAuth: false }
   },
   {
     path: '/dashboard',
@@ -114,8 +78,25 @@ const routes = [
     name: 'FandomDetail',
     component: FandomDetail,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/login',
+    name: 'SignIn',
+    component: SignIn,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/signup',
+    name: 'SignUp',
+    component: SignUp,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/choose-categories',
+    name: 'ChooseCategories',
+    component: ChooseCategories,
+    meta: { requiresAuth: false }
   }
-
 ]
 
 const router = createRouter({
@@ -124,32 +105,23 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const auth = useAuthStore()
-  const isAuthenticated = auth.isAuthenticated
-  
-  // If route requires guest access only and user is authenticated
-  if ((to.path === '/communities' || to.path === '/explore') && isAuthenticated) {
-    // Redirect to dashboard or home for authenticated users
-    return next('/dashboard')
-  }
-
-  // For authenticated routes
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    return next('/communities')
-  }
   const authStore = useAuthStore()
-  
-  // Initialize auth state
-  if (!authStore.user) {
+
+  // Only initialize if needed
+  if (!authStore.user && typeof authStore.initialize === 'function') {
     authStore.initialize()
   }
-  
+
+  // Allow access to login and register for guests
+  if (['/login', '/register'].includes(to.path)) {
+    next()
+    return
+  }
+
   // Check if route requires authentication
   if (to.meta.requiresAuth) {
     if (!authStore.isAuthenticated) {
       next('/login')
-    } else if (to.meta.role && to.meta.role !== authStore.user.role) {
-      next('/home')
     } else {
       next()
     }

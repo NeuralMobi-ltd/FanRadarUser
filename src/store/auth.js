@@ -69,14 +69,14 @@ export const useAuthStore = defineStore('auth', {
         
         // If no matching user was found in the database, create a temporary one
         // This allows any email/password combination to work
-        let user = existingUser
+        let user = existingUser 
         if (!user) {
           user = {
             id: Math.floor(Math.random() * 10000) + 100,
             name: email.split('@')[0] || 'User',
             email,
             password,
-            avatar:  '/public/images/me.png',
+            avatar:  '/images/me.png',
             followers: Math.floor(Math.random() * 500),
             following: Math.floor(Math.random() * 300),
             posts: Math.floor(Math.random() * 50)

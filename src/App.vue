@@ -1,34 +1,39 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-dark-960 transition-colors duration-200">
-    <!-- Choose correct layout based on authentication status -->
-    <div v-if="isAuthenticated" class="flex">
-      <!-- Authenticated user layout -->
+    <!-- Hide Header on auth pages -->
+    <Header v-if="!isAuthPage" />
+
+    <div v-if="isAuthenticated && !isAuthPage" class="main-layout">
       <Sidebar />
       <main class="main-content with-sidebar">
         <router-view />
       </main>
     </div>
-
-    <!-- Guest user layout -->
-    <component v-else :is="GuestHomeLayout" />
+    <div v-else>
+      <router-view />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
+import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
-import GuestHomeLayout from '@/layouts/GuestHomeLayout.vue'
 
+const route = useRoute()
 const auth = useAuthStore()
 auth.initialize()
 const isAuthenticated = computed(() => auth.isAuthenticated)
-
 const themeStore = useThemeStore()
-const toggleTheme = themeStore.toggleTheme
-</script>
 
+// Hide header on login, signup, choose-categories
+const isAuthPage = computed(() =>
+  ['/login', '/signup', '/choose-categories'].includes(route.path)
+)
+</script>
 
 <style>
 .main-layout {
@@ -41,7 +46,7 @@ const toggleTheme = themeStore.toggleTheme
 }
 
 .main-content.with-sidebar {
-  margin-left: 256px; /* Account for sidebar width */
+  margin-left: 0;
 }
 
 /* Add this to fix image display issues */

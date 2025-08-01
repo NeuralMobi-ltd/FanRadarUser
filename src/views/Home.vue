@@ -1,228 +1,198 @@
 <template>
-  <div class="flex min-h-screen bg-black text-white">
+  <div class="flex min-h-screen pt-4">
     <!-- Main Content -->
-    <div class="flex-1 max-w-2xl mx-auto p-4">
-      <!-- Stories/News Ticker -->
-      <div class="flex gap-3 overflow-x-auto pb-3 mb-4 scrollbar-hide">
-        <div 
-          v-for="(story, idx) in trendingStories" 
-          :key="idx" 
-          class="flex-shrink-0 w-28 h-36 rounded-xl overflow-hidden relative group cursor-pointer hover:scale-105 transition-transform"
-        >
-          <img :src="story.image" class="w-full h-full object-cover" />
-          <div class="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
-            <p class="text-xs font-medium truncate">{{ story.title }}</p>
-          </div>
-          <div v-if="story.live" class="absolute top-2 left-2 bg-red-500 text-white text-xs px-1.5 rounded-full flex items-center">
-            <span class="relative flex h-2 w-2 mr-1">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-            </span>
-            LIVE
+    <div class="flex-1 px-4 sm:px-6">
+      <!-- Create Post Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4 shadow border border-gray-200 dark:border-gray-700">
+        <div class="flex items-start space-x-3">
+          <img src="/public/images/me.png" class="w-10 h-10 rounded-full" :alt="currentUser.username">
+          <div class="flex-1">
+            <textarea
+              v-model="newPostContent"
+              placeholder="What's on your mind?"
+              class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              rows="3"
+            ></textarea>
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex items-center space-x-4">
+                <!-- Image Upload -->
+                <label class="text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
+                  <i class="fas fa-image"></i>
+                  <input type="file" accept="image/*" class="hidden" @change="onFileChange('image', $event)" />
+                </label>
+                <!-- Video Upload -->
+                <label class="text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
+                  <i class="fas fa-video"></i>
+                  <input type="file" accept="video/*" class="hidden" @change="onFileChange('video', $event)" />
+                </label>
+              </div>
+              
+              <button
+                @click="createPost"
+                :disabled="!newPostContent.trim() && !newPostMedia"
+                class="bg-blue-500 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Post
+              </button>
+            </div>
+            <!-- Preview selected media -->
+            <div v-if="newPostMedia" class="mt-3">
+              <img v-if="newPostMediaType === 'image'" :src="newPostMedia" class="max-h-48 rounded-lg mb-2" />
+              <video v-else-if="newPostMediaType === 'video'" :src="newPostMedia" controls class="max-h-48 rounded-lg mb-2"></video>
+              <button @click="removeMedia" class="text-xs text-red-500 hover:underline">Remove</button>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Create Post -->
-      <div class="bg-[#181c23] rounded-xl p-3 mb-4 border border-gray-700">
-        <div class="flex items-center gap-2">
-          <img :src="currentUser.avatar" class="w-10 h-10 rounded-full" />
-          <input 
-            type="text" 
-            placeholder="What's happening?"
-            class="flex-1 bg-[#232b3e] border-none rounded-full px-4 py-2 text-sm text-white focus:outline-none"
-            @click="showPostModal = true"
+      <!-- News Section -->
+      <div class="py-2 border-b border-gray-200 dark:border-gray-800 mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="font-bold text-lg dark:text-white">News Today</h2>
+          <button class="text-blue-500 text-sm hover:text-blue-600 transition-colors">Show more</button>
+        </div>
+        
+        <!-- News Items -->
+        <div class="space-y-4">
+          <NewsPost 
+            v-for="news in newsItems"
+            :key="news.id"
+            :news="news"
           />
         </div>
-        <div class="flex justify-between mt-3 px-1">
-          <div class="flex gap-4">
-            <button class="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1">
-              <i class="fas fa-image"></i>
-              <span class="hidden sm:inline">Media</span>
-            </button>
-            <button class="text-green-400 hover:text-green-300 text-sm flex items-center gap-1">
-              <i class="fas fa-poll"></i>
-              <span class="hidden sm:inline">Poll</span>
-            </button>
-          </div>
-          <button class="text-xs bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-full">
-            Post
-          </button>
-        </div>
       </div>
 
-      <!-- Content Feed -->
+      <!-- Feed Toggle -->
+      <div class="flex space-x-1 mb-4">
+        <button
+          @click="activeFeed = 'timeline'"
+          :class="activeFeed === 'timeline' ? 
+            'bg-blue-500 text-white' : 
+            'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+          class="px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          Timeline
+        </button>
+        <button
+          @click="activeFeed = 'trending'"
+          :class="activeFeed === 'trending' ? 
+            'bg-blue-500 text-white' : 
+            'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+          class="px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          Trending
+        </button>
+        <button
+          @click="activeFeed = 'following'"
+          :class="activeFeed === 'following' ? 
+            'bg-blue-500 text-white' : 
+            'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'"
+          class="px-4 py-2 rounded-lg font-medium transition-colors"
+        >
+          Following
+        </button>
+      </div>
+
+      <!-- Posts Section -->
       <div class="space-y-4">
-        <!-- Breaking News Post -->
-        <NewsPost :news="{
-          id: 101,
-          source: 'BBC Breaking',
-          sourceLogo: 'https://logo.clearbit.com/bbc.com',
-          title: 'Major earthquake strikes Pacific region',
-          summary: 'A 7.8 magnitude earthquake has hit the Pacific islands, triggering tsunami warnings across the region.',
-          image: 'https://images.unsplash.com/photo-1506259091721-347e791bab0f',
-          date: new Date(Date.now() - 3600000 * 1), // 1 hour ago
-          views: '42.8K',
-          comments: 892,
-          breaking: true
-        }" />
+        <Post 
+          v-for="post in filteredPosts"
+          :key="post.id"
+          :post="post"
+          @like="likePost"
+          @comment="openComments"
+          @share="sharePost"
+        />
+        
+        <!-- Load More Button -->
+        <div class="flex justify-center pt-4" v-if="hasMorePosts">
+          <button
+            @click="loadMorePosts"
+            :disabled="loadingMore"
+            class="bg-blue-500 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+          >
+            <i v-if="loadingMore" class="fas fa-spinner fa-spin mr-2"></i>
+            {{ loadingMore ? 'Loading...' : 'Load More' }}
+          </button>
+        </div>
 
-        <!-- Popular Post -->
-        <Post :post="{
-          id: 101,
-          username: 'tech_enthusiast',
-          avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
-          date: new Date(Date.now() - 3600000 * 3), // 3 hours ago
-          text: 'Just upgraded to the new AI assistant - it can now write full code modules! The auto-debugging feature is a game changer for developers. #AI #Programming',
-          image: 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485',
-          tags: ['AI', 'Programming', 'Tech'],
-          likes: 1243,
-          comments: 287
-        }" />
-
-        <!-- News Post -->
-        <NewsPost :news="{
-          id: 102,
-          source: 'Tech Today',
-          sourceLogo: 'https://logo.clearbit.com/techtoday.com',
-          title: 'Microsoft unveils new Copilot+ PCs with AI acceleration',
-          summary: 'New laptop line features neural processing units capable of 40+ TOPS for on-device AI tasks.',
-          image: 'https://images.unsplash.com/photo-1593642634524-b40b5baae6bb',
-          date: new Date(Date.now() - 3600000 * 5), // 5 hours ago
-          views: '28.3K',
-          comments: 421
-        }" />
-
-        <!-- Photo Post -->
-        <Post :post="{
-          id: 102,
-          username: 'travel_guru',
-          avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-          date: new Date(Date.now() - 3600000 * 8), // 8 hours ago
-          text: 'Sunrise at Angkor Wat - worth waking up at 4am for this view! #Cambodia #Travel',
-          image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a',
-          tags: ['Travel', 'Photography', 'Cambodia'],
-          likes: 892,
-          comments: 134
-        }" />
-
-        <!-- Text Post -->
-        <Post :post="{
-          id: 103,
-          username: 'bookworm',
-          avatar: 'https://randomuser.me/api/portraits/women/45.jpg',
-          date: new Date(Date.now() - 3600000 * 12), // 12 hours ago
-          text: 'Just finished Project Hail Mary by Andy Weir. Absolutely mind-blowing science fiction with such believable science! Anyone else read it? What did you think? #Books #SciFi',
-          tags: ['Books', 'Reading', 'SciFi'],
-          likes: 456,
-          comments: 89
-        }" />
-
-        <!-- News Post -->
-        <NewsPost :news="{
-          id: 103,
-          source: 'Sports Network',
-          sourceLogo: 'https://logo.clearbit.com/espn.com',
-          title: 'Champions League final breaks viewership records',
-          summary: 'Over 450 million viewers tuned in worldwide for the dramatic final match that went to penalties.',
-          image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018',
-          date: new Date(Date.now() - 3600000 * 15), // 15 hours ago
-          views: '18.9K',
-          comments: 312
-        }" />
-
-        <!-- Video Game Post -->
-        <Post :post="{
-          id: 104,
-          username: 'gamer_4_life',
-          avatar: 'https://randomuser.me/api/portraits/men/76.jpg',
-          date: new Date(Date.now() - 3600000 * 18), // 18 hours ago
-          text: 'After 3 years of development, our indie game just launched on Steam! Check out the trailer and let us know what you think. #IndieDev #GameDev',
-          image: 'https://images.unsplash.com/photo-1551103782-8ab07afd45c1',
-          tags: ['Gaming', 'IndieDev', 'Steam'],
-          likes: 721,
-          comments: 156
-        }" />
-
-        <!-- News Post -->
-        <NewsPost :news="{
-          id: 104,
-          source: 'Health News',
-          sourceLogo: 'https://logo.clearbit.com/webmd.com',
-          title: 'New study reveals benefits of intermittent fasting',
-          summary: 'Research shows 14-16 hour fasting windows may improve metabolic health and longevity markers.',
-          image: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352',
-          date: new Date(Date.now() - 3600000 * 24), // 24 hours ago
-          views: '15.2K',
-          comments: 287
-        }" />
+        <!-- Empty State -->
+        <div v-if="filteredPosts.length === 0" class="text-center py-12">
+          <i class="fas fa-comments text-gray-400 text-4xl mb-4"></i>
+          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No posts yet</h3>
+          <p class="text-gray-500 dark:text-gray-400">Follow some fandoms to see posts in your timeline!</p>
+          <router-link 
+            to="/communities/browse"
+            class="inline-block mt-4 bg-blue-500 text-white px-6 py-2 rounded-full font-medium hover:bg-blue-600 transition-colors"
+          >
+            Explore Communities
+          </router-link>
+        </div>
       </div>
     </div>
 
     <!-- Right Sidebar -->
-    <div class="hidden lg:block w-80 p-4 border-l border-gray-800 sticky top-0 h-screen overflow-y-auto">
-      <!-- Search Bar -->
-      <div class="relative mb-6">
-        <input 
-          type="text" 
-          placeholder="Search"
-          class="w-full bg-[#232b3e] border-none rounded-full px-4 py-2 pl-10 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
-        >
-        <i class="fas fa-search absolute left-3 top-2.5 text-gray-400"></i>
-      </div>
-
-      <!-- Trending Now -->
-      <div class="bg-[#181c23] rounded-xl p-4 mb-4">
-        <h3 class="font-bold text-lg mb-3">Trending Now</h3>
-        <div class="space-y-4">
-          <div v-for="(trend, idx) in trendingTopics" :key="idx" class="group cursor-pointer">
-            <div class="text-xs text-gray-400">{{ trend.category }} · Trending</div>
-            <h4 class="font-bold group-hover:text-blue-400">{{ trend.title }}</h4>
-            <div class="text-xs text-gray-400">{{ trend.posts }} posts</div>
-          </div>
-        </div>
-        <button class="text-blue-400 text-sm mt-3 w-full text-left hover:text-blue-300">
-          Show more
-        </button>
-      </div>
-
-      <!-- Who to follow -->
-      <div class="bg-[#181c23] rounded-xl p-4 mb-4">
-        <h3 class="font-bold text-lg mb-3">Who to follow</h3>
-        <div class="space-y-4">
-          <div v-for="user in suggestedUsers" :key="user.id" class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <img :src="user.avatar" class="w-10 h-10 rounded-full" />
-              <div>
-                <p class="font-medium">{{ user.name }}</p>
-                <p class="text-xs text-gray-400">@{{ user.username }}</p>
-              </div>
+    <div class="w-80 flex-shrink-0 p-4 space-y-4 hidden lg:block bg-gray-50 dark:bg-gray-800/50">
+      <!-- Trending Communities -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Trending Communities</h3>
+        <div class="space-y-3">
+          <div v-for="community in trendingCommunities" :key="community.id" class="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer">
+            <img :src="community.avatar" class="w-10 h-10 rounded-full" :alt="community.name">
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 dark:text-white truncate">{{ community.name }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ community.members }} members</p>
             </div>
-            <button 
-              class="text-xs px-3 py-1 rounded-full transition-colors"
-              :class="user.following ? 'bg-transparent border border-gray-600 text-white' : 'bg-white text-black font-medium'"
-              @click="user.following = !user.following"
-            >
-              {{ user.following ? 'Following' : 'Follow' }}
+            <button class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600">
+              Join
             </button>
           </div>
         </div>
-        <button class="text-blue-400 text-sm mt-3 w-full text-left hover:text-blue-300">
-          Show more
-        </button>
       </div>
 
-      <!-- Suggested News -->
-      <div class="bg-[#181c23] rounded-xl p-4">
-        <h3 class="font-bold text-lg mb-3">Suggested News</h3>
-        <div class="space-y-4">
-          <div v-for="news in suggestedNews" :key="news.id" class="group cursor-pointer">
-            <div class="flex items-center gap-2 text-xs text-gray-400 mb-1">
-              <span>{{ news.source }}</span>
-              <span>·</span>
-              <span>{{ formatTimeAgo(news.date) }}</span>
+      <!-- Popular Hashtags -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Trending Hashtags</h3>
+        <div class="space-y-2">
+          <div v-for="(tag, index) in trendingHashtags" :key="index" class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer">
+            <div>
+              <p class="font-medium text-gray-900 dark:text-white">#{{ tag.name }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ tag.posts }} posts</p>
             </div>
-            <h4 class="font-medium group-hover:text-blue-400 text-sm">{{ news.title }}</h4>
+            <span class="text-xs text-green-500 font-medium">{{ tag.growth }}% ↗</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recommended Users -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Who to Follow</h3>
+        <div class="space-y-3">
+          <div v-for="user in recommendedUsers" :key="user.id" class="flex items-center space-x-3">
+            <img :src="user.avatar" class="w-10 h-10 rounded-full" :alt="user.username">
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400 truncate">@{{ user.username }}</p>
+            </div>
+            <button class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600">
+              Follow
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
+        <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Recent Activity</h3>
+        <div class="space-y-3">
+          <div v-for="activity in recentActivity" :key="activity.id" class="flex items-start space-x-3">
+            <img :src="activity.user.avatar" class="w-8 h-8 rounded-full" :alt="activity.user.name">
+            <div class="flex-1 text-sm">
+              <p class="text-gray-900 dark:text-white">
+                <span class="font-medium">{{ activity.user.name }}</span> {{ activity.action }}
+              </p>
+              <p class="text-gray-500 dark:text-gray-400 text-xs">{{ formatTimeAgo(activity.date) }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -231,114 +201,352 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/store/auth'
 import Post from '@/components/Post.vue'
 import NewsPost from '@/components/NewsPost.vue'
 
-const currentUser = ref({
-  username: 'yassineelaouni',
+const authStore = useAuthStore()
+
+const newPostContent = ref('')
+const newPostMedia = ref(null)
+const newPostMediaType = ref(null)
+
+function onFileChange(type, event) {
+  const file = event.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    newPostMedia.value = e.target.result
+    newPostMediaType.value = type
+  }
+  reader.readAsDataURL(file)
+}
+
+function removeMedia() {
+  newPostMedia.value = null
+  newPostMediaType.value = null
+}
+
+const activeFeed = ref('timeline')
+const loadingMore = ref(false)
+const hasMorePosts = ref(true)
+
+const currentUser = computed(() => authStore.user || {
+  username: 'yasdhekokuri',
   avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
 })
 
-const showPostModal = ref(false)
-
-const trendingStories = ref([
-  { 
-    title: 'Tech Conference', 
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678',
-    live: true
-  },
-  { 
-    title: 'New Phone Launch', 
-    image: 'https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb' 
-  },
-  { 
-    title: 'Championship Final', 
-    image: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018' 
-  },
-  { 
-    title: 'Music Festival', 
-    image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3' 
-  },
-  { 
-    title: 'Movie Premiere', 
-    image: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba' 
-  }
-])
-
-const trendingTopics = ref([
-  { category: 'Technology', title: '#WWDC2024', posts: '245K' },
-  { category: 'Sports', title: '#UEFAChampionsLeague', posts: '189K' },
-  { category: 'Business', title: '#StockMarket', posts: '112K' },
-  { category: 'Entertainment', title: '#NewMovieReleases', posts: '98K' }
-])
-
-const suggestedUsers = ref([
+const trendingCommunities = ref([
   {
     id: 1,
-    name: 'NASA',
-    username: 'nasa',
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde',
-    following: false
+    name: 'Anime & Manga',
+    avatar: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100',
+    members: '2.5M'
   },
   {
     id: 2,
-    name: 'Elon Musk',
-    username: 'elonmusk',
-    avatar: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61',
-    following: false
+    name: 'Marvel Universe',
+    avatar: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100',
+    members: '1.8M'
   },
   {
     id: 3,
-    name: 'NatGeo',
-    username: 'natgeo',
-    avatar: 'https://images.unsplash.com/photo-1529665253569-6d01c0eaf7b6',
-    following: false
+    name: 'K-Pop',
+    avatar: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100',
+    members: '3.2M'
+  },
+  {
+    id: 4,
+    name: 'Gaming',
+    avatar: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100',
+    members: '4.1M'
   }
 ])
 
-const suggestedNews = ref([
+const trendingHashtags = ref([
+  { name: 'LeagueofLegends', posts: '15.2K', growth: 24 },
+  { name: 'Anime2024', posts: '8.7K', growth: 18 },
+  { name: 'MarvelPhase5', posts: '12.3K', growth: 35 },
+  { name: 'KPopNews', posts: '22.1K', growth: 12 },
+  { name: 'GameDev', posts: '6.8K', growth: 45 }
+])
+
+const recommendedUsers = ref([
   {
     id: 1,
-    source: 'Tech Today',
-    title: 'Apple announces revolutionary new AI features coming to iOS 18',
-    date: new Date(Date.now() - 3600000 * 2) // 2 hours ago
+    name: 'Akira Tanaka',
+    username: 'akira_anime',
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
   },
   {
     id: 2,
-    source: 'Science Daily',
-    title: 'Breakthrough in quantum computing announced by researchers',
-    date: new Date(Date.now() - 3600000 * 5) // 5 hours ago
+    name: 'Sophie Chen',
+    username: 'sophie_kpop',
+    avatar: 'https://randomuser.me/api/portraits/women/2.jpg'
   },
   {
     id: 3,
-    source: 'Business Insider',
-    title: 'Stock markets hit all-time high amid economic recovery',
-    date: new Date(Date.now() - 3600000 * 8) // 8 hours ago
+    name: 'GameMaster Pro',
+    username: 'gamemaster_pro',
+    avatar: 'https://randomuser.me/api/portraits/men/3.jpg'
   }
 ])
+
+const recentActivity = ref([
+  {
+    id: 1,
+    user: { name: 'Alice', avatar: 'https://randomuser.me/api/portraits/women/5.jpg' },
+    action: 'liked your post about anime recommendations',
+    date: new Date(Date.now() - 300000) // 5 minutes ago
+  },
+  {
+    id: 2,
+    user: { name: 'Bob', avatar: 'https://randomuser.me/api/portraits/men/6.jpg' },
+    action: 'started following you',
+    date: new Date(Date.now() - 600000) // 10 minutes ago
+  },
+  {
+    id: 3,
+    user: { name: 'Carol', avatar: 'https://randomuser.me/api/portraits/women/7.jpg' },
+    action: 'commented on your Marvel theory',
+    date: new Date(Date.now() - 900000) // 15 minutes ago
+  }
+])
+
+const newsItems = ref([
+  {
+    id: 1,
+    source: 'Esports Today',
+    sourceLogo: 'https://logo.clearbit.com/esports.com',
+    title: 'League of Legends World Championship 2024',
+    summary: 'Les équipes se préparent pour l\'événement esports le plus attendu de l\'année. T1 défendra son titre face aux challengers européens et chinois.',
+    date: new Date(Date.now() - 3600000 * 2),
+    views: '28.5K',
+    breaking: true
+  },
+  {
+    id: 2,
+    source: 'Football News',
+    sourceLogo: 'https://logo.clearbit.com/skysports.com',
+    title: 'Tensions sur les pénalties en Ligue des Champions',
+    summary: 'Les dernières controversies sur les décisions arbitrales en phase finale alimentent les débats entre supporters.',
+    date: new Date(Date.now() - 3600000 * 6),
+    views: '12.3K'
+  },
+  {
+    id: 3,
+    source: 'Anime Central',
+    sourceLogo: 'https://logo.clearbit.com/crunchyroll.com',
+    title: 'Attack on Titan Final Movie Announced',
+    summary: 'Studio Wit annonce un film final pour conclure définitivement la saga d\'Eren Yeager.',
+    date: new Date(Date.now() - 3600000 * 8),
+    views: '45.7K'
+  },
+  {
+    id: 4,
+    source: 'K-Pop Weekly',
+    sourceLogo: 'https://logo.clearbit.com/soompi.com',
+    title: 'NewJeans Breaks Spotify Records',
+    summary: 'Le groupe continue de dominer les charts internationaux avec leur nouvel album.',
+    date: new Date(Date.now() - 3600000 * 12),
+    views: '67.2K'
+  }
+])
+
+const posts = ref([
+  {
+    id: 1,
+    username: 'Alice Martin',
+    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    date: new Date(Date.now() - 3600000 * 2),
+    text: "Just finished watching the latest Attack on Titan episode and I'm speechless! 😭 The animation quality keeps getting better! #AttackOnTitan #Anime",
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+    likes: 124,
+    comments: 23,
+    shares: 8,
+    isLiked: false,
+    fandom: 'Anime',
+    trending: true
+  },
+  {
+    id: 2,
+    username: 'Jean Dubois',
+    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    date: new Date(Date.now() - 3600000 * 5),
+    text: "T1 vs G2 was absolutely insane! That Baron steal in game 3 will go down in Worlds history 🔥 #LoLWorlds #Esports",
+    tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
+    likes: 89,
+    comments: 15,
+    shares: 12,
+    isLiked: true,
+    fandom: 'League of Legends',
+    trending: true
+  },
+  {
+    id: 3,
+    username: 'Sarah Kim',
+    avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
+    date: new Date(Date.now() - 3600000 * 8),
+    text: "NewJeans' new music video is a masterpiece! The choreography, the visuals, everything is perfect 💕 #NewJeans #Kpop",
+    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
+    likes: 156,
+    comments: 34,
+    shares: 28,
+    isLiked: false,
+    fandom: 'K-Pop',
+    trending: true
+  },
+  {
+    id: 4,
+    username: 'GameMaster99',
+    avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
+    date: new Date(Date.now() - 3600000 * 12),
+    text: "Spider-Man 2 on PS5 is incredible! The web-swinging feels so smooth and the graphics are mind-blowing 🕷️ #SpiderMan2 #PS5 #Gaming",
+    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
+    likes: 78,
+    comments: 19,
+    shares: 6,
+    isLiked: true,
+    fandom: 'Gaming',
+    trending: false
+  },
+  {
+    id: 5,
+    username: 'Marvel_Fan_2024',
+    avatar: 'https://randomuser.me/api/portraits/women/12.jpg',
+    date: new Date(Date.now() - 3600000 * 16),
+    text: "Theory: What if the TVA from Loki will play a major role in the upcoming Avengers movie? The multiverse implications are huge! 🤔 #Marvel #MCU",
+    likes: 203,
+    comments: 67,
+    shares: 45,
+    isLiked: false,
+    fandom: 'Marvel',
+    trending: true
+  },
+  {
+    id: 6,
+    username: 'AnimeLover_JP',
+    avatar: 'https://randomuser.me/api/portraits/men/18.jpg',
+    date: new Date(Date.now() - 3600000 * 20),
+    text: "Demon Slayer movie was absolutely phenomenal! The fight scenes were beautifully animated 🗾 ⚔️ #DemonSlayer #Anime",
+    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+    likes: 145,
+    comments: 28,
+    shares: 17,
+    isLiked: true,
+    fandom: 'Anime',
+    trending: false
+  }
+])
+
+const filteredPosts = computed(() => {
+  let filtered = posts.value
+  switch (activeFeed.value) {
+    case 'trending':
+      filtered = filtered.filter(post => post.trending)
+      break
+    case 'following':
+      filtered = filtered.filter(post => post.isLiked)
+      break
+    default:
+      break
+  }
+  return filtered.sort((a, b) => b.date - a.date)
+})
+
+const createPost = () => {
+  if (newPostContent.value.trim() || newPostMedia.value) {
+    const newPost = {
+      id: Date.now(),
+      username: currentUser.value.username,
+      avatar: currentUser.value.avatar,
+      date: new Date(),
+      text: newPostContent.value,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      isLiked: false,
+      fandom: null,
+      trending: false,
+      image: newPostMediaType.value === 'image' ? newPostMedia.value : null,
+      video: newPostMediaType.value === 'video' ? newPostMedia.value : null
+    }
+    posts.value.unshift(newPost)
+    newPostContent.value = ''
+    removeMedia()
+  }
+}
+
+const likePost = (postId) => {
+  const post = posts.value.find(p => p.id === postId)
+  if (post) {
+    post.isLiked = !post.isLiked
+    post.likes += post.isLiked ? 1 : -1
+  }
+}
+
+const openComments = (postId) => {
+  console.log('Opening comments for post:', postId)
+}
+
+const sharePost = (postId) => {
+  const post = posts.value.find(p => p.id === postId)
+  if (post) {
+    post.shares += 1
+    console.log('Shared post:', postId)
+  }
+}
+
+const loadMorePosts = () => {
+  loadingMore.value = true
+  setTimeout(() => {
+    const morePosts = [
+      {
+        id: Date.now() + 1,
+        username: 'TechReviewer',
+        avatar: 'https://randomuser.me/api/portraits/women/15.jpg',
+        date: new Date(Date.now() - 3600000 * 18),
+        text: 'The new iPhone is amazing! Camera quality is incredible 📱 #tech #iPhone',
+        likes: 23,
+        comments: 5,
+        shares: 2,
+        isLiked: false,
+        fandom: 'Technology',
+        trending: false
+      }
+    ]
+    posts.value.push(...morePosts)
+    loadingMore.value = false
+    if (posts.value.length > 10) {
+      hasMorePosts.value = false
+    }
+  }, 1000)
+}
 
 const formatTimeAgo = (date) => {
   const now = new Date()
-  const diffInHours = Math.floor((now - date) / (1000 * 60 * 60))
-  
-  if (diffInHours < 1) {
-    const diffInMinutes = Math.floor((now - date) / (1000 * 60))
+  const diffInMinutes = Math.floor((now - date) / 60000)
+  if (diffInMinutes < 60) {
     return `${diffInMinutes}m ago`
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`
+  } else if (diffInMinutes < 1440) {
+    return `${Math.floor(diffInMinutes / 60)}h ago`
   } else {
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    return `${Math.floor(diffInMinutes / 1440)}d ago`
   }
 }
+
+onMounted(() => {
+  console.log('Home component mounted')
+})
 </script>
 
-<style>
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+<style scoped>
+textarea {
+  min-height: 60px;
 }
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+
+textarea:focus {
+  outline: none;
 }
 </style>
