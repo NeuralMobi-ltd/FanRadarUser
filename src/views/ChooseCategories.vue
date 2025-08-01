@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-2 sm:px-6">
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-2 sm:px-6">
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl mx-auto">
       <!-- Header with progress indicator -->
-      <div class="bg-indigo-600 dark:bg-indigo-700 px-8 py-6">
+      <div class="bg-blue-600 dark:bg-blue-700 px-8 py-6">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-2xl font-bold text-white">Personalize Your Experience</h2>
-          <span class="text-indigo-200 font-medium">{{ selected.length }}/5</span>
+          <span class="text-blue-200 font-medium">{{ selected.length }}/5</span>
         </div>
-        <div class="w-full bg-indigo-500 bg-opacity-40 rounded-full h-2">
+        <div class="w-full bg-blue-500 bg-opacity-40 rounded-full h-2">
           <div 
             class="bg-white h-2 rounded-full transition-all duration-300" 
             :style="{ width: `${(selected.length / 5) * 100}%` }"
@@ -29,7 +29,7 @@
             :class="[
               'px-4 py-3 rounded-xl font-medium border-2 transition-all duration-200 flex items-center justify-center',
               selected.includes(cat)
-                ? 'bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-100 border-indigo-300 dark:border-indigo-600 scale-[0.98] shadow-inner'
+                ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-100 border-blue-300 dark:border-blue-600 scale-[0.98] shadow-inner'
                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600',
               !selected.includes(cat) && selected.length >= 5 ? 'opacity-50' : ''
             ]"
@@ -40,7 +40,7 @@
             <svg 
               v-if="selected.includes(cat)"
               xmlns="http://www.w3.org/2000/svg" 
-              class="h-5 w-5 ml-2 text-indigo-600 dark:text-indigo-400" 
+              class="h-5 w-5 ml-2 text-blue-600 dark:text-blue-400" 
               viewBox="0 0 20 20" 
               fill="currentColor"
             >
@@ -56,7 +56,7 @@
           :class="[
             'w-full py-3 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center',
             selected.length === 5 
-              ? 'bg-indigo-600 hover:bg-indigo-700 shadow-lg hover:shadow-indigo-200 dark:hover:shadow-indigo-900'
+              ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900'
               : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
           ]"
           :disabled="selected.length !== 5"
@@ -73,7 +73,7 @@
           </svg>
         </button>
         
-        <p class="mt-4 text-center text-sm" :class="selected.length === 5 ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">
+        <p class="mt-4 text-center text-sm" :class="selected.length === 5 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
           <span v-if="selected.length < 5">Select {{ 5 - selected.length }} more to continue</span>
           <span v-else class="font-medium">Great choices! Ready to go</span>
         </p>

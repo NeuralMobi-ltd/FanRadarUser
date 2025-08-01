@@ -35,7 +35,7 @@
               id="username" 
               type="text" 
               required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white" 
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
               placeholder="Enter your username"
             />
           </div>
@@ -46,7 +46,7 @@
               id="email" 
               type="email" 
               required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white" 
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
               placeholder="Enter your email"
             />
           </div>
@@ -58,7 +58,7 @@
               type="number"
               min="1"
               required
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white"
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
               placeholder="Enter your age"
             />
           </div>
@@ -66,11 +66,11 @@
             <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Gender</label>
             <div class="flex gap-4">
               <label class="inline-flex items-center">
-                <input type="radio" v-model="gender" value="male" required class="form-radio text-indigo-600" />
+                <input type="radio" v-model="gender" value="male" required class="form-radio text-blue-600" />
                 <span class="ml-2 text-gray-700 dark:text-gray-300">Male</span>
               </label>
               <label class="inline-flex items-center">
-                <input type="radio" v-model="gender" value="female" required class="form-radio text-indigo-600" />
+                <input type="radio" v-model="gender" value="female" required class="form-radio text-blue-600" />
                 <span class="ml-2 text-gray-700 dark:text-gray-300">Female</span>
               </label>
             </div>
@@ -83,7 +83,7 @@
                 :type="showPassword ? 'text' : 'password'"
                 id="password" 
                 required 
-                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white" 
+                class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
                 placeholder="••••••••"
               />
               <button type="button"
@@ -98,7 +98,7 @@
           </div>
           <button 
             type="submit" 
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Create Account
           </button>
@@ -106,7 +106,7 @@
         
         <p class="mt-6 text-center text-gray-600 dark:text-gray-400">
           Already have an account?
-          <router-link to="/login" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Sign in</router-link>
+          <router-link to="/login" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Sign in</router-link>
         </p>
       </div>
     </div>

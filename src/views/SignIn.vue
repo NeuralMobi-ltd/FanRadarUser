@@ -35,7 +35,7 @@
               id="email" 
               type="email" 
               required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white" 
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
               placeholder="Enter your email"
             />
           </div>
@@ -46,14 +46,14 @@
               id="password" 
               type="password" 
               required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white" 
+              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
               placeholder="••••••••"
             />
-            <router-link to="/forgot-password" class="text-sm text-indigo-600 dark:text-indigo-400 hover:underline float-right mt-2">Forgot password?</router-link>
+            <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:underline float-right mt-2">Forgot password?</router-link>
           </div>
           <button 
             type="submit" 
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Sign In
           </button>
@@ -61,7 +61,7 @@
         
         <p class="mt-6 text-center text-gray-600 dark:text-gray-400">
           Don't have an account?
-          <router-link to="/signup" class="text-indigo-600 dark:text-indigo-400 hover:underline font-medium">Sign up</router-link>
+          <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Sign up</router-link>
         </p>
       </div>
     </div>
