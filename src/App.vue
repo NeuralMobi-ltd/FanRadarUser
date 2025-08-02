@@ -38,6 +38,7 @@ const isAuthPage = computed(() =>
 <style>
 .main-layout {
   display: flex;
+  padding: 0;
 }
 
 .main-content {

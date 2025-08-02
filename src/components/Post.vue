@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 h-auto">
     <!-- Post Header -->
     <div class="flex items-start justify-between mb-4">
       <div class="flex items-center space-x-3">
@@ -45,7 +45,7 @@
         <img 
           :src="post.image" 
           :alt="'Image from ' + post.username"
-          class="w-full h-auto max-h-[500px] object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+          class="w-full h-auto object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
           @click="openImageModal"
         >
       </div>

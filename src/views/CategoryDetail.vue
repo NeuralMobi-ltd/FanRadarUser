@@ -15,8 +15,8 @@
       <!-- Category Info -->
       <div class="absolute bottom-6 left-6 text-white">
         <div class="flex items-center mb-2">
-          <div class="px-3 py-1 bg-purple-600 rounded-full text-sm font-medium mr-3">
-            Category
+          <div class="px-3 py-1 rounded-full text-sm font-medium mr-3 flex items-center gap-2" :class="getCategoryColor()">
+            <span>Category</span>
           </div>
           <div class="flex items-center text-sm">
             <span>{{ categoryStats.communities }} communities</span>
@@ -24,18 +24,10 @@
             <span>{{ categoryStats.members }} members</span>
           </div>
         </div>
-        <h1 class="text-4xl font-bold mb-1">{{ formattedCategoryName }}</h1>
+        <h1 class="text-4xl font-bold mb-1">
+          <i class="mr-3"></i>{{ formattedCategoryName }}
+        </h1>
         <p class="text-white/90 max-w-xl">{{ categoryDescription }}</p>
-      </div>
-      
-      <!-- Action Buttons -->
-      <div class="absolute top-6 right-6 flex gap-3">
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-          Join
-        </button>
-        <button class="bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-lg font-medium transition-colors">
-          Share
-        </button>
       </div>
     </div>
 
@@ -62,32 +54,19 @@
     <!-- Dynamic Content Based on Active Tab -->
     <div v-if="activeTab === 'communities'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <template v-if="communities && communities.length > 0">
-        <div v-for="community in communities" :key="community.id" 
-             class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300">
-          <div class="h-32 relative">
-            <img :src="community.coverImage" :alt="community.name" class="w-full h-full object-cover">
-            <div class="absolute bottom-0 right-0 m-3">
-              <img :src="community.logo" :alt="community.name" class="w-16 h-16 rounded-xl border-4 border-white dark:border-gray-800">
-            </div>
-          </div>
-          <div class="p-4">
-            <h3 class="font-bold text-xl text-gray-900 dark:text-white mb-1">{{ community.name }}</h3>
-            <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">{{ community.description }}</p>
-            <div class="flex items-center justify-between">
-              <span class="text-sm text-gray-500 dark:text-gray-400">{{ community.members }} members</span>
-              <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-full text-sm font-medium transition-colors">
-                Join
-              </button>
-            </div>
-          </div>
-        </div>
+        <CommunityCard
+          v-for="community in communities"
+          :key="community.id"
+          :community="community"
+          button-text="Join"
+        />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
         No communities found for this category.
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'posts'" class="space-y-6">
+    <div v-else-if="activeTab === 'posts'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <template v-if="posts && posts.length > 0">
         <Post
           v-for="post in posts"
@@ -96,14 +75,15 @@
           @like="likePost"
           @comment="commentPost"
           @share="sharePost"
+          class="w-full mb-0"
         />
       </template>
-      <div v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
+      <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
         No posts found for this category.
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'news'" class="space-y-6">
+    <div v-else-if="activeTab === 'news'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <template v-if="newsData && newsData.length > 0">
         <NewsPost
           v-for="news in newsData"
@@ -133,6 +113,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import Post from '@/components/Post.vue'
 import NewsPost from '@/components/NewsPost.vue'
+import CommunityCard from '@/components/CommunityCard.vue'
 
 const route = useRoute()
 const categoryName = computed(() => route.params.category || '')
@@ -190,10 +171,10 @@ function getCategoryImage() {
   const imageMap = {
     'sport': 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&h=400&fit=crop',
     'music': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=400&fit=crop',
-    'tech': 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1200&h=400&fit=crop',
+    'tech': 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg',
     'gaming': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop',
     'anime': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
-    'movies': 'https://images.unsplash.com/photo-1489599904486-b9c74d6f4c22?w=1200&h=400&fit=crop',
+    'movies': 'https://www.wondermind.com/wp-content/uploads/2024/09/20-Feel-Good-Movies-People-Swear-By-For-Your-Next-Bad-Day.jpg?w=960',
     'books': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200&h=400&fit=crop',
     'art': 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1200&h=400&fit=crop',
     'tv-shows': 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=1200&h=400&fit=crop',
@@ -203,6 +184,46 @@ function getCategoryImage() {
   }
   
   return imageMap[categoryName.value] || 'https://images.unsplash.com/photo-1487700160041-babef9c3cb55?w=1200&h=400&fit=crop'
+}
+
+// Get category color
+function getCategoryColor() {
+  const colorMap = {
+    'sport': 'bg-orange-600',
+    'music': 'bg-pink-600',
+    'tech': 'bg-gray-600',
+    'gaming': 'bg-green-600',
+    'anime': 'bg-purple-600',
+    'movies': 'bg-yellow-600',
+    'books': 'bg-amber-600',
+    'art': 'bg-purple-600',
+    'tv-shows': 'bg-indigo-600',
+    'comics': 'bg-blue-600',
+    'fashion': 'bg-rose-600',
+    'photography': 'bg-teal-600'
+  }
+  
+  return colorMap[categoryName.value] || 'bg-blue-600'
+}
+
+// Get category icon using Font Awesome CSS classes
+function getCategoryIcon() {
+  const iconMap = {
+    'sport': 'fas fa-futbol',
+    'music': 'fas fa-music',
+    'tech': 'fas fa-laptop',
+    'gaming': 'fas fa-gamepad',
+    'anime': 'fas fa-heart',
+    'movies': 'fas fa-film',
+    'books': 'fas fa-book',
+    'art': 'fas fa-palette',
+    'tv-shows': 'fas fa-tv',
+    'comics': 'fas fa-book-open',
+    'fashion': 'fas fa-tshirt',
+    'photography': 'fas fa-camera'
+  }
+  
+  return iconMap[categoryName.value] || 'fas fa-star'
 }
 
 // Load category data
@@ -277,7 +298,7 @@ onMounted(() => {
         description: 'Celebrating Olympic sports, athletes and events from around the world.',
         members: '120K',
         logo: 'https://logo.clearbit.com/olympic.org',
-        coverImage: 'https://images.unsplash.com/photo-1569517282132-25d22f4573e6?w=800&h=300&fit=crop'
+        coverImage: 'https://alizila.oss-us-west-1.aliyuncs.com/uploads/2021/07/100-meters-sprint-olympics-rio-2016-shutterstock-992x558-1.jpg'
       }
     ]
 
@@ -290,7 +311,8 @@ onMounted(() => {
         date: '2h ago',
         communityName: 'Premier League Fans',
         content: 'What an incredible match yesterday! The last-minute goal completely changed the league standings. Anyone else think the referee missed a clear penalty in the first half?',
-        image: 'https://images.unsplash.com/photo-1508098682722-e99c643e7f0b?w=800&h=500&fit=crop',
+        image: 'https://dims.apnews.com/dims4/default/9a1aa05/2147483647/strip/true/crop/5058x2845+0+263/resize/1440x810!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fe8%2Fc3%2F568b2887ee1325a267b042192e69%2F8021f5b2054d4f93ac59558090f0e304',
+        tags: ['PremierLeague', 'Football', 'MatchDay', 'Referee'],
         likes: 234,
         comments: 56,
         shares: 18,
@@ -304,7 +326,8 @@ onMounted(() => {
         date: '5h ago',
         communityName: 'NBA Central',
         content: 'Hot take: This rookie class might be the best we\'ve seen in the past decade. The skill level and basketball IQ of these young players is absolutely off the charts!',
-        image: null,
+        image: 'https://static0.givemesportimages.com/wordpress/wp-content/uploads/2024/02/nba_central.jpg',
+        tags: ['NBA', 'Rookies', 'Basketball', 'HotTake'],
         likes: 189,
         comments: 43,
         shares: 12,
@@ -318,7 +341,8 @@ onMounted(() => {
         date: '1d ago',
         communityName: 'Formula 1',
         content: 'Breaking down the new aerodynamic regulations and how they might affect the competitive balance next season. Teams with high downforce philosophy will need to completely rethink their approach.',
-        image: 'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800&h=500&fit=crop',
+        image: 'https://e0.365dm.com/25/02/2048x1152/skysports-pirelli-f1-2025-test_6820918.jpg?20250206074138',
+        tags: ['Formula1', 'F1Regulations', 'Aerodynamics', 'Racing'],
         likes: 312,
         comments: 89,
         shares: 24,

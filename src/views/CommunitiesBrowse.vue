@@ -1,184 +1,126 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
     <!-- Header -->
-    <header class="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 sm:px-6 py-4">
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Discover Communities</h1>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Find your people and explore shared interests
-          </p>
-        </div>
-        
-        <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
-          <div class="relative w-full sm:w-72">
-            <input 
-              type="text" 
-              v-model="search"
-              placeholder="Search communities..." 
-              class="w-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full py-2.5 px-5 pl-11 text-gray-900 dark:text-white text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500 dark:placeholder-gray-400"
-            />
-            <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 text-sm"></i>
+    <header class="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm px-4 sm:px-6 py-6">
+      <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Discover Fandoms</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">
+              Find your people and explore shared interests
+            </p>
           </div>
-          <button
-            class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-full text-sm font-medium transition-colors flex items-center justify-center gap-2"
-            @click="$router.push('/create-fandom')"
-          >
-            <i class="fas fa-plus text-sm"></i>
-            <span>Create Community</span>
-          </button>
+          
+          <div class="flex flex-col sm:flex-row items-end sm:items-center gap-3 w-full sm:w-auto">
+            <div class="relative w-full sm:w-80">
+              <input 
+                type="text" 
+                v-model="search"
+                placeholder="Search fandoms..." 
+                class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-5 pl-12 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500 dark:placeholder-gray-400"
+              />
+              <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
+            </div>
+            <button
+              class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 shadow-lg"
+              @click="$router.push('/create-fandom')"
+            >
+              <i class="fas fa-plus"></i>
+              <span>Create Fandom</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Categories Filter -->
+        <div class="overflow-x-auto">
+          <div class="flex space-x-3 pb-2">
+            <button 
+              v-for="category in categories"
+              :key="category.name"
+              @click="activeCategory = category.name"
+              class="px-4 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 font-medium flex items-center gap-2 min-w-fit"
+              :class="{
+                [category.color + ' text-white shadow-lg']: activeCategory === category.name,
+                'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600': activeCategory !== category.name
+              }"
+            >
+              <i :class="category.icon" class="text-sm"></i>
+              <span>{{ category.name }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-      <!-- Categories Filter -->
-      <div class="mb-6 overflow-x-auto">
-        <div class="flex space-x-2 pb-2">
-          <button 
-            v-for="category in categories"
-            :key="category"
-            @click="activeCategory = category"
-            class="px-4 py-2 rounded-full whitespace-nowrap transition-colors"
-            :class="{
-              'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300': activeCategory === category,
-              'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700': activeCategory !== category
-            }"
-          >
-            {{ category }}
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+      <!-- Featured Banner -->
+      <div v-if="activeCategory === 'All'" class="mb-12">
+        <div class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 rounded-2xl overflow-hidden p-8 text-white">
+          <div class="absolute inset-0 bg-black/20"></div>
+          <div class="relative z-10">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-2xl font-bold mb-2">🔥 Trending Fandoms</h2>
+                <p class="text-blue-100 mb-4">Join the most active fandoms this week</p>
+                <div class="flex -space-x-2">
+                  <img v-for="i in 5" :key="i" :src="`https://randomuser.me/api/portraits/men/${i + 10}.jpg`" class="w-8 h-8 rounded-full border-2 border-white" />
+                  <div class="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-xs font-bold">+5K</div>
+                </div>
+              </div>
+              <div class="hidden md:block">
+                <div class="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center">
+                  <i class="fas fa-users text-4xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fandoms Grid -->
+      <div v-if="filteredCommunities.length > 0">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <CommunityCard
+            v-for="community in filteredCommunities"
+            :key="community.title"
+            :community="community"
+            button-text="Join Fandom"
+          />
+        </div>
+
+        <!-- Load More Button -->
+        <div class="flex justify-center mt-12">
+          <button class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
+            <i class="fas fa-plus"></i>
+            Load More Fandoms
           </button>
         </div>
       </div>
 
-      <!-- Featured News Section -->
-      <div v-if="activeCategory === 'News' || activeCategory === 'All'" class="mb-8">
-        <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <i class="fas fa-newspaper text-red-500"></i>
-          <span>Featured News Communities</span>
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div 
-            v-for="community in newsCommunities"
-            :key="community.title"
-            class="group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-blue-500/20"
-            @click="$router.push(`/f/${community.handle}`)"
-          >
-            <div 
-              class="aspect-[4/3] bg-cover bg-center bg-no-repeat relative"
-              :style="{ backgroundImage: `url(${community.image})`, backgroundColor: community.fallbackColor }"
-            >
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-              <div class="absolute top-3 right-3 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-                <span class="w-2 h-2 bg-green-400 rounded-full"></span>
-                <span>{{ community.onlineCount }} online</span>
-              </div>
-              <div class="absolute bottom-0 left-0 right-0 p-5">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0 w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 bg-white dark:bg-gray-700 overflow-hidden">
-                    <img :src="community.avatar" class="w-full h-full object-cover" />
-                  </div>
-                  <div>
-                    <h3 class="text-white font-bold text-lg mb-1 leading-tight">{{ community.title }}</h3>
-                    <p class="text-gray-200 text-sm line-clamp-2 mb-2">
-                      {{ community.description }}
-                    </p>
-                    <div class="flex items-center text-gray-300 text-xs font-medium gap-3">
-                      <span>{{ community.memberCount }} members</span>
-                      <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
-                      <span>{{ community.postCount }} posts</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-              Breaking News
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Communities Grid -->
-      <div v-if="filteredCommunities.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        <div 
-          v-for="community in filteredCommunities"
-          :key="community.title"
-          class="group relative rounded-xl overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-lg hover:ring-2 hover:ring-blue-500/20"
-          @click="$router.push(`/f/${community.handle}`)"
-        >
-          <div 
-            class="aspect-[4/3] bg-cover bg-center bg-no-repeat relative"
-            :style="{ backgroundImage: `url(${community.image})`, backgroundColor: community.fallbackColor }"
-          >
-            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
-            <div class="absolute top-3 right-3 flex items-center gap-1 bg-black/60 text-white text-xs px-2 py-1 rounded-full">
-              <span class="w-2 h-2 bg-green-400 rounded-full"></span>
-              <span>{{ community.onlineCount }} online</span>
-            </div>
-            <div class="absolute bottom-0 left-0 right-0 p-5">
-              <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 w-12 h-12 rounded-full border-2 border-white dark:border-gray-800 bg-white dark:bg-gray-700 overflow-hidden">
-                  <img :src="community.avatar" class="w-full h-full object-cover" />
-                </div>
-                <div>
-                  <h3 class="text-white font-bold text-lg mb-1 leading-tight">{{ community.title }}</h3>
-                  <p class="text-gray-200 text-sm line-clamp-2 mb-2">
-                    {{ community.description }}
-                  </p>
-                  <div class="flex items-center text-gray-300 text-xs font-medium gap-3">
-                    <span>{{ community.memberCount }} members</span>
-                    <span class="w-1 h-1 bg-gray-400 rounded-full"></span>
-                    <span>{{ community.postCount }} posts</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="community.category === 'News'" class="absolute top-3 left-3 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-            News
-          </div>
-        </div>
-      </div>
-
       <!-- Empty state -->
-      <div v-else class="flex flex-col items-center justify-center py-16 text-center">
-        <div class="w-24 h-24 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <i class="fas fa-users text-3xl text-gray-400 dark:text-gray-600"></i>
+      <div v-else class="flex flex-col items-center justify-center py-20 text-center">
+        <div class="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-3xl flex items-center justify-center mb-6">
+          <i class="fas fa-search text-4xl text-blue-500"></i>
         </div>
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">No communities found</h3>
-        <p class="text-gray-500 dark:text-gray-400 max-w-md mb-6">
-          We couldn't find any communities matching your search. Try different keywords or create your own community.
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">No fandoms found</h3>
+        <p class="text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
+          We couldn't find any fandoms matching your search. Try different keywords or create your own fandom to get started.
         </p>
-        <button
-          class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-full text-sm font-medium transition-colors"
-          @click="$router.push('/create-fandom')"
-        >
-          Create a Community
-        </button>
-      </div>
-
-      <!-- Pagination -->
-      <div v-if="filteredCommunities.length > 0" class="mt-8 flex items-center justify-center gap-2">
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <i class="fas fa-chevron-left text-sm"></i>
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 text-white font-medium">
-          1
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          2
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          3
-        </button>
-        <span class="px-2 text-gray-500 dark:text-gray-400">...</span>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          8
-        </button>
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-          <i class="fas fa-chevron-right text-sm"></i>
-        </button>
+        <div class="flex flex-col sm:flex-row gap-3">
+          <button
+            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+            @click="search = ''; activeCategory = 'All'"
+          >
+            Clear Filters
+          </button>
+          <button
+            class="border border-gray-300 dark:border-gray-600 hover:border-blue-500 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-6 py-3 rounded-xl font-medium transition-colors"
+            @click="$router.push('/create-fandom')"
+          >
+            Create a Fandom
+          </button>
+        </div>
       </div>
     </main>
   </div>
@@ -186,23 +128,24 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import CommunityCard from '@/components/CommunityCard.vue'
 
 const search = ref('')
 const activeCategory = ref('All')
 
 const categories = ref([
-  'All',
-  'News',
-  'Art',
-  'Gaming',
-  'Music',
-  'Movies',
-  'TV Shows',
-  'Books',
-  'Technology',
-  'Science',
-  'Sports',
-  'Fashion'
+  { name: 'All', color: 'bg-blue-600', icon: 'fas fa-star' },
+  { name: 'News', color: 'bg-red-600', icon: 'fas fa-newspaper' },
+  { name: 'Art', color: 'bg-purple-600', icon: 'fas fa-palette' },
+  { name: 'Gaming', color: 'bg-green-600', icon: 'fas fa-gamepad' },
+  { name: 'Music', color: 'bg-pink-600', icon: 'fas fa-music' },
+  { name: 'Movies', color: 'bg-yellow-600', icon: 'fas fa-film' },
+  { name: 'TV Shows', color: 'bg-indigo-600', icon: 'fas fa-tv' },
+  { name: 'Books', color: 'bg-amber-600', icon: 'fas fa-book' },
+  { name: 'Technology', color: 'bg-gray-600', icon: 'fas fa-laptop' },
+  { name: 'Science', color: 'bg-teal-600', icon: 'fas fa-microscope' },
+  { name: 'Sports', color: 'bg-orange-600', icon: 'fas fa-futbol' },
+  { name: 'Fashion', color: 'bg-rose-600', icon: 'fas fa-tshirt' }
 ])
 
 const newsCommunities = ref([
@@ -223,7 +166,7 @@ const newsCommunities = ref([
     title: 'Tech Today', 
     handle: 'tech-today',
     description: 'Latest technology news and gadget reviews', 
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80', 
+    image: 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg', 
     avatar: 'https://randomuser.me/api/portraits/women/72.jpg',
     memberCount: '1.2M', 
     postCount: '245K',
@@ -383,10 +326,43 @@ const filteredCommunities = computed(() => {
 </script>
 
 <style scoped>
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #4b5563;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #6b7280;
 }
 </style>

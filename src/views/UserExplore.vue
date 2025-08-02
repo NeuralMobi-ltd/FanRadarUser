@@ -26,7 +26,7 @@
                class="w-80 bg-white dark:bg-gray-800 rounded-2xl p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer flex-shrink-0">
             <div class="flex items-center mb-4">
               <div class="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center mr-4">
-                <span class="text-2xl">{{ trend.icon }}</span>
+                <i :class="trend.icon" class="text-2xl text-blue-500"></i>
               </div>
               <div>
                 <h3 class="font-bold text-gray-900 dark:text-white text-lg">#{{ trend.tag }}</h3>
@@ -116,49 +116,49 @@ const currentTrends = ref([
   { 
     tag: 'LoLPhase5', 
     posts: '2.3M', 
-    icon: '🎮',
+    icon: 'fas fa-gamepad',
     description: 'League of Legends Phase 5 introduces new champions and major gameplay changes that are revolutionizing competitive play with the new Void storyline.'
   },
   { 
     tag: 'LoLWorlds', 
     posts: '897K', 
-    icon: '🏆',
+    icon: 'fas fa-trophy',
     description: 'World Championship 2024 is heating up with incredible matches and unexpected upsets. T1 vs GenG finals breaking viewership records.'
   },
   { 
     tag: 'Swifties', 
     posts: '3.1M', 
-    icon: '🎵',
+    icon: 'fas fa-music',
     description: 'Taylor Swift fans are celebrating the announcement of her new Eras Tour dates and surprise album release featuring collaborations.'
   },
   { 
     tag: 'AnimeSpring2024', 
     posts: '1.8M', 
-    icon: '🌸',
+    icon: 'fas fa-heart',
     description: 'Spring anime season brings incredible new series including the highly anticipated Attack on Titan finale and Demon Slayer continuation.'
   },
   { 
     tag: 'MarvelPhase6', 
     posts: '2.1M', 
-    icon: '🦸',
+    icon: 'fas fa-mask',
     description: 'Marvel Studios reveals exciting details about Phase 6 of the MCU with new heroes, multiverse storylines, and the return of the X-Men.'
   },
   { 
     tag: 'KPopComeback', 
     posts: '1.6M', 
-    icon: '✨',
+    icon: 'fas fa-star',
     description: 'Multiple K-Pop groups are making spectacular comebacks this month with BTS, BLACKPINK, and NewJeans releasing chart-topping albums.'
   },
   { 
     tag: 'GameOfThrones2024', 
     posts: '945K', 
-    icon: '🐉',
+    icon: 'fas fa-fire',
     description: 'House of the Dragon Season 2 trailer drops with epic dragon battles and the highly anticipated Dance of Dragons storyline.'
   },
   { 
     tag: 'NintendoDirect', 
     posts: '1.2M', 
-    icon: '🎮',
+    icon: 'fas fa-gamepad',
     description: 'Nintendo Direct showcases upcoming Switch games including the new Super Mario Wonder and highly anticipated Zelda sequel updates.'
   }
 ])
@@ -176,7 +176,7 @@ const popularCategories = ref([
   },
   {
     name: 'Tech',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=300&h=200&fit=crop',
+    image: 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg',
     communities: '320+'
   },
   {
@@ -191,7 +191,7 @@ const popularCategories = ref([
   },
   {
     name: 'Movies',
-    image: 'https://images.unsplash.com/photo-1489599904486-b9c74d6f4c22?w=300&h=200&fit=crop',
+    image: 'http',
     communities: '520+'
   },
   {

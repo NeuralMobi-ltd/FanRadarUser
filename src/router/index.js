@@ -8,7 +8,6 @@ import MyCart from '@/components/MyCart.vue'
 import MyOrder from '@/components/MyOrder.vue'
 import orderDetails from '@/components/OrderDetails.vue'
 import CreateFandom from '@/views/CreateFandom.vue'
-import FandomDetail from '@/views/FandomDetail.vue'
 import SignIn from '@/views/SignIn.vue'
 import SignUp from '@/views/SignUp.vue'
 const ChooseCategories = () => import('@/views/ChooseCategories.vue')
@@ -88,8 +87,8 @@ const routes = [
   {
     path: '/fandom/:name',
     name: 'FandomDetail',
-    component: FandomDetail,
-    meta: { requiresAuth: false }
+    component: () => import('@/views/FandomDetail.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
@@ -119,27 +118,26 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  // Only initialize if needed
-  if (!authStore.user && typeof authStore.initialize === 'function') {
+  // Initialize auth store if needed
+  if (!authStore.user) {
     authStore.initialize()
   }
 
-  // Allow access to login and register for guests
-  if (['/login', '/register'].includes(to.path)) {
+  // Allow access to auth pages for non-authenticated users
+  if (['/login', '/signup', '/choose-categories', '/'].includes(to.path)) {
     next()
     return
   }
 
   // Check if route requires authentication
-  if (to.meta.requiresAuth) {
+  if (to.meta.requiresAuth !== false) {
     if (!authStore.isAuthenticated) {
       next('/login')
-    } else {
-      next()
+      return
     }
-  } else {
-    next()
   }
+
+  next()
 })
 
 export default router

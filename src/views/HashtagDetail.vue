@@ -1,133 +1,145 @@
 <template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
     <!-- Hashtag Header -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 mb-8 border border-gray-200 dark:border-gray-700">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center">
-          <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-3xl mr-5">
-            {{ hashtagIcon }}
-          </div>
-          <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-              #{{ hashtagName }}
-            </h1>
-            <div class="flex items-center text-gray-600 dark:text-gray-300">
-              <span>{{ hashtagStats.posts }} posts</span>
-              <span class="mx-2">•</span>
-              <span>{{ hashtagStats.growth }}% growth this week</span>
-            </div>
-          </div>
-        </div>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">
-          Follow
-        </button>
-      </div>
-    </div>
-
-    <!-- Filter Options -->
-    <div class="flex items-center justify-between mb-6">
-      <div class="flex gap-3">
-        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg font-medium">
-          Latest
-        </button>
-        <button class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-          Popular
-        </button>
-        <button class="px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-          Media
-        </button>
+    <div class="relative mb-8">
+      <!-- Cover Image -->
+      <div class="h-64 w-full rounded-xl overflow-hidden">
+        <img 
+          :src="getHashtagImage()" 
+          :alt="hashtagName" 
+          class="w-full h-full object-cover"
+        >
+        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
       </div>
       
-      <div class="relative">
-        <input type="text" placeholder="Search in hashtag" class="pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+      <!-- Hashtag Info -->
+      <div class="absolute bottom-6 left-6 text-white">
+        <div class="flex items-center mb-2">
+          <div class="px-3 py-1 bg-purple-600 rounded-full text-sm font-medium mr-3 flex items-center gap-2">
+            <span>Hashtag</span>
+          </div>
+          <div class="flex items-center text-sm">
+            <span>{{ hashtagStats.posts }} posts</span>
+            <span class="mx-2">•</span>
+            <span>{{ hashtagStats.growth }}% growth this week</span>
+          </div>
+        </div>
+        <h1 class="text-4xl font-bold mb-1">#{{ hashtagName }}</h1>
+        <p class="text-white/90 max-w-xl">{{ hashtagDescription }}</p>
       </div>
     </div>
 
-    <!-- Posts Grid -->
-    <div class="space-y-6">
-      <div v-for="post in posts" :key="post.id" 
-           class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 p-4">
-        <!-- Post header with user info -->
-        <div class="flex items-start space-x-3 mb-4">
-          <img :src="post.userAvatar" :alt="post.username" class="w-10 h-10 rounded-full">
-          <div>
-            <div class="flex items-center">
-              <h4 class="font-semibold text-gray-900 dark:text-white">{{ post.username }}</h4>
-              <span class="mx-2 text-gray-400">•</span>
-              <span class="text-sm text-gray-500 dark:text-gray-400">{{ post.date }}</span>
-            </div>
-            <p class="text-sm text-gray-500 dark:text-gray-400">{{ post.communityName }}</p>
-          </div>
-        </div>
-        
-        <!-- Post content -->
-        <p class="text-gray-800 dark:text-gray-200 mb-4">
-          {{ post.content }}
-          <span class="text-blue-600 dark:text-blue-400 font-medium">#{{ hashtagName }}</span>
-        </p>
-        
-        <!-- Post image if any -->
-        <img v-if="post.image" :src="post.image" :alt="post.content" class="w-full h-96 object-cover rounded-lg mb-4">
-        
-        <!-- Post actions -->
-        <div class="flex items-center justify-between text-gray-500 dark:text-gray-400 pt-3 border-t border-gray-200 dark:border-gray-700">
-          <div class="flex items-center space-x-4">
-            <button class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-              </svg>
-              {{ post.likes }}
-            </button>
-            <button class="flex items-center">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd" />
-              </svg>
-              {{ post.comments }}
-            </button>
-          </div>
-          <button class="flex items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-            </svg>
-            Share
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Related Hashtags -->
-    <div class="mt-10">
-      <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Related Hashtags</h3>
-      <div class="flex flex-wrap gap-3">
-        <router-link 
-          v-for="tag in relatedHashtags" 
-          :key="tag.name"
-          :to="`/hashtag/${tag.name}`"
-          class="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+    <!-- Tabs Navigation -->
+    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
+      <div class="flex gap-8">
+        <button 
+          v-for="tab in tabs" 
+          :key="tab.id"
+          @click="activeTab = tab.id"
+          :class="[
+            'pb-4 px-1 font-medium',
+            activeTab === tab.id 
+              ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
+              : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+          ]"
         >
-          #{{ tag.name }}
-        </router-link>
+          {{ tab.label }}
+          <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
+        </button>
       </div>
     </div>
 
-    <!-- Load More Button -->
-    <div class="flex justify-center mt-10">
-      <button class="px-8 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
-        Load More Posts
-      </button>
+    <!-- Dynamic Content Based on Active Tab -->
+    <div v-if="activeTab === 'posts'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <template v-if="posts && posts.length > 0">
+        <Post
+          v-for="post in posts"
+          :key="post.id"
+          :post="post"
+          @like="likePost"
+          @comment="commentPost"
+          @share="sharePost"
+          class="w-full mb-0"
+        />
+      </template>
+      <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
+        No posts found for this hashtag.
+      </div>
+    </div>
+
+    <div v-else-if="activeTab === 'news'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <template v-if="newsData && newsData.length > 0">
+        <NewsPost
+          v-for="news in newsData"
+          :key="news.id"
+          :news="news"
+        />
+      </template>
+      <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
+        No news found for this hashtag.
+      </div>
+    </div>
+
+    <div v-else-if="activeTab === 'related'" class="space-y-6">
+      <template v-if="relatedHashtags && relatedHashtags.length > 0">
+        <div v-for="tag in relatedHashtags" :key="tag.name" 
+             @click="navigateToHashtag(tag.name)"
+             class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 cursor-pointer p-6">
+          <div class="flex items-center mb-4">
+            <div class="bg-blue-100 dark:bg-blue-900/30 rounded-lg p-3 mr-4">
+              <span class="text-2xl">#</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-gray-900 dark:text-white">#{{ tag.name }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ tag.posts }} posts</p>
+            </div>
+          </div>
+          <p class="text-gray-600 dark:text-gray-300 text-sm">{{ tag.description }}</p>
+        </div>
+      </template>
+      <div v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
+        No related hashtags found.
+      </div>
+    </div>
+
+    <div v-else class="bg-white dark:bg-gray-800 rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 p-6">
+      <div class="text-center py-10">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Content Coming Soon</h3>
+        <p class="text-gray-500 dark:text-gray-400">This section is currently under development.</p>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import Post from '@/components/Post.vue'
+import NewsPost from '@/components/NewsPost.vue'
 
 const route = useRoute()
+const router = useRouter()
 const hashtagName = computed(() => route.params.hashtag || '')
+const activeTab = ref('posts')
+
+// Hashtag description based on name
+const hashtagDescription = computed(() => {
+  const descriptions = {
+    'LoLPhase5': 'Discover the latest updates and discussions about League of Legends Phase 5.',
+    'LoLWorlds': 'Follow the excitement of League of Legends World Championship.',
+    'Swifties': 'Join Taylor Swift fans sharing their love and latest updates.',
+    'AnimeSpring2024': 'Spring anime season discussions and recommendations.',
+    'MarvelPhase6': 'Marvel Cinematic Universe Phase 6 theories and news.',
+    'KPopComeback': 'Latest K-Pop comebacks and music releases.',
+    'GameOfThrones2024': 'House of the Dragon and Game of Thrones universe content.',
+    'NintendoDirect': 'Nintendo Direct announcements and gaming news.'
+  }
+  
+  return descriptions[hashtagName.value] || `Join the conversation about #${hashtagName.value} and connect with like-minded fans.`
+})
 
 // Hashtag statistics
 const hashtagStats = ref({
@@ -135,87 +147,41 @@ const hashtagStats = ref({
   growth: '0'
 })
 
-// Hashtag icon based on name
-const hashtagIcon = computed(() => {
-  const iconMap = {
-    'LoLPhase5': '🎮',
-    'LoLWorlds': '🏆',
-    'Swifties': '🎵',
-    'AnimeSpring2024': '🌸',
-    'MarvelPhase6': '🦸',
-    'KPopComeback': '✨',
-    'GameOfThrones2024': '🐉',
-    'NintendoDirect': '🎮',
-    'SportNews': '⚽',
-    'TechInnovation': '💻',
-    'MovieNight': '🎬',
-    'BookClub': '📚'
+// Tabs data
+const tabs = ref([
+  { id: 'posts', label: 'Posts', count: '234' },
+  { id: 'news', label: 'News', count: '15' },
+  { id: 'related', label: 'Related', count: '12' }
+])
+
+// Initialize data arrays
+const posts = ref([])
+const newsData = ref([])
+const relatedHashtags = ref([])
+
+// Get hashtag image
+function getHashtagImage() {
+  const imageMap = {
+    'LoLPhase5': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop',
+    'LoLWorlds': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop',
+    'Swifties': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=400&fit=crop',
+    'AnimeSpring2024': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
+    'MarvelPhase6': 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=1200&h=400&fit=crop',
+    'KPopComeback': 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=400&fit=crop',
+    'GameOfThrones2024': 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=1200&h=400&fit=crop',
+    'NintendoDirect': 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&h=400&fit=crop'
   }
   
-  return iconMap[hashtagName.value] || '#️⃣'
-})
+  return imageMap[hashtagName.value] || 'https://images.unsplash.com/photo-1487700160041-babef9c3cb55?w=1200&h=400&fit=crop'
+}
 
-// Mock data for posts
-const posts = ref([
-  {
-    id: 1,
-    username: 'GamerPro',
-    userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    date: '2h ago',
-    communityName: 'League of Legends',
-    content: 'Just saw the latest champion reveal for LoLPhase5 and I\'m absolutely hyped! The abilities look game-changing and might shift the entire meta.',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=500&fit=crop',
-    likes: 234,
-    comments: 56
-  },
-  {
-    id: 2,
-    username: 'EsportsAnalyst',
-    userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    date: '5h ago',
-    communityName: 'Esports Central',
-    content: 'Breaking down the new map changes in LoLPhase5 - the jungle pathing is completely different now, which will heavily favor early game junglers and aggressive playstyles.',
-    image: null,
-    likes: 189,
-    comments: 43
-  },
-  {
-    id: 3,
-    username: 'LeagueStreamer',
-    userAvatar: 'https://randomuser.me/api/portraits/men/62.jpg',
-    date: '1d ago',
-    communityName: 'League of Legends',
-    content: 'Just hit Challenger with the new champion! Going to stream a full breakdown of optimal builds and combos tonight at 8PM EST. LoLPhase5 has completely revitalized my passion for the game!',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=500&fit=crop',
-    likes: 312,
-    comments: 89
-  },
-  {
-    id: 4,
-    username: 'CompetitiveGamer',
-    userAvatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-    date: '2d ago',
-    communityName: 'Pro Gaming',
-    content: 'My predictions for how LoLPhase5 will impact Worlds: Korean teams will adapt faster to the new meta, but Chinese teams might have the edge in the semifinals due to their mechanical prowess with the new champions.',
-    image: null,
-    likes: 276,
-    comments: 67
-  }
-])
-
-// Related hashtags
-const relatedHashtags = ref([
-  { name: 'LoLWorlds', posts: '897K' },
-  { name: 'ProGaming', posts: '452K' },
-  { name: 'Esports', posts: '1.2M' },
-  { name: 'RiotGames', posts: '678K' },
-  { name: 'LeagueOfLegends', posts: '3.4M' },
-  { name: 'Gaming', posts: '5.7M' }
-])
+// Navigate to hashtag
+const navigateToHashtag = (tag) => {
+  router.push(`/hashtag/${tag}`)
+}
 
 // Load hashtag data
 onMounted(() => {
-  // Here you would typically fetch actual data based on the hashtag
   console.log(`Loading data for hashtag: ${hashtagName.value}`)
   
   // Set mock stats based on hashtag
@@ -232,44 +198,162 @@ onMounted(() => {
   
   hashtagStats.value = statMap[hashtagName.value] || { posts: '500K', growth: '10' }
   
-  // Load posts for specific hashtag
-  // In a real app, you would fetch from an API
-  if (hashtagName.value !== 'LoLPhase5') {
-    posts.value = [
-      {
-        id: 1,
-        username: 'HashtagFan',
-        userAvatar: 'https://randomuser.me/api/portraits/men/42.jpg',
-        date: '3h ago',
-        communityName: 'Trending Topics',
-        content: `This is a post about the ${hashtagName.value} hashtag. It's currently trending across the platform!`,
-        image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=500&fit=crop',
-        likes: 145,
-        comments: 32
-      },
-      {
-        id: 2,
-        username: 'TrendWatcher',
-        userAvatar: 'https://randomuser.me/api/portraits/women/24.jpg',
-        date: '6h ago',
-        communityName: 'Hot Topics',
-        content: `My thoughts on the whole ${hashtagName.value} situation. I think it's going to change everything we know about the industry.`,
-        image: null,
-        likes: 98,
-        comments: 24
-      }
-    ]
-  }
+  // Initialize posts data
+  posts.value = [
+    {
+      id: 1,
+      username: 'GamerPro',
+      userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+      date: '2h ago',
+      communityName: 'Gaming Community',
+      content: `Just saw the latest updates for ${hashtagName.value} and I'm absolutely hyped! This is going to change everything.`,
+      image: 'https://dims.apnews.com/dims4/default/9a1aa05/2147483647/strip/true/crop/5058x2845+0+263/resize/1440x810!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fe8%2Fc3%2F568b2887ee1325a267b042192e69%2F8021f5b2054d4f93ac59558090f0e304',
+      tags: [hashtagName.value, 'Gaming', 'Trending'],
+      likes: 234,
+      comments: 56,
+      shares: 18,
+      isLiked: false,
+      fandom: 'Gaming'
+    },
+    {
+      id: 2,
+      username: 'ContentCreator',
+      userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+      date: '5h ago',
+      communityName: 'Content Creators',
+      content: `My detailed analysis of the ${hashtagName.value} phenomenon. This trend is reshaping the entire landscape and here's why you should care.`,
+      image: null,
+      tags: [hashtagName.value, 'Analysis', 'Content'],
+      likes: 189,
+      comments: 43,
+      shares: 12,
+      isLiked: true,
+      fandom: 'Content'
+    },
+    {
+      id: 3,
+      username: 'TrendWatcher',
+      userAvatar: 'https://randomuser.me/api/portraits/men/62.jpg',
+      date: '1d ago',
+      communityName: 'Trend Analysis',
+      content: `Breaking down everything you need to know about ${hashtagName.value}. The implications are massive and will affect the industry for years to come.`,
+      image: 'https://static0.givemesportimages.com/wordpress/wp-content/uploads/2024/02/nba_central.jpg',
+      tags: [hashtagName.value, 'Trends', 'Analysis'],
+      likes: 312,
+      comments: 89,
+      shares: 24,
+      isLiked: false,
+      fandom: 'Analysis'
+    }
+  ]
+
+  // Initialize news data
+  newsData.value = [
+    {
+      id: 1,
+      source: 'Gaming News',
+      sourceLogo: 'https://logo.clearbit.com/ign.com',
+      title: `Breaking: ${hashtagName.value} Update Released`,
+      summary: `Major update brings new features and improvements to ${hashtagName.value}. Community reaction has been overwhelmingly positive.`,
+      image: getHashtagImage(),
+      date: '1h ago',
+      views: '25.3K',
+      category: 'Gaming',
+      readingTime: '3',
+      isLiked: false,
+      breaking: true
+    },
+    {
+      id: 2,
+      source: 'Tech Today',
+      sourceLogo: 'https://logo.clearbit.com/techcrunch.com',
+      title: `${hashtagName.value} Community Reaches New Milestone`,
+      summary: `The ${hashtagName.value} community celebrates reaching over 1 million active users with special events and announcements.`,
+      image: 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg',
+      date: '3h ago',
+      views: '18.9K',
+      category: 'Technology',
+      readingTime: '4',
+      isLiked: false
+    },
+    {
+      id: 3,
+      source: 'Community Blog',
+      sourceLogo: 'https://logo.clearbit.com/medium.com',
+      title: `Top ${hashtagName.value} Moments This Week`,
+      summary: `A roundup of the best content, discussions, and highlights from the ${hashtagName.value} community this week.`,
+      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=800&h=500&fit=crop',
+      date: '6h ago',
+      views: '12.7K',
+      category: 'Community',
+      readingTime: '2',
+      isLiked: false
+    }
+  ]
+
+  // Initialize related hashtags with CSS icons
+  relatedHashtags.value = [
+    {
+      name: 'Gaming',
+      posts: '5.7M',
+      description: 'General gaming discussions and news across all platforms and genres.'
+    },
+    {
+      name: 'Esports',
+      posts: '1.2M',
+      description: 'Competitive gaming tournaments, professional players, and esports news.'
+    },
+    {
+      name: 'Trending',
+      posts: '2.8M',
+      description: 'Currently trending topics and viral content across the platform.'
+    },
+    {
+      name: 'Community',
+      posts: '1.5M',
+      description: 'Community discussions, events, and user-generated content.'
+    }
+  ]
 })
+
+// Methods to handle post interactions
+function likePost(postId) {
+  const post = posts.value.find(p => p.id === postId)
+  if (post) {
+    post.isLiked = !post.isLiked
+    post.likes += post.isLiked ? 1 : -1
+    console.log('Liked post:', postId, post.isLiked)
+  }
+}
+
+function commentPost(postId) {
+  console.log('Comment on post:', postId)
+}
+
+function sharePost(postId) {
+  const post = posts.value.find(p => p.id === postId)
+  if (post) {
+    post.shares += 1
+    console.log('Shared post:', postId)
+  }
+}
 </script>
 
 <style scoped>
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+/* Line clamp utility */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Smooth transitions */
+.transition-transform {
+  transition: transform 0.2s ease-in-out;
+}
+
+.transition-all {
+  transition: all 0.2s ease-in-out;
 }
 </style>
