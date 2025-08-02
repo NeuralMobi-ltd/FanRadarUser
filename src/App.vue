@@ -1,14 +1,28 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-dark-960 transition-colors duration-200">
-    <!-- Hide Header on auth pages -->
-    <Header v-if="!isAuthPage" />
-
-    <div v-if="isAuthenticated && !isAuthPage" class="main-layout">
-      <Sidebar />
-      <main class="main-content with-sidebar">
-        <router-view />
-      </main>
+    <!-- Store Layout for mart, cart, orders -->
+    <div v-if="isStoreRoute && isAuthenticated">
+      <StoreHeader />
+      <div class="flex">
+        <StoreSidebar />
+        <main class="flex-1 min-h-screen">
+          <router-view />
+        </main>
+      </div>
     </div>
+
+    <!-- Community Layout -->
+    <div v-else-if="isAuthenticated && !isAuthPage">
+      <Header />
+      <div class="main-layout">
+        <Sidebar />
+        <main class="main-content with-sidebar">
+          <router-view />
+        </main>
+      </div>
+    </div>
+
+    <!-- Auth Pages (no layout) -->
     <div v-else>
       <router-view />
     </div>
@@ -22,6 +36,8 @@ import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import Header from '@/components/Header.vue'
 import Sidebar from '@/components/Sidebar.vue'
+import StoreHeader from '@/components/StoreHeader.vue'
+import StoreSidebar from '@/components/StoreSidebar.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -29,9 +45,14 @@ auth.initialize()
 const isAuthenticated = computed(() => auth.isAuthenticated)
 const themeStore = useThemeStore()
 
+// Check if current route is store-related
+const isStoreRoute = computed(() => 
+  ['/mart', '/cart', '/orders'].some(path => route.path.startsWith(path))
+)
+
 // Hide header on login, signup, choose-categories
 const isAuthPage = computed(() =>
-  ['/login', '/signup', '/choose-categories'].includes(route.path)
+  ['/login', '/signup', '/choose-categories', '/'].includes(route.path)
 )
 </script>
 

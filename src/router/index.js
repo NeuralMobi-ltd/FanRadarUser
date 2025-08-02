@@ -63,22 +63,26 @@ const routes = [
   {
     path: '/mart',
     name: 'Mart',
-    component: Mart
+    component: Mart,
+    meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/cart',
     name: 'Cart',
-    component: MyCart
+    component: MyCart,
+    meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/orders',
     name: 'Orders',
-    component: MyOrder
+    component: MyOrder,
+    meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/orders/:id',
     name: 'OrderDetails',
-    component: orderDetails
+    component: orderDetails,
+    meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/create-fandom',

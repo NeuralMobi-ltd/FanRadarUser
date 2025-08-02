@@ -1,211 +1,113 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
-    <!-- Header -->
-    <header class="bg-white dark:bg-gray-800 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8 flex justify-between items-center">
-    
-        <h1 class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-600">
-          My Orders
-        </h1>
-        <div class="relative">
-          <button 
-            @click="showFilters = !showFilters"
-            class="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-          >
-            <i class="fas fa-filter"></i>
-            <span>Filter</span>
-          </button>
-          <transition name="fade">
-            <div 
-              v-show="showFilters"
-              class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700"
-            >
-              <div class="p-2 space-y-2">
-                <label 
-                  v-for="status in orderStatuses" 
-                  :key="status.value"
-                  class="flex items-center px-3 py-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                >
-                  <input 
-                    type="checkbox" 
-                    v-model="selectedStatuses"
-                    :value="status.value"
-                    class="rounded text-blue-500 focus:ring-blue-500 dark:focus:ring-blue-600"
-                  >
-                  <span class="ml-2 text-sm">{{ status.label }}</span>
-                </label>
-              </div>
-            </div>
-          </transition>
-        </div>
-      </div>
-    </header>
+  <div class="p-6">
+    <div class="max-w-6xl mx-auto">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Orders</h1>
 
-    <!-- Main Content -->
-    <main class="max-w-4xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-      <!-- Empty State -->
+      <!-- Filter Tabs -->
+      <div class="flex space-x-1 mb-6">
+        <button 
+          v-for="status in orderStatuses" 
+          :key="status" 
+          @click="activeStatus = status"
+          :class="['px-4 py-2 rounded-lg font-medium transition-colors', 
+                   activeStatus === status ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600']"
+        >
+          {{ status.charAt(0).toUpperCase() + status.slice(1) }}
+        </button>
+      </div>
+
+      <!-- Orders List -->
       <div v-if="filteredOrders.length === 0" class="text-center py-16">
-        <div class="mx-auto w-32 h-32 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mb-6">
-          <i class="fas fa-box-open text-4xl text-blue-500"></i>
+        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-12 h-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          </svg>
         </div>
-        <h2 class="text-2xl font-bold mb-2">No orders found</h2>
-        <p class="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto">
-          {{
-            selectedStatuses.length === 0 
-              ? "You haven't placed any orders yet. Start shopping to find amazing fan merchandise!"
-              : "No orders match your selected filters."
-          }}
-        </p>
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No orders found</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-6">You haven't placed any orders yet.</p>
         <router-link 
           to="/mart" 
-          class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-bold transition-colors shadow-md"
+          class="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
         >
           Start Shopping
         </router-link>
       </div>
 
-      <!-- Orders List -->
       <div v-else class="space-y-6">
         <div 
           v-for="order in filteredOrders" 
-          :key="order.id"
-          class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700"
+          :key="order.id" 
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
           <!-- Order Header -->
-          <div class="p-6 border-b border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div>
-              <div class="flex items-center gap-3">
-                <h3 class="font-bold text-lg">Order #{{ order.id }}</h3>
+          <div class="p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Order #{{ order.id }}</h3>
+                <p class="text-gray-600 dark:text-gray-400">Placed on {{ formatDate(order.date) }}</p>
+              </div>
+              <div class="flex items-center gap-4">
                 <span 
-                  :class="getStatusBadgeClass(order.status)"
-                  class="px-2.5 py-0.5 rounded-full text-xs font-medium"
+                  :class="getStatusColor(order.status)" 
+                  class="px-3 py-1 rounded-full text-sm font-medium"
                 >
-                  {{ getStatusText(order.status) }}
+                  {{ order.status.charAt(0).toUpperCase() + order.status.slice(1) }}
                 </span>
-              </div>
-              <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">
-                Placed on {{ formatDate(order.date) }}
-              </p>
-            </div>
-            <div class="text-right">
-              <p class="font-bold text-blue-500">${{ order.total.toFixed(2) }}</p>
-              <p class="text-gray-500 dark:text-gray-400 text-sm">
-                {{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }}
-              </p>
-            </div>
-          </div>
-
-          <!-- Order Items Preview -->
-          <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-            <div class="flex -space-x-2">
-              <img 
-                v-for="(item, index) in order.items.slice(0, 5)" 
-                :key="index"
-                :src="item.image"
-                :alt="item.title"
-                class="w-12 h-12 rounded-lg border-2 border-white dark:border-gray-800 object-cover"
-              />
-              <div 
-                v-if="order.items.length > 5"
-                class="w-12 h-12 rounded-lg border-2 border-white dark:border-gray-800 bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xs font-bold"
-              >
-                +{{ order.items.length - 5 }}
+                <router-link 
+                  :to="`/orders/${order.id}`" 
+                  class="text-green-600 hover:text-green-700 font-medium"
+                >
+                  View Details
+                </router-link>
               </div>
             </div>
           </div>
 
-          <!-- Order Actions -->
-          <div class="p-4 flex flex-col sm:flex-row justify-between items-center gap-3">
-            <router-link 
-              :to="`/orders/${order.id}`"
-              class="text-blue-500 hover:text-blue-600 dark:hover:text-blue-400 font-medium flex items-center gap-2"
-            >
-              <i class="fas fa-eye"></i>
-              <span>View Details</span>
-            </router-link>
+          <!-- Order Items -->
+          <div class="p-6">
+            <div class="space-y-4">
+              <div v-for="item in order.items" :key="item.id" class="flex items-center gap-4">
+                <img 
+                  :src="item.image" 
+                  :alt="item.name" 
+                  class="w-16 h-16 object-cover rounded-lg"
+                >
+                <div class="flex-1">
+                  <h4 class="font-medium text-gray-900 dark:text-white">{{ item.name }}</h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">Quantity: {{ item.quantity }}</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-semibold text-gray-900 dark:text-white">${{ (item.price * item.quantity).toFixed(2) }}</p>
+                </div>
+              </div>
+            </div>
             
-            <div class="flex items-center gap-3">
-              <button 
-                v-if="order.status === 'shipped'"
-                @click="trackOrder(order.id)"
-                class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors"
-              >
-                Track Package
-              </button>
-              <button 
-                v-if="order.status === 'delivered'"
-                @click="leaveReview(order)"
-                class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-              >
-                Leave Review
-              </button>
-              <button 
-                v-if="['processing', 'shipped'].includes(order.status)"
-                @click="cancelOrder(order.id)"
-                class="px-4 py-2 text-red-500 hover:text-red-600 dark:hover:text-red-400 font-medium"
-              >
-                Cancel Order
-              </button>
+            <!-- Order Total -->
+            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
+              <span class="text-lg font-semibold text-gray-900 dark:text-white">Total: ${{ order.total.toFixed(2) }}</span>
+              <div class="flex gap-2">
+                <button 
+                  v-if="order.status === 'delivered'" 
+                  class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  Leave Review
+                </button>
+                <button 
+                  v-if="order.status === 'processing'" 
+                  @click="cancelOrder(order.id)" 
+                  class="px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors"
+                >
+                  Cancel Order
+                </button>
+                <button 
+                  v-if="order.status === 'delivered'" 
+                  class="px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors"
+                >
+                  Reorder
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- Review Modal -->
-    <div 
-      v-if="reviewModal.open"
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-    >
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="text-xl font-bold">Leave a Review</h3>
-          <button @click="reviewModal.open = false" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="mb-4">
-          <h4 class="font-medium mb-2">Rate your purchase</h4>
-          <div class="flex items-center gap-1">
-            <button 
-              v-for="star in 5" 
-              :key="star"
-              @click="reviewModal.rating = star"
-              class="text-2xl focus:outline-none"
-            >
-              <i 
-                :class="star <= reviewModal.rating ? 'fas text-yellow-400' : 'far text-gray-400'"
-                class="fa-star"
-              ></i>
-            </button>
-          </div>
-        </div>
-        
-        <div class="mb-4">
-          <label for="review-text" class="block font-medium mb-2">Your review</label>
-          <textarea
-            id="review-text"
-            v-model="reviewModal.comment"
-            rows="4"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            placeholder="Share your experience with this product..."
-          ></textarea>
-        </div>
-        
-        <div class="flex justify-end gap-3">
-          <button 
-            @click="reviewModal.open = false"
-            class="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg font-medium transition-colors"
-          >
-            Cancel
-          </button>
-          <button 
-            @click="submitReview"
-            class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
-          >
-            Submit Review
-          </button>
         </div>
       </div>
     </div>
@@ -214,169 +116,102 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
 
-const router = useRouter()
+const activeStatus = ref('all')
+const orderStatuses = ref(['all', 'processing', 'shipped', 'delivered', 'cancelled'])
 
-// Sample order data - in a real app, this would come from an API
 const orders = ref([
   {
-    id: 'FR-100256',
-    date: '2023-05-15T14:32:00',
+    id: 'ORD-2024-001',
+    date: new Date('2024-01-15'),
     status: 'delivered',
-    total: 89.97,
+    total: 116.97,
     items: [
       {
-        id: 'prod-1',
-        title: 'Limited Edition Poster',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
+        id: 1,
+        name: 'Attack on Titan Survey Corps Hoodie',
+        price: 45.99,
+        quantity: 2,
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
+      },
+      {
+        id: 2,
+        name: 'Marvel Avengers Logo T-Shirt',
         price: 24.99,
-        quantity: 1
-      },
-      {
-        id: 'prod-2',
-        title: 'Official Fan T-Shirt',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        price: 29.99,
-        quantity: 2
-      }
-    ],
-    trackingNumber: 'UPS-1Z999AA0392658769'
-  },
-  {
-    id: 'FR-100198',
-    date: '2023-04-28T09:15:00',
-    status: 'shipped',
-    total: 45.98,
-    items: [
-      {
-        id: 'prod-3',
-        title: 'Collector\'s Pin Set',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        price: 19.99,
-        quantity: 1
-      },
-      {
-        id: 'prod-4',
-        title: 'Novelty Coffee Mug',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        price: 12.99,
-        quantity: 2
-      }
-    ],
-    trackingNumber: 'USPS-9405511202537864567891'
-  },
-  {
-    id: 'FR-100045',
-    date: '2023-03-10T16:45:00',
-    status: 'processing',
-    total: 65.50,
-    items: [
-      {
-        id: 'prod-5',
-        title: 'Autographed Merch Box',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        price: 65.50,
-        quantity: 1
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop'
       }
     ]
   },
   {
-    id: 'FR-099876',
-    date: '2023-02-22T11:20:00',
-    status: 'cancelled',
-    total: 34.98,
+    id: 'ORD-2024-002',
+    date: new Date('2024-01-10'),
+    status: 'shipped',
+    total: 89.99,
     items: [
       {
-        id: 'prod-6',
-        title: 'Hoodie',
-        image: 'https://images.unsplash.com/photo-1631729371254-42c2892f0e6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80',
-        price: 34.98,
-        quantity: 1
+        id: 3,
+        name: 'League of Legends Championship Trophy Replica',
+        price: 89.99,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop'
+      }
+    ]
+  },
+  {
+    id: 'ORD-2024-003',
+    date: new Date('2024-01-05'),
+    status: 'processing',
+    total: 54.98,
+    items: [
+      {
+        id: 4,
+        name: 'K-Pop BTS Photocard Set',
+        price: 19.99,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop'
+      },
+      {
+        id: 5,
+        name: 'Studio Ghibli Totoro Plushie',
+        price: 34.99,
+        quantity: 1,
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
       }
     ]
   }
 ])
 
-const orderStatuses = [
-  { value: 'processing', label: 'Processing' },
-  { value: 'shipped', label: 'Shipped' },
-  { value: 'delivered', label: 'Delivered' },
-  { value: 'cancelled', label: 'Cancelled' }
-]
-
-const selectedStatuses = ref([])
-const showFilters = ref(false)
-const reviewModal = ref({
-  open: false,
-  orderId: null,
-  rating: 0,
-  comment: ''
-})
-
 const filteredOrders = computed(() => {
-  if (selectedStatuses.value.length === 0) {
+  if (activeStatus.value === 'all') {
     return orders.value
   }
-  return orders.value.filter(order => selectedStatuses.value.includes(order.status))
+  return orders.value.filter(order => order.status === activeStatus.value)
 })
 
-function formatDate(dateString) {
-  const options = { year: 'numeric', month: 'long', day: 'numeric' }
-  return new Date(dateString).toLocaleDateString(undefined, options)
+const formatDate = (date) => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
-function getStatusText(status) {
-  const statusMap = {
-    processing: 'Processing',
-    shipped: 'Shipped',
-    delivered: 'Delivered',
-    cancelled: 'Cancelled'
+const getStatusColor = (status) => {
+  const colors = {
+    processing: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+    shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+    delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+    cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
   }
-  return statusMap[status] || status
+  return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-function getStatusBadgeClass(status) {
-  const classes = {
-    processing: 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200',
-    shipped: 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200',
-    delivered: 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200',
-    cancelled: 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200'
-  }
-  return classes[status] || 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
-}
-
-function trackOrder(orderId) {
-  const order = orders.value.find(o => o.id === orderId)
-  if (order && order.trackingNumber) {
-    // In a real app, this would redirect to the carrier's tracking page
-    alert(`Tracking order ${order.trackingNumber} with carrier website`)
-  }
-}
-
-function leaveReview(order) {
-  reviewModal.value = {
-    open: true,
-    orderId: order.id,
-    rating: 0,
-    comment: ''
-  }
-}
-
-function submitReview() {
-  // In a real app, this would submit to your backend
-  console.log('Submitting review:', reviewModal.value)
-  alert(`Thank you for your ${reviewModal.value.rating}-star review!`)
-  reviewModal.value.open = false
-}
-
-function cancelOrder(orderId) {
+const cancelOrder = (orderId) => {
   if (confirm('Are you sure you want to cancel this order?')) {
     const order = orders.value.find(o => o.id === orderId)
     if (order) {
       order.status = 'cancelled'
-      // In a real app, you would call an API to cancel the order
-      alert(`Order ${orderId} has been cancelled`)
     }
   }
 }
