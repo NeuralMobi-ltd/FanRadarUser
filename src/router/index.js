@@ -52,7 +52,8 @@ const routes = [
   {
     path: '/account/:user',
     name: 'Account',
-    component: Account
+    component: Account,
+    meta: { requiresAuth: true }
   },
   {
     path: '/edit-account',

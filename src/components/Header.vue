@@ -75,68 +75,49 @@
 
           <!-- User Menu -->
           <div class="relative">
-            <button
+            <button 
               @click="showUserMenu = !showUserMenu"
-              class="flex items-center space-x-1 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
+              class="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <img
-                src="/images/me.png"
-                alt="User avatar"
-                class="h-8 w-8 rounded-full"
+              <img 
+                :src="authStore.user?.avatar || '/public/images/me.png'" 
+                :alt="authStore.user?.name || 'User'"
+                class="w-8 h-8 rounded-full object-cover"
               />
-              <svg class="h-4 w-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-              </svg>
+              <span class="font-medium">{{ authStore.user?.name || 'User' }}</span>
+              <ChevronDownIcon class="w-4 h-4" />
             </button>
-
+            
             <!-- Dropdown Menu -->
-            <div
+            <div 
               v-if="showUserMenu"
-              class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700"
+              class="absolute right-0 z-50 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
             >
-              <div class="px-4 py-2 border-b border-gray-200 dark:border-gray-700">
-                <div class="flex items-center space-x-2">
-                  <img src="/images/me.png" alt="User avatar" class="h-8 w-8 rounded-full"/>
-                  <div>
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ user.name }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">1 karma</div>
-                  </div>
-                </div>
+              <div class="py-1">
+                <router-link 
+                  :to="`/account/${authStore.user?.email?.split('@')[0] || 'user'}`"
+                  @click="showUserMenu = false"
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <UserIcon class="inline w-4 h-4 mr-2" />
+                  Profile
+                </router-link>
+                <router-link 
+                  to="/edit-account"
+                  @click="showUserMenu = false" 
+                  class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <Cog6ToothIcon class="inline w-4 h-4 mr-2" />
+                  User Settings
+                </router-link>
+                <button
+                  @click="logout"
+                  class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <ArrowRightOnRectangleIcon class="inline w-4 h-4 mr-2" />
+                  Log Out
+                </button>
               </div>
-              
-              <router-link
-                to="/account"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click="showUserMenu = false"
-              >
-                <svg class="mr-3 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-                </svg>
-                Profile
-              </router-link>
-              
-              <router-link
-                to="/settings"
-                class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                @click="showUserMenu = false"
-              >
-                <svg class="mr-3 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"/>
-                </svg>
-                User Settings
-              </router-link>
-              
-              <hr class="my-1 border-gray-200 dark:border-gray-700">
-              
-              <button
-                @click="logout"
-                class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <svg class="mr-3 h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd"/>
-                </svg>
-                Log Out
-              </button>
             </div>
           </div>
         </template>
@@ -205,7 +186,11 @@ import {
   MagnifyingGlassIcon,
   BellIcon,
   SunIcon,
-  MoonIcon
+  MoonIcon,
+  ChevronDownIcon,
+  UserIcon,
+  Cog6ToothIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -224,8 +209,10 @@ function toggleTheme() {
 }
 
 function logout() {
-  authStore.logout()
-  showUserMenu.value = false
-  router.push('/')
+  if (confirm('Are you sure you want to logout?')) {
+    authStore.logout()
+    router.push('/login')
+    showUserMenu.value = false
+  }
 }
 </script>
