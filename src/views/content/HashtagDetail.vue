@@ -117,8 +117,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Post from '@/components/Post.vue'
-import NewsPost from '@/components/NewsPost.vue'
+import Post from '@/components/community/Post/Post.vue'
+import NewsPost from '@/components/common/NewsPost.vue'
 
 const route = useRoute()
 const router = useRouter()

@@ -128,7 +128,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import CommunityCard from '@/components/CommunityCard.vue'
+import CommunityCard from '@/components/community/CommunityCard.vue'
 
 const search = ref('')
 const activeCategory = ref('All')

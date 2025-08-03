@@ -34,10 +34,10 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
-import StoreHeader from '@/components/StoreHeader.vue'
-import StoreSidebar from '@/components/StoreSidebar.vue'
+import Header from '@/components/layout/Header.vue'
+import Sidebar from '@/components/layout/Sidebar/Sidebar.vue'
+import StoreHeader from '@/components/store/StoreHeader.vue'
+import StoreSidebar from '@/components/store/StoreSidebar.vue'
 
 const route = useRoute()
 const auth = useAuthStore()

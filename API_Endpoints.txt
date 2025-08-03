@@ -1,0 +1,1545 @@
+FanRadar API Usage Examples Based on Project Structure
+
+====================
+AUTHENTICATION PAGES
+====================
+
+POST /api/auth/login
+Usage: When user submits login form
+Request: { "email": "user@example.com", "password": "password123" }
+Response: { 
+  "success": true, 
+  "data": { 
+    "user": {
+      "id": 1,
+      "name": "John Doe",
+      "email": "user@example.com",
+      "avatar": "https://example.com/avatar.jpg",
+      "followers": 1250,
+      "following": 892,
+      "posts": 156
+    }, 
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsImVtYWlsIjoidXNlckBleGFtcGxlLmNvbSIsImlhdCI6MTcwNjE4NDAwMCwiZXhwIjoxNzA2MjcwNDAwfQ.xyz123" 
+  } 
+}
+
+
+POST /api/auth/register
+Usage: When user submits registration form
+Request: { "name": "John Doe", "email": "john@example.com", "password": "password123", ... }
+Response: { 
+  "success": true, 
+  "message": "Please verify your email",
+  "data": {
+    "email": "john@example.com",
+    "verificationRequired": true
+  }
+}
+
+ChooseCategories.vue
+-------------------
+PUT /api/users/profile
+Usage: Save user's selected categories after onboarding
+Request: { "categories": ["Sports", "Gaming", "Anime", "Music", "Tech"] }
+Response: { 
+  "success": true, 
+  "data": { 
+    "user": {
+      "id": 2,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "avatar": "https://ui-avatars.com/api/?name=John+Doe&background=6366f1&color=fff&size=256",
+      "categories": ["Sports", "Gaming", "Anime", "Music", "Tech"],
+      "onboardingCompleted": true
+    }
+  } 
+}
+
+===================
+USER PROFILE PAGES
+===================
+
+GET /api/users/profile
+Usage: Load current user's profile data
+Response: { 
+  "success": true, 
+  "data": { 
+    "id": 1, 
+    "name": "John Doe", 
+    "username": "johndoe",
+    "email": "john@example.com",
+    "avatar": "https://example.com/avatar.jpg", 
+    "coverPhoto": "https://example.com/cover.jpg",
+    "bio": "Digital creator | Photography enthusiast | Coffee lover",
+    "followers": 1250,
+    "following": 892,
+    "posts": 156,
+    "joinedDate": "2023-01-15T10:30:00Z",
+    "isVerified": true
+  } 
+}
+
+GET /api/users/:userId/posts
+Usage: Load user's posts for the posts tab
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 1,
+        "content": "Just finished an amazing photography session! The lighting was perfect today.",
+        "media": ["https://example.com/image1.jpg"],
+        "tags": ["photography", "nature", "art"],
+        "likes": 45,
+        "comments": 12,
+        "shares": 3,
+        "isLiked": false,
+        "createdAt": "2024-01-15T10:30:00Z",
+        "fandom": "Photography"
+      }
+    ], 
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 156,
+      "pages": 16
+    } 
+  } 
+}
+
+GET /api/users/:userId/followers
+Usage: Load followers list
+Response: { 
+  "success": true, 
+  "data": { 
+    "followers": [
+      {
+        "id": 2,
+        "name": "Jane Smith",
+        "username": "janesmith",
+        "avatar": "https://example.com/jane.jpg",
+        "isFollowing": false,
+        "followedAt": "2023-12-01T10:30:00Z"
+      },
+      {
+        "id": 3,
+        "name": "Mike Johnson",
+        "username": "mikej",
+        "avatar": "https://example.com/mike.jpg",
+        "isFollowing": true,
+        "followedAt": "2023-11-15T14:20:00Z"
+      }
+    ],
+    "total": 1250
+  } 
+}
+
+GET /api/users/:userId/following
+Usage: Load following list
+Response: { 
+  "success": true, 
+  "data": { 
+    "following": [
+      {
+        "id": 4,
+        "name": "Sarah Davis",
+        "username": "sarahd",
+        "avatar": "https://example.com/sarah.jpg",
+        "followedAt": "2023-10-20T09:15:00Z"
+      }
+    ],
+    "total": 892
+  } 
+}
+
+POST /api/users/:userId/follow
+Usage: When clicking "Follow" button on another user's profile
+Request: { "userId": 123 }
+Response: { 
+  "success": true, 
+  "message": "User followed successfully",
+  "data": {
+    "isFollowing": true,
+    "followersCount": 1251
+  }
+}
+
+GET /api/posts/saved
+Usage: Load saved posts for "Saved" tab
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 5,
+        "content": "Amazing sunset from my balcony tonight! Sometimes the best moments are right at home.",
+        "media": ["https://example.com/sunset.jpg"],
+        "author": {
+          "id": 6,
+          "name": "Alice Johnson",
+          "username": "alicej",
+          "avatar": "https://example.com/alice.jpg"
+        },
+        "likes": 89,
+        "comments": 15,
+        "shares": 7,
+        "savedAt": "2024-01-10T18:30:00Z"
+      }
+    ]
+  } 
+}
+
+
+PUT /api/users/profile
+Usage: Update profile information
+Request: { 
+  "name": "John Doe Updated", 
+  "bio": "Senior Software Engineer | Coffee enthusiast | Travel lover", 
+  "email": "john.updated@example.com" 
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "user": {
+      "id": 1,
+      "name": "John Doe Updated",
+      "username": "johndoe",
+      "email": "john.updated@example.com",
+      "bio": "Senior Software Engineer | Coffee enthusiast | Travel lover",
+      "avatar": "https://example.com/avatar.jpg",
+      "updatedAt": "2024-01-15T16:45:00Z"
+    }
+  } 
+}
+
+PUT /api/users/avatar
+Usage: Update profile picture
+Request: FormData with image file
+Response: { 
+  "success": true, 
+  "data": { 
+    "avatarUrl": "https://example.com/new_avatar_1234567890.jpg",
+    "message": "Profile picture updated successfully"
+  } 
+}
+
+PUT /api/users/cover-photo
+Usage: Update cover photo
+Request: FormData with image file
+Response: { 
+  "success": true, 
+  "data": { 
+    "coverPhotoUrl": "https://example.com/new_cover_1234567890.jpg",
+    "message": "Cover photo updated successfully"
+  } 
+}
+
+==================
+MAIN CONTENT PAGES
+==================
+
+GET /api/feed/home
+Usage: Load home feed posts
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 10,
+        "content": "What a match yesterday! The tactical setup was absolutely brilliant.",
+        "media": ["https://example.com/match.jpg"],
+        "author": {
+          "id": 7,
+          "name": "FootballFanatic",
+          "username": "footballfan",
+          "avatar": "https://example.com/fan.jpg"
+        },
+        "fandom": {
+          "id": 1,
+          "name": "Premier League Fans",
+          "handle": "premier-league-fans"
+        },
+        "tags": ["football", "tactics", "premierleague"],
+        "likes": 89,
+        "comments": 23,
+        "shares": 5,
+        "isLiked": false,
+        "createdAt": "2024-01-15T14:30:00Z"
+      }
+    ], 
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "hasNext": true
+    } 
+  } 
+}
+
+POST /api/posts
+Usage: Create new post from home page
+Request: { 
+  "content": "Just discovered this amazing coffee shop! The atmosphere is perfect for working.", 
+  "media": ["https://example.com/uploaded_image.jpg"], 
+  "tags": ["coffee", "work", "discovery"],
+  "fandomId": null 
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "post": {
+      "id": 11,
+      "content": "Just discovered this amazing coffee shop! The atmosphere is perfect for working.",
+      "media": ["https://example.com/uploaded_image.jpg"],
+      "author": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "johndoe",
+        "avatar": "https://example.com/avatar.jpg"
+      },
+      "tags": ["coffee", "work", "discovery"],
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "createdAt": "2024-01-15T16:30:00Z"
+    }
+  } 
+}
+
+POST /api/posts/:postId/like
+Usage: Like a post
+Request: { "postId": 123 }
+Response: { 
+  "success": true, 
+  "data": { 
+    "liked": true, 
+    "likesCount": 46,
+    "message": "Post liked successfully"
+  } 
+}
+
+POST /api/posts/:postId/comments
+Usage: Add comment to post
+Request: { "content": "Great post! Thanks for sharing this insight." }
+Response: { 
+  "success": true, 
+  "data": { 
+    "comment": {
+      "id": 50,
+      "content": "Great post! Thanks for sharing this insight.",
+      "author": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "johndoe",
+        "avatar": "https://example.com/avatar.jpg"
+      },
+      "createdAt": "2024-01-15T16:45:00Z",
+      "likes": 0
+    },
+    "totalComments": 13
+  } 
+}
+
+POST /api/posts/:postId/share
+Usage: Share a post
+Request: { "postId": 123, "comment": "This is so true! Everyone should see this." }
+Response: { 
+  "success": true, 
+  "data": { 
+    "shared": true, 
+    "sharesCount": 13,
+    "shareId": 25,
+    "message": "Post shared successfully"
+  } 
+}
+
+
+GET /api/feed/explore
+Usage: Load explore feed
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 15,
+        "content": "Breaking down the new aerodynamic regulations and how they might affect next season.",
+        "media": ["https://example.com/f1.jpg"],
+        "author": {
+          "id": 8,
+          "name": "F1Analyst",
+          "username": "f1analyst",
+          "avatar": "https://example.com/f1fan.jpg"
+        },
+        "fandom": {
+          "id": 3,
+          "name": "Formula 1",
+          "handle": "formula-1"
+        },
+        "tags": ["f1", "aerodynamics", "racing"],
+        "likes": 312,
+        "comments": 89,
+        "shares": 24,
+        "isLiked": false,
+        "createdAt": "2024-01-14T09:15:00Z"
+      }
+    ],
+    "trending": true
+  } 
+}
+
+GET /api/trending/posts
+Usage: Load trending posts
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 20,
+        "content": "This anime season is absolutely incredible! The animation quality keeps getting better.",
+        "trendingScore": 95.7,
+        "author": {
+          "id": 9,
+          "name": "AnimeExpert",
+          "username": "animeexpert",
+          "avatar": "https://example.com/anime.jpg"
+        },
+        "likes": 567,
+        "comments": 123,
+        "shares": 45,
+        "createdAt": "2024-01-15T12:00:00Z"
+      }
+    ]
+  } 
+}
+
+GET /api/trending/hashtags
+Usage: Load trending hashtags
+Response: { 
+  "success": true, 
+  "data": { 
+    "hashtags": [
+      {
+        "tag": "LoLWorlds",
+        "posts": "45.2K",
+        "growth": "+24%",
+        "category": "Gaming"
+      },
+      {
+        "tag": "AnimeSpring2024",
+        "posts": "32.1K", 
+        "growth": "+18%",
+        "category": "Entertainment"
+      }
+    ]
+  } 
+}
+
+GET /api/categories
+Usage: Load category cards
+Response: { 
+  "success": true, 
+  "data": { 
+    "categories": [
+      {
+        "id": 1,
+        "name": "Sports",
+        "slug": "sport",
+        "description": "Connect with sports fans worldwide",
+        "image": "https://example.com/sports.jpg",
+        "communities": "450+",
+        "members": "2.5M+",
+        "trending": true
+      },
+      {
+        "id": 2,
+        "name": "Gaming",
+        "slug": "gaming",
+        "description": "Gaming communities and discussions",
+        "image": "https://example.com/gaming.jpg",
+        "communities": "890+",
+        "members": "4.2M+",
+        "trending": true
+      }
+    ]
+  } 
+}
+
+
+GET /api/categories/:category/content
+Usage: Load content for specific category (sports, gaming, etc.)
+URL: /api/categories/sports/content
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 25,
+        "content": "Champions League final preview - tactical analysis and predictions",
+        "author": {
+          "id": 10,
+          "name": "SportsAnalyst",
+          "username": "sportsanalyst",
+          "avatar": "https://example.com/analyst.jpg"
+        },
+        "category": "Sports",
+        "likes": 234,
+        "comments": 67,
+        "createdAt": "2024-01-15T08:00:00Z"
+      }
+    ], 
+    "fandoms": [
+      {
+        "id": 1,
+        "name": "Premier League Fans",
+        "handle": "premier-league-fans",
+        "members": "234K",
+        "description": "The ultimate community for Premier League football fans",
+        "logo": "https://logo.clearbit.com/premierleague.com"
+      }
+    ],
+    "news": [
+      {
+        "id": 1,
+        "title": "Champions League Final Preview",
+        "summary": "Expert analysis and predictions for the biggest match",
+        "source": "Sports Today",
+        "publishedAt": "2024-01-15T06:00:00Z",
+        "image": "https://example.com/news.jpg"
+      }
+    ]
+  } 
+}
+
+GET /api/fandoms/search?q={query}
+Usage: Search fandoms within category
+URL: /api/fandoms/search?q=premier-league&category=sports
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandoms": [
+      {
+        "id": 1,
+        "name": "Premier League Fans",
+        "handle": "premier-league-fans",
+        "description": "The ultimate community for Premier League football fans",
+        "members": "234K",
+        "category": "Sports",
+        "logo": "https://logo.clearbit.com/premierleague.com",
+        "isJoined": true
+      }
+    ],
+    "total": 1
+  } 
+}
+
+GET /api/hashtags/:hashtag/posts
+Usage: Load posts for specific hashtag
+URL: /api/hashtags/PremierLeague/posts
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 30,
+        "content": "What an incredible match! The last-minute goal changed everything.",
+        "hashtags": ["PremierLeague", "Football", "MatchDay"],
+        "author": {
+          "id": 11,
+          "name": "FootballFan",
+          "username": "footballfan",
+          "avatar": "https://example.com/fan.jpg"
+        },
+        "likes": 156,
+        "comments": 34,
+        "createdAt": "2024-01-15T20:30:00Z"
+      }
+    ],
+    "stats": {
+      "totalPosts": "45.2K",
+      "growth": "+24%",
+      "category": "Sports"
+    }
+  } 
+}
+
+GET /api/search/suggestions?q={query}
+Usage: Get related hashtags
+URL: /api/search/suggestions?q=PremierLeague
+Response: { 
+  "success": true, 
+  "data": { 
+    "suggestions": [
+      {
+        "tag": "Football",
+        "posts": "128K",
+        "type": "hashtag"
+      },
+      {
+        "tag": "EPL", 
+        "posts": "23.8K",
+        "type": "hashtag"
+      },
+      {
+        "name": "Premier League Fans",
+        "handle": "premier-league-fans",
+        "type": "fandom"
+      }
+    ]
+  } 
+}
+
+=================
+FANDOM/COMMUNITY
+=================
+
+GET /api/fandoms
+Usage: Load all available fandoms
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandoms": [
+      {
+        "id": 1,
+        "name": "Premier League Fans",
+        "handle": "premier-league-fans",
+        "description": "The ultimate community for Premier League football fans",
+        "members": "234K",
+        "category": "Sports",
+        "logo": "https://logo.clearbit.com/premierleague.com",
+        "coverImage": "https://example.com/cover.jpg",
+        "isJoined": true,
+        "isVerified": true
+      }
+    ], 
+    "pagination": {
+      "page": 1,
+      "limit": 12,
+      "total": 150,
+      "pages": 13
+    } 
+  } 
+}
+
+GET /api/fandoms/trending
+Usage: Load trending fandoms
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandoms": [
+      {
+        "id": 2,
+        "name": "Anime & Manga",
+        "handle": "anime-manga",
+        "members": "980K",
+        "growthRate": "+15%",
+        "trendingScore": 92.5,
+        "logo": "https://logo.clearbit.com/crunchyroll.com"
+      }
+    ]
+  } 
+}
+
+GET /api/fandoms/categories
+Usage: Load fandom categories for filtering
+Response: { 
+  "success": true, 
+  "data": { 
+    "categories": [
+      {
+        "name": "Sports",
+        "slug": "sports",
+        "count": 45,
+        "icon": "sports"
+      },
+      {
+        "name": "Gaming", 
+        "slug": "gaming",
+        "count": 89,
+        "icon": "gamepad"
+      },
+      {
+        "name": "Entertainment",
+        "slug": "entertainment", 
+        "count": 67,
+        "icon": "film"
+      }
+    ]
+  } 
+}
+
+GET /api/fandoms/search?q={query}
+Usage: Search fandoms
+URL: /api/fandoms/search?q=anime
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandoms": [
+      {
+        "id": 2,
+        "name": "Anime & Manga",
+        "handle": "anime-manga",
+        "description": "All things anime and manga - discussions, fan art, and more",
+        "members": "980K",
+        "category": "Entertainment",
+        "logo": "https://logo.clearbit.com/crunchyroll.com",
+        "matchScore": 95.7
+      }
+    ],
+    "total": 5,
+    "searchTime": 0.045
+  } 
+}
+
+POST /api/fandoms
+Usage: Create new fandom
+Request: {
+  "name": "Marvel Multiverse",
+  "description": "Marvel movies, comics, theories and everything MCU",
+  "category": "Entertainment",
+  "coverImage": "https://example.com/uploaded_cover.jpg",
+  "logo": "https://example.com/uploaded_logo.jpg",
+  "hashtags": ["MCU", "Marvel", "Avengers"],
+  "rules": [
+    "Be respectful to all community members",
+    "Stay on topic and relevant to Marvel",
+    "No spam or excessive self-promotion"
+  ]
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandom": {
+      "id": 5,
+      "name": "Marvel Multiverse",
+      "handle": "marvel-multiverse",
+      "description": "Marvel movies, comics, theories and everything MCU",
+      "category": "Entertainment",
+      "coverImage": "https://example.com/uploaded_cover.jpg",
+      "logo": "https://example.com/uploaded_logo.jpg",
+      "hashtags": ["MCU", "Marvel", "Avengers"],
+      "members": 1,
+      "createdAt": "2024-01-15T16:45:00Z",
+      "createdBy": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "johndoe"
+      }
+    }
+  } 
+}
+
+POST /api/upload/image
+Usage: Upload fandom cover image
+Request: FormData with image file
+Response: { 
+  "success": true, 
+  "data": { 
+    "imageUrl": "https://example.com/uploads/fandom_cover_1234567890.jpg",
+    "filename": "fandom_cover_1234567890.jpg",
+    "size": 2048576,
+    "mimeType": "image/jpeg"
+  } 
+}
+
+GET /api/fandoms/:fandomId
+Usage: Load fandom details
+URL: /api/fandoms/premier-league-fans
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandom": {
+      "id": 1,
+      "name": "Premier League Fans",
+      "handle": "premier-league-fans",
+      "description": "The ultimate community for Premier League football fans",
+      "fullDescription": "Welcome to the most passionate Premier League community...",
+      "members": "234K",
+      "onlineMembers": "5.2K",
+      "totalPosts": "45.7K",
+      "category": "Sports",
+      "logo": "https://logo.clearbit.com/premierleague.com",
+      "coverImage": "https://example.com/cover.jpg",
+      "createdDate": "2019",
+      "rules": [
+        "Keep discussions respectful and civil",
+        "No spam or self-promotion without permission",
+        "Stay on topic - Premier League related content only"
+      ],
+      "tags": ["football", "premierleague", "soccer", "EPL"],
+      "hashtags": [
+        {
+          "tag": "PremierLeague",
+          "posts": "45.2K"
+        },
+        {
+          "tag": "Football", 
+          "posts": "128K"
+        }
+      ],
+      "userRole": "admin",
+      "isJoined": true
+    }
+  } 
+}
+
+GET /api/fandoms/:fandomId/posts
+Usage: Load posts in fandom
+Response: { 
+  "success": true, 
+  "data": { 
+    "posts": [
+      {
+        "id": 35,
+        "content": "What a match yesterday! The tactical setup was absolutely brilliant.",
+        "author": {
+          "id": 12,
+          "name": "FootballFanatic",
+          "username": "footballfanatic",
+          "avatar": "https://example.com/fan.jpg",
+          "role": "member"
+        },
+        "fandom": {
+          "id": 1,
+          "name": "Premier League Fans",
+          "handle": "premier-league-fans"
+        },
+        "likes": 89,
+        "comments": 23,
+        "shares": 5,
+        "isPinned": false,
+        "isAnnouncement": false,
+        "createdAt": "2024-01-15T14:30:00Z"
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "hasNext": true
+    }
+  } 
+}
+
+GET /api/fandoms/:fandomId/members
+Usage: Load fandom members
+Response: { 
+  "success": true, 
+  "data": { 
+    "members": [
+      {
+        "id": 1,
+        "name": "John Smith",
+        "username": "johnsmith",
+        "avatar": "https://example.com/john.jpg",
+        "role": "admin",
+        "posts": 245,
+        "joinedDate": "Jan 2019",
+        "isOnline": true
+      },
+      {
+        "id": 2,
+        "name": "Emma Wilson",
+        "username": "emmaw",
+        "avatar": "https://example.com/emma.jpg",
+        "role": "moderator",
+        "posts": 189,
+        "joinedDate": "Mar 2020",
+        "isOnline": false
+      }
+    ],
+    "total": 234000,
+    "pagination": {
+      "page": 1,
+      "limit": 50
+    }
+  } 
+}
+
+POST /api/fandoms/:fandomId/join
+Usage: Join fandom
+Request: { "fandomId": "premier-league-fans" }
+Response: { 
+  "success": true, 
+  "message": "Successfully joined Premier League Fans",
+  "data": {
+    "role": "member",
+    "joinedAt": "2024-01-15T16:45:00Z",
+    "membersCount": 234001
+  }
+}
+
+POST /api/fandoms/:fandomId/posts
+Usage: Create post in fandom
+Request: { 
+  "content": "Just watched the highlights - what an incredible save by the goalkeeper!", 
+  "fandomId": 1,
+  "media": ["https://example.com/save.gif"],
+  "tags": ["goalkeeper", "save", "highlights"],
+  "isPinned": false,
+  "isAnnouncement": false
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "post": {
+      "id": 36,
+      "content": "Just watched the highlights - what an incredible save by the goalkeeper!",
+      "author": {
+        "id": 1,
+        "name": "John Doe",
+        "username": "johndoe",
+        "avatar": "https://example.com/avatar.jpg",
+        "role": "admin"
+      },
+      "fandom": {
+        "id": 1,
+        "name": "Premier League Fans",
+        "handle": "premier-league-fans"
+      },
+      "media": ["https://example.com/save.gif"],
+      "tags": ["goalkeeper", "save", "highlights"],
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "isPinned": false,
+      "isAnnouncement": false,
+      "createdAt": "2024-01-15T16:50:00Z"
+    }
+  } 
+}
+
+PUT /api/fandoms/:fandomId
+Usage: Update fandom (admin only)
+Request: { 
+  "name": "Premier League Fans Official", 
+  "description": "The ultimate official community for Premier League football fans worldwide" 
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "fandom": {
+      "id": 1,
+      "name": "Premier League Fans Official",
+      "description": "The ultimate official community for Premier League football fans worldwide",
+      "updatedAt": "2024-01-15T17:00:00Z"
+    }
+  } 
+}
+
+PUT /api/fandoms/:fandomId/role/:userId
+Usage: Change member role (admin only)
+Request: { "role": "moderator" }
+Response: { 
+  "success": true, 
+  "message": "User role updated to moderator",
+  "data": {
+    "userId": 15,
+    "oldRole": "member",
+    "newRole": "moderator",
+    "updatedBy": 1,
+    "updatedAt": "2024-01-15T17:05:00Z"
+  }
+}
+
+GET /api/fandoms/:fandomId/hashtags
+Usage: Load fandom hashtags
+Response: { 
+  "success": true, 
+  "data": { 
+    "hashtags": [
+      {
+        "tag": "PremierLeague",
+        "posts": "45.2K",
+        "trending": true
+      },
+      {
+        "tag": "Football",
+        "posts": "128K",
+        "trending": false
+      },
+      {
+        "tag": "MatchDay",
+        "posts": "67.3K", 
+        "trending": true
+      }
+    ],
+    "total": 6
+  } 
+}
+
+================
+STORE/E-COMMERCE
+================
+
+GET /api/store/products
+Usage: Load all products
+URL: /api/store/products?page=1&limit=12&category=apparel
+Response: { 
+  "success": true, 
+  "data": { 
+    "products": [
+      {
+        "id": 1,
+        "name": "Attack on Titan Survey Corps Hoodie",
+        "description": "High-quality cotton hoodie with Survey Corps emblem",
+        "price": 45.99,
+        "originalPrice": 59.99,
+        "discount": 23,
+        "category": "Apparel",
+        "brand": "Anime Central",
+        "image": "https://example.com/hoodie.jpg",
+        "images": ["https://example.com/hoodie1.jpg", "https://example.com/hoodie2.jpg"],
+        "rating": 4.8,
+        "reviews": 324,
+        "stock": 15,
+        "isNew": false,
+        "isWishlisted": false,
+        "sizes": ["S", "M", "L", "XL"],
+        "colors": ["Black", "Navy", "Green"]
+      }
+    ], 
+    "pagination": {
+      "page": 1,
+      "limit": 12,
+      "total": 150,
+      "pages": 13
+    },
+    "filters": {
+      "categories": ["Apparel", "Accessories", "Collectibles"],
+      "brands": ["Anime Central", "Marvel Official", "Gaming Gear"],
+      "priceRange": {
+        "min": 9.99,
+        "max": 299.99
+      }
+    }
+  } 
+}
+
+GET /api/store/categories
+Usage: Load product categories for sidebar
+Response: { 
+  "success": true, 
+  "data": { 
+    "categories": [
+      {
+        "id": 1,
+        "name": "Apparel",
+        "slug": "apparel",
+        "count": 450,
+        "icon": "tshirt"
+      },
+      {
+        "id": 2,
+        "name": "Accessories",
+        "slug": "accessories",
+        "count": 320,
+        "icon": "gem"
+      }
+    ]
+  } 
+}
+
+GET /api/store/brands
+Usage: Load brands for filtering
+Response: { 
+  "success": true, 
+  "data": { 
+    "brands": [
+      {
+        "id": 1,
+        "name": "FanRadar Official",
+        "slug": "fanradar",
+        "products": 245,
+        "logo": "https://example.com/fanradar_logo.jpg"
+      },
+      {
+        "id": 2,
+        "name": "Anime Collective",
+        "slug": "anime-collective",
+        "products": 180,
+        "logo": "https://example.com/anime_logo.jpg"
+      }
+    ]
+  } 
+}
+
+GET /api/store/products/search?q={query}
+Usage: Search products
+URL: /api/store/products/search?q=hoodie
+Response: { 
+  "success": true, 
+  "data": { 
+    "products": [
+      {
+        "id": 1,
+        "name": "Attack on Titan Survey Corps Hoodie",
+        "price": 45.99,
+        "image": "https://example.com/hoodie.jpg",
+        "rating": 4.8,
+        "matchScore": 95.5
+      }
+    ],
+    "total": 12,
+    "searchTime": 0.032
+  } 
+}
+
+POST /api/store/cart
+Usage: Add product to cart
+Request: { "productId": 123, "quantity": 2, "size": "L", "color": "Black" }
+Response: { 
+  "success": true, 
+  "message": "Product added to cart successfully",
+  "data": {
+    "cartItem": {
+      "id": 50,
+      "productId": 123,
+      "quantity": 2,
+      "size": "L",
+      "color": "Black",
+      "price": 45.99,
+      "subtotal": 91.98
+    },
+    "cartTotal": 116.97,
+    "itemsCount": 3
+  }
+}
+
+POST /api/store/wishlist/:productId
+Usage: Add to wishlist
+Request: { "productId": 123 }
+Response: { 
+  "success": true, 
+  "message": "Product added to wishlist",
+  "data": {
+    "wishlistId": 25,
+    "productId": 123,
+    "addedAt": "2024-01-15T18:00:00Z"
+  }
+}
+
+GET /api/store/cart
+Usage: Load cart items
+Response: { 
+  "success": true, 
+  "data": { 
+    "items": [
+      {
+        "id": 50,
+        "product": {
+          "id": 1,
+          "name": "Attack on Titan Survey Corps Hoodie",
+          "image": "https://example.com/hoodie.jpg",
+          "price": 45.99,
+          "originalPrice": 59.99
+        },
+        "quantity": 2,
+        "size": "L",
+        "color": "Black",
+        "subtotal": 91.98
+      }
+    ], 
+    "summary": {
+      "subtotal": 108.27,
+      "shipping": 0.00,
+      "tax": 8.70,
+      "total": 116.97,
+      "itemsCount": 3
+    },
+    "estimatedDelivery": "2024-01-20"
+  } 
+}
+
+PUT /api/store/cart/:itemId
+Usage: Update cart item quantity
+Request: { "quantity": 3 }
+Response: { 
+  "success": true, 
+  "data": { 
+    "item": {
+      "id": 50,
+      "quantity": 3,
+      "subtotal": 137.97
+    },
+    "cartTotal": 161.97
+  } 
+}
+
+DELETE /api/store/cart/:itemId
+Usage: Remove item from cart
+Response: { 
+  "success": true, 
+  "message": "Item removed from cart",
+  "data": {
+    "removedItemId": 50,
+    "cartTotal": 24.99,
+    "itemsCount": 1
+  }
+}
+
+POST /api/store/orders
+Usage: Place order (checkout)
+Request: { 
+  "items": [
+    {
+      "productId": 1,
+      "quantity": 2,
+      "size": "L",
+      "color": "Black"
+    }
+  ], 
+  "shippingAddress": {
+    "name": "John Doe",
+    "street": "123 Main St",
+    "city": "New York",
+    "state": "NY",
+    "zip": "10001",
+    "country": "USA"
+  }, 
+  "paymentMethod": {
+    "type": "card",
+    "last4": "1234"
+  }
+}
+Response: { 
+  "success": true, 
+  "data": { 
+    "order": {
+      "id": "ORD-2024-001",
+      "status": "processing",
+      "total": 116.97,
+      "estimatedDelivery": "2024-01-22",
+      "trackingNumber": null,
+      "createdAt": "2024-01-15T18:30:00Z"
+    }
+  } 
+}
+
+GET /api/store/orders
+Usage: Load user's orders
+Response: { 
+  "success": true, 
+  "data": { 
+    "orders": [
+      {
+        "id": "ORD-2024-001",
+        "status": "delivered",
+        "total": 116.97,
+        "itemsCount": 3,
+        "orderDate": "2024-01-15T18:30:00Z",
+        "deliveredDate": "2024-01-20T14:20:00Z",
+        "items": [
+          {
+            "id": 1,
+            "name": "Attack on Titan Survey Corps Hoodie",
+            "image": "https://example.com/hoodie.jpg",
+            "quantity": 2,
+            "price": 45.99
+          }
+        ]
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 5
+    }
+  } 
+}
+
+PUT /api/store/orders/:orderId/cancel
+Usage: Cancel order
+Request: { "orderId": "ORD-2024-001", "reason": "Changed my mind" }
+Response: { 
+  "success": true, 
+  "message": "Order cancelled successfully",
+  "data": {
+    "orderId": "ORD-2024-001",
+    "status": "cancelled",
+    "refundAmount": 116.97,
+    "refundEstimate": "3-5 business days"
+  }
+}
+
+GET /api/store/orders/:orderId
+Usage: Load specific order details
+URL: /api/store/orders/ORD-2024-001
+Response: { 
+  "success": true, 
+  "data": { 
+    "order": {
+      "id": "ORD-2024-001",
+      "status": "delivered",
+      "total": 116.97,
+      "subtotal": 108.27,
+      "tax": 8.70,
+      "shipping": 0.00,
+      "orderDate": "2024-01-15T18:30:00Z",
+      "deliveredDate": "2024-01-20T14:20:00Z",
+      "trackingNumber": "TN123456789",
+      "estimatedDelivery": "2024-01-20T18:00:00Z",
+      "shippingAddress": {
+        "name": "John Doe",
+        "street": "123 Main St",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10001"
+      },
+      "items": [
+        {
+          "id": 1,
+          "name": "Attack on Titan Survey Corps Hoodie",
+          "image": "https://example.com/hoodie.jpg",
+          "quantity": 2,
+          "price": 45.99,
+          "size": "L",
+          "color": "Black"
+        }
+      ],
+      "statusHistory": [
+        {
+          "status": "processing",
+          "date": "2024-01-15T18:30:00Z",
+          "description": "Order placed"
+        },
+        {
+          "status": "shipped",
+          "date": "2024-01-17T10:00:00Z",
+          "description": "Order shipped"
+        },
+        {
+          "status": "delivered",
+          "date": "2024-01-20T14:20:00Z",
+          "description": "Order delivered"
+        }
+      ]
+    }
+  } 
+}
+
+POST /api/store/orders/:orderId/review
+Usage: Leave order review
+Request: { 
+  "rating": 5, 
+  "comment": "Great product quality! Fast shipping and excellent packaging.",
+  "productReviews": [
+    {
+      "productId": 1,
+      "rating": 5,
+      "comment": "Perfect fit and amazing quality hoodie!"
+    }
+  ]
+}
+Response: { 
+  "success": true, 
+  "message": "Review submitted successfully",
+  "data": {
+    "reviewId": 123,
+    "rating": 5,
+    "submittedAt": "2024-01-21T10:00:00Z"
+  }
+}
+
+==================
+GLOBAL SEARCH FUNCTIONALITY
+==================
+
+Header Search (All Pages)
+-------------------------
+GET /api/search/global?q={query}&type={type}
+Usage: Global search across platform
+URL: /api/search/global?q=marvel&type=posts
+Response: { 
+  "success": true, 
+  "data": { 
+    "results": [
+      {
+        "type": "post",
+        "id": 40,
+        "content": "Just watched the latest Marvel movie - absolutely incredible!",
+        "author": {
+          "name": "MovieBuff",
+          "username": "moviebuff",
+          "avatar": "https://example.com/buff.jpg"
+        },
+        "relevanceScore": 95.2
+      },
+      {
+        "type": "fandom",
+        "id": 4,
+        "name": "Marvel Multiverse",
+        "handle": "marvel-multiverse",
+        "members": "1.2M",
+        "relevanceScore": 98.7
+      },
+      {
+        "type": "product",
+        "id": 25,
+        "name": "Marvel Avengers Logo T-Shirt",
+        "price": 24.99,
+        "image": "https://example.com/tshirt.jpg",
+        "relevanceScore": 89.3
+      }
+    ],
+    "total": 156,
+    "searchTime": 0.078
+  } 
+}
+
+GET /api/search/suggestions?q={query}
+Usage: Search autocomplete
+URL: /api/search/suggestions?q=mar
+Response: { 
+  "success": true, 
+  "data": { 
+    "suggestions": [
+      {
+        "text": "marvel",
+        "type": "query",
+        "count": "1.2K results"
+      },
+      {
+        "text": "mario",
+        "type": "query", 
+        "count": "456 results"
+      },
+      {
+        "text": "Marvel Multiverse",
+        "type": "fandom",
+        "handle": "marvel-multiverse",
+        "icon": "https://logo.clearbit.com/marvel.com"
+      }
+    ]
+  } 
+}
+
+=================
+NOTIFICATIONS
+=================
+
+Header Notifications (All Pages)
+--------------------------------
+GET /api/notifications
+Usage: Load user notifications
+Response: { 
+  "success": true, 
+  "data": { 
+    "notifications": [
+      {
+        "id": 1,
+        "type": "like",
+        "title": "New like on your post",
+        "message": "FootballFan liked your post about the Champions League",
+        "actor": {
+          "id": 15,
+          "name": "FootballFan",
+          "username": "footballfan",
+          "avatar": "https://example.com/fan.jpg"
+        },
+        "target": {
+          "type": "post",
+          "id": 35,
+          "content": "Champions League final preview..."
+        },
+        "isRead": false,
+        "createdAt": "2024-01-15T16:30:00Z"
+      },
+      {
+        "id": 2,
+        "type": "follow",
+        "title": "New follower",
+        "message": "AnimeExpert started following you",
+        "actor": {
+          "id": 20,
+          "name": "AnimeExpert",
+          "username": "animeexpert",
+          "avatar": "https://example.com/anime.jpg"
+        },
+        "isRead": false,
+        "createdAt": "2024-01-15T15:45:00Z"
+      },
+      {
+        "id": 3,
+        "type": "fandom_join",
+        "title": "New member in your fandom",
+        "message": "Someone joined Premier League Fans",
+        "target": {
+          "type": "fandom",
+          "id": 1,
+          "name": "Premier League Fans",
+          "handle": "premier-league-fans"
+        },
+        "isRead": true,
+        "createdAt": "2024-01-15T14:20:00Z"
+      }
+    ],
+    "unreadCount": 5,
+    "pagination": {
+      "page": 1,
+      "limit": 20,
+      "hasNext": true
+    }
+  } 
+}
+
+PUT /api/notifications/:notificationId/read
+Usage: Mark notification as read
+Response: { 
+  "success": true, 
+  "message": "Notification marked as read",
+  "data": {
+    "notificationId": 1,
+    "isRead": true,
+    "readAt": "2024-01-15T18:45:00Z"
+  }
+}
+
+PUT /api/notifications/mark-all-read
+Usage: Mark all notifications as read
+Response: { 
+  "success": true, 
+  "message": "All notifications marked as read",
+  "data": {
+    "markedCount": 5,
+    "markedAt": "2024-01-15T18:50:00Z"
+  }
+}
+
+================
+ERROR HANDLING EXAMPLES
+================
+
+All API calls should handle:
+- 401 Unauthorized: Redirect to login
+- 403 Forbidden: Show permission error
+- 404 Not Found: Show not found message
+- 422 Validation Error: Show field errors
+- 500 Server Error: Show generic error message
+
+Example error response:
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Email is required",
+    "details": { "field": "email", "type": "required" }
+  }
+}
+
+Example unauthorized response:
+{
+  "success": false,
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Authentication token is invalid or expired",
+    "details": { "redirectTo": "/login" }
+  }
+}
+
+Example not found response:
+{
+  "success": false,
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "Fandom not found",
+    "details": { "resource": "fandom", "id": "non-existent-fandom" }
+  }
+}

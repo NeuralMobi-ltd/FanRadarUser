@@ -13,8 +13,8 @@
 <script setup>
 import { computed } from 'vue'
 import { useThemeStore } from '@/store/index'
-import Header from '@/components/Header.vue'
-import Sidebar from '@/components/Sidebar.vue'
+import Header from '@/components/layout/Header.vue'
+import Sidebar from '@/components/layout/Sidebar/Sidebar.vue'
 
 const themeStore = useThemeStore()
 const theme = computed(() => themeStore.state.theme)

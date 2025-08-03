@@ -111,9 +111,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import Post from '@/components/Post.vue'
-import NewsPost from '@/components/NewsPost.vue'
-import CommunityCard from '@/components/CommunityCard.vue'
+import Post from '@/components/community/Post/Post.vue'
+import NewsPost from '@/components/common/NewsPost.vue'
+import CommunityCard from '@/components/community/CommunityCard.vue'
 
 const route = useRoute()
 const categoryName = computed(() => route.params.category || '')

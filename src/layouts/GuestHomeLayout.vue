@@ -21,7 +21,7 @@
 <script setup>
 import { ref } from 'vue'
 import AuthModal from '@/components/AuthModal.vue'
-import GuestSidebar from '@/components/layout/GuestSidebar.vue'
+import GuestSidebar from '@/components/layout/Sidebar/GuestSidebar.vue'
 
 // Auth modal state
 const showAuthModal = ref(false)
