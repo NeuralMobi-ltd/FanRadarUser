@@ -1,13 +1,15 @@
 <template>
-  <aside class="sidebar-width bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen">
-    <div class="p-6">
-      <!-- Categories -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Categories</h3>
-        <nav class="space-y-2">
-          <router-link 
-            v-for="category in categories"
-            :key="category.name"
+  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-16 overflow-y-auto">
+    <!-- Categories Header -->
+    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Categories</h2>
+    </div>
+
+    <!-- Categories List -->
+    <div class="p-4">
+      <div class="space-y-2">
+        <nav v-for="category in categories" :key="category.slug">
+          <router-link
             :to="category.path"
             :class=" [
               'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',

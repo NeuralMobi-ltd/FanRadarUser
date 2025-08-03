@@ -18,17 +18,36 @@
       </div>
 
       <!-- Center: Search Bar (only if authenticated) -->
-      <div v-if="isAuthenticated" class="flex-1 max-w-2xl mx-4">
+      <div v-if="isAuthenticated" class="flex-1 max-w-2xl mx-4 relative">
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <MagnifyingGlassIcon class="h-5 w-5 text-gray-400" />
           </div>
           <input
+            v-model="searchQuery"
+            @focus="openSearchModal"
+            @click="openSearchModal"
+            @keyup.enter="performSearch"
             type="text"
             class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             placeholder="Search FanRadar"
           />
+          <button 
+            v-if="searchQuery"
+            @click="clearSearch"
+            class="absolute inset-y-0 right-0 pr-3 flex items-center"
+          >
+            <i class="fas fa-times text-gray-400 hover:text-gray-600"></i>
+          </button>
         </div>
+
+        <!-- Search Modal positioned relative to search input -->
+        <SearchModal 
+          :is-visible="showSearchModal"
+          :query="searchQuery" 
+          @close="showSearchModal = false" 
+          @search="performSearch"
+        />
       </div>
 
       <!-- Right: User Actions -->
@@ -182,6 +201,8 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
+import SearchSidebar from '@/components/layout/SearchSidebar.vue'
+import SearchModal from '@/components/layout/SearchModal.vue'
 import {
   MagnifyingGlassIcon,
   BellIcon,
@@ -203,9 +224,40 @@ const isDark = computed(() => themeStore.isDark)
 
 const showUserMenu = ref(false)
 const showAppModal = ref(false)
+const showSearchSidebar = ref(false)
+const showSearchModal = ref(false)
+const searchQuery = ref('')
 
 function toggleTheme() {
   themeStore.toggleTheme()
+}
+
+function openSearchSidebar() {
+  showSearchSidebar.value = true
+}
+
+function openSearchModal() {
+  showSearchModal.value = !showSearchModal.value
+}
+
+function clearSearch() {
+  searchQuery.value = ''
+}
+
+function performSearch() {
+  if (searchQuery.value.trim()) {
+    router.push({
+      name: 'SearchResults',
+      query: { q: searchQuery.value.trim() }
+    })
+    showSearchModal.value = false
+  }
+}
+
+// Handle search from modal
+function handleSearchFromModal(term) {
+  searchQuery.value = term
+  performSearch()
 }
 
 function logout() {

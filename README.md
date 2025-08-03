@@ -1,56 +1,56 @@
-## Project Architecture
+# FanRadar - Community Platform for Fans
 
-This project is a Vue 3 application structured for an admin and writer portal, using Pinia for state management and Vue Router for navigation. The main folders and their purposes are:
+FanRadar is a comprehensive social platform designed for fan communities. Connect with fellow enthusiasts, discover new fandoms, share content, and shop for exclusive merchandise.
 
-- **src/components/**: Reusable UI components (e.g., Topbar, Sidebar, Pagination, PostCard, StatCard, etc.).
-- **src/views/**: Page-level views, organized by feature (admin, writer, auth, etc.).
-- **src/layouts/**: Layout components for different sections (e.g., DashboardLayout, AuthLayout).
-- **src/store/**: Pinia stores for state management (e.g., auth.js for authentication state).
-- **src/router/**: Vue Router configuration and route definitions.
-- **src/mock/**: Mock data for development/testing (e.g., mockPosts).
-- **src/assets/**: Static assets like images and icons.
-- **src/index.css**: Global styles, using Tailwind CSS for utility-first styling.
-- **src/main.js**: App entry point, sets up Vue, Pinia, Router, and global styles.
-- **App.vue**: Root component, renders the main layout and router view.
+## 🚀 Features
 
-### Main Features
-- **Authentication**: Login, signup, password reset, and role-based access (admin/writer).
-- **Admin Dashboard**: User management, content moderation, fandom tracking, shop management, analytics.
-- **Writer Portal**: Post creation (articles, images, videos, polls), editing, and submission for review.
-- **Reusable Components**: Cards, tables, pagination, charts, and more.
-- **Layouts**: Dashboard and Auth layouts for consistent UI.
-- **Mock Data**: Used for development/demo purposes.
+### 🌟 Community Features
+- **Fandom Communities**: Create and join communities for your favorite topics
+- **User Profiles**: Personalized profiles with followers, following, and activity
+- **Content Sharing**: Post text, images, videos with hashtags and tags
+- **Real-time Interactions**: Like, comment, share, and save posts
+- **Advanced Search**: Global search across posts, users, fandoms, and products
 
-## How to Run the Project
+### 🛒 E-commerce Store
+- **Official Merchandise**: Browse and purchase fandom-related products
+- **Shopping Cart**: Add, modify, and manage cart items
+- **Order Management**: Track orders from placement to delivery
+- **Wishlist**: Save products for later purchase
+- **Categories & Brands**: Filter products by category, brand, and price
 
-1. **Install dependencies**
+### 📱 User Experience
+- **Dark/Light Mode**: Toggle between themes
+- **Responsive Design**: Works on desktop, tablet, and mobile
+- **Real-time Notifications**: Stay updated with community activity
+- **Trending Content**: Discover what's popular in your interests
 
+## 🛠 Tech Stack
+
+- **Frontend**: Vue.js 3, Vite, Tailwind CSS
+- **State Management**: Pinia
+- **Routing**: Vue Router
+- **Icons**: Font Awesome
+- **Development**: JavaScript/ES6+
+
+## 📦 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/fanradar.git
+   cd fanradar
+   ```
+
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. **Start the development server**
-
+3. **Start development server**
    ```bash
-   npm run serve
+   npm run dev
    ```
 
-3. **Build for production**
-
-   ```bash
-   npm run build
-   ```
-
-4. **Run unit tests**
-
-   ```bash
-   npm run test:unit
-   ```
-
-5. **Lint and fix files**
-
-   ```bash
-   npm run lint
+4. **Open in browser**
    ```
 
 ---

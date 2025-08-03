@@ -1,11 +1,30 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-dark-960 transition-colors duration-200">
+    <!-- Landing Page Layout (only header) -->
+    <div v-if="isLandingPage">
+      <Header />
+      <main class="main-content">
+        <router-view />
+      </main>
+    </div>
+
     <!-- Store Layout for mart, cart, orders -->
-    <div v-if="isStoreRoute && isAuthenticated">
+    <div v-else-if="isStoreRoute && isAuthenticated">
       <StoreHeader />
       <div class="flex">
         <StoreSidebar />
         <main class="flex-1 min-h-screen">
+          <router-view />
+        </main>
+      </div>
+    </div>
+
+    <!-- Search Layout (header + search sidebar + content) -->
+    <div v-else-if="isSearchRoute && isAuthenticated">
+      <Header />
+      <div class="main-layout">
+        <SearchPageSidebar />
+        <main class="main-content with-sidebar">
           <router-view />
         </main>
       </div>
@@ -38,6 +57,7 @@ import Header from '@/components/layout/Header.vue'
 import Sidebar from '@/components/layout/Sidebar/Sidebar.vue'
 import StoreHeader from '@/components/store/StoreHeader.vue'
 import StoreSidebar from '@/components/store/StoreSidebar.vue'
+import SearchPageSidebar from '@/components/layout/SearchPageSidebar.vue'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -45,14 +65,20 @@ auth.initialize()
 const isAuthenticated = computed(() => auth.isAuthenticated)
 const themeStore = useThemeStore()
 
+// Check if current route is landing page
+const isLandingPage = computed(() => route.path === '/')
+
 // Check if current route is store-related
 const isStoreRoute = computed(() => 
   ['/mart', '/cart', '/orders'].some(path => route.path.startsWith(path))
 )
 
-// Hide header on login, signup, choose-categories
+// Check if current route is search page
+const isSearchRoute = computed(() => route.path === '/search')
+
+// Hide header on login, signup, choose-categories (but not landing page)
 const isAuthPage = computed(() =>
-  ['/login', '/signup', '/choose-categories', '/'].includes(route.path)
+  ['/login', '/signup', '/choose-categories'].includes(route.path)
 )
 </script>
 

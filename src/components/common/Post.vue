@@ -175,82 +175,6 @@
                 </div>
                 <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ comment.content }}</p>
               </div>
-              
-              <!-- Comment Actions -->
-              <div class="flex items-center space-x-4 mt-2 ml-4">
-                <button 
-                  @click="toggleCommentLike(comment.id)"
-                  class="flex items-center space-x-1 text-xs font-medium hover:text-red-500 transition-colors"
-                  :class="comment.isLiked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'"
-                >
-                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                  </svg>
-                  <span>{{ comment.likes }}</span>
-                </button>
-                <button 
-                  @click="toggleReply(comment.id)"
-                  class="text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-blue-500 transition-colors"
-                >
-                  Reply
-                </button>
-              </div>
-
-              <!-- Reply Input -->
-              <div v-if="replyingTo === comment.id" class="mt-3 ml-4">
-                <div class="flex items-start space-x-2">
-                  <img :src="currentUserAvatar" class="w-6 h-6 rounded-full" alt="Your avatar">
-                  <div class="flex-1">
-                    <textarea
-                      v-model="newReply"
-                      :placeholder="`Reply to ${comment.username}...`"
-                      class="w-full resize-none border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
-                      rows="2"
-                    ></textarea>
-                    <div class="flex justify-end mt-2 space-x-2">
-                      <button
-                        @click="cancelReply"
-                        class="px-3 py-1 text-gray-500 text-sm hover:text-gray-700 transition-colors"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        @click="addReply(comment.id)"
-                        :disabled="!newReply.trim()"
-                        class="px-3 py-1 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        Reply
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Replies -->
-              <div v-if="comment.replies && comment.replies.length > 0" class="mt-3 ml-4 space-y-3">
-                <div v-for="reply in comment.replies" :key="reply.id" class="flex items-start space-x-2">
-                  <img :src="reply.userAvatar" class="w-6 h-6 rounded-full" :alt="reply.username">
-                  <div class="flex-1">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg px-3 py-2 border border-gray-200 dark:border-gray-600">
-                      <div class="flex items-center space-x-2 mb-1">
-                        <span class="text-xs font-semibold text-gray-900 dark:text-white">{{ reply.username }}</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(reply.date) }}</span>
-                      </div>
-                      <p class="text-xs text-gray-800 dark:text-gray-200">{{ reply.content }}</p>
-                    </div>
-                    <button 
-                      @click="toggleReplyLike(reply.id)"
-                      class="flex items-center space-x-1 mt-1 text-xs font-medium hover:text-red-500 transition-colors"
-                      :class="reply.isLiked ? 'text-red-500' : 'text-gray-500 dark:text-gray-400'"
-                    >
-                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
-                      </svg>
-                      <span>{{ reply.likes }}</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -298,8 +222,6 @@ const showImageModal = ref(false)
 const showComments = ref(false)
 const isSaved = ref(false)
 const newComment = ref('')
-const newReply = ref('')
-const replyingTo = ref(null)
 
 // Mock current user avatar
 const currentUserAvatar = ref('/public/images/me.png')
@@ -311,30 +233,14 @@ const postComments = ref([
     username: 'John Doe',
     userAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
     content: 'Great post! Really enjoyed reading this.',
-    date: '2h ago',
-    likes: 5,
-    isLiked: false,
-    replies: [
-      {
-        id: 11,
-        username: 'Jane Smith',
-        userAvatar: 'https://randomuser.me/api/portraits/women/1.jpg',
-        content: 'I totally agree with you!',
-        date: '1h ago',
-        likes: 2,
-        isLiked: true
-      }
-    ]
+    date: '2h ago'
   },
   {
     id: 2,
     username: 'Alice Johnson',
     userAvatar: 'https://randomuser.me/api/portraits/women/2.jpg',
     content: 'Thanks for sharing this insight.',
-    date: '3h ago',
-    likes: 3,
-    isLiked: true,
-    replies: []
+    date: '3h ago'
   }
 ])
 
@@ -400,64 +306,13 @@ const addComment = () => {
       username: 'Current User',
       userAvatar: currentUserAvatar.value,
       content: newComment.value,
-      date: 'just now',
-      likes: 0,
-      isLiked: false,
-      replies: []
+      date: 'just now'
     }
     postComments.value.unshift(comment)
     newComment.value = ''
     // Update post comments count
     props.post.comments = (props.post.comments || 0) + 1
   }
-}
-
-const addReply = (commentId) => {
-  if (newReply.value.trim()) {
-    const comment = postComments.value.find(c => c.id === commentId)
-    if (comment) {
-      const reply = {
-        id: Date.now(),
-        username: 'Current User',
-        userAvatar: currentUserAvatar.value,
-        content: newReply.value,
-        date: 'just now',
-        likes: 0,
-        isLiked: false
-      }
-      comment.replies.push(reply)
-      newReply.value = ''
-      replyingTo.value = null
-    }
-  }
-}
-
-const toggleReply = (commentId) => {
-  replyingTo.value = replyingTo.value === commentId ? null : commentId
-  newReply.value = ''
-}
-
-const cancelReply = () => {
-  replyingTo.value = null
-  newReply.value = ''
-}
-
-const toggleCommentLike = (commentId) => {
-  const comment = postComments.value.find(c => c.id === commentId)
-  if (comment) {
-    comment.isLiked = !comment.isLiked
-    comment.likes += comment.isLiked ? 1 : -1
-  }
-}
-
-const toggleReplyLike = (replyId) => {
-  postComments.value.forEach(comment => {
-    const reply = comment.replies.find(r => r.id === replyId)
-    if (reply) {
-      reply.isLiked = !reply.isLiked
-      reply.likes += reply.isLiked ? 1 : -1
-    }
-  })
 }
 
 const searchByTag = (tag) => {

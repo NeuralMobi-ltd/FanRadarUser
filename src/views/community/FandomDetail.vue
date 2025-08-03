@@ -512,7 +512,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
-import Post from '@/components/community/Post/Post.vue'
+import Post from '@/components/common/Post.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()

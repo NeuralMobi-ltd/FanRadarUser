@@ -107,7 +107,7 @@ function toggleCategory(cat) {
 function submitCategories() {
   authStore.user = { username: 'yassel', categories: selected.value }
   authStore.isAuthenticated = true
-  router.push('/dashboard')
+  router.push('/')
 }
 </script>
 

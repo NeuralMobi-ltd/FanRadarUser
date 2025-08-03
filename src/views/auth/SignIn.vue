@@ -110,7 +110,7 @@ async function onSignIn() {
     
     if (success) {
       // If login is successful, navigate to dashboard
-      router.push('/dashboard')
+      router.push('/')
     } else {
       // If login fails but no error was set in the store
       errorMessage.value = authStore.error || 'Login failed. Please try again.'

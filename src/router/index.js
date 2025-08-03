@@ -1,46 +1,42 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import CommunitiesBrowse from '@/views/CommunitiesBrowse.vue'
-import Account from '@/views/Account.vue'
-import EditAccount from '@/views/EditAccount.vue'
-import Mart from '@/views/Mart.vue'
-import MyCart from '@/components/MyCart.vue'
-import MyOrder from '@/components/MyOrder.vue'
-import orderDetails from '@/components/OrderDetails.vue'
-import CreateFandom from '@/views/CreateFandom.vue'
-import SignIn from '@/views/SignIn.vue'
-import SignUp from '@/views/SignUp.vue'
-const ChooseCategories = () => import('@/views/ChooseCategories.vue')
+import CommunitiesBrowse from '@/views/community/CommunitiesBrowse.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: () => import('@/views/LandingPage.vue'),
+    component: () => import('@/views/general/LandingPage.vue'), // Default to landing page
     meta: { requiresAuth: false }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
-    component: () => import('@/views/Home.vue'),
+    component: () => import('@/views/content/Home.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/explore', // Changed from '/exploree' to '/explore'
+    path: '/explore',
     name: 'UserExplore',
-    component: () => import('@/views/UserExplore.vue'),
+    component: () => import('@/views/content/Explore.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/category/:category',
     name: 'CategoryDetail',
-    component: () => import('@/views/CategoryDetail.vue'),
+    component: () => import('@/views/content/CategoryDetail.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/hashtag/:hashtag',
     name: 'HashtagDetail',
-    component: () => import('@/views/HashtagDetail.vue'),
+    component: () => import('@/views/content/HashtagDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/search',
+    name: 'SearchResults',
+    component: () => import('@/views/content/SearchResults.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -52,66 +48,72 @@ const routes = [
   {
     path: '/account/:user',
     name: 'Account',
-    component: Account,
+    component: () => import('@/views/account/Account.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/edit-account',
     name: 'EditAccount',
-    component: EditAccount
+    component: () => import('@/views/account/EditAccount.vue')
   },
   {
     path: '/mart',
     name: 'Mart',
-    component: Mart,
+    component: () => import('@/views/store/Mart.vue'),
     meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/cart',
     name: 'Cart',
-    component: MyCart,
+    component: () => import('@/components/store/MyCart.vue'),
     meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/orders',
     name: 'Orders',
-    component: MyOrder,
+    component: () => import('@/components/store/MyOrder.vue'),
     meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/orders/:id',
     name: 'OrderDetails',
-    component: orderDetails,
+    component: () => import('@/components/store/OrderDetails.vue'),
     meta: { requiresAuth: true, layout: 'store' }
   },
   {
     path: '/create-fandom',
     name: 'CreateFandom',
-    component: CreateFandom
+    component: () => import('@/views/community/CreateFandom.vue')
   },
   {
     path: '/fandom/:name',
     name: 'FandomDetail',
-    component: () => import('@/views/FandomDetail.vue'),
+    component: () => import('@/views/community/FandomDetail.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'SignIn',
-    component: SignIn,
+    component: () => import('@/views/auth/SignIn.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/signup',
     name: 'SignUp',
-    component: SignUp,
+    component: () => import('@/views/auth/SignUp.vue'),
     meta: { requiresAuth: false }
   },
   {
     path: '/choose-categories',
     name: 'ChooseCategories',
-    component: ChooseCategories,
+    component: () => import('@/views/auth/ChooseCategories.vue'),
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/fandoms/browse',
+    name: 'FandomsBrowse',
+    component: () => import('@/views/community/FandomsBrowse.vue'),
+    meta: { requiresAuth: true }
   }
 ]
 
@@ -128,8 +130,21 @@ router.beforeEach(async (to, from, next) => {
     authStore.initialize()
   }
 
+  // Handle root path based on authentication status
+  if (to.path === '/') {
+    if (authStore.isAuthenticated) {
+      // If authenticated, redirect to dashboard
+      next('/dashboard')
+      return
+    } else {
+      // If not authenticated, show landing page
+      next()
+      return
+    }
+  }
+
   // Allow access to auth pages for non-authenticated users
-  if (['/login', '/signup', '/choose-categories', '/'].includes(to.path)) {
+  if (['/login', '/signup', '/choose-categories'].includes(to.path)) {
     next()
     return
   }

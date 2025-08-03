@@ -1,5 +1,56 @@
 <template>
   <div class="min-h-screen bg-white dark:bg-gray-900 overflow-hidden">
+    <!-- Header -->
+    <header class="relative z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-700">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-20">
+          <!-- Left: Logo -->
+          <div class="flex items-center">
+            <router-link to="/" class="flex items-center space-x-2">
+              <img 
+                src="/images/FanRadar.png"
+                alt="FanRadar" 
+                class="h-11 w-auto dark:hidden"
+              />
+              <img 
+                src="/images/FanRadarWhite.png"
+                alt="FanRadar" 
+                class="h-11 w-auto hidden dark:block"
+              />
+            </router-link>
+          </div>
+
+          <!-- Navigation & Actions -->
+          <div class="flex items-center space-x-4">
+            <!-- Dark Mode Toggle -->
+            <button 
+              @click="toggleTheme"
+              class="p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
+            >
+              <i v-if="!isDark" class="fas fa-moon w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+              <i v-else class="fas fa-sun w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+            </button>
+
+            <!-- Login Button -->
+            <router-link 
+              to="/login"
+              class="px-6 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+            >
+              Sign In
+            </router-link>
+
+            <!-- Get Started Button -->
+            <router-link 
+              to="/signup"
+              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+            >
+              Sign up
+            </router-link>
+          </div>
+        </div>
+      </div>
+    </header>
+
     <!-- Hero Section -->
     <section class="relative pt-20 pb-32 overflow-hidden">
       <!-- Background Elements -->
@@ -18,16 +69,16 @@
             Connect with millions of passionate fans, discover new communities, and dive deep into the worlds you love most.
           </p>
           <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
-            <router-link to="/signup" class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl font-semibold text-lg shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:scale-105 transition-all duration-300">
+            <router-link to="/login" class="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-2xl font-semibold text-lg shadow-2xl shadow-blue-500/25 hover:shadow-blue-500/40 transform hover:scale-105 transition-all duration-300">
               <span class="relative z-10">Join the Community</span>
               <div class="absolute inset-0 bg-gradient-to-r from-blue-500 to-blue-400 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </router-link>
-            <button class="flex items-center px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl font-semibold text-lg hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
+            <router-link to="/login" class="flex items-center px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl font-semibold text-lg hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300">
               <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               Explore Communities
-            </button>
+            </router-link>
           </div>
         </div>
       </div>
@@ -105,9 +156,9 @@
         </div>
 
         <div class="text-center mt-12">
-          <button class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
+          <router-link to="/login" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
             Explore All Communities
-          </button>
+          </router-link>
         </div>
       </div>
     </section>
@@ -158,9 +209,9 @@
           <router-link to="/signup" class="px-10 py-5 bg-white text-blue-600 rounded-2xl font-bold text-lg shadow-2xl hover:shadow-white/25 transform hover:scale-105 transition-all duration-300">
             Start Your Journey
           </router-link>
-          <button class="px-10 py-5 border-2 border-white text-white rounded-2xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300">
+          <router-link to="/signup" class="px-10 py-5 border-2 border-white text-white rounded-2xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300">
             Learn More
-          </button>
+          </router-link>
         </div>
       </div>
     </section>
@@ -171,10 +222,16 @@
         <div class="grid md:grid-cols-4 gap-8 mb-12">
           <div class="md:col-span-2">
             <div class="flex items-center mb-6">
-              <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl flex items-center justify-center mr-4">
-                <span class="text-white font-bold text-xl">F</span>
-              </div>
-              <span class="text-2xl font-bold">FanRadar</span>
+               <img 
+                src="/images/FanRadar.png"
+                alt="FanRadar" 
+                class="h-11 w-auto dark:hidden"
+              />
+              <img 
+                src="/images/FanRadarWhite.png"
+                alt="FanRadar" 
+                class="h-11 w-auto hidden dark:block"
+              />
             </div>
             <p class="text-gray-400 text-lg leading-relaxed max-w-md">
               The ultimate destination for fans to connect, share, and celebrate their passions together.
@@ -204,6 +261,8 @@
 
 <script>
 import { Users, MessageCircle, Star, Heart, TrendingUp, Zap, Globe, Shield, Twitter, Facebook, Instagram, Linkedin } from 'lucide-vue-next';
+import { computed } from 'vue'
+import { useThemeStore } from '@/store/index'
 
 export default {
   name: 'LandingPage',
@@ -220,6 +279,19 @@ export default {
     Facebook,
     Instagram,
     Linkedin
+  },
+  setup() {
+    const themeStore = useThemeStore()
+    const isDark = computed(() => themeStore.isDark)
+
+    const toggleTheme = () => {
+      themeStore.toggleTheme()
+    }
+
+    return {
+      isDark,
+      toggleTheme
+    }
   },
   data() {
     return {
@@ -302,7 +374,7 @@ export default {
           name: "Maria Rodriguez",
           handle: "@marvelmania",
           quote: "As a Marvel superfan, I've found my tribe here. The discussions are deep, the theories are wild, and the friends are real.",
-          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face"
+          avatar: "https://www.equaljusticeworks.org/wp-content/uploads/2018/10/Rodriguez-Maria.jpg"
         },
         {
           name: "David Kim",

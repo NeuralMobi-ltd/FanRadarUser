@@ -203,7 +203,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/store/auth'
-import Post from '@/components/community/Post/Post.vue'
+import Post from '@/components/common/Post.vue'
 import NewsPost from '@/components/common/NewsPost.vue'
 
 const authStore = useAuthStore()

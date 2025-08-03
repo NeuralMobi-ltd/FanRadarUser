@@ -4,9 +4,9 @@
       <!-- Main Navigation -->
       <div class="space-y-1">
         <router-link
-          to="/dashboard"
+          to="/"
           class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-          :class="isActiveRoute('/dashboard') ? 
+          :class="isActiveRoute('/home') ? 
             'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
             'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
         >
@@ -33,7 +33,7 @@
             'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
         >
           <i class="fas fa-users w-5 h-5 mr-3"></i>
-          Communities
+          Fandoms
         </router-link>
 
         <router-link
@@ -45,31 +45,6 @@
         >
           <i class="fas fa-shopping-bag w-5 h-5 mr-3"></i>
           FanRadar Mart
-        </router-link>
-
-        <router-link
-          to="/cart"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-          :class="isActiveRoute('/cart') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
-        >
-          <i class="fas fa-shopping-cart w-5 h-5 mr-3"></i>
-          My Cart
-          <span v-if="cartItemsCount > 0" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
-            {{ cartItemsCount }}
-          </span>
-        </router-link>
-
-        <router-link
-          to="/orders"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-          :class="isActiveRoute('/orders') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
-        >
-          <i class="fas fa-box w-5 h-5 mr-3"></i>
-          My Orders
         </router-link>
       </div>
 
