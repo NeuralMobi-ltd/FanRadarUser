@@ -2,7 +2,6 @@
   <div class="min-h-screen bg-gray-50 dark:bg-dark-960 transition-colors duration-200">
     <!-- Landing Page Layout (only header) -->
     <div v-if="isLandingPage">
-      <Header />
       <main class="main-content">
         <router-view />
       </main>
@@ -78,7 +77,7 @@ const isSearchRoute = computed(() => route.path === '/search')
 
 // Hide header on login, signup, choose-categories (but not landing page)
 const isAuthPage = computed(() =>
-  ['/login', '/signup', '/choose-categories'].includes(route.path)
+  ['/login', '/signup', '/choose-categories', '/'].includes(route.path)
 )
 </script>
 

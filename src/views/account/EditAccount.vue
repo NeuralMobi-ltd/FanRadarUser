@@ -154,6 +154,51 @@
             ></textarea>
           </div>
 
+          <!-- Password Section -->
+          <div class="border-t border-gray-200 dark:border-gray-600 pt-6">
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Change Password</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                <div class="relative">
+                  <input 
+                    v-model="profileForm.password"
+                    :type="showPassword ? 'text' : 'password'" 
+                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Enter new password"
+                  />
+                  <button 
+                    type="button"
+                    @click="showPassword = !showPassword"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg"></i>
+                  </button>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave blank to keep current password</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                <div class="relative">
+                  <input 
+                    v-model="profileForm.confirmPassword"
+                    :type="showConfirmPassword ? 'text' : 'password'" 
+                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Confirm new password"
+                  />
+                  <button 
+                    type="button"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg"></i>
+                  </button>
+                </div>
+                <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
+              </div>
+            </div>
+          </div>
+
           <div class="flex justify-end space-x-4">
             <button 
               type="button"
@@ -164,9 +209,10 @@
             </button>
             <button 
               type="submit"
-              class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              :disabled="saving"
+              class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
             >
-              Save Changes
+              {{ saving ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
         </form>
@@ -176,7 +222,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { CameraIcon } from '@heroicons/vue/24/outline'
@@ -185,6 +231,9 @@ const router = useRouter()
 const authStore = useAuthStore()
 const profilePhotoInput = ref(null)
 const coverInput = ref(null)
+const saving = ref(false)
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 
 const profileForm = ref({
   name: '',
@@ -192,19 +241,32 @@ const profileForm = ref({
   email: '',
   bio: '',
   avatar: 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256',
-  coverPhoto: ''
+  coverPhoto: '',
+  password: '',
+  confirmPassword: ''
+})
+
+const passwordError = computed(() => {
+  if (profileForm.value.password && profileForm.value.confirmPassword) {
+    if (profileForm.value.password !== profileForm.value.confirmPassword) {
+      return 'Passwords do not match'
+    }
+  }
+  return ''
 })
 
 onMounted(() => {
   // Load current user data
   if (authStore.user) {
     profileForm.value = {
-      name: authStore.user.name || '',
-      username: authStore.user.email?.split('@')[0] || '',
-      email: authStore.user.email || '',
-      bio: 'Digital creator | Photography enthusiast | Coffee lover',
+      name: authStore.user.userName || '',
+      username: authStore.user.userName || authStore.user.userEmail?.split('@')[0] || '',
+      email: authStore.user.userEmail || '',
+      bio: authStore.user.bio || 'Digital creator | Photography enthusiast | Coffee lover',
       avatar: authStore.user.avatar || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256',
-      coverPhoto: authStore.user.coverPhoto || ''
+      coverPhoto: authStore.user.coverPhoto || '',
+      password: '',
+      confirmPassword: ''
     }
   }
 })
@@ -262,20 +324,56 @@ function removeCoverPhoto() {
 }
 
 function saveProfile() {
-  // Update auth store with new profile data
-  authStore.user = {
-    ...authStore.user,
-    name: profileForm.value.name,
-    email: profileForm.value.email,
-    avatar: profileForm.value.avatar,
-    coverPhoto: profileForm.value.coverPhoto
+  // Validate passwords if provided
+  if (profileForm.value.password || profileForm.value.confirmPassword) {
+    if (profileForm.value.password !== profileForm.value.confirmPassword) {
+      alert('Passwords do not match')
+      return
+    }
+    if (profileForm.value.password.length < 6) {
+      alert('Password must be at least 6 characters long')
+      return
+    }
   }
-  
-  // Save to localStorage
-  localStorage.setItem('auth', JSON.stringify(authStore.user))
-  
-  // Navigate back to profile
-  router.push(`/account/${profileForm.value.username}`)
+
+  saving.value = true
+
+  try {
+    // Create updated user object
+    const updatedUser = {
+      ...authStore.user,
+      userName: profileForm.value.name,
+      userEmail: profileForm.value.email,
+      bio: profileForm.value.bio,
+      avatar: profileForm.value.avatar,
+      coverPhoto: profileForm.value.coverPhoto
+    }
+
+    // Add password if provided
+    if (profileForm.value.password) {
+      updatedUser.password = profileForm.value.password
+    }
+
+    // Update auth store directly
+    authStore.user = updatedUser
+    
+    // Save to localStorage
+    localStorage.setItem('user', JSON.stringify(updatedUser))
+    
+    // Show success message
+    alert('Profile updated successfully!')
+    
+    // Navigate back to profile
+    setTimeout(() => {
+      router.push(`/account/${profileForm.value.username}`)
+    }, 100)
+    
+  } catch (error) {
+    console.error('Error saving profile:', error)
+    alert('Error saving profile. Please try again.')
+  } finally {
+    saving.value = false
+  }
 }
 
 function cancelEdit() {

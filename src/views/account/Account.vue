@@ -1,10 +1,535 @@
 <template>
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center min-h-screen">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    </div>
+
+    <!-- Profile Content -->
+    <div v-else-if="userProfile" class="max-w-4xl mx-auto px-4 py-8">
+      <!-- Profile Header -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
+        <!-- Cover Photo with gradient fallback -->
+        <div class="h-32 rounded-t-xl relative overflow-visible">
+          <!-- Cover Photo if exists, otherwise gradient -->
+          <div 
+            v-if="userProfile?.coverPhoto" 
+            class="w-full h-full bg-cover bg-center rounded-t-xl"
+            :style="`background-image: url(${userProfile.coverPhoto})`"
+          ></div>
+          <div 
+            v-else
+            class="w-full h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-xl"
+          ></div>
+          
+          <!-- Overlay for better contrast -->
+          <div class="absolute inset-0 bg-black/20 rounded-t-xl"></div>
+        </div>
+        
+        <!-- Avatar positioned outside cover photo -->
+        <div class="relative -mt-12 px-6">
+          <div class="flex items-end">
+            <div class="relative z-30">
+              <img 
+                :src="userProfile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&h=160&fit=crop&crop=face'" 
+                :alt="userProfile?.name || 'User'"
+                class="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 object-cover shadow-lg"
+              />
+              <div v-if="userProfile?.verified" class="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 z-10">
+                <i class="fas fa-check text-white text-xs"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Info -->
+        <div class="px-6 pt-4 pb-6">
+          <div class="mb-6">
+            <!-- Profile Details -->
+            <div class="mb-4">
+              <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                {{ userProfile?.name || 'Unknown User' }}
+              </h1>
+              
+              <p class="text-gray-600 dark:text-gray-300 mb-3">@{{ userProfile?.username || 'username' }}</p>
+              
+              <!-- Bio -->
+              <p v-if="userProfile?.bio" class="text-gray-700 dark:text-gray-300 max-w-2xl mb-4">
+                {{ userProfile.bio }}
+              </p>
+
+              <!-- Action Buttons moved here -->
+              <div class="flex space-x-3 mb-4">
+                <button 
+                  v-if="isOwnProfile"
+                  @click="$router.push('/edit-account')"
+                  class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                  <i class="fas fa-edit"></i>
+                  <span>Edit Profile</span>
+                </button>
+                <template v-else>
+                  <button 
+                    @click="toggleFollow"
+                    :class=" [
+                      'flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-medium',
+                      isFollowing 
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600' 
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    ]"
+                  >
+                    <i :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
+                    <span>{{ isFollowing ? 'Following' : 'Follow' }}</span>
+                  </button>
+            
+                </template>
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="flex justify-start space-x-8 text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
+            <button 
+              @click="activeTab = 'posts'"
+              class="text-center hover:text-blue-600 transition-colors"
+            >
+              <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.posts || 0) }}</div>
+              <div class="text-gray-600 dark:text-gray-400">Posts</div>
+            </button>
+            <button 
+              @click="activeTab = 'followers'"
+              class="text-center hover:text-blue-600 transition-colors"
+            >
+              <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.followers || 0) }}</div>
+              <div class="text-gray-600 dark:text-gray-400">Followers</div>
+            </button>
+            <button 
+              @click="activeTab = 'following'"
+              class="text-center hover:text-blue-600 transition-colors"
+            >
+              <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.following || 0) }}</div>
+              <div class="text-gray-600 dark:text-gray-400">Following</div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 overflow-hidden">
+        <div class="flex bg-gray-50 dark:bg-gray-700/50">
+          <button 
+            @click="activeTab = 'posts'"
+            :class=" [
+              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
+              activeTab === 'posts' 
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            ]"
+          >
+            <i class="fas fa-th-large text-lg"></i>
+            <span class="font-semibold">Posts</span>
+            <div v-if="activeTab === 'posts'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+          </button>
+          
+          <button 
+            @click="activeTab = 'followers'"
+            :class=" [
+              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
+              activeTab === 'followers' 
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            ]"
+          >
+            <i class="fas fa-users text-lg"></i>
+            <span class="font-semibold">Followers</span>
+            <div v-if="activeTab === 'followers'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+          </button>
+          
+          <button 
+            @click="activeTab = 'following'"
+            :class=" [
+              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
+              activeTab === 'following' 
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            ]"
+          >
+            <i class="fas fa-user-plus text-lg"></i>
+            <span class="font-semibold">Following</span>
+            <div v-if="activeTab === 'following'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+          </button>
+          
+          <button 
+            v-if="isOwnProfile"
+            @click="activeTab = 'saved'"
+            :class=" [
+              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
+              activeTab === 'saved' 
+                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+            ]"
+          >
+            <i class="fas fa-bookmark text-lg"></i>
+            <span class="font-semibold">Saved</span>
+            <div v-if="activeTab === 'saved'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Content Based on Active Tab -->
+      <div class="space-y-6">
+        <!-- Posts Tab -->
+        <div v-if="activeTab === 'posts'">
+          <div v-if="userPosts.length > 0" class="space-y-4">
+            <Post 
+              v-for="post in userPosts"
+              :key="post.id"
+              :post="post"
+            />
+          </div>
+          
+          <div v-else class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-camera text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No posts yet</h3>
+            <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+              {{ isOwnProfile ? "Share your thoughts with the world!" : `${userProfile?.name || 'This user'} hasn't shared anything yet.` }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Followers Tab -->
+        <div v-else-if="activeTab === 'followers'">
+          <div v-if="followersList.length > 0" class="grid md:grid-cols-2 gap-4">
+            <div
+              v-for="follower in followersList"
+              :key="follower.id"
+              class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
+            >
+              <div class="flex items-center space-x-3">
+                <img 
+                  :src="follower.avatar" 
+                  :alt="follower.name" 
+                  class="w-12 h-12 rounded-full object-cover cursor-pointer" 
+                  @click="$router.push(`/account/${follower.username}`)"
+                />
+                <div class="flex-1">
+                  <h3 
+                    class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
+                    @click="$router.push(`/account/${follower.username}`)"
+                  >
+                    {{ follower.name }}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">@{{ follower.username }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ follower.bio }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-users text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No followers yet</h3>
+            <p class="text-gray-500 dark:text-gray-400">When people follow you, they'll appear here.</p>
+          </div>
+        </div>
+
+        <!-- Following Tab -->
+        <div v-else-if="activeTab === 'following'">
+          <div v-if="followingList.length > 0" class="grid md:grid-cols-2 gap-4">
+            <div
+              v-for="following in followingList"
+              :key="following.id"
+              class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
+            >
+              <div class="flex items-center space-x-3">
+                <img 
+                  :src="following.avatar" 
+                  :alt="following.name" 
+                  class="w-12 h-12 rounded-full object-cover cursor-pointer" 
+                  @click="$router.push(`/account/${following.username}`)"
+                />
+                <div class="flex-1">
+                  <h3 
+                    class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
+                    @click="$router.push(`/account/${following.username}`)"
+                  >
+                    {{ following.name }}
+                  </h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">@{{ following.username }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ following.bio }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-user-plus text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Not following anyone</h3>
+            <p class="text-gray-500 dark:text-gray-400">Find interesting people to follow.</p>
+          </div>
+        </div>
+
+        <!-- Saved Tab -->
+        <div v-else-if="activeTab === 'saved' && isOwnProfile">
+          <div v-if="savedPosts.length > 0" class="space-y-4">
+            <Post 
+              v-for="post in savedPosts"
+              :key="post.id"
+              :post="post"
+            />
+          </div>
+          
+          <div v-else class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-bookmark text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No saved posts</h3>
+            <p class="text-gray-500 dark:text-gray-400">Posts you save will appear here.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Not Found -->
+    <div v-else class="flex items-center justify-center min-h-screen">
+      <div class="text-center">
+        <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i class="fas fa-user-slash text-3xl text-gray-400"></i>
+        </div>
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">User not found</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">The profile you're looking for doesn't exist.</p>
+        <button 
+          @click="$router.push('/dashboard')"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Go to Dashboard
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+import Post from '@/components/common/Post.vue'
+
+const route = useRoute()
+const authStore = useAuthStore()
+
+const loading = ref(true)
+const userProfile = ref({})
+const userPosts = ref([])
+const isFollowing = ref(false)
+const activeTab = ref('posts')
+
+// Mock data
+const mockUsers = [
+  {
+    id: 1,
+    name: 'yassineelaouni',
+    username: 'yassineelaouni581',
+    email: 'yss@fanradars.com',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+    coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=800&h=200&fit=crop',
+    bio: 'Tech enthusiast | Web developer | Coffee lover ☕ Building amazing apps with Vue.js and Node.js',
+    followers: 5670,
+    following: 234,
+    posts: 4,
+    joinedDate: '2023-01-15',
+    verified: true
+  }
+]
+
+const mockPosts = [
+  {
+    id: 1,
+    username: 'yassineelaouni581',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
+    content: 'Just launched my new project! 🚀 Excited to share it with everyone.',
+    likes: 145,
+    comments: 32,
+    shares: 12,
+    date: '2h ago',
+    isLiked: false
+  },
+  {
+    id: 2,
+    username: 'yassineelaouni581',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
+    content: 'Beautiful sunset today! 🌅',
+    image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop',
+    likes: 289,
+    comments: 43,
+    shares: 17,
+    date: '1d ago',
+    isLiked: true
+  }
+]
+
+const followersList = ref([
+  {
+    id: 1,
+    name: 'John Doe',
+    username: 'john_doe',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face',
+    bio: 'Tech enthusiast and developer'
+  }
+])
+
+const followingList = ref([
+  {
+    id: 1,
+    name: 'Sarah Wilson',
+    username: 'sarah_w',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face',
+    bio: 'Travel blogger and adventurer'
+  }
+])
+
+const savedPosts = ref([])
+
+const isOwnProfile = computed(() => {
+  const currentUser = authStore.user
+  const profileUsername = route.params.user
+  
+  if (!currentUser) return false
+  
+  // Check if navigating to own profile
+  return currentUser.email === `${profileUsername}@fanradars.com` || 
+         currentUser.name === profileUsername ||
+         currentUser.email?.split('@')[0] === profileUsername ||
+         profileUsername === 'me' // Handle special case for "my account"
+})
+
+const fetchUserProfile = async () => {
+  loading.value = true
+  
+  try {
+    let username = route.params.user
+    
+    // If user navigates to "me" or their own profile, use current user data
+    if (username === 'me' || isOwnProfile.value) {
+      const currentUser = authStore.user
+      if (currentUser) {
+        username = currentUser.userName || currentUser.userEmail?.split('@')[0] || currentUser.username
+        
+        // Always use fresh auth store data for own profile
+        userProfile.value = {
+          id: currentUser.id || Math.random(),
+          name: currentUser.userName || username,
+          username: currentUser.userName || currentUser.userEmail?.split('@')[0] || username,
+          email: currentUser.userEmail,
+          avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+          bio: currentUser.bio || 'FanRadar user',
+          coverPhoto: currentUser.coverPhoto || '', // Add cover photo here
+          followers: authStore.userStats?.followers || 132,
+          following: authStore.userStats?.following || 12,
+          posts: authStore.userStats?.posts || 15,
+          verified: currentUser.verified || false,
+          joinedDate: currentUser.joinedDate || '2023-06-01'
+        }
+        
+        // Load user posts
+        userPosts.value = mockPosts.filter(post => 
+          post.username === userProfile.value.username
+        )
+        
+        loading.value = false
+        return
+      }
+    }
+    
+    // Look for user in mock data (for other users)
+    const foundUser = mockUsers.find(user => 
+      user.username === username || 
+      user.name === username ||
+      user.email?.split('@')[0] === username
+    )
+    
+    if (foundUser) {
+      userProfile.value = foundUser
+    } else {
+      userProfile.value = {
+        id: Math.random(),
+        name: username,
+        username: username,
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+        bio: 'FanRadar user',
+        followers: 120,
+        following: 45,
+        posts: 2,
+        verified: false,
+        joinedDate: '2023-06-01'
+      }
+    }
+    
+    // Load user posts
+    userPosts.value = mockPosts.filter(post => 
+      post.username === userProfile.value.username
+    )
+    
+  } catch (error) {
+    console.error('Error fetching user profile:', error)
+    userProfile.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+const formatNumber = (num) => {
+  if (typeof num === 'string') return num
+  if (num < 1000) return num.toString()
+  if (num < 1000000) return (num / 1000).toFixed(1).replace('.0', '') + 'K'
+  return (num / 1000000).toFixed(1).replace('.0', '') + 'M'
+}
+
+const formatJoinDate = (date) => {
+  if (!date) return 'Recently'
+  return new Date(date).toLocaleDateString('en-US', { 
+    month: 'long', 
+    year: 'numeric' 
+  })
+}
+
+const toggleFollow = () => {
+  isFollowing.value = !isFollowing.value
+  if (userProfile.value) {
+    if (isFollowing.value) {
+      userProfile.value.followers++
+    } else {
+      userProfile.value.followers = Math.max(0, userProfile.value.followers - 1)
+    }
+  }
+}
+
+onMounted(() => {
+  fetchUserProfile()
+})
+
+watch(() => route.params.user, () => {
+  if (route.name === 'Account') {
+    fetchUserProfile()
+  }
+})
+
+watch(() => authStore.user, () => {
+  if (isOwnProfile.value) {
+    fetchUserProfile()
+  }
+}, { deep: true })
 </script>
 
-<style>
+<style scoped>
+.bg-clip-text {
+  background-clip: text;
+  -webkit-background-clip: text;
+}
 </style>

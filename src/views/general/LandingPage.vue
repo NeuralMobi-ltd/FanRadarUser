@@ -223,14 +223,9 @@
           <div class="md:col-span-2">
             <div class="flex items-center mb-6">
                <img 
-                src="/images/FanRadar.png"
-                alt="FanRadar" 
-                class="h-11 w-auto dark:hidden"
-              />
-              <img 
                 src="/images/FanRadarWhite.png"
                 alt="FanRadar" 
-                class="h-11 w-auto hidden dark:block"
+                class="h-11 w-auto"
               />
             </div>
             <p class="text-gray-400 text-lg leading-relaxed max-w-md">
