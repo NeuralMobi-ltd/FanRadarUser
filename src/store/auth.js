@@ -1,270 +1,238 @@
 import { defineStore } from 'pinia'
 
-// Mock user database
-const mockUsers = [
-  {
-    id: 1,
-    name: 'John Doe',
-    email: 'john@fanradar.com',
-    password: 'password123',
-    avatar: '/public/images/me.png',
-    followers: 1250,
-    following: 892,
-    posts: 156
-  },
-  {
-    id: 2,
-    name: 'Jane Smith',
-    email: 'jane@fanradar.com',
-    password: 'password123',
-    avatar:  '/public/images/me.png',
-    followers: 2340,
-    following: 567,
-    posts: 289
-  },
-  {
-    id: 3,
-    name: 'yassineelaouni',
-    email: 'yss@fanradars.com',
-    password: 'ysselhhh123',
-    avatar:  '/public/images/me.png',
-    followers: 5670,
-    following: 234,
-    posts: 1024
-  },
-  {
-    id: 4,
-    name: 'Test User',
-    email: 'test@test.com',
-    password: 'test123',
-    avatar:  '/public/images/me.png',
-    followers: 100,
-    following: 150,
-    posts: 25
-  }
-]
-
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     loading: false,
-    error: null
+    error: null,
+    userStats: {
+      followers: 132,
+      following: 12,
+      posts: 15
+    },
+    posts: []
   }),
+  
+  getters: {
+    isAuthenticated: (state) => !!state.user,
+    userName: (state) => state.user?.userName,
+    userEmail: (state) => state.user?.userEmail,
+    userAvatar: (state) => state.user?.avatar,
+    userBio: (state) => state.user?.bio,
+    userCoverPhoto: (state) => state.user?.coverPhoto,
+    userVerified: (state) => state.user?.verified || false,
+    userPosts: (state) => state.posts,
+    postsCount: (state) => state.posts.length
+  },
+  
   actions: {
-    async login({ email, password }) {
-      this.loading = true
-      this.error = null
-      
-      try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Check if email and password are provided
-        if (!email || !password) {
-          throw new Error('Email and password are required')
+    // Initialize auth store - called on app startup
+    initialize() {
+      this.initializeUser()
+    },
+
+    // Update user profile data
+    updateUserProfile(profileData) {
+      if (this.user) {
+        this.user = {
+          ...this.user,
+          ...profileData
         }
-        
-        // Find user in mock database
-        const existingUser = mockUsers.find(u => u.email === email)
-        
-        // If no matching user was found in the database, create a temporary one
-        // This allows any email/password combination to work
-        let user = existingUser 
-        if (!user) {
-          user = {
-            id: Math.floor(Math.random() * 10000) + 100,
-            name: email.split('@')[0] || 'User',
-            email,
-            password,
-            avatar: '/public/images/me.png', // Fix avatar path
-            followers: Math.floor(Math.random() * 500),
-            following: Math.floor(Math.random() * 300),
-            posts: Math.floor(Math.random() * 50)
-          }
-          
-          // Add to mock database for future logins
-          mockUsers.push(user)
-        }
-        
-        // Create session data (exclude password)
-        const { password: _, ...userWithoutPassword } = user
-        const sessionData = {
-          ...userWithoutPassword,
-          token: `token-${user.id}-${Date.now()}`
-        }
-        
-        // Complete login
-        this.user = sessionData
-        localStorage.setItem('auth', JSON.stringify(sessionData))
-        return true
-      } catch (error) {
-        this.error = error.message
-        return false
-      } finally {
-        this.loading = false
+        // Persist to localStorage
+        localStorage.setItem('user', JSON.stringify(this.user))
       }
     },
     
-    async signup({ email, password, name }) {
-      this.loading = true
-      this.error = null
-      
-      try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Check if email and password are provided
-        if (!email || !password) {
-          throw new Error('Email and password are required')
-        }
-        
-        // Check if user already exists
-        const existingUser = mockUsers.find(u => u.email === email)
-        
-        if (existingUser) {
-          throw new Error('Email already exists')
-        }
-        
-        // Store signup information for verification step
-        localStorage.setItem('pendingAuthEmail', email)
-        localStorage.setItem('pendingSignupPassword', password)
-        localStorage.setItem('pendingSignupName', name || '')
-        
-        // Generate and send verification code instead of completing signup
-        return await this.sendVerificationCode(email)
-      } catch (error) {
-        this.error = error.message
-        return false
-      } finally {
-        this.loading = false
+    // Update user stats
+    updateUserStats(stats) {
+      this.userStats = {
+        ...this.userStats,
+        ...stats
       }
     },
     
-    async sendVerificationCode(email) {
-      this.loading = true
-      this.error = null
-      
-      try {
-        // Validate email
-        if (!email) {
-          throw new Error('Email is required')
+    // Initialize mock posts
+    initializeMockPosts() {
+      const mockPosts = [
+        {
+          id: 1,
+          content: "Just discovered this amazing new band! Their sound is incredible 🎵",
+          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+          likes: 24,
+          comments: 5,
+          shares: 2,
+          image: null,
+          type: 'text'
+        },
+        {
+          id: 2,
+          content: "Concert tonight was absolutely mind-blowing! The energy was unreal ⚡",
+          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+          likes: 89,
+          comments: 23,
+          shares: 12,
+          image: "https://picsum.photos/600/400?random=1",
+          type: 'image'
+        },
+        {
+          id: 3,
+          content: "Working on my latest music review. This album is going to be a game changer! 📝",
+          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
+          likes: 45,
+          comments: 8,
+          shares: 6,
+          image: null,
+          type: 'text'
+        },
+        {
+          id: 4,
+          content: "Throwback to last week's festival! Missing those vibes already 🎪",
+          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
+          likes: 156,
+          comments: 34,
+          shares: 28,
+          image: "https://picsum.photos/600/400?random=2",
+          type: 'image'
+        },
+        {
+          id: 5,
+          content: "New playlist is live! Perfect mix for your weekend chill sessions 🎧",
+          timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
+          likes: 67,
+          comments: 12,
+          shares: 15,
+          image: null,
+          type: 'text'
         }
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        // Mock verification code - always use 123456 for testing simplicity
-        // In a real app, this would be random and sent via email
-        const code = "123456"
-        
-        // Store code temporarily (in real app, this would be server-side)
-        localStorage.setItem('verificationCode', code)
-        localStorage.setItem('verificationEmail', email)
-        
-        console.log(`Verification code for ${email}: ${code}`) // For testing
-        return true
+      ]
+      this.posts = mockPosts
+    },
+
+    // Add a new post
+    addPost(postData) {
+      const newPost = {
+        id: Date.now(),
+        content: postData.content,
+        timestamp: new Date().toISOString(),
+        likes: 0,
+        comments: 0,
+        shares: 0,
+        image: postData.image || null,
+        type: postData.image ? 'image' : 'text'
+      }
+      this.posts.unshift(newPost) // Add to beginning of array
+      
+      // Update posts count in user stats
+      this.updateUserStats({ posts: this.posts.length })
+    },
+
+    // Like a post
+    likePost(postId) {
+      const post = this.posts.find(p => p.id === postId)
+      if (post) {
+        post.likes += 1
+      }
+    },
+
+    // Unlike a post
+    unlikePost(postId) {
+      const post = this.posts.find(p => p.id === postId)
+      if (post && post.likes > 0) {
+        post.likes -= 1
+      }
+    },
+
+    // Delete a post
+    deletePost(postId) {
+      this.posts = this.posts.filter(p => p.id !== postId)
+      this.updateUserStats({ posts: this.posts.length })
+    },
+
+    // Initialize user from localStorage
+    initializeUser() {
+      try {
+        const savedUser = localStorage.getItem('user')
+        if (savedUser) {
+          this.user = JSON.parse(savedUser)
+          this.initializeMockPosts() // Initialize posts when user is loaded
+        }
       } catch (error) {
-        this.error = error.message
-        return false
-      } finally {
-        this.loading = false
+        console.error('Error loading user from localStorage:', error)
+        localStorage.removeItem('user')
       }
     },
     
-    async verifyCode(enteredCode) {
-      this.loading = true
-      this.error = null
+    // Login action - updated to handle proper authentication
+    async login(credentials) {
+      this.setLoading(true)
+      this.clearError()
       
       try {
-        const storedCode = localStorage.getItem('verificationCode')
-        const email = localStorage.getItem('pendingAuthEmail')
-        const password = localStorage.getItem('pendingSignupPassword')
-        const name = localStorage.getItem('pendingSignupName')
+        // Here you would typically make an API call
+        // For now, using mock authentication
+        const { email, password } = credentials
         
-        if (!storedCode || !email) {
-          throw new Error('Verification session expired')
+        // Mock user data that should come from your backend
+        const userData = {
+          id: 1,
+          userName: email.split('@')[0], // Extract username from email
+          userEmail: email,
+          avatar: 'https://ui-avatars.com/api/?name=' + email.split('@')[0] + '&background=6366f1&color=fff&size=256',
+          bio: 'FanRadar user',
+          coverPhoto: '',
+          verified: false,
+          joinedDate: new Date().toISOString(),
+          // Don't store password in user object for security
         }
         
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 500))
+        this.user = userData
+        localStorage.setItem('user', JSON.stringify(userData))
         
-        if (enteredCode === storedCode) {
-          // Create new user
-          const newUser = {
-            id: mockUsers.length + 1,
-            name: name || email.split('@')[0],
-            email,
-            password,
-            avatar: 'https://via.placeholder.com/40',
-            followers: 0,
-            following: 0,
-            posts: 0
-          }
-          
-          // Add to mock database
-          mockUsers.push(newUser)
-          
-          // Create session data (exclude password)
-          const { password: _, ...userWithoutPassword } = newUser
-          const sessionData = {
-            ...userWithoutPassword,
-            token: `token-${newUser.id}-${Date.now()}`
-          }
-          
-          // Complete signup and login
-          this.user = sessionData
-          localStorage.setItem('auth', JSON.stringify(sessionData))
-          
-          // Clean up verification data
-          localStorage.removeItem('verificationCode')
-          localStorage.removeItem('verificationEmail')
-          localStorage.removeItem('pendingAuthEmail')
-          localStorage.removeItem('pendingSignupPassword')
-          localStorage.removeItem('pendingSignupName')
-          
-          return true
+        // Initialize user stats and posts
+        this.userStats = {
+          followers: 132,
+          following: 12,
+          posts: 15
         }
         
-        throw new Error('Invalid verification code')
+        // Initialize mock posts after successful login
+        this.initializeMockPosts()
+        
+        return { success: true, user: userData }
+        
       } catch (error) {
-        this.error = error.message
-        return false
+        this.setError('Login failed. Please check your credentials.')
+        return { success: false, error: error.message }
       } finally {
-        this.loading = false
+        this.setLoading(false)
       }
     },
     
+    // Logout action
     logout() {
       this.user = null
-      this.error = null
-      localStorage.removeItem('auth')
-      localStorage.removeItem('verificationCode')
-      localStorage.removeItem('verificationEmail')
-    },
-    initialize() {
-      const auth = localStorage.getItem('auth')
-      if (auth) {
-        try {
-          this.user = JSON.parse(auth)
-        } catch (error) {
-          console.error('Failed to parse auth data:', error)
-          localStorage.removeItem('auth')
-        }
+      this.userStats = {
+        followers: 0,
+        following: 0,
+        posts: 0
       }
+      this.posts = [] // Clear posts on logout
+      localStorage.removeItem('user')
     },
-    
+
+    // Set loading state
+    setLoading(loading) {
+      this.loading = loading
+    },
+
+    // Set error state
+    setError(error) {
+      this.error = error
+    },
+
+    // Clear error
     clearError() {
       this.error = null
     }
-  },
-  getters: {
-    isAuthenticated: (state) => !!state.user,
-    userName: (state) => state.user?.name || '',
-    userEmail: (state) => state.user?.email || '',
-    userStats: (state) => ({
-      followers: state.user?.followers || 0,
-      following: state.user?.following || 0,
-      posts: state.user?.posts || 0
-    })
   }
 })

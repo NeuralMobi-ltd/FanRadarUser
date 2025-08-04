@@ -99,11 +99,11 @@
               class="flex items-center space-x-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               <img 
-                :src="authStore.user?.avatar || '/public/images/me.png'" 
-                :alt="authStore.user?.name || 'User'"
+                :src="userAvatar || '/images/me.png'" 
+                :alt="userName || 'User'"
                 class="w-8 h-8 rounded-full object-cover"
               />
-              <span class="font-medium">{{ authStore.user?.name || 'User' }}</span>
+              <span class="font-medium">{{ userName || 'User' }}</span>
               <ChevronDownIcon class="w-4 h-4" />
             </button>
             
@@ -114,7 +114,7 @@
             >
               <div class="py-1">
                 <router-link 
-                  :to="`/account/${authStore.user?.email?.split('@')[0] || 'user'}`"
+                  :to="`/account/${userName || 'user'}`"
                   @click="showUserMenu = false"
                   class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
@@ -219,7 +219,9 @@ const authStore = useAuthStore()
 const themeStore = useThemeStore()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
-const user = computed(() => authStore.user)
+const userName = computed(() => authStore.userName)
+const userEmail = computed(() => authStore.userEmail)
+const userAvatar = computed(() => authStore.userAvatar)
 const isDark = computed(() => themeStore.isDark)
 
 const showUserMenu = ref(false)

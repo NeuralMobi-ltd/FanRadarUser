@@ -339,26 +339,15 @@ function saveProfile() {
   saving.value = true
 
   try {
-    // Create updated user object
-    const updatedUser = {
-      ...authStore.user,
+    // Update auth store with new profile data
+    authStore.updateUserProfile({
       userName: profileForm.value.name,
       userEmail: profileForm.value.email,
       bio: profileForm.value.bio,
       avatar: profileForm.value.avatar,
-      coverPhoto: profileForm.value.coverPhoto
-    }
-
-    // Add password if provided
-    if (profileForm.value.password) {
-      updatedUser.password = profileForm.value.password
-    }
-
-    // Update auth store directly
-    authStore.user = updatedUser
-    
-    // Save to localStorage
-    localStorage.setItem('user', JSON.stringify(updatedUser))
+      coverPhoto: profileForm.value.coverPhoto,
+      ...(profileForm.value.password && { password: profileForm.value.password })
+    })
     
     // Show success message
     alert('Profile updated successfully!')
