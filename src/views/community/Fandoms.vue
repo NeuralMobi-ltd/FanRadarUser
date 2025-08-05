@@ -129,199 +129,21 @@
 <script setup>
 import { ref, computed } from 'vue'
 import CommunityCard from '@/components/community/CommunityCard.vue'
+import { COMMUNITY_CATEGORIES } from '@/constants/communityCategories'
+import { useCommunitiesStore } from '@/store/communities'
+
+// Initialize store
+const communitiesStore = useCommunitiesStore()
 
 const search = ref('')
 const activeCategory = ref('All')
 
-const categories = ref([
-  { name: 'All', color: 'bg-blue-600', icon: 'fas fa-star' },
-  { name: 'News', color: 'bg-red-600', icon: 'fas fa-newspaper' },
-  { name: 'Art', color: 'bg-purple-600', icon: 'fas fa-palette' },
-  { name: 'Gaming', color: 'bg-green-600', icon: 'fas fa-gamepad' },
-  { name: 'Music', color: 'bg-pink-600', icon: 'fas fa-music' },
-  { name: 'Movies', color: 'bg-yellow-600', icon: 'fas fa-film' },
-  { name: 'TV Shows', color: 'bg-indigo-600', icon: 'fas fa-tv' },
-  { name: 'Books', color: 'bg-amber-600', icon: 'fas fa-book' },
-  { name: 'Technology', color: 'bg-gray-600', icon: 'fas fa-laptop' },
-  { name: 'Science', color: 'bg-teal-600', icon: 'fas fa-microscope' },
-  { name: 'Sports', color: 'bg-orange-600', icon: 'fas fa-futbol' },
-  { name: 'Fashion', color: 'bg-rose-600', icon: 'fas fa-tshirt' }
-])
+// Get categories from constants
+const categories = computed(() => COMMUNITY_CATEGORIES)
 
-const newsCommunities = ref([
-  { 
-    title: 'World News Network', 
-    handle: 'world-news',
-    description: 'Global news coverage and discussions about current events', 
-    image: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c7e9?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/65.jpg',
-    memberCount: '1.8M', 
-    postCount: '320K',
-    onlineCount: '5.2K',
-    fallbackColor: '#1a365d',
-    tags: ['news', 'world', 'current events'],
-    category: 'News'
-  },
-  { 
-    title: 'Tech Today', 
-    handle: 'tech-today',
-    description: 'Latest technology news and gadget reviews', 
-    image: 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg', 
-    avatar: 'https://randomuser.me/api/portraits/women/72.jpg',
-    memberCount: '1.2M', 
-    postCount: '245K',
-    onlineCount: '3.8K',
-    fallbackColor: '#2d3748',
-    tags: ['tech', 'gadgets', 'innovation'],
-    category: 'News'
-  },
-  { 
-    title: 'Business Insights', 
-    handle: 'business',
-    description: 'Financial markets, business trends and economic analysis', 
-    image: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/42.jpg',
-    memberCount: '890K', 
-    postCount: '156K',
-    onlineCount: '2.7K',
-    fallbackColor: '#4a5568',
-    tags: ['business', 'finance', 'economy'],
-    category: 'News'
-  }
-])
-
-const communities = ref([
-  ...newsCommunities.value,
-  { 
-    title: 'Aesthetic', 
-    handle: 'aesthetic',
-    description: 'Beautiful visuals and artistic content from around the world', 
-    image: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    memberCount: '1.2M', 
-    postCount: '245K',
-    onlineCount: '3.4K',
-    fallbackColor: '#8B4513',
-    tags: ['art', 'photography', 'design'],
-    category: 'Art'
-  },
-  { 
-    title: 'Anime & Manga', 
-    handle: 'anime',
-    description: 'All things anime and manga - discussions, fan art, and more', 
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    memberCount: '980K', 
-    postCount: '178K',
-    onlineCount: '2.8K',
-    fallbackColor: '#FF6B6B',
-    tags: ['anime', 'manga', 'japan'],
-    category: 'Gaming'
-  },
-  { 
-    title: 'Digital Art', 
-    handle: 'digital-art',
-    description: 'Showcase your digital creations and get inspired by others', 
-    image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/women/68.jpg',
-    memberCount: '1.5M', 
-    postCount: '320K',
-    onlineCount: '4.1K',
-    fallbackColor: '#95E1D3',
-    tags: ['art', 'digital', 'illustration'],
-    category: 'Art'
-  },
-  { 
-    title: 'Community Spotlight', 
-    handle: 'spotlight',
-    description: 'Featured communities and creators worth checking out', 
-    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/75.jpg',
-    memberCount: '245K', 
-    postCount: '45K',
-    onlineCount: '1.2K',
-    fallbackColor: '#F38BA8',
-    tags: ['featured', 'spotlight'],
-    category: 'All'
-  },
-  { 
-    title: 'Book Lovers', 
-    handle: 'books',
-    description: 'Reading recommendations and book discussions for all genres', 
-    image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/women/33.jpg',
-    memberCount: '756K', 
-    postCount: '89K',
-    onlineCount: '2.3K',
-    fallbackColor: '#8B4513',
-    tags: ['books', 'reading', 'literature'],
-    category: 'Books'
-  },
-  { 
-    title: 'World Cultures', 
-    handle: 'cultures',
-    description: 'Explore and discuss different cultures from around the globe', 
-    image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
-    memberCount: '432K', 
-    postCount: '67K',
-    onlineCount: '1.5K',
-    fallbackColor: '#4ECDC4',
-    tags: ['culture', 'travel', 'world'],
-    category: 'Culture'
-  },
-  { 
-    title: 'Film Buffs', 
-    handle: 'movies',
-    description: 'Film reviews, movie discussions, and cinema appreciation', 
-    image: 'https://images.unsplash.com/photo-1489599809467-6e5d9b55f80d?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/women/51.jpg',
-    memberCount: '678K', 
-    postCount: '112K',
-    onlineCount: '2.1K',
-    fallbackColor: '#FFD93D',
-    tags: ['movies', 'film', 'cinema'],
-    category: 'Movies'
-  },
-  { 
-    title: 'Music Discovery', 
-    handle: 'music',
-    description: 'Share and discover new music across all genres', 
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=800&q=80', 
-    avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-    memberCount: '892K', 
-    postCount: '156K',
-    onlineCount: '3.2K',
-    fallbackColor: '#6BCF7F',
-    tags: ['music', 'discovery', 'artists'],
-    category: 'Music'
-  }
-])
-
+// Get communities from store with filtering
 const filteredCommunities = computed(() => {
-  let results = communities.value
-  
-  // Filter by search query
-  if (search.value.trim()) {
-    const query = search.value.toLowerCase()
-    results = results.filter(c =>
-      c.title.toLowerCase().includes(query) ||
-      (c.description && c.description.toLowerCase().includes(query)) ||
-      (c.tags && c.tags.some(tag => tag.toLowerCase().includes(query)))
-    )
-  }
-  
-  // Filter by category
-  if (activeCategory.value !== 'All') {
-    results = results.filter(c => 
-      c.category === activeCategory.value ||
-      (c.tags && c.tags.some(tag => 
-        tag.toLowerCase().includes(activeCategory.value.toLowerCase())
-      ))
-    )
-  }
-  
-  return results
+  return communitiesStore.filterBrowseCommunities(search.value, activeCategory.value)
 })
 </script>
 
@@ -329,6 +151,7 @@ const filteredCommunities = computed(() => {
 .line-clamp-1 {
   display: -webkit-box;
   -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -336,6 +159,7 @@ const filteredCommunities = computed(() => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

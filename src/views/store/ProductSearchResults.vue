@@ -16,10 +16,10 @@
           <!-- View Toggle -->
           <div class="flex items-center space-x-2">
             <button
-              @click="viewMode = 'grid'"
+              @click="viewMode = VIEW_MODES.GRID"
               :class="[
                 'p-2 rounded-lg transition-colors',
-                viewMode === 'grid' 
+                viewMode === VIEW_MODES.GRID 
                   ? 'bg-green-500 text-white' 
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
@@ -27,10 +27,10 @@
               <i class="fas fa-th w-4 h-4"></i>
             </button>
             <button
-              @click="viewMode = 'list'"
+              @click="viewMode = VIEW_MODES.LIST"
               :class="[
                 'p-2 rounded-lg transition-colors',
-                viewMode === 'list' 
+                viewMode === VIEW_MODES.LIST 
                   ? 'bg-green-500 text-white' 
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
@@ -71,7 +71,7 @@
       <!-- Products Grid/List -->
       <div v-else-if="filteredProducts.length > 0">
         <!-- Grid View -->
-        <div v-if="viewMode === 'grid'" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div v-if="viewMode === VIEW_MODES.GRID" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <div
             v-for="product in paginatedProducts"
             :key="product.id"
@@ -234,16 +234,27 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useProductsStore } from '@/store/products'
+import { 
+  PRICE_RANGES,
+  PRODUCT_CATEGORIES,
+  PRODUCT_BRANDS,
+  RATING_FILTERS,
+  VIEW_MODES,
+  PAGINATION_CONFIG,
+  SEARCH_CONFIG
+} from '@/constants/productSearchConstants'
 
 const route = useRoute()
 const router = useRouter()
+const productsStore = useProductsStore()
 
 const searchQuery = ref('')
 const isLoading = ref(false)
-const viewMode = ref('grid')
-const sortBy = ref('relevance')
+const viewMode = ref(SEARCH_CONFIG.DEFAULT_VIEW_MODE)
+const sortBy = ref(SEARCH_CONFIG.DEFAULT_SORT)
 const currentPage = ref(1)
-const itemsPerPage = ref(20)
+const itemsPerPage = ref(PAGINATION_CONFIG.DEFAULT_ITEMS_PER_PAGE)
 
 // Filter states
 const selectedPriceRanges = ref([])
@@ -251,239 +262,33 @@ const selectedCategories = ref([])
 const selectedBrands = ref([])
 const selectedRatings = ref([])
 
-// Filter options
-const priceRanges = ref([
-  { value: '0-25', label: 'Under $25' },
-  { value: '25-50', label: '$25 - $50' },
-  { value: '50-100', label: '$50 - $100' },
-  { value: '100-200', label: '$100 - $200' },
-  { value: '200+', label: '$200 & Above' }
-])
-
-const categories = ref([
-  { id: 1, name: 'Electronics', count: 67 },
-  { id: 2, name: 'Clothing', count: 32 },
-  { id: 3, name: 'Collectibles', count: 45 },
-  { id: 4, name: 'Home & Living', count: 28 },
-  { id: 5, name: 'Accessories', count: 18 }
-])
-
-const brands = ref([
-  { id: 1, name: 'Razer', count: 15 },
-  { id: 2, name: 'Corsair', count: 12 },
-  { id: 3, name: 'SteelSeries', count: 8 },
-  { id: 4, name: 'HyperX', count: 10 },
-  { id: 5, name: 'ASUS', count: 7 },
-  { id: 6, name: 'Secretlab', count: 5 }
-])
-
-const ratings = ref([
-  { value: 4, label: '4 Stars & Up' },
-  { value: 3, label: '3 Stars & Up' },
-  { value: 2, label: '2 Stars & Up' },
-  { value: 1, label: '1 Star & Up' }
-])
-
-// Mock products data
-const allProducts = ref([
-  {
-    id: 1,
-    name: 'Gaming Mechanical Keyboard RGB',
-    category: 'Electronics',
-    price: 129.99,
-    rating: 5,
-    reviews: 234,
-    image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop',
-    description: 'High-quality mechanical keyboard with RGB lighting',
-    isWishlisted: false,
-    brand: 'Razer'
-  },
-  {
-    id: 2,
-    name: 'Gaming Headset Pro Wireless',
-    category: 'Electronics',
-    price: 149.99,
-    rating: 5,
-    reviews: 567,
-    image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop',
-    description: 'Premium wireless gaming headset with 7.1 surround sound',
-    isWishlisted: false,
-    brand: 'SteelSeries'
-  },
-  {
-    id: 3,
-    name: 'Gaming Headset RGB Wired',
-    category: 'Electronics',
-    price: 89.99,
-    rating: 4,
-    reviews: 342,
-    image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400&h=400&fit=crop',
-    description: 'RGB gaming headset with crystal clear microphone',
-    isWishlisted: false,
-    brand: 'Razer'
-  },
-  {
-    id: 4,
-    name: 'Professional Gaming Headset',
-    category: 'Electronics',
-    price: 199.99,
-    rating: 5,
-    reviews: 423,
-    image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400&h=400&fit=crop',
-    description: 'Professional esports gaming headset with noise cancellation',
-    isWishlisted: true,
-    brand: 'HyperX'
-  },
-  {
-    id: 5,
-    name: 'Anime Character Figure Collection',
-    category: 'Collectibles',
-    price: 34.99,
-    rating: 4,
-    reviews: 89,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    description: 'Premium quality anime figure with detailed craftsmanship',
-    isWishlisted: true,
-    brand: 'Good Smile'
-  },
-  {
-    id: 6,
-    name: 'Gaming Ergonomic Chair',
-    category: 'Home & Living',
-    price: 299.99,
-    rating: 5,
-    reviews: 156,
-    image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
-    description: 'Comfortable gaming chair with lumbar support',
-    isWishlisted: false,
-    brand: 'Secretlab'
-  },
-  {
-    id: 7,
-    name: 'Wireless Gaming Mouse',
-    category: 'Electronics',
-    price: 79.99,
-    rating: 4,
-    reviews: 178,
-    image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop',
-    description: 'High precision wireless gaming mouse',
-    isWishlisted: false,
-    brand: 'Corsair'
-  },
-  {
-    id: 8,
-    name: 'Gaming Headset Stand RGB',
-    category: 'Accessories',
-    price: 29.99,
-    rating: 4,
-    reviews: 89,
-    image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop',
-    description: 'RGB headset stand with USB charging ports',
-    isWishlisted: false,
-    brand: 'Corsair'
-  },
-  {
-    id: 9,
-    name: 'Band Merchandise T-Shirt',
-    category: 'Clothing',
-    price: 24.99,
-    rating: 4,
-    reviews: 67,
-    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-    description: 'Official band merchandise t-shirt',
-    isWishlisted: false,
-    brand: 'Official'
-  },
-  {
-    id: 10,
-    name: 'Gaming Monitor 144Hz',
-    category: 'Electronics',
-    price: 349.99,
-    rating: 5,
-    reviews: 234,
-    image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=400&fit=crop',
-    description: '27-inch gaming monitor with 144Hz refresh rate',
-    isWishlisted: false,
-    brand: 'ASUS'
-  },
-  {
-    id: 11,
-    name: 'Gaming Desk RGB LED',
-    category: 'Home & Living',
-    price: 189.99,
-    rating: 4,
-    reviews: 78,
-    image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop',
-    description: 'Gaming desk with built-in RGB LED lighting',
-    isWishlisted: false,
-    brand: 'IKEA Gaming'
-  },
-  {
-    id: 12,
-    name: 'Collectible Gaming Figurine',
-    category: 'Collectibles',
-    price: 45.99,
-    rating: 5,
-    reviews: 156,
-    image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=400&fit=crop',
-    description: 'Limited edition gaming character figurine',
-    isWishlisted: false,
-    brand: 'Funko'
-  }
-])
+// Filter options from constants
+const priceRanges = ref(PRICE_RANGES)
+const categories = ref(PRODUCT_CATEGORIES)
+const brands = ref(PRODUCT_BRANDS)
+const ratings = ref(RATING_FILTERS)
 
 // Computed properties
 const filteredProducts = computed(() => {
-  let products = allProducts.value
+  // Start with search results from store
+  let products = productsStore.searchProducts(searchQuery.value)
 
-  // Filter by search query
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    products = products.filter(product => 
-      product.name.toLowerCase().includes(query) ||
-      product.category.toLowerCase().includes(query) ||
-      product.description.toLowerCase().includes(query)
-    )
-  }
+  // Apply price range filter
+  products = productsStore.filterByPriceRange(products, selectedPriceRanges.value)
 
-  // Filter by price range
-  if (selectedPriceRanges.value.length > 0) {
-    products = products.filter(product => {
-      return selectedPriceRanges.value.some(range => {
-        if (range === '0-25') return product.price < 25
-        if (range === '25-50') return product.price >= 25 && product.price < 50
-        if (range === '50-100') return product.price >= 50 && product.price < 100
-        if (range === '100-200') return product.price >= 100 && product.price < 200
-        if (range === '200+') return product.price >= 200
-        return false
-      })
-    })
-  }
-
-  // Filter by categories
+  // Apply category filter
   if (selectedCategories.value.length > 0) {
     const selectedCategoryNames = categories.value
       .filter(cat => selectedCategories.value.includes(cat.id))
       .map(cat => cat.name)
-    products = products.filter(product => 
-      selectedCategoryNames.includes(product.category)
-    )
+    products = productsStore.filterByCategories(products, selectedCategoryNames)
   }
 
-  // Filter by ratings
-  if (selectedRatings.value.length > 0) {
-    const minRating = Math.min(...selectedRatings.value)
-    products = products.filter(product => product.rating >= minRating)
-  }
+  // Apply rating filter
+  products = productsStore.filterByRating(products, selectedRatings.value)
 
-  // Sort products
-  if (sortBy.value === 'price-low') {
-    products.sort((a, b) => a.price - b.price)
-  } else if (sortBy.value === 'price-high') {
-    products.sort((a, b) => b.price - a.price)
-  } else if (sortBy.value === 'rating') {
-    products.sort((a, b) => b.rating - a.rating)
-  }
+  // Apply sorting
+  products = productsStore.sortProducts(products, sortBy.value)
 
   return products
 })
@@ -500,7 +305,7 @@ const paginatedProducts = computed(() => {
 const visiblePages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
-  const delta = 2
+  const delta = PAGINATION_CONFIG.PAGINATION_DELTA
 
   const range = []
   const rangeWithDots = []
@@ -549,14 +354,14 @@ const goToProduct = (product) => {
 }
 
 const addToCart = (product) => {
-  // Add to cart logic
+  // Add to cart logic using store
   console.log('Added to cart:', product.name)
+  // TODO: Use cart store when implemented
   // Show toast notification
 }
 
 const toggleWishlist = (product) => {
-  product.isWishlisted = !product.isWishlisted
-  // Update wishlist in store/API
+  productsStore.toggleWishlist(product.id)
 }
 
 // Watch for route changes

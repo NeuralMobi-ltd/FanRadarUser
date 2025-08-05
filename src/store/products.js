@@ -112,15 +112,173 @@ export const useProductsStore = defineStore('products', {
         image: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400&h=400&fit=crop',
         isNew: false,
         isWishlisted: false
+      },
+      // Search Results Products
+      {
+        id: 9,
+        name: 'Gaming Mechanical Keyboard RGB',
+        category: 'Electronics',
+        price: 129.99,
+        rating: 5,
+        reviews: 234,
+        image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop',
+        description: 'High-quality mechanical keyboard with RGB lighting',
+        isWishlisted: false,
+        brand: 'Razer',
+        stock: 25
+      },
+      {
+        id: 10,
+        name: 'Gaming Headset Pro Wireless',
+        category: 'Electronics',
+        price: 149.99,
+        rating: 5,
+        reviews: 567,
+        image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop',
+        description: 'Premium wireless gaming headset with 7.1 surround sound',
+        isWishlisted: false,
+        brand: 'SteelSeries',
+        stock: 18
+      },
+      {
+        id: 11,
+        name: 'Gaming Headset RGB Wired',
+        category: 'Electronics',
+        price: 89.99,
+        rating: 4,
+        reviews: 342,
+        image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400&h=400&fit=crop',
+        description: 'RGB gaming headset with crystal clear microphone',
+        isWishlisted: false,
+        brand: 'Razer',
+        stock: 12
+      },
+      {
+        id: 12,
+        name: 'Professional Gaming Headset',
+        category: 'Electronics',
+        price: 199.99,
+        rating: 5,
+        reviews: 423,
+        image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400&h=400&fit=crop',
+        description: 'Professional esports gaming headset with noise cancellation',
+        isWishlisted: true,
+        brand: 'HyperX',
+        stock: 8
+      },
+      {
+        id: 13,
+        name: 'Anime Character Figure Collection',
+        category: 'Collectibles',
+        price: 34.99,
+        rating: 4,
+        reviews: 89,
+        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
+        description: 'Premium quality anime figure with detailed craftsmanship',
+        isWishlisted: true,
+        brand: 'Good Smile',
+        stock: 15
+      },
+      {
+        id: 14,
+        name: 'Gaming Ergonomic Chair',
+        category: 'Home & Living',
+        price: 299.99,
+        rating: 5,
+        reviews: 156,
+        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
+        description: 'Comfortable gaming chair with lumbar support',
+        isWishlisted: false,
+        brand: 'Secretlab',
+        stock: 5
+      },
+      {
+        id: 15,
+        name: 'Wireless Gaming Mouse',
+        category: 'Electronics',
+        price: 79.99,
+        rating: 4,
+        reviews: 178,
+        image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop',
+        description: 'High precision wireless gaming mouse',
+        isWishlisted: false,
+        brand: 'Corsair',
+        stock: 22
+      },
+      {
+        id: 16,
+        name: 'Gaming Headset Stand RGB',
+        category: 'Accessories',
+        price: 29.99,
+        rating: 4,
+        reviews: 89,
+        image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop',
+        description: 'RGB headset stand with USB charging ports',
+        isWishlisted: false,
+        brand: 'Corsair',
+        stock: 30
+      },
+      {
+        id: 17,
+        name: 'Band Merchandise T-Shirt',
+        category: 'Clothing',
+        price: 24.99,
+        rating: 4,
+        reviews: 67,
+        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
+        description: 'Official band merchandise t-shirt',
+        isWishlisted: false,
+        brand: 'Official',
+        stock: 40
+      },
+      {
+        id: 18,
+        name: 'Gaming Monitor 144Hz',
+        category: 'Electronics',
+        price: 349.99,
+        rating: 5,
+        reviews: 234,
+        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=400&fit=crop',
+        description: '27-inch gaming monitor with 144Hz refresh rate',
+        isWishlisted: false,
+        brand: 'ASUS',
+        stock: 7
+      },
+      {
+        id: 19,
+        name: 'Gaming Desk RGB LED',
+        category: 'Home & Living',
+        price: 189.99,
+        rating: 4,
+        reviews: 78,
+        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop',
+        description: 'Gaming desk with built-in RGB LED lighting',
+        isWishlisted: false,
+        brand: 'IKEA Gaming',
+        stock: 10
+      },
+      {
+        id: 20,
+        name: 'Collectible Gaming Figurine',
+        category: 'Collectibles',
+        price: 45.99,
+        rating: 5,
+        reviews: 156,
+        image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=400&fit=crop',
+        description: 'Limited edition gaming character figurine',
+        isWishlisted: false,
+        brand: 'Funko',
+        stock: 12
       }
     ],
     
     categories: [
-      'Apparel', 'Accessories', 'Home & Living', 'Tech Gadgets', 'Collectibles', 'Books', 'Posters'
+      'Apparel', 'Accessories', 'Home & Living', 'Tech Gadgets', 'Collectibles', 'Books', 'Posters', 'Electronics', 'Clothing'
     ],
     
     brands: [
-      'Anime Central', 'Marvel Official', 'Riot Games', 'Big Hit Music', 'GamerHub', 'AnimePrint', 'Marvel Comics', 'TechMaster'
+      'Anime Central', 'Marvel Official', 'Riot Games', 'Big Hit Music', 'GamerHub', 'AnimePrint', 'Marvel Comics', 'TechMaster',
+      'Razer', 'SteelSeries', 'HyperX', 'Good Smile', 'Secretlab', 'Corsair', 'Official', 'ASUS', 'IKEA Gaming', 'Funko'
     ],
     
     priceRanges: [
@@ -202,9 +360,117 @@ export const useProductsStore = defineStore('products', {
         this.products[index] = { ...this.products[index], ...updates }
       }
     },
+
+    toggleWishlist(productId) {
+      const product = this.products.find(p => p.id === productId)
+      if (product) {
+        product.isWishlisted = !product.isWishlisted
+      }
+    },
     
     deleteProduct(productId) {
       this.products = this.products.filter(p => p.id !== productId)
+    },
+
+    // Search-specific methods
+    filterByPriceRange(products, priceRanges) {
+      if (!priceRanges.length) return products
+      
+      return products.filter(product => {
+        return priceRanges.some(range => {
+          if (range === '0-25') return product.price < 25
+          if (range === '25-50') return product.price >= 25 && product.price < 50
+          if (range === '50-100') return product.price >= 50 && product.price < 100
+          if (range === '100-200') return product.price >= 100 && product.price < 200
+          if (range === '200+') return product.price >= 200
+          return false
+        })
+      })
+    },
+
+    filterByCategories(products, categoryIds) {
+      if (!categoryIds.length) return products
+      
+      return products.filter(product => 
+        categoryIds.includes(product.category)
+      )
+    },
+
+    filterByRating(products, ratings) {
+      if (!ratings.length) return products
+      
+      const minRating = Math.min(...ratings)
+      return products.filter(product => product.rating >= minRating)
+    },
+
+    sortProducts(products, sortBy) {
+      const sorted = [...products]
+      
+      switch (sortBy) {
+        case 'price-low':
+          return sorted.sort((a, b) => a.price - b.price)
+        case 'price-high':
+          return sorted.sort((a, b) => b.price - a.price)
+        case 'rating':
+          return sorted.sort((a, b) => b.rating - a.rating)
+        case 'newest':
+          return sorted.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
+        case 'relevance':
+        default:
+          return sorted.sort((a, b) => b.rating - a.rating)
+      }
+    },
+
+    // Mart-specific methods
+    getMartProducts() {
+      // Return all products for the mart page
+      return this.products
+    },
+
+    filterMartProducts(filters) {
+      let filtered = this.products
+
+      // Filter by category
+      if (filters.category) {
+        filtered = filtered.filter(p => p.category === filters.category)
+      }
+
+      // Filter by brand
+      if (filters.brand) {
+        filtered = filtered.filter(p => p.brand === filters.brand)
+      }
+
+      // Filter by price range
+      if (filters.priceRange) {
+        const [min, max] = filters.priceRange.split('-').map(v => v === '+' ? Infinity : parseFloat(v))
+        if (min !== undefined) {
+          filtered = filtered.filter(p => p.price >= min && (max ? p.price <= max : true))
+        }
+      }
+
+      return filtered
+    },
+
+    sortMartProducts(products, sortBy) {
+      const sorted = [...products]
+
+      switch (sortBy) {
+        case 'price-low':
+          return sorted.sort((a, b) => a.price - b.price)
+        case 'price-high':
+          return sorted.sort((a, b) => b.price - a.price)
+        case 'rating':
+          return sorted.sort((a, b) => b.rating - a.rating)
+        case 'newest':
+          return sorted.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0))
+        case 'featured':
+        default:
+          // Featured - sort by rating and new status
+          return sorted.sort((a, b) => {
+            if (a.isNew !== b.isNew) return b.isNew - a.isNew
+            return b.rating - a.rating
+          })
+      }
     },
     
     filterProducts(filters) {

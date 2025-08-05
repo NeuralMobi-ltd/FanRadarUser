@@ -78,7 +78,7 @@
           </div>
           <h2 class="text-xl font-bold text-gray-900 dark:text-white">Fan News</h2>
         </div>
-        <button class="text-blue-500 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400">See all</button>
+        <router-link to="/news" class="text-blue-500 text-sm font-medium hover:text-blue-600 dark:hover:text-blue-400">See all</router-link>
       </div>
       
       <!-- Horizontal Scroll Container -->
@@ -343,6 +343,7 @@ const navigateToHashtag = (hashtag) => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

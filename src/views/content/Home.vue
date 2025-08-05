@@ -49,7 +49,7 @@
       <div class="py-2 border-b border-gray-200 dark:border-gray-800 mb-4">
         <div class="flex justify-between items-center mb-3">
           <h2 class="font-bold text-lg dark:text-white">News Today</h2>
-          <button class="text-blue-500 text-sm hover:text-blue-600 transition-colors">Show more</button>
+          <router-link to="/news" class="text-blue-500 text-sm hover:text-blue-600 transition-colors">Show more</router-link>
         </div>
         
         <!-- News Items -->

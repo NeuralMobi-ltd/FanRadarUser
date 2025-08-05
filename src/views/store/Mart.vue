@@ -4,40 +4,111 @@
     <div class="relative bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-8 mb-8 overflow-hidden">
       <div class="absolute inset-0 bg-black/20"></div>
       <div class="relative z-10 text-white">
-        <h1 class="text-4xl font-bold mb-4">FanRadar Official Store</h1>
-        <p class="text-xl mb-6">Discover exclusive merchandise from your favorite fandoms</p>
+        <h1 class="text-4xl font-bold mb-4">{{ heroContent.title }}</h1>
+        <p class="text-xl mb-6">{{ heroContent.subtitle }}</p>
         <div class="flex flex-wrap gap-4">
-          <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm">✨ New Arrivals</span>
-          <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm">🚚 Free Shipping</span>
-          <span class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm">💎 Premium Quality</span>
+          <span 
+            v-for="feature in heroFeatures" 
+            :key="feature.text"
+            class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm"
+          >
+            {{ feature.icon }} {{ feature.text }}
+          </span>
         </div>
       </div>
     </div>
 
     <!-- Filter and Sort -->
-    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <select v-model="selectedCategory" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-          <option value="">All Categories</option>
-          <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-        </select>
-        <select v-model="priceRange" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-          <option value="">All Prices</option>
-          <option value="0-25">$0 - $25</option>
-          <option value="25-50">$25 - $50</option>
-          <option value="50-100">$50 - $100</option>
-          <option value="100+">$100+</option>
-        </select>
-      </div>
-      <div class="flex items-center gap-4">
-        <span class="text-gray-600 dark:text-gray-400">{{ filteredProducts.length }} products</span>
-        <select v-model="sortBy" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-          <option value="featured">Featured</option>
-          <option value="price-low">Price: Low to High</option>
-          <option value="price-high">Price: High to Low</option>
-          <option value="rating">Highest Rated</option>
-          <option value="newest">Newest</option>
-        </select>
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-4">
+          <!-- Category Dropdown -->
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+            <select 
+              v-model="selectedCategory" 
+              class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
+            >
+              <option value="">All Categories</option>
+              <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Price Range Dropdown -->
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price Range</label>
+            <select 
+              v-model="priceRange" 
+              class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
+            >
+              <option v-for="range in MART_PRICE_RANGES" :key="range.value" :value="range.value">{{ range.label }}</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Brand Dropdown -->
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
+            <select 
+              v-model="selectedBrand" 
+              class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
+            >
+              <option value="">All Brands</option>
+              <option v-for="brand in availableBrands" :key="brand" :value="brand">{{ brand }}</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Clear Filters Button -->
+          <div class="pt-6">
+            <button 
+              v-if="hasActiveFilters"
+              @click="clearAllFilters"
+              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+            >
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+              Clear Filters
+            </button>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-4">
+          <div class="text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">Results</p>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ filteredProducts.length }}</p>
+          </div>
+          
+          <!-- Sort Dropdown -->
+          <div class="relative">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
+            <select 
+              v-model="sortBy" 
+              class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
+            >
+              <option v-for="option in MART_SORT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+            </select>
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
+              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -111,159 +182,62 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useProductsStore } from '@/store/products'
+import { 
+  MART_CATEGORIES,
+  MART_PRICE_RANGES,
+  MART_SORT_OPTIONS,
+  MART_CONFIG,
+  MART_HERO_FEATURES,
+  MART_HERO_CONTENT
+} from '@/constants/martConstants'
 
-const selectedCategory = ref('')
-const priceRange = ref('')
-const sortBy = ref('featured')
+// Initialize store
+const productsStore = useProductsStore()
+
+const selectedCategory = ref(MART_CONFIG.DEFAULT_CATEGORY)
+const priceRange = ref(MART_CONFIG.DEFAULT_PRICE_RANGE)
+const selectedBrand = ref('')
+const sortBy = ref(MART_CONFIG.DEFAULT_SORT)
 const currentPage = ref(1)
-const itemsPerPage = 12
+const itemsPerPage = MART_CONFIG.DEFAULT_ITEMS_PER_PAGE
 
-const categories = ref([
-  'Apparel', 'Accessories', 'Home & Living', 'Tech Gadgets', 'Collectibles', 'Books', 'Posters'
-])
+// Use constants for options
+const categories = ref(MART_CATEGORIES)
+const heroFeatures = ref(MART_HERO_FEATURES)
+const heroContent = ref(MART_HERO_CONTENT)
 
-const products = ref([
-  {
-    id: 1,
-    name: 'Attack on Titan Survey Corps Hoodie',
-    category: 'Apparel',
-    brand: 'Anime Central',
-    price: 45.99,
-    originalPrice: 59.99,
-    discount: 23,
-    rating: 4.8,
-    reviews: 324,
-    stock: 15,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    isNew: false,
-    isWishlisted: false
-  },
-  {
-    id: 2,
-    name: 'Marvel Avengers Logo T-Shirt',
-    category: 'Apparel',
-    brand: 'Marvel Official',
-    price: 24.99,
-    rating: 4.6,
-    reviews: 512,
-    stock: 28,
-    image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop',
-    isNew: true,
-    isWishlisted: false
-  },
-  {
-    id: 3,
-    name: 'League of Legends Championship Trophy Replica',
-    category: 'Collectibles',
-    brand: 'Riot Games',
-    price: 89.99,
-    rating: 4.9,
-    reviews: 89,
-    stock: 7,
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop',
-    isNew: false,
-    isWishlisted: true
-  },
-  {
-    id: 4,
-    name: 'K-Pop BTS Photocard Set',
-    category: 'Collectibles',
-    brand: 'Big Hit Music',
-    price: 19.99,
-    rating: 4.7,
-    reviews: 756,
-    stock: 42,
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-    isNew: true,
-    isWishlisted: false
-  },
-  {
-    id: 5,
-    name: 'Gaming RGB Mechanical Keyboard',
-    category: 'Tech Gadgets',
-    brand: 'GamerPro',
-    price: 129.99,
-    originalPrice: 149.99,
-    discount: 13,
-    rating: 4.5,
-    reviews: 203,
-    stock: 12,
-    image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop',
-    isNew: false,
-    isWishlisted: false
-  },
-  {
-    id: 6,
-    name: 'Studio Ghibli Totoro Plushie',
-    category: 'Collectibles',
-    brand: 'Studio Ghibli',
-    price: 34.99,
-    rating: 4.8,
-    reviews: 445,
-    stock: 23,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    isNew: false,
-    isWishlisted: false
-  },
-  {
-    id: 7,
-    name: 'Harry Potter Hogwarts House Scarf',
-    category: 'Accessories',
-    brand: 'Warner Bros',
-    price: 29.99,
-    rating: 4.4,
-    reviews: 298,
-    stock: 35,
-    image: 'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=400&fit=crop',
-    isNew: false,
-    isWishlisted: false
-  },
-  {
-    id: 8,
-    name: 'Dragon Ball Z Funko Pop Collection',
-    category: 'Collectibles',
-    brand: 'Funko',
-    price: 49.99,
-    originalPrice: 69.99,
-    discount: 29,
-    rating: 4.6,
-    reviews: 167,
-    stock: 8,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-    isNew: true,
-    isWishlisted: false
-  }
-])
+// Get available brands from store
+const availableBrands = computed(() => {
+  const brands = [...new Set(productsStore.products.map(p => p.brand))]
+  return brands.sort()
+})
+
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return selectedCategory.value !== '' || 
+         priceRange.value !== '' || 
+         selectedBrand.value !== ''
+})
+
+// Clear all filters
+const clearAllFilters = () => {
+  selectedCategory.value = MART_CONFIG.DEFAULT_CATEGORY
+  priceRange.value = MART_CONFIG.DEFAULT_PRICE_RANGE
+  selectedBrand.value = ''
+  currentPage.value = 1
+}
 
 const filteredProducts = computed(() => {
-  let filtered = products.value
+  // Get filtered products from store
+  const filtered = productsStore.filterMartProducts({
+    category: selectedCategory.value,
+    priceRange: priceRange.value,
+    brand: selectedBrand.value
+  })
 
-  if (selectedCategory.value) {
-    filtered = filtered.filter(p => p.category === selectedCategory.value)
-  }
-
-  if (priceRange.value) {
-    const [min, max] = priceRange.value.split('-').map(v => v === '+' ? Infinity : parseFloat(v))
-    filtered = filtered.filter(p => p.price >= min && (max ? p.price <= max : true))
-  }
-
-  // Sort products
-  switch (sortBy.value) {
-    case 'price-low':
-      filtered.sort((a, b) => a.price - b.price)
-      break
-    case 'price-high':
-      filtered.sort((a, b) => b.price - a.price)
-      break
-    case 'rating':
-      filtered.sort((a, b) => b.rating - a.rating)
-      break
-    case 'newest':
-      filtered.sort((a, b) => b.isNew - a.isNew)
-      break
-  }
-
-  return filtered
+  // Apply sorting
+  return productsStore.sortMartProducts(filtered, sortBy.value)
 })
 
 const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage))
@@ -274,15 +248,12 @@ const paginatedProducts = computed(() => {
 })
 
 const toggleWishlist = (productId) => {
-  const product = products.value.find(p => p.id === productId)
-  if (product) {
-    product.isWishlisted = !product.isWishlisted
-  }
+  productsStore.toggleWishlist(productId)
 }
 
 const addToCart = (product) => {
   console.log('Added to cart:', product.name)
-  // Add to cart logic here
+  // TODO: Use cart store when implemented
 }
 </script>
 
@@ -290,6 +261,7 @@ const addToCart = (product) => {
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

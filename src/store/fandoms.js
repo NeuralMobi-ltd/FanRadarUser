@@ -119,7 +119,84 @@ export const useFandomsStore = defineStore('fandoms', {
     userNotifications: [], // Fandom-related notifications
     userActivity: [], // User activity history in fandoms
     bookmarkedFandoms: [], // User's bookmarked/favorite fandoms
-    recentlyVisited: [] // Recently visited fandoms
+    recentlyVisited: [], // Recently visited fandoms
+    
+    // Fandom posts data
+    fandomPosts: {
+      'premier-league-fans': [
+        {
+          id: 1,
+          username: 'FootballFanatic',
+          userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+          date: '2h ago',
+          communityName: '',
+          content: 'What a match yesterday! The tactical setup was absolutely brilliant. The way they pressed high and created chances was textbook football.',
+          image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&h=400&fit=crop',
+          tags: ['match', 'tactics', 'analysis'],
+          likes: 89,
+          comments: 23,
+          shares: 5,
+          isLiked: false,
+          fandom: ''
+        },
+        {
+          id: 2,
+          username: 'TacticalGenius',
+          userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+          date: '5h ago',
+          communityName: '',
+          content: 'Breaking down the formation changes in the second half. The manager\'s substitutions completely changed the game dynamic.',
+          tags: ['tactics', 'formation', 'substitutions'],
+          likes: 156,
+          comments: 34,
+          shares: 12,
+          isLiked: true,
+          fandom: ''
+        }
+      ]
+    },
+    
+    // Fandom members data
+    fandomMembers: {
+      'premier-league-fans': [
+        {
+          id: 1,
+          name: 'John Smith',
+          username: 'johnsmith',
+          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+          role: 'admin',
+          posts: 245,
+          joinedDate: 'Jan 2019'
+        },
+        {
+          id: 2,
+          name: 'Emma Wilson',
+          username: 'emmaw',
+          avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+          role: 'moderator',
+          posts: 189,
+          joinedDate: 'Mar 2020'
+        },
+        {
+          id: 3,
+          name: 'Mike Johnson',
+          username: 'mikej',
+          avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+          role: 'member',
+          posts: 67,
+          joinedDate: 'Aug 2021'
+        },
+        {
+          id: 4,
+          name: 'Sarah Davis',
+          username: 'sarahd',
+          avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
+          role: 'member',
+          posts: 123,
+          joinedDate: 'Feb 2022'
+        }
+      ]
+    }
   }),
   
   actions: {
@@ -136,6 +213,53 @@ export const useFandomsStore = defineStore('fandoms', {
     removeUserFandom(fandomId) {
       this.userFandoms = this.userFandoms.filter(f => f.id !== fandomId)
       delete this.userRoles[fandomId]
+    },
+
+    // Fandom posts actions
+    addFandomPost(fandomHandle, post) {
+      if (!this.fandomPosts[fandomHandle]) {
+        this.fandomPosts[fandomHandle] = []
+      }
+      this.fandomPosts[fandomHandle].unshift(post)
+    },
+
+    deleteFandomPost(fandomHandle, postId) {
+      if (this.fandomPosts[fandomHandle]) {
+        this.fandomPosts[fandomHandle] = this.fandomPosts[fandomHandle].filter(p => p.id !== postId)
+      }
+    },
+
+    likeFandomPost(fandomHandle, postId) {
+      if (this.fandomPosts[fandomHandle]) {
+        const post = this.fandomPosts[fandomHandle].find(p => p.id === postId)
+        if (post) {
+          post.isLiked = !post.isLiked
+          post.likes += post.isLiked ? 1 : -1
+        }
+      }
+    },
+
+    // Fandom members actions
+    addFandomMember(fandomHandle, member) {
+      if (!this.fandomMembers[fandomHandle]) {
+        this.fandomMembers[fandomHandle] = []
+      }
+      this.fandomMembers[fandomHandle].push(member)
+    },
+
+    removeFandomMember(fandomHandle, memberId) {
+      if (this.fandomMembers[fandomHandle]) {
+        this.fandomMembers[fandomHandle] = this.fandomMembers[fandomHandle].filter(m => m.id !== memberId)
+      }
+    },
+
+    changeFandomMemberRole(fandomHandle, memberId, newRole) {
+      if (this.fandomMembers[fandomHandle]) {
+        const member = this.fandomMembers[fandomHandle].find(m => m.id === memberId)
+        if (member) {
+          member.role = newRole
+        }
+      }
     }
   },
   
@@ -154,6 +278,33 @@ export const useFandomsStore = defineStore('fandoms', {
     },
     adminFandoms: (state) => state.userFandoms.filter(fandom => fandom.role === 'admin'),
     memberFandoms: (state) => state.userFandoms.filter(fandom => fandom.role === 'member'),
-    fandomCount: (state) => state.userFandoms.length
+    fandomCount: (state) => state.userFandoms.length,
+
+    // Fandom posts getters
+    getFandomPosts: (state) => (fandomHandle) => {
+      return state.fandomPosts[fandomHandle] || []
+    },
+
+    getFandomPostsCount: (state) => (fandomHandle) => {
+      return state.fandomPosts[fandomHandle]?.length || 0
+    },
+
+    // Fandom members getters
+    getFandomMembers: (state) => (fandomHandle) => {
+      return state.fandomMembers[fandomHandle] || []
+    },
+
+    getFandomMembersCount: (state) => (fandomHandle) => {
+      return state.fandomMembers[fandomHandle]?.length || 0
+    },
+
+    searchFandomMembers: (state) => (fandomHandle, query) => {
+      const members = state.fandomMembers[fandomHandle] || []
+      if (!query) return members
+      return members.filter(member => 
+        member.name.toLowerCase().includes(query.toLowerCase()) ||
+        member.username.toLowerCase().includes(query.toLowerCase())
+      )
+    }
   }
 })

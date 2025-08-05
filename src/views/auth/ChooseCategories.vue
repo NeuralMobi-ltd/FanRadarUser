@@ -4,20 +4,20 @@
       <!-- Header with progress indicator -->
       <div class="bg-blue-600 dark:bg-blue-700 px-8 py-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-white">Personalize Your Experience</h2>
-          <span class="text-blue-200 font-medium">{{ selected.length }}/5</span>
+          <h2 class="text-2xl font-bold text-white">{{ config.title }}</h2>
+          <span class="text-blue-200 font-medium">{{ selected.length }}/{{ maxSelections }}</span>
         </div>
         <div class="w-full bg-blue-500 bg-opacity-40 rounded-full h-2">
           <div 
             class="bg-white h-2 rounded-full transition-all duration-300" 
-            :style="{ width: `${(selected.length / 5) * 100}%` }"
+            :style="{ width: `${progressPercentage}%` }"
           ></div>
         </div>
       </div>
       
       <div class="p-4 sm:p-8">
         <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">
-          Select your top 5 interests to help us customize your feed
+          {{ config.description }}
         </p>
         
         <!-- Category grid with improved visuals -->
@@ -34,7 +34,7 @@
               !selected.includes(cat) && selected.length >= 5 ? 'opacity-50' : ''
             ]"
             @click="toggleCategory(cat)"
-            :disabled="!selected.includes(cat) && selected.length >= 5"
+            :disabled="!selected.includes(cat) && selected.length >= maxSelections"
           >
             <span>{{ cat }}</span>
             <svg 
@@ -55,11 +55,11 @@
           @click="submitCategories"
           :class="[
             'w-full py-3 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center',
-            selected.length === 5 
+            canContinue 
               ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900'
               : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
           ]"
-          :disabled="selected.length !== 5"
+          :disabled="!canContinue"
         >
           Continue
           <svg 
@@ -83,23 +83,34 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { 
+  USER_INTEREST_CATEGORIES, 
+  MAX_CATEGORY_SELECTION, 
+  CATEGORY_SELECTION_CONFIG 
+} from '@/constants/userCategories'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const categories = [
-  'Movies', 'Sports', 'Music', 'Anime', 'Tech', 
-  'Gaming', 'Books', 'Fashion', 'Travel', 'Art',
-  'Photography', 'Cooking', 'Fitness', 'Science', 'History'
-]
+
+// Use categories from constants
+const categories = USER_INTEREST_CATEGORIES
+const maxSelections = MAX_CATEGORY_SELECTION
+const config = CATEGORY_SELECTION_CONFIG
+
 const selected = ref([])
+
+// Computed properties for better reactivity
+const remainingSelections = computed(() => maxSelections - selected.value.length)
+const canContinue = computed(() => selected.value.length === config.minSelections)
+const progressPercentage = computed(() => (selected.value.length / maxSelections) * 100)
 
 function toggleCategory(cat) {
   if (selected.value.includes(cat)) {
     selected.value = selected.value.filter(c => c !== cat) 
-  } else if (selected.value.length < 5) {
+  } else if (selected.value.length < maxSelections) {
     selected.value.push(cat)
   }
 }

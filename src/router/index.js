@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import CommunitiesBrowse from '@/views/community/CommunitiesBrowse.vue'
+import Fandoms from '@/views/community/Fandoms.vue'
 
 const routes = [
   {
@@ -19,6 +19,12 @@ const routes = [
     path: '/explore',
     name: 'UserExplore',
     component: () => import('@/views/content/Explore.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/news',
+    name: 'News',
+    component: () => import('@/views/content/News.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -41,8 +47,8 @@ const routes = [
   },
   {
     path: '/communities/browse',
-    name: 'CommunitiesBrowse',
-    component: CommunitiesBrowse,
+    name: 'Fandoms',
+    component: Fandoms,
     meta: { requiresAuth: true }
   },
   {

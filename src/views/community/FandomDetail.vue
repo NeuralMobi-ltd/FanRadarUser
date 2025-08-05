@@ -242,9 +242,7 @@
             class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <select v-model="newMemberRole" class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-            <option value="member">Member</option>
-            <option value="moderator">Moderator</option>
-            <option value="admin">Admin</option>
+            <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
           </select>
           <button @click="addMember" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
             Add Member
@@ -282,9 +280,7 @@
                 @change="changeMemberRole(member.id, $event.target.value)"
                 class="text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="member">Member</option>
-                <option value="moderator">Moderator</option>
-                <option value="admin">Admin</option>
+                <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
               </select>
               <button @click="removeMember(member.id)" class="text-red-500 hover:text-red-700 text-xs">
                 <i class="fas fa-trash mr-1"></i>Remove
@@ -429,9 +425,7 @@
                 @change="changeMemberRole(member.id, $event.target.value)"
                 class="text-sm px-3 py-1 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="member">Member</option>
-                <option value="moderator">Moderator</option>
-                <option value="admin">Admin</option>
+                <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
               </select>
               <button v-if="member.id !== currentUser.id" @click="removeMember(member.id)" class="text-red-500 hover:text-red-700">
                 <i class="fas fa-trash"></i>
@@ -513,8 +507,11 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
 import Post from '@/components/common/Post.vue'
+import { FANDOM_TABS, MEMBER_ROLES, ROLE_OPTIONS } from '@/constants/fandomConstants'
+import { getFandomData } from '@/constants/fandomUtils'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const fandomsStore = useFandomsStore()
 const fandomName = computed(() => route.params.name || '')
@@ -530,7 +527,7 @@ const postMedia = ref([])
 const isPinned = ref(false)
 const isAnnouncement = ref(false)
 const newMemberEmail = ref('')
-const newMemberRole = ref('member')
+const newMemberRole = ref(MEMBER_ROLES.MEMBER)
 const memberSearch = ref('')
 const newHashtagTag = ref('')
 const newHashtagPosts = ref('')
@@ -546,7 +543,7 @@ const currentUser = computed(() => ({
   avatar: authStore.user?.avatar || '/public/images/me.png'
 }))
 
-// Mock fandom data
+// Get fandom data from constants
 const fandom = ref({
   name: '',
   description: '',
@@ -577,183 +574,45 @@ onMounted(() => {
 })
 
 const loadFandomData = () => {
-  // Mock fandom data based on name
-  const fandomsData = {
-    'premier-league-fans': {
-      name: 'Premier League Fans',
-      description: 'The ultimate community for Premier League football fans. Match discussions, transfer news, and more!',
-      fullDescription: 'Welcome to the most passionate Premier League community on FanRadar! Here we discuss everything from match predictions to transfer rumors, tactical analysis to player performances. Whether you support Manchester United, Liverpool, Arsenal, Chelsea, or any other Premier League club, you\'ll find your tribe here. Join us for live match threads, post-match analysis, and heated but respectful debates about the beautiful game.',
-      coverImage: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=1200&h=400&fit=crop',
-      logo: 'https://logo.clearbit.com/premierleague.com',
-      members: '234K',
-      onlineMembers: '5.2K',
-      totalPosts: '45.7K',
-      createdDate: '2019',
-      rules: [
-        'Keep discussions respectful and civil',
-        'No spam or self-promotion without permission',
-        'Stay on topic - Premier League related content only',
-        'No hate speech or discrimination',
-        'Use spoiler tags for recent match results'
-      ],
-      tags: ['football', 'premierleague', 'soccer', 'EPL', 'manchester-united', 'liverpool', 'arsenal', 'chelsea'],
-      hashtags: [
-        { tag: 'PremierLeague', posts: '45.2K' },
-        { tag: 'Football', posts: '128K' },
-        { tag: 'Soccer', posts: '89.5K' },
-        { tag: 'EPL', posts: '23.8K' },
-        { tag: 'MatchDay', posts: '67.3K' },
-        { tag: 'Transfer', posts: '34.1K' }
-      ]
-    },
-    'anime-manga': {
-      name: 'Anime & Manga',
-      description: 'All things anime and manga - discussions, fan art, and more',
-      fullDescription: 'Dive into the wonderful world of anime and manga with fellow otakus! From the latest seasonal anime to timeless classics, from mainstream hits to hidden gems, we cover it all. Share your reviews, fan art, theories, and recommendations. Whether you\'re into shonen, seinen, shoujo, josei, or any other genre, there\'s a place for you here.',
-      coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=400&fit=crop',
-      logo: 'https://logo.clearbit.com/crunchyroll.com',
-      members: '980K',
-      onlineMembers: '12.8K',
-      totalPosts: '78.3K',
-      createdDate: '2018',
-      rules: [
-        'Use spoiler tags for recent episodes/chapters',
-        'No piracy links or illegal streaming sites',
-        'Credit fan art creators when sharing',
-        'Be respectful of different tastes and opinions',
-        'Keep NSFW content properly tagged'
-      ],
-      tags: ['anime', 'manga', 'otaku', 'japan', 'crunchyroll', 'funimation', 'shounen', 'seinen'],
-      hashtags: [
-        { tag: 'Anime', posts: '234K' },
-        { tag: 'Manga', posts: '156K' },
-        { tag: 'Otaku', posts: '89.7K' },
-        { tag: 'AnimeReview', posts: '45.2K' },
-        { tag: 'AnimeFan', posts: '67.8K' },
-        { tag: 'Shounen', posts: '123K' }
-      ]
-    }
-  }
-
-  // Default fandom data if not found
-  const defaultFandom = {
-    name: fandomName.value.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' '),
-    description: `Welcome to the ${fandomName.value} community! Connect with passionate fans and share your enthusiasm.`,
-    fullDescription: `This is the official ${fandomName.value} fandom on FanRadar. Here you can discuss everything related to your favorite topic, share content, and connect with like-minded individuals from around the world.`,
-    coverImage: 'https://images.unsplash.com/photo-1487700160041-babef9c3cb55?w=1200&h=400&fit=crop',
-    logo: 'https://via.placeholder.com/80x80/3B82F6/ffffff?text=F',
-    members: '125K',
-    onlineMembers: '2.1K',
-    totalPosts: '23.4K',
-    createdDate: '2020',
-    rules: [
-      'Be respectful to all community members',
-      'Stay on topic and relevant to the fandom',
-      'No spam or excessive self-promotion',
-      'Follow community guidelines and rules'
-    ],
-    tags: ['fandom', 'community', 'discussion'],
-    hashtags: [
-      { tag: 'Fandom', posts: '12.5K' },
-      { tag: 'Community', posts: '8.9K' },
-      { tag: 'Discussion', posts: '15.2K' }
-    ]
-  }
-
-  fandom.value = fandomsData[fandomName.value] || defaultFandom
+  fandom.value = getFandomData(fandomName.value)
 }
 
 // Navigation function for hashtags
 const navigateToHashtag = (hashtag) => {
-  const router = useRouter()
   router.push(`/hashtag/${hashtag}`)
 }
 
-// Initialize tabs after fandom data is loaded
-const tabs = computed(() => [
-  { id: 'posts', label: 'Posts', count: '156' },
-  { id: 'members', label: 'Members', count: fandom.value.members || '0' },
-  { id: 'about', label: 'About', count: '' }
-])
+// Initialize tabs after fandom data is loaded - use constants
+const tabs = computed(() => {
+  return FANDOM_TABS.map(tab => {
+    let count = ''
+    if (tab.id === 'posts') {
+      count = posts.value.length.toString()
+    } else if (tab.id === 'members') {
+      count = fandom.value.members || '0'
+    }
+    return { ...tab, count }
+  })
+})
 
-const posts = ref([
-  {
-    id: 1,
-    username: 'FootballFanatic',
-    userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-    date: '2h ago',
-    communityName: '',
-    content: 'What a match yesterday! The tactical setup was absolutely brilliant. The way they pressed high and created chances was textbook football.',
-    image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&h=400&fit=crop',
-    tags: ['match', 'tactics', 'analysis'],
-    likes: 89,
-    comments: 23,
-    shares: 5,
-    isLiked: false,
-    fandom: ''
-  },
-  {
-    id: 2,
-    username: 'TacticalGenius',
-    userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-    date: '5h ago',
-    communityName: '',
-    content: 'Breaking down the formation changes in the second half. The manager\'s substitutions completely changed the game dynamic.',
-    tags: ['tactics', 'formation', 'substitutions'],
-    likes: 156,
-    comments: 34,
-    shares: 12,
-    isLiked: true,
-    fandom: ''
-  }
-])
+// Get posts from store
+const posts = computed(() => {
+  return fandomsStore.getFandomPosts(fandomName.value)
+})
 
-const members = ref([
-  {
-    id: 1,
-    name: 'John Smith',
-    username: 'johnsmith',
-    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    role: 'admin',
-    posts: 245,
-    joinedDate: 'Jan 2019'
-  },
-  {
-    id: 2,
-    name: 'Emma Wilson',
-    username: 'emmaw',
-    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    role: 'moderator',
-    posts: 189,
-    joinedDate: 'Mar 2020'
-  },
-  {
-    id: 3,
-    name: 'Mike Johnson',
-    username: 'mikej',
-    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-    role: 'member',
-    posts: 67,
-    joinedDate: 'Aug 2021'
-  },
-  {
-    id: 4,
-    name: 'Sarah Davis',
-    username: 'sarahd',
-    avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
-    role: 'member',
-    posts: 123,
-    joinedDate: 'Feb 2022'
-  }
-])
+// Get members from store
+const members = computed(() => {
+  return fandomsStore.getFandomMembers(fandomName.value)
+})
 
 const joinFandom = () => {
   // Add to store
-  fandomsStore.setUserRole(fandomName.value, 'member')
+  fandomsStore.setUserRole(fandomName.value, MEMBER_ROLES.MEMBER)
   console.log(`Joined fandom: ${fandom.value.name}`)
 }
+
+// Make constants available to template
+const roleOptions = ROLE_OPTIONS
 
 // Enhanced media handling
 const onFileChange = (type, event) => {
@@ -794,9 +653,11 @@ const createPost = () => {
       fandom: fandom.value.name,
       isPinned: isPinned.value,
       isAnnouncement: isAnnouncement.value,
-      authorRole: isAdmin.value ? 'admin' : 'member'
+      authorRole: isAdmin.value ? MEMBER_ROLES.ADMIN : MEMBER_ROLES.MEMBER
     }
-    posts.value.unshift(newPost)
+    
+    // Add to store instead of local array
+    fandomsStore.addFandomPost(fandomName.value, newPost)
     
     // Reset form
     newPostContent.value = ''
@@ -830,32 +691,48 @@ const addMember = () => {
       posts: 0,
       joinedDate: 'Today'
     }
-    members.value.push(newMember)
+    
+    // Add to store instead of local array
+    fandomsStore.addFandomMember(fandomName.value, newMember)
+    
     newMemberEmail.value = ''
-    newMemberRole.value = 'member'
+    newMemberRole.value = MEMBER_ROLES.MEMBER
   }
 }
 
 const changeMemberRole = (memberId, newRole) => {
-  const member = members.value.find(m => m.id === memberId)
-  if (member) {
-    member.role = newRole
-  }
+  fandomsStore.changeFandomMemberRole(fandomName.value, memberId, newRole)
 }
 
 const removeMember = (memberId) => {
   if (confirm('Are you sure you want to remove this member?')) {
-    members.value = members.value.filter(m => m.id !== memberId)
+    fandomsStore.removeFandomMember(fandomName.value, memberId)
   }
 }
 
 const filteredMembers = computed(() => {
-  if (!memberSearch.value) return members.value
-  return members.value.filter(member => 
-    member.name.toLowerCase().includes(memberSearch.value.toLowerCase()) ||
-    member.username.toLowerCase().includes(memberSearch.value.toLowerCase())
-  )
+  return fandomsStore.searchFandomMembers(fandomName.value, memberSearch.value)
 })
+
+// Post interaction functions using store
+function likePost(postId) {
+  fandomsStore.likeFandomPost(fandomName.value, postId)
+}
+
+function commentPost(postId) {
+  console.log('Comment on post:', postId)
+}
+
+function sharePost(postId) {
+  console.log('Share post:', postId)
+}
+
+// Delete post function
+const deletePost = (postId) => {
+  if (confirm('Are you sure you want to delete this post?')) {
+    fandomsStore.deleteFandomPost(fandomName.value, postId)
+  }
+}
 
 // Edit fandom functions
 const saveFandomChanges = () => {
@@ -904,13 +781,6 @@ const initializeEditData = () => {
   editFandom.value = { ...fandom.value }
   editRules.value = [...fandom.value.rules]
   editHashtags.value = [...(fandom.value.hashtags || [])]
-}
-
-// Delete post function
-const deletePost = (postId) => {
-  if (confirm('Are you sure you want to delete this post?')) {
-    posts.value = posts.value.filter(p => p.id !== postId)
-  }
 }
 
 // Watch for modal opens to initialize data
