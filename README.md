@@ -40,19 +40,6 @@ FanRadar is a comprehensive social platform designed for fan communities. Connec
    cd fanradar
    ```
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Open in browser**
-   ```
-
 ---
 
 For more details, see the [Vue CLI Configuration Reference](https://cli.vuejs.org/config/).
@@ -88,7 +75,7 @@ FanRadarMart is an e-commerce web application where users can search for product
 
 3. **Open your browser and visit:**
    ```
-   http://localhost:3000
+   http://localhost:5173/
    ```
    (or the port shown in your terminal)
 
