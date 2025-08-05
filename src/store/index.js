@@ -1,4 +1,4 @@
-import { reactive, watch } from 'vue'
+import { reactive, watch, computed } from 'vue'
 
 const state = reactive({
   theme: localStorage.getItem('theme') || 'light', // Load theme from localStorage
@@ -22,7 +22,19 @@ watch(() => state.theme, applyTheme)
 
 export const useThemeStore = () => ({
   state,
+  isDark: computed(() => state.theme === 'dark'),
   toggleTheme: () => {
     state.theme = state.theme === 'light' ? 'dark' : 'light'
   },
 })
+
+// Export store names for easy importing
+export { useAuthStore } from './auth'
+export { usePostsStore } from './posts'
+export { useUsersStore } from './users'
+export { useFandomsStore } from './fandoms'
+export { useCartStore } from './cart'
+export { useSearchStore } from './search'
+export { useNewsStore } from './news'
+export { useTrendsStore } from './trends'
+export { useProductsStore } from './products'

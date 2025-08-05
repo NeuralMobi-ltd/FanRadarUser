@@ -12,10 +12,6 @@ export const useCartStore = defineStore('cart', {
 
   actions: {
     addItem(product) {
-  },
-
-  actions: {
-    addItem(product) {
       const existingItem = this.items.find(i => i.id === product.id)
       if (existingItem) {
         existingItem.quantity++
@@ -38,8 +34,8 @@ export const useCartStore = defineStore('cart', {
       }
     },
 
-    clearCart() {
-      this.items = []
+      clearCart() {
+        this.items = []
+      }
     }
-  }
-})
+  })

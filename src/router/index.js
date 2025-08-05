@@ -63,6 +63,12 @@ const routes = [
     meta: { requiresAuth: true, layout: 'store' }
   },
   {
+    path: '/mart/search',
+    name: 'ProductSearchResults',
+    component: () => import('@/views/store/ProductSearchResults.vue'),
+    meta: { requiresAuth: true, layout: 'store' }
+  },
+  {
     path: '/cart',
     name: 'Cart',
     component: () => import('@/components/store/MyCart.vue'),

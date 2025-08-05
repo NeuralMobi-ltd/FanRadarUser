@@ -5,33 +5,52 @@
         <!-- Logo and Store Name -->
         <div class="flex items-center space-x-4">
           <router-link to="/mart" class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-r from-green-600 to-green-500 rounded-xl flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
-            </div>
+            <img 
+              src="/public/images/FanRadarStore.png" 
+              alt="FanRadar Store Logo" 
+              class="w-10 rounded-xl object-cover"
+            />
             <div>
-              <h1 class="text-xl font-bold text-gray-900 dark:text-white">FanRadar Store</h1>
+              <h1 class="text-xl font-bold text-gray-900 dark:text-white">FanRadarMart</h1>
             </div>
           </router-link>
         </div>
 
         <!-- Search Bar -->
         <div class="flex-1 max-w-2xl mx-8">
-          <div class="relative">
+          <div class="relative search-container">
             <input
               v-model="searchQuery"
+              @focus="showSearchModal = true"
+              @click="showSearchModal = true"
               type="text"
               placeholder="Search products..."
-              class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-2 px-4 pl-10 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-2 px-4 pl-10 pr-12 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
               @keyup.enter="performSearch"
             />
             <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            <!-- Search Button -->
+            <button
+              @click="performSearch"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white rounded-full p-1.5 transition-colors"
+              :disabled="!searchQuery.trim()"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
 
-              </div>
-            </div>
+            <!-- Product Search Modal positioned relative to search input -->
+            <ProductSearchModal 
+              :is-visible="showSearchModal"
+              :query="searchQuery" 
+              @close="showSearchModal = false" 
+              @search="performSearch"
+            />
+          </div>
+        </div>
     
             <!-- Actions -->
             <div class="flex items-center space-x-3">
@@ -51,8 +70,16 @@
               </button>
 
               <!-- Dark mode toggle -->
-              <button class="p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group">
-                <i class="fas fa-moon w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+              <button 
+                @click="toggleTheme"
+                class="p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
+              >
+                <svg v-if="isDark" class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                <svg v-else class="w-5 h-5 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
               </button>
 
               <!-- Cart -->
@@ -151,24 +178,53 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { useThemeStore } from '@/store/index'
+import ProductSearchModal from '@/components/store/ProductSearchModal.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const themeStore = useThemeStore()
 
 const searchQuery = ref('')
 const showUserMenu = ref(false)
+const showSearchModal = ref(false)
 const cartItemsCount = ref(3) // Mock cart count
 
 const user = computed(() => authStore.user)
+const isDark = computed(() => themeStore.isDark)
 
 const performSearch = () => {
   if (searchQuery.value.trim()) {
-    router.push(`/mart?search=${encodeURIComponent(searchQuery.value)}`)
+    // Navigate to product search results page with search parameters specific to products
+    router.push({
+      name: 'ProductSearchResults',
+      query: { 
+        q: searchQuery.value.trim(),
+        type: 'products' // Specify that this is a product search
+      }
+    })
+    showSearchModal.value = false
   }
+}
+
+const toggleTheme = () => {
+  themeStore.toggleTheme()
 }
 
 const logout = () => {
   authStore.logout()
   router.push('/login')
+}
+
+// Close search modal when clicking outside
+const closeSearchOnClickOutside = (event) => {
+  if (showSearchModal.value && !event.target.closest('.search-container')) {
+    showSearchModal.value = false
+  }
+}
+
+// Add event listener for click outside
+if (typeof window !== 'undefined') {
+  document.addEventListener('click', closeSearchOnClickOutside)
 }
 </script>

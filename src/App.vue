@@ -11,8 +11,9 @@
     <div v-else-if="isStoreRoute && isAuthenticated">
       <StoreHeader />
       <div class="flex">
-        <StoreSidebar />
-        <main class="flex-1 min-h-screen">
+        <!-- Hide sidebar for store search routes -->
+        <StoreSidebar v-if="!isStoreSearchRoute" />
+        <main :class="isStoreSearchRoute ? 'flex-1 min-h-screen' : 'flex-1 min-h-screen'">
           <router-view />
         </main>
       </div>
@@ -71,6 +72,9 @@ const isLandingPage = computed(() => route.path === '/')
 const isStoreRoute = computed(() => 
   ['/mart', '/cart', '/orders'].some(path => route.path.startsWith(path))
 )
+
+// Check if current route is store search
+const isStoreSearchRoute = computed(() => route.path.startsWith('/mart/search'))
 
 // Check if current route is search page
 const isSearchRoute = computed(() => route.path === '/search')
