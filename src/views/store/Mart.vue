@@ -62,63 +62,67 @@
                 </div>
               </div>
 
-              <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
                 <div>
                   <h3 class="text-4xl font-bold mb-3">{{ currentDrop.title }}</h3>
                   <p class="text-xl mb-6 opacity-90">{{ currentDrop.subtitle }}</p>
                   
                   <!-- Features -->
                   <div class="grid grid-cols-2 gap-3 mb-6">
-                    <div v-for="feature in currentDrop.features" :key="feature" class="flex items-center gap-2">
-                      <span class="text-lg">{{ feature.split(' ')[0] }}</span>
-                      <span class="text-sm opacity-90">{{ feature.split(' ').slice(1).join(' ') }}</span>
-                    </div>
+                  <div v-for="feature in currentDrop.features" :key="feature" class="flex items-center gap-2">
+                    <span class="text-lg">{{ feature.split(' ')[0] }}</span>
+                    <span class="text-sm opacity-90">{{ feature.split(' ').slice(1).join(' ') }}</span>
+                  </div>
                   </div>
 
                   <!-- Price and Stock -->
                   <div class="flex items-center gap-6 mb-6">
-                    <div>
-                      <span class="text-lg line-through opacity-60">${{ currentDrop.originalPrice }}</span>
-                      <span class="text-3xl font-bold ml-3">${{ currentDrop.dropPrice }}</span>
-                      <span class="bg-green-500 text-white px-2 py-1 rounded-full text-sm ml-3">
-                        {{ currentDrop.discount }}% OFF
-                      </span>
-                    </div>
+                  <div>
+                    <span class="text-lg line-through opacity-60">${{ currentDrop.originalPrice }}</span>
+                    <span class="text-3xl font-bold ml-3">${{ currentDrop.dropPrice }}</span>
+                    <span class="bg-green-500 text-white px-2 py-1 rounded-full text-sm ml-3">
+                    {{ currentDrop.discount }}% OFF
+                    </span>
+                  </div>
                   </div>
 
                   <!-- Stock Bar -->
                   <div class="mb-6">
-                    <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm opacity-90">Stock Level</span>
-                      <span class="text-sm font-semibold">{{ currentDrop.stockLeft }} / {{ currentDrop.totalStock }} left</span>
-                    </div>
-                    <div class="w-full bg-white/20 rounded-full h-2">
-                      <div 
-                        class="bg-gradient-to-r from-yellow-400 to-red-500 h-2 rounded-full transition-all duration-500"
-                        :style="{ width: `${(currentDrop.stockLeft / currentDrop.totalStock) * 100}%` }"
-                      ></div>
-                    </div>
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm opacity-90">Stock Level</span>
+                    <span class="text-sm font-semibold">{{ currentDrop.stockLeft }} / {{ currentDrop.totalStock }} left</span>
+                  </div>
+                  <div class="w-full bg-white/20 rounded-full h-2">
+                    <div 
+                    class="bg-gradient-to-r from-yellow-400 to-red-500 h-2 rounded-full transition-all duration-500"
+                    :style="{ width: `${(currentDrop.stockLeft / currentDrop.totalStock) * 100}%` }"
+                    ></div>
+                  </div>
                   </div>
 
                   <!-- CTA Button -->
                   <button 
-                    @click="viewDrop(currentDrop)"
-                    class="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 flex items-center gap-3"
+                  @click="viewDrop(currentDrop)"
+                  class="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 flex items-center gap-3"
                   >
-                    <i class="fas fa-bolt"></i>
-                    Claim This Drop
+                  <i class="fas fa-bolt"></i>
+                  Claim This Drop
                   </button>
                 </div>
 
                 <!-- Product Image/Preview -->
                 <div class="relative">
                   <div class="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
-                    <div class="aspect-square bg-white/20 rounded-xl flex items-center justify-center">
-                      <i class="fas fa-image text-6xl opacity-50"></i>
-                    </div>
+                  <div class="aspect-square bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
+                    <img 
+                    src="https://ae01.alicdn.com/kf/S2c27aa2921084b97a9478c28e6c3973ah.jpg_640x640q90.jpg"
+                    :alt="currentDrop.title"
+                    class="w-full h-full object-contain"
+                    />
+                  </div>
                   </div>
                 </div>
-              </div>
+                </div>
             </div>
           </div>
 

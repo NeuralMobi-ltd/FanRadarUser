@@ -1,0 +1,352 @@
+# Store Folder Data Description
+
+## auth.js
+- Manages authentication state, user profile, user stats, and user's posts.
+- State: `user`, `loading`, `error`, `userStats`, `posts`, `token`, `refreshToken`, `sessionExpires`
+- Actions: login, logout, update profile, like/unlike post, add/delete post, initialize user, refresh session, change password, verify email
+- Usage: Used throughout the app for user authentication and profile management. Interacts with `posts.js` for user posts and `users.js` for directory/profile updates.
+- **Data Structure Example:**
+```json
+{
+  "user": {
+    "id": 1,
+    "userName": "alice",
+    "userEmail": "alice@email.com",
+    "avatar": "...",
+    "bio": "...",
+    "coverPhoto": "...",
+    "verified": true,
+    "joinedDate": "2025-08-01T12:00:00Z",
+    "settings": {
+      "theme": "dark",
+      "notifications": true,
+      "language": "en"
+    }
+  },
+  "userStats": {
+    "followers": 132,
+    "following": 12,
+    "posts": 15,
+    "likesReceived": 120,
+    "commentsReceived": 45
+  },
+  "posts": [
+    {
+      "id": 1,
+      "content": "...",
+      "timestamp": "...",
+      "likes": 0,
+      "comments": 0,
+      "shares": 0,
+      "media": [
+        { "type": "image", "url": "..." }
+      ],
+      "commentsList": [
+        { "id": 1, "userId": 2, "content": "Nice!", "timestamp": "..." }
+      ]
+    }
+  ]
+}
+```
+
+## cart.js
+- Manages shopping cart items and cart state for the store/mart.
+- State: `cartItems`, `totalPrice`, `isLoading`, `error`, `discounts`, `appliedCoupons`, `cartId`
+- Actions: add/remove/update item, fetch cart from API, clear cart, apply coupon, calculate shipping, update quantity, save cart
+- Usage: Used in store/mart pages and checkout. Interacts with `products.js` for product details.
+- **Data Structure Example:**
+```json
+{
+  "cartItems": [
+    {
+      "productId": 123,
+      "name": "Gaming Mouse",
+      "price": 79.99,
+      "quantity": 2,
+      "image": "...",
+      "brand": "Logitech",
+      "options": { "color": "black", "size": "standard" }
+    }
+  ],
+  "totalPrice": 159.98,
+  "discounts": [
+    { "code": "SUMMER10", "amount": 10 }
+  ],
+  "appliedCoupons": ["SUMMER10"],
+  "cartId": "abc123"
+}
+```
+
+## fandoms.js
+- Manages fandoms (interest groups) and related data.
+- State: `fandoms`, `isLoading`, `error`, `activeFandom`, `fandomMembers`, `fandomPosts`
+- Actions: fetch fandoms, create fandom, update fandom, join/leave fandom, fetch fandom members, fetch fandom posts
+- Usage: Used in community and social features. Interacts with `posts.js` for fandom-specific posts.
+- **Data Structure Example:**
+```json
+{
+  "fandoms": [
+    {
+      "id": 1,
+      "name": "Marvel",
+      "description": "...",
+      "memberCount": 500,
+      "coverImage": "...",
+      "admins": [1, 2],
+      "tags": ["Comics", "Movies"]
+    }
+  ],
+  "activeFandom": {
+    "id": 1,
+    "name": "Marvel"
+  },
+  "fandomMembers": [
+    { "id": 1, "userName": "alice" },
+    { "id": 2, "userName": "bob" }
+  ]
+}
+```
+
+## hashtags.js
+- Manages trending hashtags and hashtag search.
+- State: `hashtags`, `isLoading`, `error`, `selectedHashtag`, `hashtagPosts`
+- Actions: fetch hashtags, search hashtags, select hashtag, fetch hashtag posts
+- Usage: Used in social and search features. Interacts with `posts.js` for hashtag-related posts.
+- **Data Structure Example:**
+```json
+{
+  "hashtags": [
+    { "tag": "#Anime", "count": 2345, "trendScore": 98 },
+    { "tag": "#Gaming", "count": 1200, "trendScore": 87 }
+  ],
+  "selectedHashtag": "#Anime",
+  "hashtagPosts": [
+    { "id": 1, "content": "Anime is awesome!", "likes": 10 }
+  ]
+}
+```
+
+## index.js
+- (Usually for combining stores or root-level store logic)
+- Usage: Combines all store modules for global access. Used for initializing and providing store context.
+
+## news.js
+- Manages news posts and updates for the platform.
+- State: `newsPosts`, `isLoading`, `error`, `featuredNews`, `newsCategories`
+- Actions: fetch news, add news post, update news, delete news, set featured news, filter by category
+- Usage: Used in news and updates section. Can be shown on dashboard or landing page.
+- **Data Structure Example:**
+```json
+{
+  "newsPosts": [
+    {
+      "id": 1,
+      "title": "New Feature Released!",
+      "content": "...",
+      "date": "2025-08-01T12:00:00Z",
+      "category": "Updates",
+      "author": "admin",
+      "images": ["..."],
+      "tags": ["release", "feature"]
+    }
+  ],
+  "featuredNews": {
+    "id": 1,
+    "title": "New Feature Released!"
+  },
+  "newsCategories": ["Updates", "Events", "Community"]
+}
+```
+
+## posts.js
+- Manages all social posts (timeline, trending, following, etc.).
+- State: `posts`, `activeFeed`, `loadingMore`, `hasMorePosts`, `categoryPosts`, `postDrafts`, `selectedPost`, `postComments`
+- Actions: add/delete/like/share/update post, load more posts, set active feed, save draft, fetch comments, report post
+- Usage: Central to social features. Interacts with `auth.js` for user posts, `hashtags.js` for hashtag posts, `fandoms.js` for fandom posts.
+- **Data Structure Example:**
+```json
+{
+  "posts": [
+    {
+      "id": 1,
+      "username": "alice",
+      "avatar": "...",
+      "date": "2025-08-01T12:00:00Z",
+      "content": "...",
+      "media": [
+        { "type": "image", "url": "..." },
+        { "type": "video", "url": "..." }
+      ],
+      "likes": 10,
+      "comments": 2,
+      "shares": 1,
+      "fandom": "Anime",
+      "tags": ["Anime", "AttackOnTitan"],
+      "commentsList": [
+        { "id": 1, "userId": 2, "content": "Great post!", "timestamp": "..." }
+      ],
+      "isPinned": false,
+      "isReported": false
+    }
+  ],
+  "activeFeed": "timeline",
+  "categoryPosts": {
+    "Anime": [
+      { "id": 2, "content": "Anime news!", "likes": 5 }
+    ]
+  }
+}
+```
+
+## products.js
+- Manages product catalog for the store/mart.
+- State: `products`, `isLoading`, `error`, `selectedProduct`, `productCategories`, `productBrands`, `productReviews`
+- Actions: fetch products, add/update/delete product, fetch categories, fetch brands, fetch reviews, set selected product
+- Usage: Used in store/mart and product detail pages. Interacts with `cart.js` for adding products to cart.
+- **Data Structure Example:**
+```json
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Gaming Headset Pro",
+      "price": 149.99,
+      "category": "Electronics",
+      "image": "...",
+      "brand": "Razer",
+      "stock": 50,
+      "description": "...",
+      "reviews": [
+        { "userId": 1, "rating": 5, "comment": "Excellent sound!" }
+      ],
+      "options": [
+        { "color": "black" },
+        { "color": "white" }
+      ]
+    }
+  ],
+  "productCategories": ["Electronics", "Accessories"],
+  "productBrands": ["Razer", "Logitech"]
+}
+```
+
+## productSearch.js
+- Manages product search modal state, recent searches, and search results.
+- State: `recentSearches`, `searchResults`, `isSearching`, `error`, `searchFilters`, `searchSuggestions`
+- Actions: fetch search results (API), manage recent searches, set filters, fetch suggestions, clear search
+- Usage: Used in store/mart search bar and modal. Interacts with `products.js` for product results.
+- **Data Structure Example:**
+```json
+{
+  "recentSearches": ["gaming keyboard", "anime figures"],
+  "searchResults": {
+    "products": [
+      { "id": 1, "name": "...", "price": 99.99, "brand": "Razer" }
+    ],
+    "categories": [
+      { "id": 1, "name": "Electronics" }
+    ],
+    "brands": [
+      { "id": 1, "name": "Razer" }
+    ]
+  },
+  "searchFilters": {
+    "priceRange": { "min": 50, "max": 200 },
+    "brands": ["Razer"]
+  },
+  "searchSuggestions": ["gaming mouse", "headset"]
+}
+```
+
+## search.js
+- Manages global search (users, posts, products, etc.).
+- State: `searchResults`, `isLoading`, `error`, `searchType`, `searchHistory`
+- Actions: fetch search results, clear results, set search type, save search history
+- Usage: Used in global search bar and modal. Interacts with `users.js`, `posts.js`, `products.js`.
+- **Data Structure Example:**
+```json
+{
+  "searchResults": {
+    "users": [
+      { "id": 1, "userName": "alice", "avatar": "..." }
+    ],
+    "posts": [
+      { "id": 1, "content": "...", "likes": 10 }
+    ],
+    "products": [
+      { "id": 1, "name": "...", "price": 99.99 }
+    ]
+  },
+  "searchType": "all",
+  "searchHistory": ["alice", "gaming"]
+}
+```
+
+## storeSidebar.js
+- Manages sidebar filter state for the store/mart (categories, brands, price, etc.).
+- State: `selectedCategory`, `selectedBrands`, `priceRange`, `activeFilters`, `availableCategories`, `availableBrands`
+- Actions: set/clear filters, fetch filter options, reset filters, apply filter
+- Usage: Used in store/mart sidebar for filtering products.
+- **Data Structure Example:**
+```json
+{
+  "selectedCategory": "Electronics",
+  "selectedBrands": ["Razer", "Corsair"],
+  "priceRange": { "min": 50, "max": 200 },
+  "activeFilters": ["sale", "new"],
+  "availableCategories": ["Electronics", "Accessories"],
+  "availableBrands": ["Razer", "Corsair", "Logitech"]
+}
+```
+
+## trends.js
+- Manages trending topics, posts, and hashtags.
+- State: `trendingTopics`, `isLoading`, `error`, `trendType`, `trendHistory`
+- Actions: fetch trending topics, update trends, set trend type, save trend history
+- Usage: Used in explore and trending sections. Interacts with `posts.js` and `hashtags.js`.
+- **Data Structure Example:**
+```json
+{
+  "trendingTopics": [
+    { "type": "hashtag", "value": "#Anime", "count": 2345, "trendScore": 98 },
+    { "type": "post", "id": 1, "content": "...", "likes": 10 }
+  ],
+  "trendType": "hashtag",
+  "trendHistory": ["#Anime", "#Gaming"]
+}
+```
+
+## users.js
+- Manages user directory, profiles, and user search.
+- State: `users`, `isLoading`, `error`, `selectedUser`, `userFollowers`, `userFollowing`, `userPosts`
+- Actions: fetch users, update user, search users, set selected user, fetch followers/following, fetch user posts
+- Usage: Used in user directory, profile pages, and search. Interacts with `auth.js` for current user and `posts.js` for user posts.
+- **Data Structure Example:**
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "userName": "alice",
+      "avatar": "...",
+      "bio": "...",
+      "verified": true,
+      "followers": [2, 3],
+      "following": [4],
+      "posts": [
+        { "id": 1, "content": "Hello world!" }
+      ]
+    }
+  ],
+  "selectedUser": {
+    "id": 1,
+    "userName": "alice"
+  },
+  "userFollowers": [
+    { "id": 2, "userName": "bob" }
+  ],
+  "userFollowing": [
+    { "id": 4, "userName": "eve" }
+  ]
+}
+```

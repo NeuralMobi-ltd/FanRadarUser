@@ -120,7 +120,7 @@ import {
   getCategoryColor, 
   getCategoryStats 
 } from '@/constants'
-import { useCommunitiesStore } from '@/store/communities'
+import { useFandomsStore } from '@/store/fandoms'
 import { usePostsStore } from '@/store/posts'
 import { useNewsStore } from '@/store/news'
 
@@ -129,7 +129,7 @@ const categoryName = computed(() => route.params.category || '')
 const activeTab = ref('communities')
 
 // Initialize stores
-const communitiesStore = useCommunitiesStore()
+const communitiesStore = useFandomsStore()
 const postsStore = usePostsStore()
 const newsStore = useNewsStore()
 

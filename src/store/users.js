@@ -18,7 +18,7 @@ export const useUsersStore = defineStore('users', {
         joinedDate: '2023-01-15',
         verified: true
       }
-    ],
+    ], 
     
     // All posts (from all users)
     posts: [

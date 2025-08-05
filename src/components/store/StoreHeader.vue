@@ -63,12 +63,6 @@
                 <span>Community</span>
               </router-link>
 
-              <!-- Notifications -->
-              <button class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group">
-                <i class="fas fa-bell w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                <span class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse">3</span>
-              </button>
-
               <!-- Dark mode toggle -->
               <button 
                 @click="toggleTheme"
@@ -81,6 +75,15 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
               </button>
+
+
+              <!-- Notifications -->
+              <button class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group">
+                <i class="fas fa-bell w-5 h-5 group-hover:scale-110 transition-transform"></i>
+                <span class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse">3</span>
+              </button>
+
+              
 
               <!-- Cart -->
               <router-link 

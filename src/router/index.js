@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import Fandoms from '@/views/community/Fandoms.vue'
-import CommunitiesBrowse from '@/views/community/CommunitiesBrowse.vue'
+import CommunitiesBrowse from '@/views/community/FandomsBrowse.vue'
 
 const routes = [
   {

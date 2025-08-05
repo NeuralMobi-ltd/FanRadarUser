@@ -130,10 +130,10 @@
 import { ref, computed } from 'vue'
 import CommunityCard from '@/components/community/CommunityCard.vue'
 import { COMMUNITY_CATEGORIES } from '@/constants/communityCategories'
-import { useCommunitiesStore } from '@/store/communities'
+import { useFandomsStore } from '@/store/fandoms'
 
 // Initialize store
-const communitiesStore = useCommunitiesStore()
+const fandomsStore = useFandomsStore()
 
 const search = ref('')
 const activeCategory = ref('All')
@@ -141,9 +141,11 @@ const activeCategory = ref('All')
 // Get categories from constants
 const categories = computed(() => COMMUNITY_CATEGORIES)
 
-// Get communities from store with filtering
+// Get fandoms from store with filtering
 const filteredCommunities = computed(() => {
-  return communitiesStore.filterBrowseCommunities(search.value, activeCategory.value)
+  return fandomsStore.filterBrowseCommunities
+    ? fandomsStore.filterBrowseCommunities(search.value, activeCategory.value)
+    : []
 })
 </script>
 

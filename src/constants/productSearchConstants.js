@@ -54,3 +54,27 @@ export const SEARCH_CONFIG = {
   DEFAULT_VIEW_MODE: VIEW_MODES.GRID,
   DEFAULT_SORT: 'relevance'
 }
+
+export const MOCK_CATEGORIES = [
+  // Example mock categories
+  { id: 1, name: 'Electronics', icon: 'fas fa-tv', productCount: 120 },
+  { id: 2, name: 'Fashion', icon: 'fas fa-tshirt', productCount: 80 }
+];
+
+export const MOCK_BRANDS = [
+  // Example mock brands
+  { id: 1, name: 'Brand A', logo: '/images/brand-a.png', productCount: 50 },
+  { id: 2, name: 'Brand B', logo: '/images/brand-b.png', productCount: 30 }
+];
+
+export const MOCK_PRODUCTS = [
+  // Example mock products
+  { id: 1, name: 'Smartphone', image: '/images/smartphone.png', price: 299, category: 'Electronics' },
+  { id: 2, name: 'T-Shirt', image: '/images/tshirt.png', price: 19, category: 'Fashion' }
+];
+
+export const POPULAR_PRODUCTS = [
+  // Example popular products
+  { id: 1, name: 'Smartphone', price: 299, category: 'Electronics' },
+  { id: 2, name: 'T-Shirt', price: 19, category: 'Fashion' }
+];
