@@ -9,7 +9,18 @@ export const usePostsStore = defineStore('posts', {
         avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
         date: new Date(Date.now() - 3600000 * 2),
         text: "Just finished watching the latest Attack on Titan episode and I'm speechless! 😭 The animation quality keeps getting better! #AttackOnTitan #Anime",
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+        media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'Attack on Titan scene'
+          },
+          {
+            type: 'video',
+            url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+            caption: 'Anime reaction video'
+          }
+        ],
         likes: 124,
         comments: 23,
         shares: 8,
@@ -25,6 +36,18 @@ export const usePostsStore = defineStore('posts', {
         date: new Date(Date.now() - 3600000 * 5),
         text: "T1 vs G2 was absolutely insane! That Baron steal in game 3 will go down in Worlds history 🔥 #LoLWorlds #Esports",
         tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
+        media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
+            caption: 'Baron steal moment'
+          },
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
+            caption: 'Team celebration'
+          }
+        ],
         likes: 89,
         comments: 15,
         shares: 12,
@@ -39,7 +62,18 @@ export const usePostsStore = defineStore('posts', {
         avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
         date: new Date(Date.now() - 3600000 * 8),
         text: "NewJeans' new music video is a masterpiece! The choreography, the visuals, everything is perfect 💕 #NewJeans #Kpop",
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
+        media: [
+          {
+            type: 'video',
+            url: 'https://www.w3schools.com/html/movie.mp4',
+            caption: 'NewJeans MV highlight'
+          },
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
+            caption: 'Choreography snapshot'
+          }
+        ],
         likes: 156,
         comments: 34,
         shares: 28,
@@ -54,7 +88,23 @@ export const usePostsStore = defineStore('posts', {
         avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
         date: new Date(Date.now() - 3600000 * 12),
         text: "Spider-Man 2 on PS5 is incredible! The web-swinging feels so smooth and the graphics are mind-blowing 🕷️ #SpiderMan2 #PS5 #Gaming",
-        image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
+        media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
+            caption: 'Spider-Man gameplay'
+          },
+          {
+            type: 'video',
+            url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+            caption: 'Web-swinging demo'
+          },
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'PS5 graphics showcase'
+          }
+        ],
         likes: 78,
         comments: 19,
         shares: 6,
@@ -83,7 +133,18 @@ export const usePostsStore = defineStore('posts', {
         avatar: 'https://randomuser.me/api/portraits/men/18.jpg',
         date: new Date(Date.now() - 3600000 * 20),
         text: "Demon Slayer movie was absolutely phenomenal! The fight scenes were beautifully animated 🗾 ⚔️ #DemonSlayer #Anime",
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+        media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'Demon Slayer movie poster'
+          },
+          {
+            type: 'video',
+            url: 'https://www.w3schools.com/html/movie.mp4',
+            caption: 'Fight scene highlight'
+          }
+        ],
         likes: 145,
         comments: 28,
         shares: 17,

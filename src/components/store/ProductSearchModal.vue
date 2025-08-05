@@ -180,8 +180,10 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { POPULAR_PRODUCTS, MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from '@/constants/productSearchConstants'
+import { useProductSearchStore } from '@/store/productSearch'
 
 const props = defineProps({
   isVisible: Boolean,
@@ -189,35 +191,17 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'search'])
-
 const router = useRouter()
-const isSearching = ref(false)
+const productSearchStore = useProductSearchStore()
 
-// Mock data for popular products (in a real app, this would come from a store)
-const popularProducts = ref([
-  { id: 1, name: 'Gaming Headset Pro', price: 149.99, category: 'Electronics' },
-  { id: 2, name: 'Gaming Headset RGB', price: 89.99, category: 'Electronics' },
-  { id: 3, name: 'Anime T-Shirt', price: 24.99, category: 'Clothing' },
-  { id: 4, name: 'Gaming Mouse Wireless', price: 79.99, category: 'Electronics' },
-  { id: 5, name: 'Collectible Figure', price: 34.99, category: 'Collectibles' }
-])
+const popularProducts = computed(() => POPULAR_PRODUCTS)
+const recentSearches = computed(() => productSearchStore.recentSearches)
+const searchResults = computed(() => productSearchStore.searchResults)
+const isSearching = computed(() => productSearchStore.isSearching)
 
-// Mock recent searches (in a real app, this would be stored in localStorage or a store)
-const recentSearches = ref([
-  'gaming keyboard',
-  'anime figures',
-  'band merchandise'
-])
-
-const searchResults = ref({
-  products: [],
-  categories: [],
-  brands: []
-})
-
-const hasResults = computed(() => 
-  searchResults.value.products.length > 0 || 
-  searchResults.value.categories.length > 0 || 
+const hasResults = computed(() =>
+  searchResults.value.products.length > 0 ||
+  searchResults.value.categories.length > 0 ||
   searchResults.value.brands.length > 0
 )
 
@@ -229,96 +213,35 @@ const highlightSearchTerm = (text) => {
 
 const performSearch = async () => {
   if (!props.query?.trim()) {
-    searchResults.value = { products: [], categories: [], brands: [] }
+    productSearchStore.setSearchResults({ products: [], categories: [], brands: [] })
     return
   }
-
-  isSearching.value = true
-
-  // Simulate API delay
+  productSearchStore.setIsSearching(true)
   await new Promise(resolve => setTimeout(resolve, 400))
-
-  // Mock search results (in a real app, this would be an API call)
-  const mockProducts = [
-    { id: 1, name: 'Gaming Headset Pro Wireless', price: 149.99, category: 'Electronics', image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=200&h=200&fit=crop' },
-    { id: 2, name: 'Gaming Headset RGB Wired', price: 89.99, category: 'Electronics', image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=200&h=200&fit=crop' },
-    { id: 3, name: 'Professional Gaming Headset', price: 199.99, category: 'Electronics', image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=200&h=200&fit=crop' },
-    { id: 4, name: 'Gaming Headset Stand RGB', price: 29.99, category: 'Accessories', image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&h=200&fit=crop' },
-    { id: 5, name: 'Gaming Mechanical Keyboard', price: 129.99, category: 'Electronics', image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=200&h=200&fit=crop' },
-    { id: 6, name: 'Wireless Gaming Mouse', price: 79.99, category: 'Electronics', image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=200&h=200&fit=crop' },
-    { id: 7, name: 'Anime Character Figure', price: 34.99, category: 'Collectibles', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop' },
-    { id: 8, name: 'Gaming Chair Ergonomic', price: 299.99, category: 'Home & Living', image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&h=200&fit=crop' }
-  ]
-
-  const mockCategories = [
-    { id: 1, name: 'Gaming Accessories', productCount: 156, icon: 'fas fa-gamepad' },
-    { id: 2, name: 'Electronics', productCount: 89, icon: 'fas fa-laptop' },
-    { id: 3, name: 'Collectibles', productCount: 234, icon: 'fas fa-trophy' },
-    { id: 4, name: 'Home & Living', productCount: 45, icon: 'fas fa-home' }
-  ]
-
-  const mockBrands = [
-    { id: 1, name: 'Razer', productCount: 45, logo: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=50&h=50&fit=crop' },
-    { id: 2, name: 'Corsair', productCount: 32, logo: 'https://images.unsplash.com/photo-1605792657660-596af9009e82?w=50&h=50&fit=crop' },
-    { id: 3, name: 'SteelSeries', productCount: 28, logo: 'https://images.unsplash.com/photo-1589254065878-42c9da997008?w=50&h=50&fit=crop' }
-  ]
-
-  // Filter results based on query
   const query = props.query.toLowerCase()
-  
-  searchResults.value = {
-    products: mockProducts.filter(p => p.name.toLowerCase().includes(query)),
-    categories: mockCategories.filter(c => c.name.toLowerCase().includes(query)),
-    brands: mockBrands.filter(b => b.name.toLowerCase().includes(query))
-  }
-
-  isSearching.value = false
+  productSearchStore.setSearchResults({
+    products: MOCK_PRODUCTS.filter(p => p.name.toLowerCase().includes(query)),
+    categories: MOCK_CATEGORIES.filter(c => c.name.toLowerCase().includes(query)),
+    brands: MOCK_BRANDS.filter(b => b.name.toLowerCase().includes(query))
+  })
+  productSearchStore.setIsSearching(false)
 }
 
 const selectSearch = (term) => {
-  // Add to recent searches
-  addToRecentSearches(term)
-  
-  // Navigate to product search results page
+  productSearchStore.addRecentSearch(term)
   router.push({
     name: 'ProductSearchResults',
     query: { q: term, type: 'products' }
   })
-  
-  // Close the modal
   closeSearch()
 }
 
-const addToRecentSearches = (term) => {
-  // Remove if already exists
-  const index = recentSearches.value.indexOf(term)
-  if (index > -1) {
-    recentSearches.value.splice(index, 1)
-  }
-  
-  // Add to beginning
-  recentSearches.value.unshift(term)
-  
-  // Keep only last 5
-  if (recentSearches.value.length > 5) {
-    recentSearches.value = recentSearches.value.slice(0, 5)
-  }
-  
-  // In a real app, save to localStorage
-  localStorage.setItem('productRecentSearches', JSON.stringify(recentSearches.value))
-}
-
 const removeRecentSearch = (term) => {
-  const index = recentSearches.value.indexOf(term)
-  if (index > -1) {
-    recentSearches.value.splice(index, 1)
-    localStorage.setItem('productRecentSearches', JSON.stringify(recentSearches.value))
-  }
+  productSearchStore.removeRecentSearch(term)
 }
 
 const clearRecentSearches = () => {
-  recentSearches.value = []
-  localStorage.removeItem('productRecentSearches')
+  productSearchStore.clearRecentSearches()
 }
 
 const closeSearch = () => {
@@ -327,7 +250,7 @@ const closeSearch = () => {
 
 const viewAllResults = () => {
   if (props.query?.trim()) {
-    addToRecentSearches(props.query.trim())
+    productSearchStore.addRecentSearch(props.query.trim())
     router.push({
       name: 'ProductSearchResults',
       query: { q: props.query.trim(), type: 'products' }
@@ -351,23 +274,9 @@ const goToBrand = (brand) => {
   closeSearch()
 }
 
-// Load recent searches from localStorage on mount
-const loadRecentSearches = () => {
-  const saved = localStorage.getItem('productRecentSearches')
-  if (saved) {
-    try {
-      recentSearches.value = JSON.parse(saved)
-    } catch (e) {
-      console.error('Error loading recent searches:', e)
-    }
-  }
-}
-
-// Perform search when query changes
 watch(() => props.query, () => {
   performSearch()
 })
 
-// Load recent searches on component mount
-loadRecentSearches()
+productSearchStore.loadRecentSearches()
 </script>

@@ -527,6 +527,109 @@ export const useProductsStore = defineStore('products', {
       }
       
       return filtered
+    },
+
+    // Store sidebar specific getters
+    getStoreBrands() {
+      const brands = [
+        { name: 'FanRadar Official', slug: 'fanradar', products: '245' },
+        { name: 'Anime Collective', slug: 'anime-collective', products: '180' },
+        { name: 'Marvel Store', slug: 'marvel', products: '220' },
+        { name: 'Gaming Gear', slug: 'gaming-gear', products: '160' },
+        { name: 'K-Pop Merch', slug: 'kpop', products: '195' },
+        { name: 'Studio Ghibli', slug: 'studio-ghibli', products: '85' },
+        { name: 'Warner Bros', slug: 'warner-bros', products: '120' }
+      ]
+      return brands
+    },
+
+    getCategoryCounts() {
+      const counts = {}
+      this.products.forEach(product => {
+        counts[product.category] = (counts[product.category] || 0) + 1
+      })
+      
+      // Add total count for "All Products"
+      counts['all'] = this.products.length
+      
+      return {
+        all: this.products.length.toString(),
+        apparel: (counts['Apparel'] || 0).toString(),
+        accessories: (counts['Accessories'] || 0).toString(),
+        home: (counts['Home & Living'] || 0).toString(),
+        tech: (counts['Tech Gadgets'] || 0).toString(),
+        collectibles: (counts['Collectibles'] || 0).toString(),
+        books: (counts['Books'] || 0).toString()
+      }
+    },
+
+    getTotalProducts() {
+      return this.products.length
+    },
+
+    getCartItemCount() {
+      // TODO: This should be connected to actual cart store
+      return 3
+    },
+
+    // Product drops functionality
+    getProductDrops() {
+      return [
+        {
+          id: 1,
+          name: 'Limited Edition Anime Collection',
+          description: 'Exclusive merchandise from top anime series',
+          image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop',
+          originalPrice: 199.99,
+          dropPrice: 149.99,
+          timeLeft: '2 days',
+          itemsLeft: 15,
+          totalItems: 50,
+          badge: 'HOT',
+          badgeColor: 'red',
+          products: [1, 2, 3] // Product IDs included in this drop
+        },
+        {
+          id: 2,
+          name: 'Gaming Legends Pack',
+          description: 'Rare collectibles from iconic games',
+          image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop',
+          originalPrice: 299.99,
+          dropPrice: 199.99,
+          timeLeft: '5 hours',
+          itemsLeft: 8,
+          totalItems: 25,
+          badge: 'ENDING SOON',
+          badgeColor: 'orange',
+          products: [3, 5, 7]
+        },
+        {
+          id: 3,
+          name: 'K-Pop Exclusive Bundle',
+          description: 'Signed memorabilia and rare items',
+          image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=200&h=200&fit=crop',
+          originalPrice: 149.99,
+          dropPrice: 99.99,
+          timeLeft: '1 week',
+          itemsLeft: 32,
+          totalItems: 100,
+          badge: 'NEW',
+          badgeColor: 'green',
+          products: [4, 6, 8]
+        }
+      ]
+    },
+
+    getDropById(dropId) {
+      const drops = this.getProductDrops()
+      return drops.find(drop => drop.id === dropId)
+    },
+
+    getProductsByDrop(dropId) {
+      const drop = this.getDropById(dropId)
+      if (!drop) return []
+      
+      return this.products.filter(product => drop.products.includes(product.id))
     }
   }
 })

@@ -40,14 +40,179 @@
     <div class="mb-4">
       <p class="text-gray-900 dark:text-white text-[15px] leading-relaxed whitespace-pre-wrap">{{ post.text || post.content }}</p>
       
-      <!-- Post Image -->
-      <div v-if="post.image" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+      <!-- Legacy Single Image Support -->
+      <div v-if="post.image && !post.media" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
         <img 
           :src="post.image" 
           :alt="'Image from ' + post.username"
           class="w-full h-auto object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
-          @click="openImageModal"
+          @click="openMediaModal(0, [{ type: 'image', url: post.image }])"
         >
+      </div>
+
+      <!-- Multiple Media Support (Images and Videos) -->
+      <div v-if="post.media && post.media.length > 0" class="mt-4">
+        <!-- Single Media Item -->
+        <div v-if="post.media.length === 1" class="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
+          <!-- Single Image -->
+          <img 
+            v-if="post.media[0].type === 'image'"
+            :src="post.media[0].url" 
+            :alt="'Media from ' + post.username"
+            class="w-full h-auto object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
+            @click="openMediaModal(0, post.media)"
+          >
+          <!-- Single Video -->
+          <video 
+            v-else-if="post.media[0].type === 'video'"
+            :src="post.media[0].url"
+            class="w-full h-auto object-cover cursor-pointer"
+            controls
+            preload="metadata"
+            @click="openMediaModal(0, post.media)"
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Two Media Items -->
+        <div v-else-if="post.media.length === 2" class="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
+          <div 
+            v-for="(media, index) in post.media" 
+            :key="index"
+            class="aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+            @click="openMediaModal(index, post.media)"
+          >
+            <img 
+              v-if="media.type === 'image'"
+              :src="media.url" 
+              :alt="'Media ' + (index + 1) + ' from ' + post.username"
+              class="w-full h-full object-cover"
+            >
+            <video 
+              v-else-if="media.type === 'video'"
+              :src="media.url"
+              class="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            >
+            </video>
+            <div v-if="media.type === 'video'" class="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Three Media Items -->
+        <div v-else-if="post.media.length === 3" class="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
+          <!-- First item takes full left side -->
+          <div 
+            class="row-span-2 aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+            @click="openMediaModal(0, post.media)"
+          >
+            <img 
+              v-if="post.media[0].type === 'image'"
+              :src="post.media[0].url" 
+              :alt="'Media 1 from ' + post.username"
+              class="w-full h-full object-cover"
+            >
+            <video 
+              v-else-if="post.media[0].type === 'video'"
+              :src="post.media[0].url"
+              class="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            >
+            </video>
+            <div v-if="post.media[0].type === 'video'" class="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div class="w-12 h-12 bg-white/90 rounded-full flex items-center justify-center">
+                <svg class="w-6 h-6 text-gray-800 ml-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+          <!-- Other two items on the right -->
+          <div 
+            v-for="(media, index) in post.media.slice(1)" 
+            :key="index + 1"
+            class="aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+            @click="openMediaModal(index + 1, post.media)"
+          >
+            <img 
+              v-if="media.type === 'image'"
+              :src="media.url" 
+              :alt="'Media ' + (index + 2) + ' from ' + post.username"
+              class="w-full h-full object-cover"
+            >
+            <video 
+              v-else-if="media.type === 'video'"
+              :src="media.url"
+              class="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            >
+            </video>
+            <div v-if="media.type === 'video'" class="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div class="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-800 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Four or More Media Items -->
+        <div v-else-if="post.media.length >= 4" class="grid grid-cols-2 gap-2 rounded-xl overflow-hidden">
+          <div 
+            v-for="(media, index) in post.media.slice(0, 4)" 
+            :key="index"
+            class="aspect-square bg-gray-100 dark:bg-gray-700 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative"
+            @click="openMediaModal(index, post.media)"
+          >
+            <img 
+              v-if="media.type === 'image'"
+              :src="media.url" 
+              :alt="'Media ' + (index + 1) + ' from ' + post.username"
+              class="w-full h-full object-cover"
+            >
+            <video 
+              v-else-if="media.type === 'video'"
+              :src="media.url"
+              class="w-full h-full object-cover"
+              muted
+              preload="metadata"
+            >
+            </video>
+            <div v-if="media.type === 'video'" class="absolute inset-0 flex items-center justify-center bg-black/30">
+              <div class="w-8 h-8 bg-white/90 rounded-full flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-800 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Show more indicator on last item if there are more than 4 media items -->
+            <div v-if="index === 3 && post.media.length > 4" class="absolute inset-0 bg-black/60 flex items-center justify-center">
+              <span class="text-white text-xl font-bold">+{{ post.media.length - 4 }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Media Info -->
+        <div v-if="post.media.length > 1" class="flex items-center justify-between mt-2 text-sm text-gray-500 dark:text-gray-400">
+          <span>{{ getMediaCountText(post.media) }}</span>
+          <button 
+            @click="openMediaModal(0, post.media)"
+            class="text-blue-500 hover:text-blue-600 font-medium"
+          >
+            View all
+          </button>
+        </div>
       </div>
       
       <!-- Post Tags -->
@@ -181,33 +346,140 @@
       </div>
     </div>
 
-    <!-- Image Modal -->
+    <!-- Media Modal -->
     <div 
-      v-if="showImageModal && post.image"
-      class="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-      @click="showImageModal = false"
+      v-if="showMediaModal && currentMediaArray.length > 0"
+      class="fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-50"
+      @click="closeMediaModal"
     >
-      <div class="relative max-w-5xl max-h-full">
-        <img 
-          :src="post.image" 
-          :alt="'Image from ' + post.username"
-          class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-        >
+      <div class="relative w-full h-full flex items-center justify-center p-4">
+        <!-- Close Button -->
         <button 
-          @click="showImageModal = false"
-          class="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+          @click="closeMediaModal"
+          class="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
         >
-          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
+
+        <!-- Media Counter -->
+        <div v-if="currentMediaArray.length > 1" class="absolute top-4 left-4 z-10 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+          {{ currentMediaIndex + 1 }} / {{ currentMediaArray.length }}
+        </div>
+
+        <!-- Previous Button -->
+        <button 
+          v-if="currentMediaArray.length > 1 && currentMediaIndex > 0"
+          @click.stop="previousMedia"
+          class="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-3"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        <!-- Next Button -->
+        <button 
+          v-if="currentMediaArray.length > 1 && currentMediaIndex < currentMediaArray.length - 1"
+          @click.stop="nextMedia"
+          class="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-3"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+
+        <!-- Media Content -->
+        <div 
+          class="max-w-7xl max-h-full flex items-center justify-center"
+          @click.stop
+        >
+          <!-- Image -->
+          <img 
+            v-if="currentMedia && currentMedia.type === 'image'"
+            :src="currentMedia.url" 
+            :alt="'Media from ' + post.username"
+            class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+          >
+          
+          <!-- Video -->
+          <video 
+            v-else-if="currentMedia && currentMedia.type === 'video'"
+            :src="currentMedia.url"
+            class="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+            controls
+            autoplay
+            @click.stop
+          >
+            Your browser does not support the video tag.
+          </video>
+        </div>
+
+        <!-- Media Info -->
+        <div class="absolute bottom-4 left-4 right-4 z-10">
+          <div class="bg-black/50 text-white rounded-lg p-4 backdrop-blur-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="font-semibold">{{ post.username }}</h3>
+                <p v-if="currentMedia && currentMedia.caption" class="text-sm text-gray-300 mt-1">
+                  {{ currentMedia.caption }}
+                </p>
+              </div>
+              <div class="text-sm text-gray-300">
+                {{ currentMedia && currentMedia.type === 'video' ? 'Video' : 'Image' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div v-if="currentMediaArray.length > 1" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10">
+          <div class="flex space-x-2 bg-black/50 rounded-lg p-2 backdrop-blur-sm">
+            <button
+              v-for="(media, index) in currentMediaArray"
+              :key="index"
+              @click.stop="currentMediaIndex = index"
+              :class="[
+                'w-12 h-12 rounded-lg overflow-hidden border-2 transition-all',
+                currentMediaIndex === index 
+                  ? 'border-white scale-110' 
+                  : 'border-gray-500 hover:border-gray-300 opacity-70 hover:opacity-100'
+              ]"
+            >
+              <img 
+                v-if="media.type === 'image'"
+                :src="media.url" 
+                :alt="'Media ' + (index + 1)"
+                class="w-full h-full object-cover"
+              >
+              <div 
+                v-else-if="media.type === 'video'"
+                class="w-full h-full bg-gray-800 flex items-center justify-center relative"
+              >
+                <video 
+                  :src="media.url"
+                  class="w-full h-full object-cover"
+                  muted
+                  preload="metadata"
+                >
+                </video>
+                <div class="absolute inset-0 flex items-center justify-center bg-black/30">
+                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                  </svg>
+                </div>
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   post: {
@@ -219,12 +491,23 @@ const props = defineProps({
 const emit = defineEmits(['like', 'comment', 'share'])
 
 const showImageModal = ref(false)
+const showMediaModal = ref(false)
 const showComments = ref(false)
 const isSaved = ref(false)
 const newComment = ref('')
+const currentMediaArray = ref([])
+const currentMediaIndex = ref(0)
 
 // Mock current user avatar
 const currentUserAvatar = ref('/public/images/me.png')
+
+// Computed for current media
+const currentMedia = computed(() => {
+  if (currentMediaArray.value.length > 0 && currentMediaIndex.value < currentMediaArray.value.length) {
+    return currentMediaArray.value[currentMediaIndex.value]
+  }
+  return null
+})
 
 // Mock comments data
 const postComments = ref([
@@ -322,6 +605,76 @@ const searchByTag = (tag) => {
 const openImageModal = () => {
   showImageModal.value = true
 }
+
+// Media Modal Methods
+const openMediaModal = (index, mediaArray) => {
+  currentMediaArray.value = mediaArray
+  currentMediaIndex.value = index
+  showMediaModal.value = true
+  document.body.style.overflow = 'hidden' // Prevent background scrolling
+}
+
+const closeMediaModal = () => {
+  showMediaModal.value = false
+  currentMediaArray.value = []
+  currentMediaIndex.value = 0
+  document.body.style.overflow = 'auto' // Restore scrolling
+}
+
+const nextMedia = () => {
+  if (currentMediaIndex.value < currentMediaArray.value.length - 1) {
+    currentMediaIndex.value++
+  }
+}
+
+const previousMedia = () => {
+  if (currentMediaIndex.value > 0) {
+    currentMediaIndex.value--
+  }
+}
+
+// Helper method to get media count text
+const getMediaCountText = (mediaArray) => {
+  const imageCount = mediaArray.filter(m => m.type === 'image').length
+  const videoCount = mediaArray.filter(m => m.type === 'video').length
+  
+  let text = []
+  if (imageCount > 0) {
+    text.push(`${imageCount} ${imageCount === 1 ? 'photo' : 'photos'}`)
+  }
+  if (videoCount > 0) {
+    text.push(`${videoCount} ${videoCount === 1 ? 'video' : 'videos'}`)
+  }
+  
+  return text.join(' • ')
+}
+
+// Keyboard navigation for media modal
+const handleKeydown = (event) => {
+  if (!showMediaModal.value) return
+  
+  switch (event.key) {
+    case 'Escape':
+      closeMediaModal()
+      break
+    case 'ArrowLeft':
+      previousMedia()
+      break
+    case 'ArrowRight':
+      nextMedia()
+      break
+  }
+}
+
+// Add keyboard event listeners
+onMounted(() => {
+  document.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
+  document.body.style.overflow = 'auto' // Ensure scrolling is restored
+})
 </script>
 
 <style scoped>

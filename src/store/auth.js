@@ -61,8 +61,19 @@ export const useAuthStore = defineStore('auth', {
           likes: 24,
           comments: 5,
           shares: 2,
-          image: null,
-          type: 'text'
+          media: [
+            {
+              type: 'image',
+              url: 'https://picsum.photos/600/400?random=10',
+              caption: 'Band photo'
+            },
+            {
+              type: 'video',
+              url: 'https://www.w3schools.com/html/mov_bbb.mp4',
+              caption: 'Live performance'
+            }
+          ],
+          type: 'media'
         },
         {
           id: 2,
@@ -71,8 +82,19 @@ export const useAuthStore = defineStore('auth', {
           likes: 89,
           comments: 23,
           shares: 12,
-          image: "https://picsum.photos/600/400?random=1",
-          type: 'image'
+          media: [
+            {
+              type: 'image',
+              url: 'https://picsum.photos/600/400?random=1',
+              caption: 'Concert crowd'
+            },
+            {
+              type: 'image',
+              url: 'https://picsum.photos/600/400?random=11',
+              caption: 'Stage lights'
+            }
+          ],
+          type: 'media'
         },
         {
           id: 3,
@@ -81,7 +103,6 @@ export const useAuthStore = defineStore('auth', {
           likes: 45,
           comments: 8,
           shares: 6,
-          image: null,
           type: 'text'
         },
         {
@@ -91,8 +112,24 @@ export const useAuthStore = defineStore('auth', {
           likes: 156,
           comments: 34,
           shares: 28,
-          image: "https://picsum.photos/600/400?random=2",
-          type: 'image'
+          media: [
+            {
+              type: 'image',
+              url: 'https://picsum.photos/600/400?random=2',
+              caption: 'Festival stage'
+            },
+            {
+              type: 'video',
+              url: 'https://www.w3schools.com/html/movie.mp4',
+              caption: 'Festival highlights'
+            },
+            {
+              type: 'image',
+              url: 'https://picsum.photos/600/400?random=12',
+              caption: 'Crowd dancing'
+            }
+          ],
+          type: 'media'
         },
         {
           id: 5,
@@ -101,7 +138,6 @@ export const useAuthStore = defineStore('auth', {
           likes: 67,
           comments: 12,
           shares: 15,
-          image: null,
           type: 'text'
         }
       ]

@@ -1,185 +1,394 @@
 <template>
-  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 h-screen sticky top-16 overflow-y-auto">
-    <!-- Categories Header -->
-    <div class="p-4 border-b border-gray-200 dark:border-gray-700">
-      <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Categories</h2>
-    </div>
-
-    <!-- Categories List -->
-    <div class="p-4">
-      <div class="space-y-2">
-        <nav v-for="category in categories" :key="category.slug">
-          <router-link
-            :to="category.path"
-            :class=" [
-              'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
-              $route.path === category.path || $route.query.category === category.slug
-                ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+  <aside class="w-80 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-screen sticky top-0 overflow-y-auto">
+    <!-- Filters Content -->
+    <div class="p-6 space-y-8">
+      <!-- Quick Filters -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-filter text-green-500"></i>
+          Quick Filters
+        </h3>
+        <div class="flex flex-wrap gap-2">
+          <button 
+            v-for="filter in quickFilters" 
+            :key="filter.value"
+            @click="toggleQuickFilter(filter.value)"
+            :class="[
+              'px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200',
+              activeQuickFilters.includes(filter.value)
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
             ]"
           >
-            <i :class="category.icon" class="w-5 h-5"></i>
-            <span class="font-medium">{{ category.name }}</span>
-            <span v-if="category.count" class="ml-auto text-xs bg-gray-200 dark:bg-gray-600 px-2 py-1 rounded-full">
-              {{ category.count }}
-            </span>
-          </router-link>
-        </nav>
-      </div>
-
-      <!-- Brands -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Popular Brands</h3>
-        <div class="space-y-3">
-          <label v-for="brand in brands" :key="brand.name" class="flex items-center">
-            <input 
-              type="checkbox" 
-              :value="brand.slug"
-              v-model="selectedBrands"
-              class="rounded border-gray-300 text-green-600 focus:ring-green-500"
-            />
-            <span class="ml-3 text-gray-700 dark:text-gray-300">{{ brand.name }}</span>
-            <span class="ml-auto text-xs text-gray-500">{{ brand.products }}</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Price Range -->
-      <div class="mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Price Range</h3>
-        <div class="space-y-4">
-          <div class="flex items-center space-x-2">
-            <input 
-              v-model="priceRange.min"
-              type="number" 
-              placeholder="Min"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-            <span class="text-gray-500">-</span>
-            <input 
-              v-model="priceRange.max"
-              type="number" 
-              placeholder="Max"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-            />
-          </div>
-          <button 
-            @click="applyPriceFilter"
-            class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Apply
+            {{ filter.label }}
           </button>
         </div>
       </div>
 
-      <!-- Quick Actions -->
-      <div class="space-y-3">
-        <router-link 
-          to="/cart"
-          class="flex items-center justify-between w-full px-4 py-3 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors"
-        >
-          <div class="flex items-center space-x-3">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6" />
-            </svg>
-            <span class="font-medium">View Cart</span>
-          </div>
-          <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-full">3</span>
-        </router-link>
+      <!-- Categories -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <i class="fas fa-th-large text-blue-500"></i>
+            Categories
+          </span>
+          <span class="text-xs bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full text-gray-500">
+            {{ totalProducts }}
+          </span>
+        </h3>
+        <div class="space-y-2">
+          <button 
+            v-for="category in categoriesWithCounts" 
+            :key="category.slug"
+            @click="selectCategory(category.slug)"
+            :class="[
+              'w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group text-left',
+              selectedCategory === category.slug
+                ? 'bg-green-50 border-2 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300'
+                : 'hover:bg-gray-50 dark:hover:bg-gray-800 border-2 border-transparent'
+            ]"
+          >
+            <div class="flex items-center gap-3">
+              <div :class="[
+                'w-10 h-10 rounded-lg flex items-center justify-center transition-colors',
+                selectedCategory === category.slug
+                  ? 'bg-green-200 text-green-700 dark:bg-green-800 dark:text-green-300'
+                  : 'bg-gray-100 text-gray-600 group-hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400'
+              ]">
+                <i :class="category.icon"></i>
+              </div>
+              <span class="font-medium">{{ category.name }}</span>
+            </div>
+            <span class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg text-xs font-medium">
+              {{ category.count }}
+            </span>
+          </button>
+        </div>
+      </div>
 
-        <router-link 
-          to="/orders"
-          class="flex items-center space-x-3 w-full px-4 py-3 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+      <!-- Price Range -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-dollar-sign text-yellow-500"></i>
+          Price Range
+        </h3>
+        <div class="space-y-4">
+          <!-- Price Slider Visual -->
+          <div class="px-2">
+            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400 mb-2">
+              <span>${{ priceRange.min || 0 }}</span>
+              <span>${{ priceRange.max || 500 }}</span>
+            </div>
+            <div class="relative">
+              <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              <div 
+                class="absolute top-0 h-2 bg-green-500 rounded-full"
+                :style="{ left: '20%', right: '30%' }"
+              ></div>
+            </div>
+          </div>
+          
+          <!-- Price Inputs -->
+          <div class="flex gap-3">
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Min</label>
+              <input 
+                v-model="storeSidebarStore.priceRange.min"
+                type="number" 
+                placeholder="0"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+            <div class="flex-1">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Max</label>
+              <input 
+                v-model="storeSidebarStore.priceRange.max"
+                type="number" 
+                placeholder="500"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brands -->
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-star text-purple-500"></i>
+          Brands
+        </h3>
+        <div class="space-y-2 max-h-48 overflow-y-auto">
+          <label 
+            v-for="brand in brands" 
+            :key="brand.slug" 
+            class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors group"
+          >
+            <input 
+              type="checkbox" 
+              :value="brand.slug"
+              v-model="storeSidebarStore.selectedBrands"
+              class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <span class="flex-1 text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+              {{ brand.name }}
+            </span>
+            <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded">
+              {{ brand.products }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Apply Filters Button -->
+      <div class="space-y-3">
+        <button 
+          @click="applyAllFilters"
+          class="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl"
         >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-          </svg>
-          <span class="font-medium">My Orders</span>
-        </router-link>
+          Apply Filters
+        </button>
+        
+        <button 
+          v-if="hasActiveFilters"
+          @click="clearAllFilters"
+          class="w-full bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 rounded-lg font-medium transition-colors"
+        >
+          Clear All
+        </button>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="border-t border-gray-100 dark:border-gray-800 pt-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <i class="fas fa-bolt text-orange-500"></i>
+          Quick Actions
+        </h3>
+        <div class="space-y-3">
+          <router-link 
+            to="/cart"
+            class="flex items-center justify-between w-full p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl hover:shadow-md transition-all duration-200 group"
+          >
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-green-100 dark:bg-green-800 rounded-lg flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-700 transition-colors">
+                <i class="fas fa-shopping-cart text-green-600 dark:text-green-400"></i>
+              </div>
+              <span class="font-semibold text-green-700 dark:text-green-300">View Cart</span>
+            </div>
+            <span class="bg-green-600 text-white text-xs px-3 py-1 rounded-full font-bold">
+              {{ cartItemCount }}
+            </span>
+          </router-link>
+
+          <router-link 
+            to="/orders"
+            class="flex items-center gap-3 w-full p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-colors group"
+          >
+            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-800 rounded-lg flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-700 transition-colors">
+              <i class="fas fa-receipt text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <span class="font-semibold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">My Orders</span>
+          </router-link>
+        </div>
       </div>
     </div>
   </aside>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useProductsStore } from '@/store/products'
+import { useStoreSidebarStore } from '@/store/storeSidebar'
+import { 
+  STORE_HEADER,
+  STORE_CATEGORIES,
+  SIDEBAR_SECTIONS
+} from '@/constants/storeSidebarConstants'
 
-const selectedBrands = ref([])
-const priceRange = ref({
-  min: '',
-  max: ''
+// Initialize stores and router
+const router = useRouter()
+const route = useRoute()
+const productsStore = useProductsStore()
+const storeSidebarStore = useStoreSidebarStore()
+
+// Local reactive state
+const searchQuery = ref('')
+const selectedCategory = ref(route.query.category || 'all')
+const activeQuickFilters = ref([])
+
+// Quick filter options
+const quickFilters = ref([
+  { value: 'new', label: 'New Arrivals' },
+  { value: 'sale', label: 'On Sale' },
+  { value: 'popular', label: 'Popular' },
+  { value: 'exclusive', label: 'Exclusive' }
+])
+
+// Get data from stores
+const brands = computed(() => productsStore.getStoreBrands())
+const categoryCounts = computed(() => productsStore.getCategoryCounts())
+const totalProducts = computed(() => productsStore.getTotalProducts())
+const cartItemCount = computed(() => productsStore.getCartItemCount())
+
+// Combine categories with counts
+const categoriesWithCounts = computed(() => {
+  return STORE_CATEGORIES.map(category => ({
+    ...category,
+    count: categoryCounts.value[category.slug] || '0'
+  }))
 })
 
-const categories = ref([
-  {
-    name: 'All Products',
-    path: '/mart',
-    slug: 'all',
-    icon: 'fas fa-th-large',
-    count: '1.2k'
-  },
-  {
-    name: 'Apparel',
-    path: '/mart?category=apparel',
-    slug: 'apparel',
-    icon: 'fas fa-tshirt',
-    count: '450'
-  },
-  {
-    name: 'Accessories',
-    path: '/mart?category=accessories',
-    slug: 'accessories', 
-    icon: 'fas fa-gem',
-    count: '320'
-  },
-  {
-    name: 'Home & Living',
-    path: '/mart?category=home',
-    slug: 'home',
-    icon: 'fas fa-home',
-    count: '280'
-  },
-  {
-    name: 'Tech Gadgets',
-    path: '/mart?category=tech',
-    slug: 'tech',
-    icon: 'fas fa-laptop',
-    count: '150'
-  },
-  {
-    name: 'Collectibles',
-    path: '/mart?category=collectibles',
-    slug: 'collectibles',
-    icon: 'fas fa-trophy',
-    count: '180'
-  },
-  {
-    name: 'Books',
-    path: '/mart?category=books',
-    slug: 'books',
-    icon: 'fas fa-book',
-    count: '90'
-  }
-])
+// Computed for price range
+const priceRange = computed(() => storeSidebarStore.priceRange)
 
-const brands = ref([
-  { name: 'FanRadar Official', slug: 'fanradar', products: '245' },
-  { name: 'Anime Collective', slug: 'anime-collective', products: '180' },
-  { name: 'Marvel Store', slug: 'marvel', products: '220' },
-  { name: 'Gaming Gear', slug: 'gaming-gear', products: '160' },
-  { name: 'K-Pop Merch', slug: 'kpop', products: '195' },
-  { name: 'Studio Ghibli', slug: 'studio-ghibli', products: '85' },
-  { name: 'Warner Bros', slug: 'warner-bros', products: '120' }
-])
+// Check if any filters are active
+const hasActiveFilters = computed(() => {
+  return selectedCategory.value !== 'all' ||
+         storeSidebarStore.selectedBrands.length > 0 ||
+         storeSidebarStore.priceRange.min !== '' ||
+         storeSidebarStore.priceRange.max !== '' ||
+         activeQuickFilters.value.length > 0 ||
+         searchQuery.value !== ''
+})
+
+// Watch for route changes to update selected category
+watch(() => route.query.category, (newCategory) => {
+  selectedCategory.value = newCategory || 'all'
+})
+
+// Methods
+const selectCategory = (categorySlug) => {
+  selectedCategory.value = categorySlug
+  
+  // Update the route query parameter
+  const query = { ...route.query }
+  if (categorySlug === 'all') {
+    delete query.category
+  } else {
+    query.category = categorySlug
+  }
+  
+  router.push({ query })
+}
+
+const toggleQuickFilter = (filterValue) => {
+  const index = activeQuickFilters.value.indexOf(filterValue)
+  if (index > -1) {
+    activeQuickFilters.value.splice(index, 1)
+  } else {
+    activeQuickFilters.value.push(filterValue)
+  }
+}
+
+const applyAllFilters = () => {
+  // Apply all filters through the store
+  storeSidebarStore.applyFilters()
+  
+  // Create comprehensive filter object
+  const filters = {
+    category: selectedCategory.value !== 'all' ? selectedCategory.value : '',
+    brands: storeSidebarStore.selectedBrands,
+    priceRange: {
+      min: storeSidebarStore.priceRange.min ? parseFloat(storeSidebarStore.priceRange.min) : null,
+      max: storeSidebarStore.priceRange.max ? parseFloat(storeSidebarStore.priceRange.max) : null
+    },
+    quickFilters: activeQuickFilters.value,
+    search: searchQuery.value
+  }
+  
+  console.log('Applied filters:', filters)
+  
+  // Emit event or update global state for Mart.vue to listen to
+  // This will be handled by the parent component or through the store
+}
+
+const clearAllFilters = () => {
+  selectedCategory.value = 'all'
+  activeQuickFilters.value = []
+  searchQuery.value = ''
+  storeSidebarStore.clearAllFilters()
+  
+  // Clear route query parameters
+  router.push({ query: {} })
+}
 
 const applyPriceFilter = () => {
-  // Handle price filtering logic
-  console.log('Applying price filter:', priceRange.value)
+  applyAllFilters()
+}
+
+// Product drop methods
+const viewDrop = (drop) => {
+  console.log('Viewing product drop:', drop)
+  // Navigate to a dedicated drop page or open a modal
+  router.push(`/mart/drop/${drop.id}`)
+}
+
+const selectDrop = (drop) => {
+  const index = productDrops.value.findIndex(d => d.id === drop.id)
+  currentDropIndex.value = index
 }
 </script>
 
 <style scoped>
 .sidebar-width {
     width: 270px;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.4);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.drop-item-enter-active {
+  animation: slide-in 0.3s ease-out;
+}
+
+@keyframes countdown {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.countdown-animation {
+  animation: countdown 1s ease-in-out infinite;
+}
+
+/* Gradient text animation for "LIVE" badge */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(-45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+  background-size: 400% 400%;
+  animation: gradient-shift 3s ease infinite;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 </style>
