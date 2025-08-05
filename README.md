@@ -36,7 +36,7 @@ FanRadar is a comprehensive social platform designed for fan communities. Connec
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/fanradar.git
+   git clone https://github.com/yassinelaouni/FanRadarUser.git
    cd fanradar
    ```
 
