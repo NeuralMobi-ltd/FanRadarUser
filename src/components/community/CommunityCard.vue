@@ -108,7 +108,13 @@ const fandomHandle = computed(() => {
 
 // Mock user role for now (remove useFandomsStore dependency)
 const userRole = computed(() => {
-  if (!fandomHandle.value) return null
+  // Prefer the actual role from the fandom/community object
+  if (currentFandom.value && currentFandom.value.role) {
+    return currentFandom.value.role
+  }
+  // fallback: try to infer from handle if needed (legacy)
+  const handle = fandomHandle.value
+  if (!handle) return null
   
   // Mock some roles for testing
   const mockRoles = {

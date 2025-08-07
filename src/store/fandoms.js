@@ -31,7 +31,7 @@ export const useFandomsStore = defineStore('fandoms', {
         role: 'admin',
         createdAt: '2022-08-20',
         joinedAt: null
-      },
+      }, 
       {
         id: 3,
         name: 'NBA Central',

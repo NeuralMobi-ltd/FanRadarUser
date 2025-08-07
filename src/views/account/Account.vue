@@ -87,7 +87,7 @@
             </div>
           </div>
 
-          <!-- Stats -->
+          <!-- Stats and Tabs Navigation -->
           <div class="flex justify-start space-x-8 text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
             <button 
               @click="activeTab = 'posts'"
@@ -158,6 +158,22 @@
             <span class="font-semibold">Following</span>
             <div v-if="activeTab === 'following'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
           </button>
+
+          <!-- My Fandoms Tab (conditionally rendered) -->
+            <button 
+              v-if="myFandoms.length > 0"
+              @click="activeTab = 'fandoms'"
+              :class=" [
+                'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
+                activeTab === 'fandoms' 
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
+              ]"
+            >
+              <i class="fas fa-users text-lg"></i>
+              <span class="font-semibold">My Fandoms</span>
+              <div v-if="activeTab === 'fandoms'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
+            </button>
           
           <button 
             v-if="isOwnProfile"
@@ -180,7 +196,7 @@
       <div class="space-y-6">
         <!-- Posts Tab -->
         <div v-if="activeTab === 'posts'">
-          <div v-if="userPosts.length > 0" class="space-y-4">
+          <div v-if="userPosts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <Post 
               v-for="post in userPosts"
               :key="post.id"
@@ -293,6 +309,25 @@
             <p class="text-gray-500 dark:text-gray-400">Posts you save will appear here.</p>
           </div>
         </div>
+
+        <!-- My Fandoms Tab -->
+        <div v-if="activeTab === 'fandoms'">
+          <div v-if="myFandoms.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <CommunityCard
+              v-for="fandom in myFandoms"
+              :key="fandom.id"
+              :community="fandom"
+              button-text="View Fandom"
+            />
+          </div>
+          <div v-else class="text-center py-16">
+            <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-users text-3xl text-gray-400"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No fandoms joined yet</h3>
+            <p class="text-gray-500 dark:text-gray-400">Join a fandom to see it here.</p>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -320,11 +355,14 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useUsersStore } from '@/store/users'
+import { useFandomsStore } from '@/store/fandoms'
 import Post from '@/components/common/Post.vue'
+import CommunityCard from '@/components/community/CommunityCard.vue'
 
 const route = useRoute()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
+const fandomsStore = useFandomsStore()
 
 const loading = ref(true)
 const userProfile = ref({})
@@ -347,6 +385,16 @@ const isOwnProfile = computed(() => {
          currentUser.userEmail?.split('@')[0] === profileUsername ||
          profileUsername === 'me'
 })
+
+const myFandoms = computed(() => {
+  const user = authStore.user
+  if (!user) return []
+  // Find fandoms where user is admin or member (by username or email)
+  return fandomsStore.allFandoms.filter(f =>
+    f.role === 'admin'
+  )
+})
+
 
 const fetchUserProfile = async () => {
   loading.value = true

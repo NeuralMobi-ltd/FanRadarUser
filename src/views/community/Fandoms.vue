@@ -83,7 +83,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <CommunityCard
             v-for="community in filteredCommunities"
-            :key="community.title"
+            :key="community.id"
             :community="community"
             button-text="Join Fandom"
           />
@@ -143,10 +143,19 @@ const categories = computed(() => COMMUNITY_CATEGORIES)
 
 // Get fandoms from store with filtering
 const filteredCommunities = computed(() => {
-  return fandomsStore.filterBrowseCommunities
-    ? fandomsStore.filterBrowseCommunities(search.value, activeCategory.value)
-    : []
+  let fandoms = fandomsStore.allFandoms || []
+  // Filter by category
+  if (activeCategory.value && activeCategory.value !== 'All') {
+    fandoms = fandoms.filter(f => f.category === activeCategory.value)
+  }
+  // Filter by search
+  if (search.value && search.value.trim() !== '') {
+    const q = search.value.trim().toLowerCase()
+    fandoms = fandoms.filter(f => f.name.toLowerCase().includes(q) || (f.description && f.description.toLowerCase().includes(q)))
+  }
+  return fandoms
 })
+
 </script>
 
 <style scoped>

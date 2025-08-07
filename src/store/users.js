@@ -26,8 +26,23 @@ export const useUsersStore = defineStore('users', {
         id: 1,
         username: 'yassineelaouni581',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
-        content: 'Just launched my new project! 🚀 Excited to share it with everyone.',
-        likes: 145,
+        media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'Demon Slayer movie poster'
+          },
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'Demon Slayer movie poster'
+          },
+          {
+            type: 'video',
+            url: 'https://www.w3schools.com/html/movie.mp4',
+            caption: 'Fight scene highlight'
+          }
+        ],        likes: 145,
         comments: 32,
         shares: 12,
         date: '2h ago',

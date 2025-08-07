@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import Fandoms from '@/views/community/Fandoms.vue'
-import CommunitiesBrowse from '@/views/community/FandomsBrowse.vue'
 
 const routes = [
   {
@@ -47,7 +46,7 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/communities/browse',
+    path: '/fandoms/browse',
     name: 'Fandoms',
     component: Fandoms,
     meta: { requiresAuth: true }
@@ -121,12 +120,6 @@ const routes = [
     name: 'ChooseCategories',
     component: () => import('@/views/auth/ChooseCategories.vue'),
     meta: { requiresAuth: false }
-  },
-  {
-    path: '/fandoms/browse',
-    name: 'FandomsBrowse',
-    component: CommunitiesBrowse,
-    meta: { requiresAuth: true }
   }
 ]
 
