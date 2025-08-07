@@ -3,43 +3,69 @@
     <!-- Main Content -->
     <div class="flex-1 px-4 sm:px-6">
       <!-- Create Post Section -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4 shadow border border-gray-200 dark:border-gray-700">
-        <div class="flex items-start space-x-3">
-          <img src="/public/images/me.png" class="w-10 h-10 rounded-full" :alt="currentUser.username">
+      <div class="bg-gradient-to-br from-white via-blue-50 to-blue-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl p-6 mb-6 shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200">
+        <div class="flex items-start space-x-4">
+          <img src="/public/images/me.png" class="w-12 h-12 rounded-full ring-2 ring-blue-200 dark:ring-blue-700 object-cover shadow" :alt="currentUser.username">
           <div class="flex-1">
             <textarea
               v-model="newPostContent"
               placeholder="What's on your mind?"
-              class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+              class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium"
               rows="3"
             ></textarea>
-            <div class="flex items-center justify-between mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+            <!-- Tags Input -->
+            <div class="mt-2">
+              <div class="flex flex-wrap gap-2 mb-2">
+                <span
+                  v-for="(tag, idx) in tags"
+                  :key="idx"
+                  class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 text-white shadow"
+                >
+                  #{{ tag }}
+                  <button type="button" class="ml-1 text-white/80 hover:text-red-200" @click="removeTag(idx)">
+                    &times;
+                  </button>
+                </span>
+              </div>
+              <input
+                v-model="tagInput"
+                @keydown.enter.prevent="addTag"
+                @keydown.tab.prevent="addTag"
+                type="text"
+                class="w-full px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
+                placeholder="Add tags (press Enter or Tab)..."
+              />
+            </div>
+            <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
               <div class="flex items-center space-x-4">
                 <!-- Image Upload -->
-                <label class="text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
+                <label class="flex items-center gap-1 text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer px-2 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all">
                   <i class="fas fa-image"></i>
-                  <input type="file" accept="image/*" class="hidden" @change="onFileChange('image', $event)" />
+                  <span class="hidden sm:inline text-xs">Image</span>
+                  <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
                 </label>
                 <!-- Video Upload -->
-                <label class="text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
+                <label class="flex items-center gap-1 text-purple-500 hover:text-purple-700 dark:hover:text-purple-300 cursor-pointer px-2 py-1 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all">
                   <i class="fas fa-video"></i>
-                  <input type="file" accept="video/*" class="hidden" @change="onFileChange('video', $event)" />
+                  <span class="hidden sm:inline text-xs">Video</span>
+                  <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
                 </label>
               </div>
-              
               <button
                 @click="createPost"
-                :disabled="!newPostContent.trim() && !newPostMedia"
-                class="bg-blue-500 text-white px-4 py-2 rounded-full font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                :disabled="!newPostContent.trim() && postMedia.length === 0"
+                class="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-2 rounded-full font-semibold shadow hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
               >
                 Post
               </button>
             </div>
             <!-- Preview selected media -->
-            <div v-if="newPostMedia" class="mt-3">
-              <img v-if="newPostMediaType === 'image'" :src="newPostMedia" class="max-h-48 rounded-lg mb-2" />
-              <video v-else-if="newPostMediaType === 'video'" :src="newPostMedia" controls class="max-h-48 rounded-lg mb-2"></video>
-              <button @click="removeMedia" class="text-xs text-red-500 hover:underline">Remove</button>
+            <div v-if="postMedia.length > 0" class="mt-4 grid grid-cols-2 gap-3">
+              <div v-for="(media, index) in postMedia" :key="index" class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow">
+                <img v-if="media.type === 'image'" :src="media.url" class="max-h-48 rounded-lg mb-2 w-full object-cover" />
+                <video v-else-if="media.type === 'video'" :src="media.url" controls class="max-h-48 rounded-lg mb-2 w-full object-cover"></video>
+                <button @click="removeMedia(index)" class="absolute top-2 right-2 text-xs text-white bg-red-500 rounded-full px-2 py-1 hover:bg-red-700 shadow">Remove</button>
+              </div>
             </div>
           </div>
         </div>
@@ -199,32 +225,46 @@ const newsStore = useNewsStore()
 const trendsStore = useTrendsStore()
 
 const newPostContent = ref('')
-const newPostMedia = ref(null)
-const newPostMediaType = ref(null)
+const postMedia = ref([])
+const tagInput = ref('')
+const tags = ref([])
 
 function onFileChange(type, event) {
-  const file = event.target.files[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = e => {
-    newPostMedia.value = e.target.result
-    newPostMediaType.value = type
+  const files = Array.from(event.target.files)
+  files.forEach(file => {
+    const reader = new FileReader()
+    reader.onload = e => {
+      postMedia.value.push({
+        type,
+        url: e.target.result,
+        file
+      })
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+function removeMedia(index) {
+  postMedia.value.splice(index, 1)
+}
+
+function addTag() {
+  const tag = tagInput.value.trim()
+  if (tag && !tags.value.includes(tag)) {
+    tags.value.push(tag)
   }
-  reader.readAsDataURL(file)
+  tagInput.value = ''
 }
 
-function removeMedia() {
-  newPostMedia.value = null
-  newPostMediaType.value = null
+function removeTag(index) {
+  tags.value.splice(index, 1)
 }
 
-// Use store data instead of local refs
 const currentUser = computed(() => authStore.user || {
   username: 'yasdhekokuri',
   avatar: 'https://randomuser.me/api/portraits/men/32.jpg'
 })
 
-// Get data from stores
 const trendingCommunities = computed(() => trendsStore.trendingCommunities)
 const trendingHashtags = computed(() => trendsStore.trendingHashtags)
 const recommendedUsers = computed(() => trendsStore.recommendedUsers)
@@ -235,17 +275,17 @@ const loadingMore = computed(() => postsStore.loadingMore)
 const hasMorePosts = computed(() => postsStore.hasMorePosts)
 
 const createPost = () => {
-  if (newPostContent.value.trim() || newPostMedia.value) {
+  if (newPostContent.value.trim() || postMedia.value.length > 0) {
     const newPost = {
       username: currentUser.value.username,
       avatar: currentUser.value.avatar,
       text: newPostContent.value,
-      image: newPostMediaType.value === 'image' ? newPostMedia.value : null,
-      video: newPostMediaType.value === 'video' ? newPostMedia.value : null
+      media: postMedia.value.map(m => ({ type: m.type, url: m.url }))
     }
     postsStore.addPost(newPost)
     newPostContent.value = ''
-    removeMedia()
+    postMedia.value = []
+    tags.value = []
   }
 }
 

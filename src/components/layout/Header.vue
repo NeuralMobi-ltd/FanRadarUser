@@ -65,7 +65,10 @@
         <template v-if="isAuthenticated">
 
           <!-- Create Post -->
-          <button class="flex items-center space-x-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium">
+          <button
+            class="flex items-center space-x-1 bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded-full text-sm font-medium"
+            @click="showCreatePostModal = true"
+          >
             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
             </svg>
@@ -194,6 +197,14 @@
       </div>
     </div>
   </div>
+
+  <!-- Create Post Modal -->
+  <CreatePostModal
+    v-model="showCreatePostModal"
+    :user-avatar="userAvatar"
+    :user-name="userName"
+    @submit="handleCreatePost"
+  />
 </template>
 
 <script setup>
@@ -201,8 +212,9 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
-import SearchSidebar from '@/components/layout/SearchSidebar.vue'
 import SearchModal from '@/components/layout/SearchModal.vue'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
+
 import {
   MagnifyingGlassIcon,
   BellIcon,
@@ -228,7 +240,10 @@ const showUserMenu = ref(false)
 const showAppModal = ref(false)
 const showSearchSidebar = ref(false)
 const showSearchModal = ref(false)
+const showCreatePostModal = ref(false)
 const searchQuery = ref('')
+const modalPostContent = ref('')
+const modalPostMedia = ref([])
 
 function toggleTheme() {
   themeStore.toggleTheme()
@@ -268,5 +283,40 @@ function logout() {
     router.push('/login')
     showUserMenu.value = false
   }
+}
+
+function onModalFileChange(type, event) {
+  const files = Array.from(event.target.files)
+  files.forEach(file => {
+    const reader = new FileReader()
+    reader.onload = e => {
+      modalPostMedia.value.push({
+        type,
+        url: e.target.result,
+        file
+      })
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+function removeModalMedia(index) {
+  modalPostMedia.value.splice(index, 1)
+}
+
+function submitModalPost() {
+  if (modalPostContent.value.trim() || modalPostMedia.value.length > 0) {
+    // You may want to emit an event or use a store to add the post globally
+    // Example: postsStore.addPost({ ... })
+    // For now, just close the modal and reset
+    modalPostContent.value = ''
+    modalPostMedia.value = []
+    showCreatePostModal.value = false
+  }
+}
+
+function handleCreatePost(post) {
+  // Use your store or emit event to add the post globally
+  // Example: postsStore.addPost(post)
 }
 </script>
