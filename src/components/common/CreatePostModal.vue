@@ -18,28 +18,39 @@
               <span>Editing post from <b>{{ userName }}</b></span>
               <span v-if="editPost.date"> • {{ editPost.date }}</span>
             </div>
-            <div v-if="editPost.tags && editPost.tags.length" class="flex flex-wrap gap-1 mb-1">
-              <span v-for="tag in editPost.tags" :key="tag" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">#{{ tag }}</span>
-            </div>
-            <div v-if="editPost.media && editPost.media.length" class="flex gap-2 mb-2">
-              <span v-for="(media, i) in editPost.media" :key="i" class="inline-block">
-                <img v-if="media.type === 'image'" :src="media.url" class="w-10 h-10 object-cover rounded" />
-                <span v-else class="inline-block w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">🎬</span>
-              </span>
-            </div>
-            <div v-if="editPost.content || editPost.text" class="text-gray-700 dark:text-gray-200 text-sm mb-2">
-              {{ editPost.content || editPost.text }}
-            </div>
           </div>
+          
           <textarea
             v-model="postContent"
-            placeholder="What's on your mind?"
+            :placeholder="postContent ? '' : 'What\'s on your mind?'"
             class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium"
             rows="3"
           ></textarea>
+          
+          <!-- Tags display if editing existing post -->
+          <div v-if="editPost?.tags?.length" class="flex flex-wrap gap-1 mb-3">
+            <span v-for="tag in editPost.tags" :key="tag" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">#{{ tag }}</span>
+          </div>
+          
+          <!-- Media preview if editing existing post -->
+          <div v-if="editPost?.media?.length" class="flex gap-2 mb-3">
+            <span v-for="(media, i) in editPost.media" :key="i" class="inline-block">
+              <img v-if="media.type === 'image'" :src="media.url" class="w-10 h-10 object-cover rounded" />
+              <span v-else class="inline-block w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">🎬</span>
+            </span>
+          </div>
+          
           <!-- Tags Input -->
           <div class="mt-2">
-            <div class="flex flex-wrap gap-2 mb-2">
+            <input
+              v-model="tagInput"
+              @keydown.enter.prevent="addTag"
+              @keydown.tab.prevent="addTag"
+              type="text"
+              class="w-full px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
+              placeholder="Add tags (press Enter or Tab)..."
+            />
+            <div class="flex flex-wrap gap-2 mt-2">
               <span
                 v-for="(tag, idx) in tags"
                 :key="idx"
@@ -51,25 +62,18 @@
                 </button>
               </span>
             </div>
-            <input
-              v-model="tagInput"
-              @keydown.enter.prevent="addTag"
-              @keydown.tab.prevent="addTag"
-              type="text"
-              class="w-full px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
-              placeholder="Add tags (press Enter or Tab)..."
-            />
           </div>
+          
           <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-4">
               <label class="flex items-center gap-1 text-blue-500 hover:text-blue-700 dark:hover:text-blue-300 cursor-pointer px-2 py-1 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all">
                 <i class="fas fa-image"></i>
-                <span class="hidden sm:inline text-xs">Image</span>
+                <span class="text-xs">Image</span>
                 <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
               </label>
               <label class="flex items-center gap-1 text-purple-500 hover:text-purple-700 dark:hover:text-purple-300 cursor-pointer px-2 py-1 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-all">
                 <i class="fas fa-video"></i>
-                <span class="hidden sm:inline text-xs">Video</span>
+                <span class="text-xs">Video</span>
                 <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
               </label>
             </div>
@@ -81,6 +85,8 @@
               Post
             </button>
           </div>
+          
+          <!-- New media preview -->
           <div v-if="postMedia.length > 0" class="mt-4 grid grid-cols-2 gap-3">
             <div v-for="(media, index) in postMedia" :key="index" class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow">
               <img v-if="media.type === 'image'" :src="media.url" class="max-h-48 rounded-lg mb-2 w-full object-cover" />
@@ -101,7 +107,7 @@ const props = defineProps({
   modelValue: Boolean,
   userAvatar: String,
   userName: String,
-  editPost: Object // <-- pass the post object when editing
+  editPost: Object
 })
 
 const emit = defineEmits(['close', 'submit', 'update:modelValue'])
@@ -120,6 +126,7 @@ function addTag() {
   }
   tagInput.value = ''
 }
+
 function removeTag(idx) {
   tags.value.splice(idx, 1)
 }
@@ -173,7 +180,3 @@ watch(() => props.modelValue, (val) => {
   }
 })
 </script>
-
-<style scoped>
-/* Add any additional styles here if needed */
-</style>

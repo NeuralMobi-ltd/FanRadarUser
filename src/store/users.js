@@ -27,6 +27,7 @@ export const useUsersStore = defineStore('users', {
         username: 'yassineelaouni581',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
         tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
+        content: 'Beautiful sunset today! my friend',
         media: [
           {
             type: 'image',
@@ -43,7 +44,8 @@ export const useUsersStore = defineStore('users', {
             url: 'https://www.w3schools.com/html/movie.mp4',
             caption: 'Fight scene highlight'
           }
-        ],        likes: 145,
+        ],
+        likes: 145,
         comments: 32,
         shares: 12,
         date: '2h ago',
@@ -54,7 +56,13 @@ export const useUsersStore = defineStore('users', {
         username: 'yassineelaouni581',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
         content: 'Beautiful sunset today! 🌅',
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500&h=300&fit=crop',
+                media: [
+          {
+            type: 'image',
+            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
+            caption: 'Demon Slayer movie poster'
+          }
+        ],
         likes: 289,
         comments: 43,
         shares: 17,
