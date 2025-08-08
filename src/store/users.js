@@ -26,6 +26,7 @@ export const useUsersStore = defineStore('users', {
         id: 1,
         username: 'yassineelaouni581',
         avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
+        tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
         media: [
           {
             type: 'image',
@@ -60,7 +61,7 @@ export const useUsersStore = defineStore('users', {
         date: '1d ago',
         isLiked: true
       }
-    ],
+    ], 
     
     // Social connections
     followers: [

@@ -35,6 +35,10 @@
         </div>
         <h1 class="text-4xl font-bold mb-1">{{ fandom.name }}</h1>
         <p class="text-white/90 max-w-xl">{{ fandom.description }}</p>
+        <!-- Show category if present -->
+        <p v-if="fandom.category" class="mt-2 text-sm font-semibold text-blue-200 bg-blue-700/40 inline-block px-3 py-1 rounded-full">
+          {{ fandom.category }}
+        </p>
       </div>
     </div>
 
@@ -653,7 +657,8 @@ const createPost = () => {
       fandom: fandom.value.name,
       isPinned: isPinned.value,
       isAnnouncement: isAnnouncement.value,
-      authorRole: isAdmin.value ? MEMBER_ROLES.ADMIN : MEMBER_ROLES.MEMBER
+      authorRole: isAdmin.value ? MEMBER_ROLES.ADMIN : MEMBER_ROLES.MEMBER,
+      category: fandom.value.category ? fandom.value.category : 'sports' // <-- add category to post
     }
     
     // Add to store instead of local array

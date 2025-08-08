@@ -201,6 +201,10 @@
               v-for="post in userPosts"
               :key="post.id"
               :post="post"
+              :can-delete="isOwnProfile"
+              :can-edit="isOwnProfile"
+              @delete="deleteUserPost"
+              @edit="editUserPost"
             />
           </div>
           
@@ -486,6 +490,22 @@ const toggleFollow = () => {
     } else {
       userProfile.value.followers = Math.max(0, userProfile.value.followers - 1)
     }
+  }
+}
+
+// Add methods for editing and deleting posts
+function deleteUserPost(postId) {
+  userPosts.value = userPosts.value.filter(post => post.id !== postId)
+  // Optionally, also remove from store if needed
+  // usersStore.deleteUserPost(userProfile.value.username, postId)
+}
+
+function editUserPost(postId) {
+  // Implement your edit logic here (open modal, etc.)
+  const post = userPosts.value.find(p => p.id === postId)
+  if (post) {
+    // Example: open an edit modal (not implemented here)
+    alert('Edit post: ' + postId)
   }
 }
 

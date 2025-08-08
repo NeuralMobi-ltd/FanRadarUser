@@ -34,6 +34,32 @@
           </div>
         </div>
       </div>
+      <!-- Post actions menu for owner -->
+      <div v-if="canEdit || canDelete" class="relative">
+        <button @click="showMenu = !showMenu" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+            <circle cx="4" cy="10" r="2"/>
+            <circle cx="10" cy="10" r="2"/>
+            <circle cx="16" cy="10" r="2"/>
+          </svg>
+        </button>
+        <div v-if="showMenu" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+          <button
+            v-if="canEdit"
+            @click="openEditModal"
+            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-edit mr-2"></i>Edit
+          </button>
+          <button
+            v-if="canDelete"
+            @click="deletePost"
+            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+          >
+            <i class="fas fa-trash mr-2"></i>Delete
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Post Content -->
@@ -263,26 +289,48 @@
         </div>
       </div>
     </div>
+
+    <!-- Edit Post Modal -->
+    <CreatePostModal
+      v-if="showEdit"
+      :model-value="showEdit"
+      :user-avatar="post.avatar || post.userAvatar"
+      :user-name="post.username"
+      :edit-post="post"
+      @close="showEdit = false"
+      @submit="submitEdit"
+    ></CreatePostModal>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
 
 const props = defineProps({
   post: {
     type: Object,
     required: true
+  },
+  canEdit: {
+    type: Boolean,
+    default: false
+  },
+  canDelete: {
+    type: Boolean,
+    default: false
   }
 })
 
-const emit = defineEmits(['like', 'comment', 'share'])
+const emit = defineEmits(['like', 'comment', 'share', 'delete', 'edit'])
 
 // Instagram-style carousel state
 const currentSlide = ref(0)
 const showComments = ref(false)
 const isSaved = ref(false)
 const newComment = ref('')
+const showMenu = ref(false)
+const showEdit = ref(false)
 
 // Mock current user avatar
 const currentUserAvatar = ref('/public/images/me.png')
@@ -395,6 +443,21 @@ const addComment = () => {
 
 const searchByTag = (tag) => {
   console.log('Searching for tag:', tag)
+}
+
+function openEditModal() {
+  showMenu.value = false
+  showEdit.value = true
+}
+
+function deletePost() {
+  showMenu.value = false
+  emit('delete', props.post.id)
+}
+
+function submitEdit(edited) {
+  showEdit.value = false
+  emit('edit', props.post.id, edited)
 }
 </script>
 

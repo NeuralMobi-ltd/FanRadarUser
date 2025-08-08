@@ -90,10 +90,53 @@
         </div>
 
           <!-- Notifications -->
-          <button class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-md relative">
+          <div class="relative">
+          <button
+            class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-md relative"
+            @click="toggleNotificationsDropdown"
+          >
             <BellIcon class="h-5 w-5" />
-            <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-gray-900"></span>
+            <span v-if="unreadNotificationsCount > 0" class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-gray-900"></span>
           </button>
+          <!-- Notifications Dropdown -->
+          <div
+            v-if="showNotificationsDropdown"
+            class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+          >
+            <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <span class="font-semibold text-gray-900 dark:text-white">Notifications</span>
+              <button
+                v-if="unreadNotificationsCount > 0"
+                @click="markAllNotificationsRead"
+                class="text-xs text-blue-500 hover:underline"
+              >Mark all as read</button>
+            </div>
+            <div class="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+              <div
+                v-for="notif in notifications"
+                :key="notif.id"
+                class="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
+                @click="markNotificationRead(notif.id)"
+              >
+                <div class="flex-shrink-0">
+                  <img v-if="notif.avatar" :src="notif.avatar" class="w-9 h-9 rounded-full object-cover" />
+                  <div v-else class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300">
+                    <i :class="notif.icon"></i>
+                  </div>
+                </div>
+                <div class="ml-3 flex-1 min-w-0">
+                  <div class="text-sm text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
+                </div>
+                <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-blue-500"></span>
+              </div>
+              <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-8">
+                No notifications
+              </div>
+            </div>
+          </div>
+        </div>
 
           <!-- User Menu -->
           <div class="relative">
@@ -214,6 +257,7 @@ import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import SearchModal from '@/components/layout/SearchModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { useNotificationsStore } from '@/store/notifications' // <-- new
 
 import {
   MagnifyingGlassIcon,
@@ -235,6 +279,14 @@ const userName = computed(() => authStore.userName)
 const userEmail = computed(() => authStore.userEmail)
 const userAvatar = computed(() => authStore.userAvatar)
 const isDark = computed(() => themeStore.isDark)
+
+const notificationsStore = useNotificationsStore()
+const showNotificationsDropdown = ref(false)
+
+const notifications = computed(() => notificationsStore.notifications)
+const unreadNotificationsCount = computed(() =>
+  notificationsStore.notifications.filter(n => !n.read).length
+)
 
 const showUserMenu = ref(false)
 const showAppModal = ref(false)
@@ -283,6 +335,21 @@ function logout() {
     router.push('/login')
     showUserMenu.value = false
   }
+}
+
+function toggleNotificationsDropdown() {
+  showNotificationsDropdown.value = !showNotificationsDropdown.value
+  if (showNotificationsDropdown.value) {
+    notificationsStore.markAllAsSeen()
+  }
+}
+
+function markNotificationRead(id) {
+  notificationsStore.markAsRead(id)
+}
+
+function markAllNotificationsRead() {
+  notificationsStore.markAllAsRead()
 }
 
 function onModalFileChange(type, event) {

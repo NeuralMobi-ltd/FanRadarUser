@@ -59,8 +59,8 @@
                 to="/dashboard"
                 class="hidden sm:flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-all duration-200"
               >
-                <i class="fas fa-home w-4 h-4"></i>
-                <span>Community</span>
+                <i class="fas fa-home w-4 h-4 mt-1"></i>
+                <span>fandoms</span>
               </router-link>
 
               <!-- Dark mode toggle -->
@@ -78,21 +78,61 @@
 
 
               <!-- Notifications -->
-              <button class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group">
-                <i class="fas fa-bell w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                <span class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg animate-pulse">3</span>
-              </button>
-
-              
+              <div class="relative">
+                <button
+                  class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-md relative"
+                  @click="toggleNotificationsDropdown"
+                >
+                  <BellIcon class="h-5 w-5" />
+                  <span v-if="unreadNotificationsCount > 0" class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-orange-500 ring-2 ring-white dark:ring-gray-900"></span>
+                </button>
+                <!-- Notifications Dropdown -->
+                <div
+                  v-if="showNotificationsDropdown"
+                  class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-50"
+                >
+                  <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                    <span class="font-semibold text-gray-900 dark:text-white">Notifications</span>
+                    <button
+                      v-if="unreadNotificationsCount > 0"
+                      @click="markAllNotificationsRead"
+                      class="text-xs text-blue-500 hover:underline"
+                    >Mark all as read</button>
+                  </div>
+                  <div class="max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+                    <div
+                      v-for="notif in notifications"
+                      :key="notif.id"
+                      class="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                      :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
+                      @click="markNotificationRead(notif.id)"
+                    >
+                      <div class="flex-shrink-0">
+                        <img v-if="notif.avatar" :src="notif.avatar" class="w-9 h-9 rounded-full object-cover" />
+                        <div v-else class="w-9 h-9 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300">
+                          <i :class="notif.icon"></i>
+                        </div>
+                      </div>
+                      <div class="ml-3 flex-1 min-w-0">
+                        <div class="text-sm text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
+                      </div>
+                      <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-blue-500"></span>
+                    </div>
+                    <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-8">
+                      No notifications
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <!-- Cart -->
               <router-link 
                 to="/cart"
                 class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
               >
-                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5M17 13v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6" />
-                </svg>
+                      <i class="fas fa-shopping-cart w-4 h-4 text-gray-600 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors"></i>
+
                 <span v-if="cartItemsCount > 0" class="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow-lg transform scale-100 hover:scale-110 transition-transform">
                   {{ cartItemsCount }}
                 </span>
@@ -147,9 +187,10 @@
                 to="/orders"
                 class="flex items-center px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+                        <svg class="w-4 h-4 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7h18M3 7l1.5 12a2 2 0 002 2h11a2 2 0 002-2L21 7M16 11V7a4 4 0 00-8 0v4" />
+                        </svg>
+
                 My Orders
               </router-link>
               <button class="flex items-center w-full px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -183,18 +224,26 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import ProductSearchModal from '@/components/store/ProductSearchModal.vue'
+import { BellIcon } from '@heroicons/vue/24/outline'
+import { useStoreNotifications } from '@/store/storeNotifications'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const notificationsStore = useStoreNotifications()
 
 const searchQuery = ref('')
 const showUserMenu = ref(false)
 const showSearchModal = ref(false)
+const showNotificationsDropdown = ref(false)
 const cartItemsCount = ref(3) // Mock cart count
 
 const user = computed(() => authStore.user)
 const isDark = computed(() => themeStore.isDark)
+const notifications = computed(() => notificationsStore.notifications)
+const unreadNotificationsCount = computed(() =>
+  notificationsStore.notifications.filter(n => !n.read).length
+)
 
 const performSearch = () => {
   if (searchQuery.value.trim()) {
@@ -217,6 +266,21 @@ const toggleTheme = () => {
 const logout = () => {
   authStore.logout()
   router.push('/login')
+}
+
+function toggleNotificationsDropdown() {
+  showNotificationsDropdown.value = !showNotificationsDropdown.value
+  if (showNotificationsDropdown.value) {
+    notificationsStore.markAllAsSeen()
+  }
+}
+
+function markNotificationRead(id) {
+  notificationsStore.markAsRead(id)
+}
+
+function markAllNotificationsRead() {
+  notificationsStore.markAllAsRead()
 }
 
 // Close search modal when clicking outside

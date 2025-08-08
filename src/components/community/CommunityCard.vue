@@ -45,7 +45,12 @@
           <i v-else-if="userRole === 'member'" class="fas fa-heart text-red-500 text-lg" title="You're a member"></i>
         </div>
       </div>
-      
+      <!-- Category badge -->
+      <div v-if="currentFandom?.category" class="mb-2">
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 bg-red-500">
+          {{ currentFandom.category }}
+        </span>
+      </div>
       <p class="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
         {{ currentFandom?.description || 'No description available' }}
       </p>

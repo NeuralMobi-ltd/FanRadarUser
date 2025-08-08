@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto mb-4">
+  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto mb-4 z-50">
     <nav class="p-4 space-y-2">
       <!-- Main Navigation -->
       <div class="space-y-1">
@@ -104,33 +104,32 @@
         </h3>
         
         <button
-          @click="createPost"
+          @click="showCreatePostModal = true"
           class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
         >
           <i class="fas fa-pen w-5 h-5 mr-3"></i>
           New Post
         </button>
-
-        <button
-          @click="openNotifications"
-          class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          <i class="fas fa-bell w-5 h-5 mr-3"></i>
-          Notifications
-          <span v-if="unreadNotifications > 0" class="ml-auto bg-red-500 text-white text-xs rounded-full px-2 py-1">
-            {{ unreadNotifications }}
-          </span>
-        </button>
       </div>
     </nav>
+    <!-- Create Post Modal -->
+    <CreatePostModal
+      v-model="showCreatePostModal"
+      :user-avatar="userAvatar"
+      :user-name="userName"
+      @submit="handleCreatePost"
+    />
   </aside>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
 
 const route = useRoute()
+const authStore = useAuthStore()
 
 // Mock data - replace with actual store data
 const cartItemsCount = ref(3)
@@ -185,6 +184,15 @@ const openMessaging = () => {
 const openNotifications = () => {
   // Implement notifications functionality
   console.log('Opening notifications...')
+}
+
+const showCreatePostModal = ref(false)
+const userName = computed(() => authStore.userName)
+const userAvatar = computed(() => authStore.userAvatar)
+
+function handleCreatePost(post) {
+  // Use your store or emit event to add the post globally
+  // Example: postsStore.addPost(post)
 }
 </script>
 

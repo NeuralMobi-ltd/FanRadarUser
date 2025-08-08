@@ -12,6 +12,25 @@
       <div class="flex items-start space-x-4">
         <img :src="userAvatar || '/images/me.png'" class="w-14 h-14 rounded-full ring-2 ring-blue-300 dark:ring-blue-700 object-cover shadow" :alt="userName">
         <div class="flex-1">
+          <!-- Show post info if editing -->
+          <div v-if="editPost" class="mb-3">
+            <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <span>Editing post from <b>{{ userName }}</b></span>
+              <span v-if="editPost.date"> • {{ editPost.date }}</span>
+            </div>
+            <div v-if="editPost.tags && editPost.tags.length" class="flex flex-wrap gap-1 mb-1">
+              <span v-for="tag in editPost.tags" :key="tag" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">#{{ tag }}</span>
+            </div>
+            <div v-if="editPost.media && editPost.media.length" class="flex gap-2 mb-2">
+              <span v-for="(media, i) in editPost.media" :key="i" class="inline-block">
+                <img v-if="media.type === 'image'" :src="media.url" class="w-10 h-10 object-cover rounded" />
+                <span v-else class="inline-block w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">🎬</span>
+              </span>
+            </div>
+            <div v-if="editPost.content || editPost.text" class="text-gray-700 dark:text-gray-200 text-sm mb-2">
+              {{ editPost.content || editPost.text }}
+            </div>
+          </div>
           <textarea
             v-model="postContent"
             placeholder="What's on your mind?"
@@ -81,7 +100,8 @@ import { ref, watch } from 'vue'
 const props = defineProps({
   modelValue: Boolean,
   userAvatar: String,
-  userName: String
+  userName: String,
+  editPost: Object // <-- pass the post object when editing
 })
 
 const emit = defineEmits(['close', 'submit', 'update:modelValue'])
@@ -139,13 +159,17 @@ function submit() {
   }
 }
 
-// Reset form when modal is closed
+// Reset form when modal is closed or when editing a post
 watch(() => props.modelValue, (val) => {
   if (!val) {
     postContent.value = ''
     postMedia.value = []
     tags.value = []
     tagInput.value = ''
+  } else if (props.editPost) {
+    postContent.value = props.editPost.content || props.editPost.text || ''
+    tags.value = Array.isArray(props.editPost.tags) ? [...props.editPost.tags] : []
+    postMedia.value = Array.isArray(props.editPost.media) ? [...props.editPost.media] : []
   }
 })
 </script>

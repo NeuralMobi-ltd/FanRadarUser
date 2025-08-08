@@ -163,13 +163,21 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Trending Communities</h3>
         <div class="space-y-3">
-          <div v-for="community in trendingCommunities" :key="community.id" class="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer">
+          <div
+            v-for="community in trendingCommunities"
+            :key="community.id"
+            class="flex items-center space-x-3 hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer"
+            @click="$router.push(`/fandom/${community.handle || community.name.replace(/\s+/g, '-').toLowerCase()}`)"
+          >
             <img :src="community.avatar" class="w-10 h-10 rounded-full" :alt="community.name">
             <div class="flex-1 min-w-0">
               <p class="font-medium text-gray-900 dark:text-white truncate">{{ community.name }}</p>
               <p class="text-sm text-gray-500 dark:text-gray-400">{{ community.members }} members</p>
             </div>
-            <button class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600" @click="joinCommunity(community.id)">
+            <button
+              class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600"
+              @click.stop="joinCommunity(community.id)"
+            >
               Join
             </button>
           </div>
@@ -180,7 +188,12 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Trending Hashtags</h3>
         <div class="space-y-2">
-          <div v-for="(tag, index) in trendingHashtags" :key="index" class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer">
+          <div
+            v-for="(tag, index) in trendingHashtags"
+            :key="index"
+            class="flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg cursor-pointer"
+            @click="$router.push(`/hashtag/${tag.name}`)"
+          >
             <div>
               <p class="font-medium text-gray-900 dark:text-white">#{{ tag.name }}</p>
               <p class="text-sm text-gray-500 dark:text-gray-400">{{ tag.posts }} posts</p>
@@ -194,13 +207,21 @@
       <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
         <h3 class="font-bold text-lg mb-4 text-gray-900 dark:text-white">Who to Follow</h3>
         <div class="space-y-3">
-          <div v-for="user in recommendedUsers" :key="user.id" class="flex items-center space-x-3">
+          <div
+            v-for="user in recommendedUsers"
+            :key="user.id"
+            class="flex items-center space-x-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded-lg"
+            @click="$router.push(`/account/${user.username}`)"
+          >
             <img :src="user.avatar" class="w-10 h-10 rounded-full" :alt="user.username">
             <div class="flex-1 min-w-0">
               <p class="font-medium text-gray-900 dark:text-white truncate">{{ user.name }}</p>
               <p class="text-sm text-gray-500 dark:text-gray-400 truncate">@{{ user.username }}</p>
             </div>
-            <button class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600" @click="followUser(user.id)">
+            <button
+              class="text-xs bg-blue-500 text-white px-2 py-1 rounded-full hover:bg-blue-600"
+              @click.stop="followUser(user.id)"
+            >
               Follow
             </button>
           </div>
