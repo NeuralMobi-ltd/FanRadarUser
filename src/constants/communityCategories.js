@@ -1,15 +1,15 @@
-// Community browse categories with their styling and icons
+// Community browse categories with Font Awesome icon classes
 export const COMMUNITY_CATEGORIES = [
-  { name: 'All', color: 'bg-blue-600', icon: 'fas fa-star' },
-  { name: 'News', color: 'bg-red-600', icon: 'fas fa-newspaper' },
-  { name: 'Art', color: 'bg-purple-600', icon: 'fas fa-palette' },
-  { name: 'Gaming', color: 'bg-green-600', icon: 'fas fa-gamepad' },
-  { name: 'Music', color: 'bg-pink-600', icon: 'fas fa-music' },
-  { name: 'Movies', color: 'bg-yellow-600', icon: 'fas fa-film' },
-  { name: 'TV Shows', color: 'bg-indigo-600', icon: 'fas fa-tv' },
-  { name: 'Books', color: 'bg-amber-600', icon: 'fas fa-book' },
-  { name: 'Technology', color: 'bg-gray-600', icon: 'fas fa-laptop' },
-  { name: 'Science', color: 'bg-teal-600', icon: 'fas fa-microscope' },
-  { name: 'Sports', color: 'bg-orange-600', icon: 'fas fa-futbol' },
-  { name: 'Fashion', color: 'bg-rose-600', icon: 'fas fa-tshirt' }
+  { name: 'All', color: '#6366F1', faIcon: 'fas fa-star' },
+  { name: 'News', color: '#F59E42', faIcon: 'fas fa-newspaper' },
+  { name: 'Art', color: '#F472B6', faIcon: 'fas fa-palette' },
+  { name: 'Gaming', color: '#60A5FA', faIcon: 'fas fa-gamepad' },
+  { name: 'Music', color: '#A78BFA', faIcon: 'fas fa-music' },
+  { name: 'Movies', color: '#FBBF24', faIcon: 'fas fa-film' },
+  { name: 'TV Shows', color: '#34D399', faIcon: 'fas fa-tv' },
+  { name: 'Books', color: '#F87171', faIcon: 'fas fa-book' },
+  { name: 'Technology', color: '#38BDF8', faIcon: 'fas fa-laptop' },
+  { name: 'Science', color: '#4ADE80', faIcon: 'fas fa-microscope' },
+  { name: 'Sports', color: '#F472B6', faIcon: 'fas fa-futbol' },
+  { name: 'Fashion', color: '#F59E42', faIcon: 'fas fa-tshirt' }
 ]

@@ -352,6 +352,16 @@ export const useFandomsStore = defineStore('fandoms', {
           member.role = newRole
         }
       }
+    },
+
+    // Leave fandom (desjoin)
+    leaveFandom(fandomHandle, userId) {
+      // Remove user role
+      delete this.userRoles[fandomHandle]
+      // Remove from members
+      if (this.fandomMembers[fandomHandle]) {
+        this.fandomMembers[fandomHandle] = this.fandomMembers[fandomHandle].filter(m => m.id !== userId)
+      }
     }
   },
   

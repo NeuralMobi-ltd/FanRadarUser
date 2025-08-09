@@ -86,13 +86,14 @@
     </div>
 
     <!-- Member Welcome (Only visible to members who are not admins) -->
-    <div v-if="isMember && !isAdmin" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6">
+    <div v-if="isMember && !isAdmin" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6 flex items-center justify-between">
       <div class="flex items-center">
         <div class="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mr-3">
           <i class="fas fa-check text-green-600"></i>
         </div>
         <span class="font-medium text-green-800 dark:text-green-200">You're a member of this fandom!</span>
       </div>
+      <button @click="leaveFandom" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-4">Leave Fandom</button>
     </div>
 
     <!-- Fandom Hashtags Section -->
@@ -571,6 +572,14 @@ const isAdmin = computed(() => {
 const isMember = computed(() => {
   return fandomsStore.isMember(fandomName.value)
 })
+
+// Leave (desjoin) fandom
+const leaveFandom = () => {
+  if (confirm('Are you sure you want to leave this fandom?')) {
+    fandomsStore.leaveFandom(fandomName.value, currentUser.value.id)
+    router.push('/')
+  }
+}
 
 // Initialize based on fandom name and user
 onMounted(() => {

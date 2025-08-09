@@ -1,5 +1,5 @@
 <template>
-  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto mb-4 z-50">
+  <aside class="w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto mb-4 z-40">
     <nav class="p-4 space-y-2">
       <!-- Main Navigation -->
       <div class="space-y-1">

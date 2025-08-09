@@ -224,6 +224,69 @@ export const usePostsStore = defineStore('posts', {
           fandom: 'Gaming'
         },
         {
+          id: 7,
+          username: 'john_doe',
+          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+        userAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+        date: '2h ago',
+        text: 'This is a sample post with a single image.',
+        image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+        tags: ['Vue', 'Pinia', 'Mock'],
+        likes: 12,
+        comments: 2,
+        shares: 1,
+        isLiked: false,
+        isSaved: false,
+        fandom: 'Vue Fans',
+        trending: true,
+        commentsList: [
+          {
+            id: 1,
+            username: 'Jane Smith',
+            userAvatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+            content: 'Awesome post! Love the image.',
+            date: '1h ago'
+          },
+          {
+            id: 2,
+            username: 'Bob Lee',
+            userAvatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+            content: 'Great work!',
+            date: '30m ago'
+          }
+        ]
+      },
+      {
+        id: 8,
+        username: 'alice_j',
+        avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
+        userAvatar: 'https://randomuser.me/api/portraits/women/4.jpg',
+        date: '1h ago',
+        text: 'Check out this cool carousel!',
+        media: [
+          { type: 'image', url: 'https://images.unsplash.com/photo-1465101046530-73398c7f28ca' },
+          { type: 'image', url: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308' },
+          { type: 'video', url: 'https://www.w3schools.com/html/mov_bbb.mp4' }
+        ],
+        tags: ['Carousel', 'Media'],
+        likes: 8,
+        comments: 1,
+        shares: 0,
+        isLiked: true,
+        isSaved: true,
+        fandom: 'Media Lovers',
+        trending: false,
+        commentsList: [
+          {
+            id: 1,
+            username: 'John Doe',
+            userAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+            content: 'Nice carousel!',
+            date: '45m ago'
+          }
+        ]
+      },
+        {
           id: 202,
           username: 'PlayStationFan',
           userAvatar: 'https://randomuser.me/api/portraits/women/28.jpg',

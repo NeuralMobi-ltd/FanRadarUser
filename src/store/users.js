@@ -45,6 +45,22 @@ export const useUsersStore = defineStore('users', {
             caption: 'Fight scene highlight'
           }
         ],
+        commentsList: [
+          {
+            id: 1,
+            username: 'Jane Smith',
+            userAvatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+            content: 'Awesome post! Love the image.',
+            date: '1h ago'
+          },
+          {
+            id: 2,
+            username: 'Bob Lee',
+            userAvatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+            content: 'Great work!',
+            date: '30m ago'
+          }
+        ],
         likes: 145,
         comments: 32,
         shares: 12,

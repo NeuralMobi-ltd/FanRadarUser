@@ -16,7 +16,7 @@
           <div v-if="editPost" class="mb-3">
             <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
               <span>Editing post from <b>{{ userName }}</b></span>
-              <span v-if="editPost.date"> • {{ editPost.date }}</span>
+              <span v-if="editPostDate"> • {{ editPostDate }}</span>
             </div>
           </div>
           
@@ -27,40 +27,53 @@
             rows="3"
           ></textarea>
           
-          <!-- Tags display if editing existing post -->
-          <div v-if="editPost?.tags?.length" class="flex flex-wrap gap-1 mb-3">
-            <span v-for="tag in editPost.tags" :key="tag" class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded text-xs">#{{ tag }}</span>
-          </div>
-          
-          <!-- Media preview if editing existing post -->
-          <div v-if="editPost?.media?.length" class="flex gap-2 mb-3">
-            <span v-for="(media, i) in editPost.media" :key="i" class="inline-block">
-              <img v-if="media.type === 'image'" :src="media.url" class="w-10 h-10 object-cover rounded" />
-              <span v-else class="inline-block w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded flex items-center justify-center text-xs text-gray-500">🎬</span>
+          <!-- Editable tags and input with limited height and scroll -->
+          <div class="flex flex-wrap gap-2 mt-2 mb-2 overflow-y-auto" style="max-height: 80px;">
+            <span
+              v-for="(tag, idx) in tags"
+              :key="idx"
+              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 text-white shadow"
+            >
+              #{{ tag }}
+              <button type="button" class="ml-1 text-white/80 hover:text-red-200" @click="removeTag(idx)">
+                &times;
+              </button>
             </span>
-          </div>
-          
-          <!-- Tags Input -->
-          <div class="mt-2">
             <input
               v-model="tagInput"
               @keydown.enter.prevent="addTag"
               @keydown.tab.prevent="addTag"
               type="text"
-              class="w-full px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400"
+              class="flex-1 min-w-[120px] px-3 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-400 ml-1"
               placeholder="Add tags (press Enter or Tab)..."
+              style="max-width: 100%; margin-top: 4px;"
             />
-            <div class="flex flex-wrap gap-2 mt-2">
-              <span
-                v-for="(tag, idx) in tags"
-                :key="idx"
-                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-400 to-purple-400 text-white shadow"
+          </div>
+          
+          <!-- Editable media preview -->
+          <div v-if="postMedia.length > 0" class="grid grid-cols-2 gap-3 mb-3">
+            <div
+              v-for="(media, i) in postMedia"
+              :key="i"
+              class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow"
+            >
+              <img
+                v-if="media.type === 'image'"
+                :src="media.url"
+                class="max-h-48 rounded-lg w-full object-cover"
+              />
+              <video
+                v-else-if="media.type === 'video'"
+                :src="media.url"
+                controls
+                class="max-h-48 rounded-lg w-full object-cover"
+              ></video>
+              <button
+                @click="removeMedia(i)"
+                class="absolute top-2 right-2 text-xs text-white bg-red-500 rounded-full px-2 py-1 hover:bg-red-700 shadow"
               >
-                #{{ tag }}
-                <button type="button" class="ml-1 text-white/80 hover:text-red-200" @click="removeTag(idx)">
-                  &times;
-                </button>
-              </span>
+                Remove
+              </button>
             </div>
           </div>
           
@@ -85,15 +98,6 @@
               Post
             </button>
           </div>
-          
-          <!-- New media preview -->
-          <div v-if="postMedia.length > 0" class="mt-4 grid grid-cols-2 gap-3">
-            <div v-for="(media, index) in postMedia" :key="index" class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow">
-              <img v-if="media.type === 'image'" :src="media.url" class="max-h-48 rounded-lg mb-2 w-full object-cover" />
-              <video v-else-if="media.type === 'video'" :src="media.url" controls class="max-h-48 rounded-lg mb-2 w-full object-cover"></video>
-              <button @click="removeMedia(index)" class="absolute top-2 right-2 text-xs text-white bg-red-500 rounded-full px-2 py-1 hover:bg-red-700 shadow">Remove</button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -101,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -114,10 +118,24 @@ const emit = defineEmits(['close', 'submit', 'update:modelValue'])
 
 const postContent = ref('')
 const postMedia = ref([])
-
-// Tag logic
 const tags = ref([])
 const tagInput = ref('')
+
+// Computed property for formatted date
+const editPostDate = computed(() => {
+  if (!props.editPost?.date) return ''
+  const date = new Date(props.editPost.date)
+  return `${date.getHours()}h ago`
+})
+
+// Initialize with edit post data
+watch(() => props.editPost, (newVal) => {
+  if (newVal) {
+    postContent.value = newVal.content || newVal.text || ''
+    tags.value = Array.isArray(newVal.tags) ? [...newVal.tags] : []
+    postMedia.value = Array.isArray(newVal.media) ? [...newVal.media] : []
+  }
+}, { immediate: true })
 
 function addTag() {
   const tag = tagInput.value.trim().replace(/^#/, '')
