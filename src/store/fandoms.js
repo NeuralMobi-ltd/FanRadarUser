@@ -226,6 +226,72 @@ export const useFandomsStore = defineStore('fandoms', {
   }),
   
   actions: {
+    // Create new fandom
+    createFandom(fandomData) {
+      const newFandom = {
+        id: Date.now(),
+        name: fandomData.title,
+        handle: fandomData.handle,
+        description: fandomData.tagline,
+        fullDescription: fandomData.description,
+        membersCount: '1',
+        logo: fandomData.avatar || '',
+        coverImage: fandomData.coverImage || '',
+        category: fandomData.categoryName || '',
+        tags: [...fandomData.tags],
+        privacy: fandomData.privacy,
+        allowMemberInvites: fandomData.allowMemberInvites,
+        requireApproval: fandomData.requireApproval,
+        role: 'admin',
+        createdAt: new Date().toISOString().slice(0, 10),
+        joinedAt: null
+      }
+      
+      // Add to allFandoms
+      this.allFandoms.unshift(newFandom)
+      
+      // Set user as admin
+      this.userRoles[fandomData.handle] = 'admin'
+      
+      // Initialize fandom members with creator
+      if (!this.fandomMembers[fandomData.handle]) {
+        this.fandomMembers[fandomData.handle] = []
+      }
+      this.fandomMembers[fandomData.handle].push({
+        id: Date.now(),
+        name: 'You',
+        username: 'you',
+        avatar: fandomData.avatar || '/images/me.png',
+        role: 'admin',
+        posts: 0,
+        joinedDate: new Date().toLocaleDateString()
+      })
+      
+      // Initialize fandom posts
+      if (!this.fandomPosts[fandomData.handle]) {
+        this.fandomPosts[fandomData.handle] = []
+      }
+      
+      return newFandom
+    },
+
+    // Save fandom draft
+    saveFandomDraft(fandomData) {
+      // Save to localStorage for persistence
+      localStorage.setItem('fandom_draft', JSON.stringify(fandomData))
+    },
+
+    // Load fandom draft
+    loadFandomDraft() {
+      const draft = localStorage.getItem('fandom_draft')
+      return draft ? JSON.parse(draft) : null
+    },
+
+    // Clear fandom draft
+    clearFandomDraft() {
+      localStorage.removeItem('fandom_draft')
+    },
+
     setUserRole(fandomHandle, role) {
       this.userRoles[fandomHandle] = role
     },

@@ -1,0 +1,61 @@
+%% filepath: c:\Users\Lenovo\Desktop\My File\FanRadarUser\design-extension-diagram.mmd
+%% Diagramme de conception d'extension (exemple général pour FanRadar)
+
+classDiagram
+  class Fandom {
+    +id: int
+    +name: string
+    +description: string
+    +category: string
+    +members: int
+    +addMember()
+    +removeMember()
+  }
+
+  class User {
+    +id: int
+    +username: string
+    +email: string
+    +role: string
+    +joinFandom()
+    +leaveFandom()
+  }
+
+  class Post {
+    +id: int
+    +content: string
+    +media: string[]
+    +tags: string[]
+    +author: User
+    +fandom: Fandom
+    +like()
+    +comment()
+    +share()
+  }
+
+  class Extension {
+    <<extension>>
+    +name: string
+    +description: string
+    +activate()
+    +deactivate()
+  }
+
+  class MarketplaceExtension {
+    <<extension>>
+    +listProducts()
+    +purchaseProduct()
+  }
+
+  class AnalyticsExtension {
+    <<extension>>
+    +generateReport()
+    +showTrends()
+  }
+
+  Fandom "1" -- "*" Post : contains
+  User "1" -- "*" Post : writes
+  User "1" -- "*" Fandom : joins
+  Extension <|-- MarketplaceExtension
+  Extension <|-- AnalyticsExtension
+  Fandom "1" -- "*" Extension : "can be extended by"

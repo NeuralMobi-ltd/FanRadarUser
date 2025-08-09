@@ -434,7 +434,7 @@ const fetchUserProfile = async () => {
     
     // Look for user in store
     const foundUser = usersStore.getUserByUsername(username)
-    
+     
     if (foundUser) {
       userProfile.value = foundUser
     } else {

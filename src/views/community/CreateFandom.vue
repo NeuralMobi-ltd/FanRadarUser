@@ -205,7 +205,9 @@
                     <span
                       class="block w-6 h-6 mb-1 rounded-full"
                       :style="{ background: category.color }"
-                    ></span>
+                    >
+                      <span v-html="category.icon" class="w-full h-full"></span>
+                    </span>
                     <div class="font-medium text-sm truncate">{{ category.name }}</div>
                     <div 
                       class="text-xs opacity-0 group-hover:opacity-100 transition-opacity mt-1"
@@ -458,6 +460,11 @@
 
 <script setup>
 import { ref, watch, computed } from 'vue'
+import { useFandomsStore } from '@/store/fandoms'
+import { useRouter } from 'vue-router'
+
+// Simple feedback for actions
+const feedback = ref('')
 
 // Form data
 const formData = ref({
@@ -470,26 +477,43 @@ const formData = ref({
   privacy: 'public',
   allowMemberInvites: true,
   requireApproval: false,
-  avatar: ''
+  avatar: '',
+  coverImage: ''
 })
 
 // New tag input
 const newTag = ref('')
 
+// Category icon SVGs
+const categoryIcons = {
+  entertainment: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'/></svg>`,
+  music: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 19V6l12-2v13'/></svg>`,
+  'movies-tv': `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect width='20' height='14' x='2' y='7' rx='2'/><path d='M16 3l-4 4-4-4'/></svg>`,
+  books: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 20h9'/><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 4h9v16H3V4h9z'/></svg>`,
+  gaming: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect width='20' height='12' x='2' y='6' rx='2'/><circle cx='8' cy='12' r='1.5'/><circle cx='16' cy='12' r='1.5'/></svg>`,
+  sports: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/><path d='M2 12h20'/></svg>`,
+  technology: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect width='18' height='10' x='3' y='7' rx='2'/><path d='M8 21h8'/></svg>`,
+  'art-design': `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 20l9-5-9-5-9 5 9 5z'/></svg>`,
+  lifestyle: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><rect width='20' height='12' x='2' y='6' rx='2'/></svg>`,
+  education: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 20l9-5-9-5-9 5 9 5z'/></svg>`,
+  science: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10'/></svg>`,
+  travel: `<svg class='w-5 h-5' fill='none' stroke='currentColor' viewBox='0 0 24 24'><path stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M21 21l-6-6'/><circle cx='10' cy='10' r='7'/></svg>`
+}
+
 // Categories for the fandom
 const categories = [
-  { value: 'entertainment', name: 'Entertainment', color: '#4F46E5' },
-  { value: 'music', name: 'Music', color: '#3B82F6' },
-  { value: 'movies-tv', name: 'Movies & TV', color: '#9333EA' },
-  { value: 'books', name: 'Books', color: '#10B981' },
-  { value: 'gaming', name: 'Gaming', color: '#F59E0B' },
-  { value: 'sports', name: 'Sports', color: '#EF4444' },
-  { value: 'technology', name: 'Technology', color: '#6366F1' },
-  { value: 'art-design', name: 'Art & Design', color: '#D97706' },
-  { value: 'lifestyle', name: 'Lifestyle', color: '#059669' },
-  { value: 'education', name: 'Education', color: '#3B82F6' },
-  { value: 'science', name: 'Science', color: '#8B5CF6' },
-  { value: 'travel', name: 'Travel', color: '#F97316' }
+  { value: 'entertainment', name: 'Entertainment', color: '#4F46E5', icon: categoryIcons.entertainment },
+  { value: 'music', name: 'Music', color: '#3B82F6', icon: categoryIcons.music },
+  { value: 'movies-tv', name: 'Movies & TV', color: '#9333EA', icon: categoryIcons['movies-tv'] },
+  { value: 'books', name: 'Books', color: '#10B981', icon: categoryIcons.books },
+  { value: 'gaming', name: 'Gaming', color: '#F59E0B', icon: categoryIcons.gaming },
+  { value: 'sports', name: 'Sports', color: '#EF4444', icon: categoryIcons.sports },
+  { value: 'technology', name: 'Technology', color: '#6366F1', icon: categoryIcons.technology },
+  { value: 'art-design', name: 'Art & Design', color: '#D97706', icon: categoryIcons['art-design'] },
+  { value: 'lifestyle', name: 'Lifestyle', color: '#059669', icon: categoryIcons.lifestyle },
+  { value: 'education', name: 'Education', color: '#3B82F6', icon: categoryIcons.education },
+  { value: 'science', name: 'Science', color: '#8B5CF6', icon: categoryIcons.science },
+  { value: 'travel', name: 'Travel', color: '#F97316', icon: categoryIcons.travel }
 ]
 
 // Suggested tags based on category
@@ -580,16 +604,85 @@ function addSuggestedTag(tag) {
   }
 }
 
+// Handle logo/avatar upload
+function onLogoChange(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    formData.value.avatar = ev.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
+// Handle cover image upload
+function onCoverChange(e) {
+  const file = e.target.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (ev) => {
+    formData.value.coverImage = ev.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
 // Save draft function
 function saveDraft() {
-  // Implement save draft logic here
-  console.log('Draft saved:', formData.value)
+  // Save the current form as a draft in the store
+  const draft = {
+    ...formData.value,
+    id: Date.now(),
+    savedAt: new Date().toISOString(),
+    isDraft: true
+  }
+  // Add to store (create array if not exists)
+  if (!fandomsStore.draftFandoms) fandomsStore.draftFandoms = []
+  fandomsStore.draftFandoms.unshift(draft)
+  feedback.value = 'Draft saved!'
+  setTimeout(() => (feedback.value = ''), 2000)
 }
 
 // Create fandom function
 function createFandom() {
-  // Implement create fandom logic here
-  console.log('Fandom created:', formData.value)
+  if (!isFormValid.value) return
+  // Add fandom to store
+  const newFandom = {
+    id: Date.now(),
+    name: formData.value.title,
+    handle: formData.value.handle,
+    description: formData.value.tagline,
+    fullDescription: formData.value.description,
+    category: categories.find(c => c.value === formData.value.category)?.name || '',
+    tags: [...formData.value.tags],
+    privacy: formData.value.privacy,
+    allowMemberInvites: formData.value.allowMemberInvites,
+    requireApproval: formData.value.requireApproval,
+    avatar: formData.value.avatar,
+    logo: formData.value.avatar,
+    coverImage: formData.value.coverImage,
+    membersCount: 1,
+    role: 'admin',
+    createdAt: new Date().toISOString().slice(0, 10)
+  }
+  fandomsStore.allFandoms.unshift(newFandom)
+  fandomsStore.userRoles[formData.value.handle] = 'admin'
+  if (!fandomsStore.fandomMembers[formData.value.handle]) {
+    fandomsStore.fandomMembers[formData.value.handle] = []
+  }
+  fandomsStore.fandomMembers[formData.value.handle].push({
+    id: Date.now(),
+    name: 'You',
+    username: 'you',
+    avatar: formData.value.avatar || '/public/images/me.png',
+    role: 'admin',
+    posts: 0,
+    joinedDate: new Date().toLocaleDateString()
+  })
+  feedback.value = 'Fandom created! Redirecting...'
+  setTimeout(() => {
+    feedback.value = ''
+    router.push(`/fandom/${formData.value.handle}`)
+  }, 1200)
 }
 
 // Watch for category changes to update suggested tags
@@ -638,21 +731,15 @@ function getCategoryDescription(value) {
   return categoryDescriptions[value] || ''
 }
 
-// For demo: preset form data
-setTimeout(() => {
-  formData.value = {
-    title: 'My Awesome Fandom',
-    handle: 'my-awesome-fandom',
-    tagline: 'A place for all fans of awesome things',
-    description: 'Join us to discuss and share about all the things we love!',
-    category: 'entertainment',
-    tags: ['movies', 'music', 'tv shows'],
-    privacy: 'public',
-    allowMemberInvites: true,
-    requireApproval: false,
-    avatar: ''
-  }
-}, 1000)
+
+// Edit Fandom button in preview (for demo: just show feedback)
+function editFandom() {
+  feedback.value = 'Edit Fandom clicked! (Implement edit logic as needed)'
+  setTimeout(() => (feedback.value = ''), 1500)
+}
+
+const fandomsStore = useFandomsStore()
+const router = useRouter()
 </script>
 
 <style>
