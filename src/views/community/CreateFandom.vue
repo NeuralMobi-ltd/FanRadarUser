@@ -1,48 +1,25 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+  <div class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
     <!-- Header -->
     <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           <div class="flex items-center space-x-4">
-            <button 
-              @click="$router.back()" 
-              class="flex items-center text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors group"
-            >
-              <svg class="w-5 h-5 mr-1 group-hover:-translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              Back
-            </button>
             <div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create New Fandom</h1>
               <p class="text-sm text-gray-500 dark:text-gray-400">Build a thriving community around your passion</p>
             </div>
           </div>
-          <div class="flex items-center space-x-3">
-            <button 
-              @click="createFandom"
-              :disabled="!isFormValid"
-              class="px-6 py-2.5 rounded-lg font-medium transition-all duration-200 flex items-center"
-              :class="isFormValid 
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-md hover:shadow-lg'
-                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'"
-            >
-              <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Create Fandom
-            </button>
-          </div>
+          <!-- Removed Back and Create Fandom buttons from header -->
         </div>
       </div>
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="grid grid-cols-1 gap-8">
         <!-- Form Section -->
-        <div class="lg:col-span-2 space-y-8">
+        <div class="space-y-8">
           <!-- Logo & Cover Image -->
           <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-sm">
             <div class="flex items-center mb-6">
@@ -324,7 +301,21 @@
         <!-- You may have a sidebar or additional content here for the 3rd column -->
       </div> <!-- end .grid -->
     </main>
-  </div>
+</div>
+<!-- Button moved inside main flex column container, after </main> -->
+<div class="w-full flex justify-center py-8">
+  <button
+    class="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+    @click="createFandom"
+    :disabled="!isFormValid"
+    :class="!isFormValid ? 'opacity-60 cursor-not-allowed' : ''"
+  >
+    <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+    </svg>
+    Create
+  </button>
+</div>
 </template>
 
 <script setup>

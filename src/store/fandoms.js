@@ -407,6 +407,18 @@ export const useFandomsStore = defineStore('fandoms', {
         member.name.toLowerCase().includes(query.toLowerCase()) ||
         member.username.toLowerCase().includes(query.toLowerCase())
       )
+    },
+
+    // Get count of communities/fandoms by category
+    getCommunitiesCountByCategory: (state) => (category) => {
+      if (!category) return 0;
+      return state.allFandoms.filter(f => f.category === category).length;
+    },
+
+    // Get all communities/fandoms by category
+    getCommunitiesByCategory: (state) => (category) => {
+      if (!category) return [];
+      return state.allFandoms.filter(f => f.category === category);
     }
   }
 })

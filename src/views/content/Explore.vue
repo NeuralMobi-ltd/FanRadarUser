@@ -66,7 +66,7 @@
         </div>
       </div>
     </div>
-
+ 
     <!-- Fan News Section -->
     <div class="mb-10">
       <div class="flex items-center justify-between mb-6">
@@ -107,217 +107,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useNewsStore } from '@/store/news'
+import { useTrendsStore } from '@/store/trends'
 
 const router = useRouter()
+const newsStore = useNewsStore()
+const trendsStore = useTrendsStore()
 
-const currentTrends = ref([
-  { 
-    tag: 'LoLPhase5', 
-    posts: '2.3M', 
-    icon: 'fas fa-gamepad',
-    description: 'League of Legends Phase 5 introduces new champions and major gameplay changes that are revolutionizing competitive play with the new Void storyline.'
-  },
-  { 
-    tag: 'LoLWorlds', 
-    posts: '897K', 
-    icon: 'fas fa-trophy',
-    description: 'World Championship 2024 is heating up with incredible matches and unexpected upsets. T1 vs GenG finals breaking viewership records.'
-  },
-  { 
-    tag: 'Swifties', 
-    posts: '3.1M', 
-    icon: 'fas fa-music',
-    description: 'Taylor Swift fans are celebrating the announcement of her new Eras Tour dates and surprise album release featuring collaborations.'
-  },
-  { 
-    tag: 'AnimeSpring2024', 
-    posts: '1.8M', 
-    icon: 'fas fa-heart',
-    description: 'Spring anime season brings incredible new series including the highly anticipated Attack on Titan finale and Demon Slayer continuation.'
-  },
-  { 
-    tag: 'MarvelPhase6', 
-    posts: '2.1M', 
-    icon: 'fas fa-mask',
-    description: 'Marvel Studios reveals exciting details about Phase 6 of the MCU with new heroes, multiverse storylines, and the return of the X-Men.'
-  },
-  { 
-    tag: 'KPopComeback', 
-    posts: '1.6M', 
-    icon: 'fas fa-star',
-    description: 'Multiple K-Pop groups are making spectacular comebacks this month with BTS, BLACKPINK, and NewJeans releasing chart-topping albums.'
-  },
-  { 
-    tag: 'GameOfThrones2024', 
-    posts: '945K', 
-    icon: 'fas fa-fire',
-    description: 'House of the Dragon Season 2 trailer drops with epic dragon battles and the highly anticipated Dance of Dragons storyline.'
-  },
-  { 
-    tag: 'NintendoDirect', 
-    posts: '1.2M', 
-    icon: 'fas fa-gamepad',
-    description: 'Nintendo Direct showcases upcoming Switch games including the new Super Mario Wonder and highly anticipated Zelda sequel updates.'
-  }
-])
-
-const popularCategories = ref([
-  {
-    name: 'Sport',
-    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=300&h=200&fit=crop',
-    communities: '450+'
-  },
-  {
-    name: 'Music',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop',
-    communities: '680+'
-  },
-  {
-    name: 'Tech',
-    image: 'https://www.intelligenthq.com/wp-content/uploads/2020/09/How-Tech-is-Changing-the-Way-we-Work.jpg',
-    communities: '320+'
-  },
-  {
-    name: 'Gaming',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=200&fit=crop',
-    communities: '890+'
-  },
-  {
-    name: 'Anime',
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
-    communities: '750+'
-  },
-  {
-    name: 'Movies',
-    image: 'http',
-    communities: '520+'
-  },
-  {
-    name: 'Books',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=200&fit=crop',
-    communities: '280+'
-  },
-  {
-    name: 'Art',
-    image: 'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=300&h=200&fit=crop',
-    communities: '340+'
-  },
-  {
-    name: 'TV Shows',
-    image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=300&h=200&fit=crop',
-    communities: '620+'
-  },
-  {
-    name: 'Comics',
-    image: 'https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=300&h=200&fit=crop',
-    communities: '430+'
-  },
-  {
-    name: 'Fashion',
-    image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=300&h=200&fit=crop',
-    communities: '290+'
-  },
-  {
-    name: 'Photography',
-    image: 'https://images.unsplash.com/photo-1502920917128-1aa500764cbd?w=300&h=200&fit=crop',
-    communities: '380+'
-  }
-])
-
-const fanNews = ref([
-  {
-    id: 1,
-    category: 'K-pop',
-    title: 'BTS Announces New Album for 2024',
-    description: 'The group revealed details about their upcoming album during a special live stream event with exclusive behind-the-scenes footage and collaborations with western artists.',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop',
-    time: '2h ago',
-    views: '15.2K'
-  },
-  {
-    id: 2,
-    category: 'Gaming',
-    title: 'League of Legends World Championship Finals',
-    description: 'Epic showdown between T1 and JDG in the most anticipated esports match of the year with record-breaking viewership of 5.1 million concurrent viewers.',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop',
-    time: '4h ago',
-    views: '28.7K'
-  },
-  {
-    id: 3,
-    category: 'Anime',
-    title: 'Attack on Titan Final Movie Announced',
-    description: 'Studio WIT confirms the production of a conclusive film to end the beloved series with an epic finale, featuring enhanced animation and extended scenes.',
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=300&fit=crop',
-    time: '6h ago',
-    views: '45.3K'
-  },
-  {
-    id: 4,
-    category: 'Marvel',
-    title: 'Deadpool 3 Gets Official Release Date',
-    description: 'Ryan Reynolds confirms the highly anticipated sequel will introduce Deadpool to the MCU multiverse with Hugh Jackman returning as Wolverine.',
-    image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=600&h=300&fit=crop',
-    time: '8h ago',
-    views: '67.1K'
-  },
-  {
-    id: 5,
-    category: 'Technology',
-    title: 'Apple Vision Pro Gets Gaming Update',
-    description: 'Major software update brings enhanced gaming capabilities and new AR experiences to the headset, including support for popular VR titles.',
-    image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=600&h=300&fit=crop',
-    time: '12h ago',
-    views: '23.8K'
-  },
-  {
-    id: 6,
-    category: 'Sports',
-    title: 'World Cup 2026 Venues Announced',
-    description: 'FIFA reveals the complete list of stadiums that will host matches across North America, featuring state-of-the-art facilities in 16 cities.',
-    image: 'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=300&fit=crop',
-    time: '1d ago',
-    views: '91.5K'
-  },
-  {
-    id: 7,
-    category: 'TV Shows',
-    title: 'House of the Dragon Season 2 Trailer',
-    description: 'HBO releases the epic first trailer for the highly anticipated second season featuring massive dragon battles and political intrigue in Westeros.',
-    image: 'https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37?w=600&h=300&fit=crop',
-    time: '1d ago',
-    views: '78.9K'
-  },
-  {
-    id: 8,
-    category: 'Music',
-    title: 'Taylor Swift Breaks Spotify Records',
-    description: 'The pop superstar sets new streaming records with her latest album, surpassing 1 billion streams in just one week across all platforms.',
-    image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=300&fit=crop',
-    time: '2d ago',
-    views: '134.2K'
-  },
-  {
-    id: 9,
-    category: 'Gaming',
-    title: 'Nintendo Direct Showcases 2024 Lineup',
-    description: 'Nintendo reveals upcoming Switch games including new Super Mario Wonder gameplay, Zelda sequel updates, and surprise third-party announcements.',
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=300&fit=crop',
-    time: '2d ago',
-    views: '52.7K'
-  },
-  {
-    id: 10,
-    category: 'Movies',
-    title: 'Marvel Phase 6 Timeline Revealed',
-    description: 'Kevin Feige unveils the complete Phase 6 movie schedule including Fantastic Four, X-Men introduction, and the highly anticipated Avengers: Secret Wars.',
-    image: 'https://images.unsplash.com/photo-1489599904486-b9c74d6f4c22?w=600&h=300&fit=crop',
-    time: '3d ago',
-    views: '89.4K'
-  }
-])
+const fanNews = computed(() => newsStore.newsItems)
+const currentTrends = computed(() => trendsStore.currentTrends || [])
+const popularCategories = computed(() => trendsStore.popularCategories || [])
 
 const navigateToCategory = (categoryName) => {
   router.push(`/category/${categoryName.toLowerCase()}`)
