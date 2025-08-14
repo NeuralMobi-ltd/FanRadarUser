@@ -1,7 +1,12 @@
 <template>
   <div class="app" :class="theme">
-    <Header @toggle-theme="toggleTheme" />
-    <div class="main-layout">
+    <!-- Fixed Header -->
+    <div class="fixed top-0 left-0 right-0 z-50">
+      <Header @toggle-theme="toggleTheme" />
+    </div>
+    
+    <!-- Main Content with top padding to account for fixed header -->
+    <div class="main-layout pt-16">
       <Sidebar />
       <main class="main-content with-sidebar">
         <router-view />

@@ -1,0 +1,113 @@
+---
+title: FanRadar CMD MCD (Merise Conceptual Data Model)
+---
+erDiagram
+  User {
+    int id PK
+    string username
+    string email
+    string avatar
+    string bio
+    string role
+    string createdAt
+    string updatedAt
+  }
+  Fandom {
+    int id PK
+    string name
+    string handle
+    string description
+    string category
+    string logo
+    string coverImage
+    string createdAt
+    string updatedAt
+  }
+  Post {
+    int id PK
+    string content
+    int likes
+    int comments
+    int shares
+    date date
+    int fandomId FK
+    int userId FK
+  }
+  Media {
+    int id PK
+    string type
+    string url
+    string caption
+    int postId FK
+  }
+  Comment {
+    int id PK
+    string content
+    int userId FK
+    int postId FK
+    string createdAt
+  }
+  Hashtag {
+    int id PK
+    string name
+    string description
+    string createdAt
+  }
+  News {
+    int id PK
+    string title
+    string summary
+    string image
+    date date
+    int views
+    string category
+    string createdAt
+  }
+  Notification {
+    int id PK
+    string text
+    string time
+    bool read
+    int userId FK
+  }
+  Membership {
+    int id PK
+    int userId FK
+    int fandomId FK
+    string role
+    string joinedAt
+  }
+  Like {
+    int id PK
+    int userId FK
+    int postId FK
+    string createdAt
+  }
+  Share {
+    int id PK
+    int userId FK
+    int postId FK
+    string createdAt
+  }
+  Trend {
+    int id PK
+    int hashtagId FK
+    int fandomId FK
+    int growth
+    date date
+  }
+
+  User ||--o{ Post : "writes"
+  User ||--o{ Comment : "writes"
+  User ||--o{ Notification : "receives"
+  User ||--o{ Membership : "joins"
+  User ||--o{ Like : "likes"
+  User ||--o{ Share : "shares"
+  Fandom ||--o{ Post : "contains"
+  Fandom ||--o{ Membership : "has"
+  Post ||--o{ Comment : "has"
+  Post ||--o{ Media : "has"
+  Post ||--o{ Like : "liked by"
+  Post ||--o{ Share : "shared by"
+  Hashtag ||--o{ Trend : "trends"
+  Fandom ||--o{ Trend : "trends"

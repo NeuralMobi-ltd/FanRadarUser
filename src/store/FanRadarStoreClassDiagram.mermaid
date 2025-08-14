@@ -1,0 +1,243 @@
+---
+title: FanRadar Store Class Diagram
+---
+classDiagram
+  class Auth {
+    +user: User
+    +userStats: UserStats
+    +posts: Post[]
+    +isAuthenticated: bool
+    +login()
+    +logout()
+    +addPost()
+    +deletePost()
+    +updateUserProfile()
+  }
+  class Cart {
+    +items: CartItem[]
+    +itemCount: int
+    +totalPrice: float
+    +addItem()
+    +removeItem()
+    +updateQuantity()
+    +clearCart()
+  }
+  class Fandoms {
+    +allFandoms: Fandom[]
+    +userRoles: Map
+    +fandomPosts: Map
+    +fandomMembers: Map
+    +createFandom()
+    +addFandomPost()
+    +addFandomMember()
+    +removeFandomMember()
+  }
+  class Hashtags {
+    +hashtagPosts: Map
+    +hashtagNews: Map
+    +relatedHashtags: Hashtag[]
+    +addHashtagPost()
+    +likeHashtagPost()
+  }
+  class News {
+    +newsItems: NewsItem[]
+    +categoryNews: Map
+    +addNews()
+    +updateViews()
+  }
+  class Notifications {
+    +notifications: Notification[]
+    +markAsRead()
+    +addNotification()
+  }
+  class Posts {
+    +posts: Post[]
+    +categoryPosts: Map
+    +addPost()
+    +deletePost()
+    +likePost()
+  }
+  class Products {
+    +products: Product[]
+    +categories: string[]
+    +brands: string[]
+    +addProduct()
+    +updateProduct()
+    +deleteProduct()
+    +toggleWishlist()
+  }
+  class ProductSearch {
+    +recentSearches: string[]
+    +searchResults: Map
+    +addRecentSearch()
+    +fetchSearchResults()
+  }
+  class Search {
+    +recentSearches: string[]
+    +trendingSearches: TrendingSearch[]
+    +searchPeople()
+    +searchPosts()
+    +searchNews()
+    +searchFandoms()
+  }
+  class StoreNotifications {
+    +notifications: Notification[]
+    +markAsRead()
+    +addNotification()
+  }
+  class StoreSidebar {
+    +selectedBrands: string[]
+    +priceRange: PriceRange
+    +appliedFilters: Filter
+    +toggleBrand()
+    +updatePriceRange()
+    +applyFilters()
+    +clearAllFilters()
+  }
+  class Trends {
+    +trendingFandoms: Fandom[]
+    +trendingHashtags: Hashtag[]
+    +recommendedUsers: User[]
+    +joinFandom()
+    +addActivity()
+  }
+  class Users {
+    +users: User[]
+    +posts: Post[]
+    +followers: User[]
+    +following: User[]
+    +addUser()
+    +updateUser()
+    +addPost()
+    +addFollower()
+    +addToFollowing()
+  }
+  class User {
+    +id: int
+    +name: string
+    +username: string
+    +email: string
+    +avatar: string
+    +bio: string
+    +followers: int
+    +following: int
+    +posts: int
+    +verified: bool
+  }
+  class Post {
+    +id: int
+    +content: string
+    +media: Media[]
+    +likes: int
+    +comments: int
+    +shares: int
+    +date: Date
+    +fandom: string
+  }
+  class Product {
+    +id: int
+    +name: string
+    +category: string
+    +brand: string
+    +price: float
+    +stock: int
+    +rating: float
+    +reviews: int
+  }
+  class NewsItem {
+    +id: int
+    +source: string
+    +title: string
+    +summary: string
+    +image: string
+    +date: Date
+    +views: string
+  }
+  class Notification {
+    +id: int
+    +text: string
+    +time: string
+    +read: bool
+  }
+  class Fandom {
+    +id: int
+    +name: string
+    +handle: string
+    +description: string
+    +category: string
+    +membersCount: string
+    +logo: string
+    +coverImage: string
+    +tags: string[]
+    +role: string
+    +createdAt: string
+    +joinedAt: string
+  }
+  class Hashtag {
+    +name: string
+    +posts: string
+    +description: string
+  }
+  class CartItem {
+    +id: int
+    +name: string
+    +price: float
+    +quantity: int
+  }
+  class PriceRange {
+    +min: float
+    +max: float
+  }
+  class Filter {
+    +brands: string[]
+    +priceMin: float
+    +priceMax: float
+    +category: string
+    +quickFilters: string[]
+    +search: string
+  }
+  class Fandom {
+    +id: int
+    +name: string
+    +avatar: string
+    +members: string
+  }
+  class TrendingSearch {
+    +term: string
+    +posts: string
+    +category: string
+  }
+  class Media {
+    +type: string
+    +url: string
+    +caption: string
+  }
+  class UserStats {
+    +followers: int
+    +following: int
+    +posts: int
+  }
+
+  Auth --> User
+  Auth --> Post
+  Cart --> CartItem
+  Fandoms --> Fandom
+  Fandoms --> Post
+  Fandoms --> User
+  Hashtags --> Hashtag
+  Hashtags --> Post
+  News --> NewsItem
+  Notifications --> Notification
+  Posts --> Post
+  Products --> Product
+  ProductSearch --> Product
+  Search --> TrendingSearch
+  StoreNotifications --> Notification
+  StoreSidebar --> Filter
+  StoreSidebar --> PriceRange
+  Trends --> Fandom
+  Trends --> Hashtag
+  Trends --> User
+  Users --> User
+  Users --> Post
+  Users --> Notification

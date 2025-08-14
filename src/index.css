@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Mobile-first responsive base styles */
+  * {
+    @apply box-border;
+  }
+  
+  html {
+    @apply scroll-smooth;
+  }
+  
+  body {
+    @apply font-sans;
+  }
+}
+
 @layer components {
   .card {
     @apply bg-white rounded-xl shadow-md overflow-hidden;
@@ -11,5 +26,117 @@
   }
   .input-field {
     @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+  
+  /* Responsive container classes */
+  .mobile-container {
+    @apply px-4 sm:px-6 lg:px-8;
+  }
+  
+  /* Responsive grid classes */
+  .responsive-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6;
+  }
+  
+  .responsive-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6;
+  }
+  
+  /* Mobile-first text sizes */
+  .responsive-heading {
+    @apply text-lg sm:text-xl lg:text-2xl font-bold;
+  }
+  
+  .responsive-subheading {
+    @apply text-base sm:text-lg lg:text-xl font-semibold;
+  }
+  
+  .responsive-text {
+    @apply text-sm sm:text-base;
+  }
+  
+  /* Mobile navigation styles */
+  .mobile-nav-item {
+    @apply block w-full text-left px-4 py-3 text-base font-medium border-b border-gray-200 last:border-b-0;
+  }
+  
+  /* Touch-friendly button sizes */
+  .touch-button {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Responsive spacing */
+  .responsive-section {
+    @apply py-8 sm:py-12 lg:py-16;
+  }
+  
+  .responsive-gap {
+    @apply space-y-4 sm:space-y-6 lg:space-y-8;
+  }
+}
+
+@layer utilities {
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Mobile-specific utilities */
+  .mobile-full-width {
+    width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+  
+  /* Safe area utilities for mobile devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Touch-friendly hover states */
+  @media (hover: hover) {
+    .hover-only\:hover\:bg-gray-100:hover {
+      @apply bg-gray-100;
+    }
+  }
+}
+
+/* Custom mobile breakpoints and overrides */
+@media (max-width: 640px) {
+  .mobile-text-xs {
+    font-size: 0.75rem;
+  }
+  
+  .mobile-p-2 {
+    padding: 0.5rem;
+  }
+  
+  .mobile-p-4 {
+    padding: 1rem;
+  }
+  
+  /* Ensure proper touch targets on mobile */
+  button, 
+  a, 
+  [role="button"],
+  input[type="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .high-dpi-border {
+    border-width: 0.5px;
   }
 }
