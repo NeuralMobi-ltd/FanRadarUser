@@ -1,10 +1,12 @@
 import { defineStore } from 'pinia'
+import AuthService from '@/services/authService'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     loading: false,
     error: null,
+    token: localStorage.getItem('token') || null,
     userStats: {
       followers: 132,
       following: 12,
@@ -14,7 +16,7 @@ export const useAuthStore = defineStore('auth', {
   }),
   
   getters: {
-    isAuthenticated: (state) => !!state.user,
+    isAuthenticated: (state) => !!state.user && !!state.token,
     userName: (state) => state.user?.userName,
     userEmail: (state) => state.user?.userEmail,
     userAvatar: (state) => state.user?.avatar,
@@ -27,8 +29,58 @@ export const useAuthStore = defineStore('auth', {
   
   actions: {
     // Initialize auth store - called on app startup
-    initialize() {
+    async initialize() {
+      // Prefer API profile when token exists
+      if (this.token) {
+        try {
+          await this.fetchProfile()
+          return
+        } catch (e) {
+          // token might be invalid; clear and fall back to local
+          this.clearSession()
+        }
+      }
       this.initializeUser()
+    },
+
+    setToken(token) {
+      this.token = token
+      if (token) localStorage.setItem('token', token)
+      else localStorage.removeItem('token')
+    },
+
+    mapApiUserToState(apiUser) {
+      if (!apiUser) return null
+      return {
+        id: apiUser.id,
+        userName: apiUser.username || apiUser.userName || apiUser.name || 'user',
+        userEmail: apiUser.email,
+        name: apiUser.name,
+        avatar: apiUser.avatar || apiUser.avatarUrl || '/images/me.png',
+        bio: apiUser.bio || '',
+        coverPhoto: apiUser.coverPhoto || '',
+        verified: apiUser.isVerified || apiUser.verified || false,
+        joinedDate: apiUser.joinedDate || new Date().toISOString(),
+      }
+    },
+
+    // Fetch profile from API using saved token
+    async fetchProfile() {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.getProfile()
+        const payload = res?.data || res // support wrapped or direct
+        const user = payload.user || payload
+        this.user = this.mapApiUserToState(user)
+        // Optionally initialize posts from profile endpoint if exists
+        return this.user
+      } catch (error) {
+        this.setError(error?.response?.data?.error?.message || 'Failed to load profile')
+        throw error
+      } finally {
+        this.setLoading(false)
+      }
     },
 
     // Update user profile data
@@ -38,7 +90,7 @@ export const useAuthStore = defineStore('auth', {
           ...this.user,
           ...profileData
         }
-        // Persist to localStorage
+        // Persist to localStorage for fallback
         localStorage.setItem('user', JSON.stringify(this.user))
       }
     },
@@ -184,7 +236,7 @@ export const useAuthStore = defineStore('auth', {
       this.updateUserStats({ posts: this.posts.length })
     },
 
-    // Initialize user from localStorage
+    // Initialize user from localStorage (fallback when no token)
     initializeUser() {
       try {
         const savedUser = localStorage.getItem('user')
@@ -198,47 +250,42 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     
-    // Login action - updated to handle proper authentication
+    // Login action - call backend API
     async login(credentials) {
       this.setLoading(true)
       this.clearError()
       
       try {
-        // Here you would typically make an API call
-        // For now, using mock authentication
-        const { email, password } = credentials
-        
-        // Mock user data that should come from your backend
+        const res = await AuthService.login(credentials)
+        const payload = res?.data || res
+        const token = payload.token || payload?.data?.token
+        const apiUser = payload.user || payload?.data?.user
+
+        if (token) this.setToken(token)
+        this.user = this.mapApiUserToState(apiUser)
+        if (this.user) localStorage.setItem('user', JSON.stringify(this.user))
+        // Optionally initialize posts
+        this.initializeMockPosts()
+        return { success: true, user: this.user }
+      } catch (error) {
+        // Fallback to mock login to avoid blocking UI during backend bring-up
+        // Remove this fallback when backend is ready
+        const { email } = credentials
         const userData = {
           id: 1,
-          userName: email.split('@')[0], // Extract username from email
+          userName: email.split('@')[0],
           userEmail: email,
           avatar: 'https://ui-avatars.com/api/?name=' + email.split('@')[0] + '&background=6366f1&color=fff&size=256',
           bio: 'FanRadar user',
           coverPhoto: '',
           verified: false,
           joinedDate: new Date().toISOString(),
-          // Don't store password in user object for security
         }
-        
         this.user = userData
         localStorage.setItem('user', JSON.stringify(userData))
-        
-        // Initialize user stats and posts
-        this.userStats = {
-          followers: 132,
-          following: 12,
-          posts: 15
-        }
-        
-        // Initialize mock posts after successful login
         this.initializeMockPosts()
-        
-        return { success: true, user: userData }
-        
-      } catch (error) {
-        this.setError('Login failed. Please check your credentials.')
-        return { success: false, error: error.message }
+        this.setError('Connected in mock mode. Backend not reachable.')
+        return { success: true, user: userData, mock: true }
       } finally {
         this.setLoading(false)
       }
@@ -246,7 +293,12 @@ export const useAuthStore = defineStore('auth', {
     
     // Logout action
     logout() {
+      this.clearSession()
+    },
+
+    clearSession() {
       this.user = null
+      this.setToken(null)
       this.userStats = {
         followers: 0,
         following: 0,

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import PostsService from '@/services/postsService'
 
 export const usePostsStore = defineStore('posts', {
   state: () => ({
@@ -364,6 +365,74 @@ export const usePostsStore = defineStore('posts', {
   },
   
   actions: {
+    async fetchHomeFeed() {
+      try {
+        const res = await PostsService.homeFeed()
+        const payload = res?.data || res
+        this.posts = (payload.posts || payload.data?.posts || []).map(p => ({
+          id: p.id,
+          username: p.author?.name,
+          avatar: p.author?.avatar,
+          date: new Date(p.createdAt),
+          text: p.content,
+          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
+          likes: p.likes || 0,
+          comments: p.comments || 0,
+          shares: p.shares || 0,
+          isLiked: !!p.isLiked,
+          fandom: p.fandom?.name || null,
+          trending: !!p.trending
+        }))
+      } catch (e) {
+        // keep mock data if API not ready
+      }
+    },
+    async fetchExploreFeed() {
+      try {
+        const res = await PostsService.exploreFeed()
+        const payload = res?.data || res
+        const list = (payload.posts || payload.data?.posts || []).map(p => ({
+          id: p.id,
+          username: p.author?.name,
+          avatar: p.author?.avatar,
+          date: new Date(p.createdAt),
+          text: p.content,
+          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
+          likes: p.likes || 0,
+          comments: p.comments || 0,
+          shares: p.shares || 0,
+          isLiked: !!p.isLiked,
+          fandom: p.fandom?.name || null,
+          trending: !!p.trending
+        }))
+        this.posts = list
+      } catch (e) {
+        // keep mock data
+      }
+    },
+    async createPost(payload) {
+      const res = await PostsService.create(payload)
+      const p = res?.data?.post || res?.data || res?.post || res
+      if (p) {
+        this.addPost({
+          id: p.id,
+          text: p.content,
+          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
+          username: p.author?.name,
+          avatar: p.author?.avatar
+        })
+      }
+      return res
+    },
+    async likePostApi(postId) {
+      try {
+        await PostsService.like(postId)
+        this.toggleLike(postId, 'currentUser')
+      } catch (e) {
+        // ignore
+      }
+    },
+
     addPost(post) {
       const newPost = {
         id: Date.now(),
@@ -405,28 +474,47 @@ export const usePostsStore = defineStore('posts', {
     
     async loadMorePosts() {
       this.loadingMore = true
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      const morePosts = [
-        {
-          id: Date.now() + Math.random(),
-          username: 'TechReviewer',
-          avatar: 'https://randomuser.me/api/portraits/women/15.jpg',
-          date: new Date(Date.now() - 3600000 * 18),
-          text: 'The new iPhone is amazing! Camera quality is incredible 📱 #tech #iPhone',
-          likes: 23,
-          comments: 5,
-          shares: 2,
-          isLiked: false,
-          fandom: 'Technology',
-          trending: false,
-          likedBy: []
-        }
-      ]
-      
-      this.posts.push(...morePosts)
+      try {
+        const res = await PostsService.trending({ page: 1 })
+        const payload = res?.data || res
+        const morePosts = (payload.posts || payload.data?.posts || []).map(p => ({
+          id: p.id,
+          username: p.author?.name,
+          avatar: p.author?.avatar,
+          date: new Date(p.createdAt),
+          text: p.content,
+          likes: p.likes || 0,
+          comments: p.comments || 0,
+          shares: p.shares || 0,
+          isLiked: !!p.isLiked,
+          fandom: p.fandom?.name || null,
+          trending: !!p.trending
+        }))
+        if (morePosts.length) this.posts.push(...morePosts)
+      } catch (e) {
+        // fallback to mock below
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+        const morePosts = [
+          {
+            id: Date.now() + Math.random(),
+            username: 'TechReviewer',
+            avatar: 'https://randomuser.me/api/portraits/women/15.jpg',
+            date: new Date(Date.now() - 3600000 * 18),
+            text: 'The new iPhone is amazing! Camera quality is incredible 📱 #tech #iPhone',
+            likes: 23,
+            comments: 5,
+            shares: 2,
+            isLiked: false,
+            fandom: 'Technology',
+            trending: false,
+            likedBy: []
+          }
+        ]
+        
+        this.posts.push(...morePosts)
+      }
       this.loadingMore = false
       
       if (this.posts.length > 10) {

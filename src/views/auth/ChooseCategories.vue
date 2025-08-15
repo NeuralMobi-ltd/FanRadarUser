@@ -4,7 +4,7 @@
       <!-- Header with progress indicator -->
       <div class="bg-blue-600 dark:bg-blue-700 px-8 py-6">
         <div class="flex justify-between items-center mb-4">
-          <h2 class="text-2xl font-bold text-white">{{ config.title }}</h2>
+          <h2 class="text-2xl font-bold text-white">{{ $t('auth.chooseCategories.title') }}</h2>
           <span class="text-blue-200 font-medium">{{ selected.length }}/{{ maxSelections }}</span>
         </div>
         <div class="w-full bg-blue-500 bg-opacity-40 rounded-full h-2">
@@ -17,7 +17,7 @@
       
       <div class="p-4 sm:p-8">
         <p class="text-gray-600 dark:text-gray-300 mb-6 text-center">
-          {{ config.description }}
+          {{ $t('auth.chooseCategories.description', { max: maxSelections }) }}
         </p>
         
         <!-- Category grid with improved visuals -->
@@ -61,7 +61,7 @@
           ]"
           :disabled="!canContinue"
         >
-          Continue
+          {{ $t('auth.chooseCategories.continue') }}
           <svg 
             v-if="selected.length === 5"
             xmlns="http://www.w3.org/2000/svg" 
@@ -74,8 +74,8 @@
         </button>
         
         <p class="mt-4 text-center text-sm" :class="selected.length === 5 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
-          <span v-if="selected.length < 5">Select {{ 5 - selected.length }} more to continue</span>
-          <span v-else class="font-medium">Great choices! Ready to go</span>
+          <span v-if="selected.length < 5">{{ $t('auth.chooseCategories.selectMore', { count: 5 - selected.length }) }}</span>
+          <span v-else class="font-medium">{{ $t('auth.chooseCategories.greatChoices') }}</span>
         </p>
       </div>
     </div>

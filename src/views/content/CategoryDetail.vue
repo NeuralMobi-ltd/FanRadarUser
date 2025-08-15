@@ -62,7 +62,7 @@
         />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
-        No communities found for this category.
+        No fandoms found for this category.
       </div>
     </div>
 
@@ -153,7 +153,7 @@ const categoryStats = computed(() => getCategoryStats(categoryName.value))
 const tabs = computed(() => [
   { 
     id: 'communities', 
-    label: 'Communities', 
+    label: 'Fandoms', 
     count: communitiesStore.getCommunitiesCountByCategory(categoryName.value).toString() 
   },
   { 

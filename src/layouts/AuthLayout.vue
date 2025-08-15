@@ -7,7 +7,7 @@
         <div>
           <router-link to="/" class="text-2xl font-bold mb-8 block">tumblr</router-link>
           <h1 class="text-4xl font-bold mb-4">Welcome to Tumblr</h1>
-          <p class="text-lg text-primary-100">Join millions of others in sharing your creativity, finding your community, and connecting with passionate people.</p>
+          <p class="text-lg text-primary-100">Join millions of others in sharing your creativity, finding your fandom, and connecting with passionate people.</p>
         </div>
         <div class="text-sm text-primary-200">
           © 2025 Tumblr Inc.

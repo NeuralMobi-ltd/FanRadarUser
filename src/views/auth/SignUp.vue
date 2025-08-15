@@ -3,8 +3,8 @@
     <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
       <div class="p-8">
         <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Join FanRadar</h1>
-          <p class="text-gray-600 dark:text-gray-300 mt-2">Create your account to get started</p>
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{{ $t('auth.signUp.title') }}</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-2">{{ $t('auth.signUp.subtitle') }}</p>
         </div>
         
         <!-- Google Sign Up Button -->
@@ -18,40 +18,40 @@
             <path d="M5.84 14.1C5.62 13.43 5.5 12.72 5.5 12C5.5 11.28 5.62 10.57 5.84 9.9V7.06H2.18C1.43 8.55 1 10.22 1 12C1 13.78 1.43 15.45 2.18 16.94L5.84 14.1Z" fill="#FBBC05"/>
             <path d="M12 5.38C13.62 5.38 15.06 5.94 16.21 7.02L19.36 3.87C17.45 2.09 14.97 1 12 1C7.7 1 4 3.47 2.18 7.06L5.84 9.9C6.72 7.3 9.14 5.38 12 5.38Z" fill="#EA4335"/>
           </svg>
-          Sign up with Google
+          {{ $t('auth.signUp.withGoogle') }}
         </button>
         
         <div class="flex items-center mb-6">
           <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
-          <span class="mx-4 text-gray-500 dark:text-gray-400">or</span>
+          <span class="mx-4 text-gray-500 dark:text-gray-400">{{ $t('auth.signUp.or') }}</span>
           <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
         </div>
         
         <form @submit.prevent="onSignUp">
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="username">Username</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="username">{{ $t('auth.signUp.username') }}</label>
             <input 
               v-model="username" 
               id="username" 
               type="text" 
               required 
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              placeholder="Enter your username"
+              :placeholder="$t('auth.signUp.placeholders.username')"
             />
           </div>
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">Email</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">{{ $t('auth.signUp.email') }}</label>
             <input 
               v-model="email" 
               id="email" 
               type="email" 
               required 
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              placeholder="Enter your email"
+              :placeholder="$t('auth.signUp.placeholders.email')"
             />
           </div>
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="age">Age</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="age">{{ $t('auth.signUp.age') }}</label>
             <input
               v-model="age"
               id="age"
@@ -59,24 +59,24 @@
               min="1"
               required
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white"
-              placeholder="Enter your age"
+              :placeholder="$t('auth.signUp.placeholders.age')"
             />
           </div>
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">Gender</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium">{{ $t('auth.signUp.gender') }}</label>
             <div class="flex gap-4">
               <label class="inline-flex items-center">
                 <input type="radio" v-model="gender" value="male" required class="form-radio text-blue-600" />
-                <span class="ml-2 text-gray-700 dark:text-gray-300">Male</span>
+                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $t('auth.signUp.male') }}</span>
               </label>
               <label class="inline-flex items-center">
                 <input type="radio" v-model="gender" value="female" required class="form-radio text-blue-600" />
-                <span class="ml-2 text-gray-700 dark:text-gray-300">Female</span>
+                <span class="ml-2 text-gray-700 dark:text-gray-300">{{ $t('auth.signUp.female') }}</span>
               </label>
             </div>
           </div>
           <div class="mb-6">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="password">Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="password">{{ $t('auth.signUp.password') }}</label>
             <div class="relative">
               <input 
                 v-model="password" 
@@ -84,7 +84,7 @@
                 id="password" 
                 required 
                 class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-                placeholder="••••••••"
+                :placeholder="$t('auth.signUp.placeholders.password')"
               />
               <button type="button"
                 class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
@@ -100,13 +100,13 @@
             type="submit" 
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
-            Create Account
+            {{ $t('auth.signUp.createAccount') }}
           </button>
         </form>
         
         <p class="mt-6 text-center text-gray-600 dark:text-gray-400">
-          Already have an account?
-          <router-link to="/login" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Sign in</router-link>
+          {{ $t('auth.signUp.alreadyHave') }}
+          <router-link to="/login" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ $t('auth.signUp.signInLink') }}</router-link>
         </p>
       </div>
     </div>

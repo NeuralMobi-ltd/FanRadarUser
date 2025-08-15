@@ -4,8 +4,8 @@
     <div class="mb-8">
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">News</h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">Stay updated with the latest news from all your favorite communities</p>
+          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $t('routes.news') }}</h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $t('content.news.subtitle') }}</p>
         </div>
         <div class="flex items-center space-x-4">
           <!-- Filter Dropdown -->
@@ -13,12 +13,12 @@
             v-model="selectedCategory" 
             class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
           >
-            <option value="all">All Categories</option>
-            <option value="breaking">Breaking News</option>
-            <option value="gaming">Gaming</option>
-            <option value="sports">Sports</option>
-            <option value="entertainment">Entertainment</option>
-            <option value="technology">Technology</option>
+            <option value="all">{{ $t('content.news.filters.all') }}</option>
+            <option value="breaking">{{ $t('content.news.filters.breaking') }}</option>
+            <option value="gaming">{{ $t('content.news.filters.gaming') }}</option>
+            <option value="sports">{{ $t('content.news.filters.sports') }}</option>
+            <option value="entertainment">{{ $t('content.news.filters.entertainment') }}</option>
+            <option value="technology">{{ $t('content.news.filters.technology') }}</option>
           </select>
           
           <!-- Sort Options -->
@@ -26,9 +26,9 @@
             v-model="sortBy" 
             class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
           >
-            <option value="recent">Most Recent</option>
-            <option value="popular">Most Popular</option>
-            <option value="trending">Trending</option>
+            <option value="recent">{{ $t('content.news.sort.recent') }}</option>
+            <option value="popular">{{ $t('content.news.sort.popular') }}</option>
+            <option value="trending">{{ $t('content.news.sort.trending') }}</option>
           </select>
         </div>
       </div>
@@ -40,7 +40,7 @@
         <div class="flex items-center mb-4">
           <div class="bg-white/20 rounded-full px-3 py-1 flex items-center">
             <i class="fas fa-bolt mr-2 text-white"></i>
-            <span class="text-sm font-medium text-white">Breaking News</span>
+            <span class="text-sm font-medium text-white">{{ $t('common.breakingNews') }}</span>
           </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -56,13 +56,13 @@
                 class="w-full h-full object-cover"
               />
               <div class="absolute top-2 left-2 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-medium">
-                Breaking
+                {{ $t('common.breaking') }}
               </div>
             </div>
             
             <div class="p-3">
               <div class="flex items-center mb-2 text-xs">
-                <span class="text-white/80">{{ news.source || 'Breaking News' }}</span>
+                <span class="text-white/80">{{ news.source || $t('common.breakingNews') }}</span>
                 <span class="mx-2 text-white/60">•</span>
                 <span class="text-white/80">{{ news.timeAgo || news.date || 'Just now' }}</span>
               </div>
@@ -77,8 +77,8 @@
               
               <div class="flex items-center justify-between text-xs text-white/70">
                 <div class="flex items-center gap-2">
-                  <span>{{ news.views || '5.2K' }} views</span>
-                  <span>{{ news.readTime || news.readingTime || '2 min' }} read</span>
+                  <span>{{ news.views || '5.2K' }} {{ $t('common.views') }}</span>
+                  <span>{{ news.readTime || news.readingTime || '2' }} {{ $t('common.read') }}</span>
                 </div>
                 <div class="flex items-center gap-2">
                   <button class="hover:text-white transition-colors">
@@ -112,7 +112,7 @@
         class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
       >
         <i v-if="loadingMore" class="fas fa-spinner fa-spin mr-2"></i>
-        {{ loadingMore ? 'Loading...' : 'Load More News' }}
+        {{ loadingMore ? $t('common.loading') : $t('content.news.loadMore') }}
       </button>
     </div>
 
@@ -121,8 +121,8 @@
       <div class="bg-gray-100 dark:bg-gray-800 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
         <i class="fas fa-newspaper text-gray-400 dark:text-gray-500 text-2xl"></i>
       </div>
-      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No news found</h3>
-      <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Try adjusting your filters or check back later for new updates.</p>
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">{{ $t('content.news.emptyTitle') }}</h3>
+      <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">{{ $t('content.news.emptyDesc') }}</p>
     </div>
   </div>
 </template>
@@ -167,8 +167,8 @@ const filteredNews = computed(() => {
   return filtered.sort((a, b) => {
     switch (sortBy.value) {
       case 'popular':
-        const viewsA = parseFloat(a.views?.replace('K', '')) || 0
-        const viewsB = parseFloat(b.views?.replace('K', '')) || 0
+        const viewsA = parseFloat((typeof a.views === 'string' ? a.views : a.views?.toString())?.replace('K', '')) || 0
+        const viewsB = parseFloat((typeof b.views === 'string' ? b.views : b.views?.toString())?.replace('K', '')) || 0
         return viewsB - viewsA
       case 'trending':
         return (b.trending ? 1 : 0) - (a.trending ? 1 : 0)

@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 bottom-0 z-40">
+  <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-50">
     <div class="flex items-center justify-between px-2 sm:px-4 py-2">
       <!-- Left: Logo -->
       <div class="flex items-center flex-shrink-0">
@@ -303,13 +303,26 @@
     :user-name="userName"
     @submit="handleCreatePost"
   />
+
+  <!-- Language Selector (for testing, can be moved elsewhere) -->
+  <div class="fixed bottom-4 right-4 z-50">
+    <select
+      v-model="locale"
+      @change="onChangeLocale"
+      class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm p-2"
+    >
+      <option value="en">EN</option>
+      <option value="fr">FR</option>
+    </select>
+  </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
+import { useI18n } from 'vue-i18n'
 import SearchModal from '@/components/layout/SearchModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import { useNotificationsStore } from '@/store/notifications' // <-- new
@@ -328,6 +341,7 @@ import {
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
+const { locale: i18nLocale } = useI18n()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const userName = computed(() => authStore.userName)
@@ -351,6 +365,7 @@ const showCreatePostModal = ref(false)
 const searchQuery = ref('')
 const modalPostContent = ref('')
 const modalPostMedia = ref([])
+const locale = ref(typeof localStorage !== 'undefined' ? (localStorage.getItem('locale') || i18nLocale.value) : i18nLocale.value)
 
 function toggleTheme() {
   themeStore.toggleTheme()
@@ -441,4 +456,20 @@ function handleCreatePost(post) {
   // Use your store or emit event to add the post globally
   // Example: postsStore.addPost(post)
 }
+
+const onChangeLocale = () => {
+  i18nLocale.value = locale.value
+  try {
+    if (typeof localStorage !== 'undefined') localStorage.setItem('locale', locale.value)
+    if (typeof document !== 'undefined') document.documentElement.setAttribute('lang', locale.value)
+  } catch {}
+}
+
+watch(i18nLocale, (val) => {
+  if (locale.value !== val) locale.value = val
+})
 </script>
+
+<style scoped>
+/* ...existing code... */
+</style>

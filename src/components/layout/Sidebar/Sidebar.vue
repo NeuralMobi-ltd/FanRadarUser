@@ -12,11 +12,11 @@
   <!-- Sidebar -->
   <aside 
     :class="[
-      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto transition-transform duration-300 ease-in-out z-50',
+      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-visible transition-transform duration-300 ease-in-out z-50',
       // Mobile: Fixed overlay
       'lg:relative lg:translate-x-0',
       showMobileMenu ? 'fixed inset-y-0 left-0 w-64 translate-x-0' : 'fixed inset-y-0 left-0 w-64 -translate-x-full',
-      // Desktop: Sticky sidebar
+      // Desktop: Sticky sidebar below fixed header, no internal scroll
       'lg:w-64 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:mb-4'
     ]"
   >

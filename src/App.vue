@@ -13,7 +13,7 @@
       <div class="flex flex-col md:flex-row">
         <!-- Hide sidebar for store search routes, show as mobile drawer on small screens -->
         <StoreSidebar v-if="!isStoreSearchRoute" />
-        <main class="flex-1 min-h-screen w-full md:w-auto">
+        <main class="flex-1 min-h-screen w-full md:w-auto pb-24 md:pb-0">
           <router-view />
         </main>
       </div>
@@ -22,9 +22,9 @@
     <!-- Search Layout (header + search sidebar + content) -->
     <div v-else-if="isSearchRoute && isAuthenticated">
       <Header />
-      <div class="flex flex-col md:flex-row">
+      <div class="pt-14 md:pt-16 flex flex-col md:flex-row">
         <SearchPageSidebar class="order-2 md:order-1" />
-        <main class="flex-1 min-h-screen w-full md:w-auto order-1 md:order-2">
+        <main class="flex-1 min-h-screen w-full md:w-auto order-1 md:order-2 pb-24 md:pb-0">
           <router-view />
         </main>
       </div>
@@ -39,7 +39,7 @@
       </div>
 
 
-      <div class="flex flex-col md:flex-row">
+      <div class="pt-14 md:pt-16 flex flex-col md:flex-row">
         <Sidebar class="order-2 md:order-1" />
         <main class="flex-1 min-h-screen w-full md:w-auto order-1 md:order-2 pb-24 md:pb-0">
           <router-view />

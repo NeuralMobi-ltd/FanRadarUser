@@ -3,8 +3,8 @@
     <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
       <div class="p-8">
         <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Welcome Back</h1>
-          <p class="text-gray-600 dark:text-gray-300 mt-2">Sign in to your FanRadar account</p>
+          <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{{ $t('auth.signIn.title') }}</h1>
+          <p class="text-gray-600 dark:text-gray-300 mt-2">{{ $t('auth.signIn.subtitle') }}</p>
         </div>
         
         <!-- Google Sign In Button -->
@@ -18,12 +18,12 @@
             <path d="M5.84 14.1C5.62 13.43 5.5 12.72 5.5 12C5.5 11.28 5.62 10.57 5.84 9.9V7.06H2.18C1.43 8.55 1 10.22 1 12C1 13.78 1.43 15.45 2.18 16.94L5.84 14.1Z" fill="#FBBC05"/>
             <path d="M12 5.38C13.62 5.38 15.06 5.94 16.21 7.02L19.36 3.87C17.45 2.09 14.97 1 12 1C7.7 1 4 3.47 2.18 7.06L5.84 9.9C6.72 7.3 9.14 5.38 12 5.38Z" fill="#EA4335"/>
           </svg>
-          Sign in with Google
+          {{ $t('auth.signIn.withGoogle') }}
         </button>
         
         <div class="flex items-center mb-6">
           <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
-          <span class="mx-4 text-gray-500 dark:text-gray-400">or</span>
+          <span class="mx-4 text-gray-500 dark:text-gray-400">{{ $t('auth.signIn.or') }}</span>
           <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
         </div>
         
@@ -34,27 +34,27 @@
           </div>
           
           <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">Email</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">{{ $t('auth.signIn.emailLabel') }}</label>
             <input 
               v-model="email" 
               id="email" 
               type="email" 
               required 
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              placeholder="Enter your email"
+              :placeholder="$t('auth.signIn.emailPlaceholder')"
             />
           </div>
           <div class="mb-6">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="password">Password</label>
+            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="password">{{ $t('auth.signIn.passwordLabel') }}</label>
             <input 
               v-model="password" 
               id="password" 
               type="password" 
               required 
               class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              placeholder="••••••••"
+              :placeholder="$t('auth.signIn.passwordPlaceholder')"
             />
-            <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:underline float-right mt-2">Forgot password?</router-link>
+            <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:underline float-right mt-2">{{ $t('auth.signIn.forgot') }}</router-link>
           </div>
           <button 
             type="submit" 
@@ -67,13 +67,13 @@
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </span>
-            {{ loading ? 'Signing In...' : 'Sign In' }}
+            {{ loading ? $t('auth.signIn.submitting') : $t('auth.signIn.submit') }}
           </button>
         </form>
         
         <p class="mt-6 text-center text-gray-600 dark:text-gray-400">
-          Don't have an account?
-          <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">Sign up</router-link>
+          {{ $t('auth.signIn.noAccount') }}
+          <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ $t('auth.signIn.signUpLink') }}</router-link>
         </p>
       </div>
     </div>
@@ -84,6 +84,9 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 const email = ref('')
 const password = ref('')
@@ -94,7 +97,7 @@ const errorMessage = ref('')
 
 async function onSignIn() {
   if (!email.value || !password.value) {
-    errorMessage.value = 'Please enter both email and password'
+    errorMessage.value = t('auth.signIn.errors.missingFields')
     return
   }
 
@@ -102,28 +105,24 @@ async function onSignIn() {
   errorMessage.value = ''
   
   try {
-    // Use the login method from the auth store
     const success = await authStore.login({
       email: email.value,
       password: password.value
     })
     
     if (success) {
-      // If login is successful, navigate to dashboard
       router.push('/')
     } else {
-      // If login fails but no error was set in the store
-      errorMessage.value = authStore.error || 'Login failed. Please try again.'
+      errorMessage.value = authStore.error || t('auth.signIn.errors.loginFailed')
     }
   } catch (error) {
-    errorMessage.value = error.message || 'An unexpected error occurred'
+    errorMessage.value = error.message || t('auth.signIn.errors.unexpected')
   } finally {
     loading.value = false
   }
 }
 
 function signInWithGoogle() {
-  // Google auth logic
   console.log('Signing in with Google')
 }
 </script>

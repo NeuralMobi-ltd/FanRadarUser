@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import SearchService from '@/services/searchService'
 
 export const useSearchStore = defineStore('search', {
   state: () => ({
@@ -388,6 +389,22 @@ export const useSearchStore = defineStore('search', {
   }),
 
   actions: {
+    async globalSearch(query, type) {
+      if (!query) return { results: [], total: 0 }
+      try {
+        const res = await SearchService.global(query, type)
+        const payload = res?.data || res
+        return payload
+      } catch (e) {
+        // fallback to mock
+        const results = this.performGlobalSearch(query)
+        return {
+          results,
+          total: results.people.length + results.posts.length + results.news.length + results.fandoms.length
+        }
+      }
+    },
+
     addToRecentSearches(searchTerm) {
       // Remove if already exists
       this.recentSearches = this.recentSearches.filter(term => term !== searchTerm)

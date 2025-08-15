@@ -10,7 +10,7 @@
       </ul>
     </nav>
     <div class="recommended">
-      <h3>Recommended Communities</h3>
+      <h3>Recommended Fandoms</h3>
       <ul>
         <li v-for="comm in recommendedCommunities" :key="comm.id">
           <div class="community">

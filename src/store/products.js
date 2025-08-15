@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import StoreService from '@/services/storeService'
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
@@ -327,6 +328,75 @@ export const useProductsStore = defineStore('products', {
   },
   
   actions: {
+    async loadProducts(params = {}) {
+      try {
+        const res = await StoreService.products(params)
+        const payload = res?.data || res
+        this.products = (payload.products || payload.data?.products || []).map(p => ({
+          id: p.id,
+          name: p.name,
+          description: p.description,
+          category: p.category,
+          brand: p.brand,
+          price: p.price,
+          originalPrice: p.originalPrice,
+          discount: p.discount,
+          rating: p.rating,
+          reviews: p.reviews,
+          stock: p.stock,
+          image: p.image || p.images?.[0],
+          isNew: !!p.isNew,
+          isWishlisted: !!p.isWishlisted
+        }))
+      } catch (e) {
+        // keep mock
+      }
+    },
+
+    async loadCategories() {
+      try {
+        const res = await StoreService.categories()
+        const payload = res?.data || res
+        this.categories = (payload.categories || payload.data?.categories || []).map(c => c.name || c)
+      } catch (e) {
+        // keep mock
+      }
+    },
+
+    async loadBrands() {
+      try {
+        const res = await StoreService.brands()
+        const payload = res?.data || res
+        this.brands = (payload.brands || payload.data?.brands || []).map(b => b.name || b)
+      } catch (e) {
+        // keep mock
+      }
+    },
+
+    async searchProductsApi(query) {
+      try {
+        const res = await StoreService.search(query)
+        const payload = res?.data || res
+        return (payload.products || payload.data?.products || []).map(p => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image: p.image,
+          rating: p.rating
+        }))
+      } catch (e) {
+        return []
+      }
+    },
+
+    async addToCartApi(payload) {
+      try {
+        return await StoreService.addToCart(payload)
+      } catch (e) {
+        return { success: false }
+      }
+    },
+
     toggleWishlist(productId) {
       const product = this.products.find(p => p.id === productId)
       if (product) {

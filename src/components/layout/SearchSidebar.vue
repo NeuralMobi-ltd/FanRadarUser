@@ -134,11 +134,11 @@
             </div>
           </div>
 
-          <!-- Communities results -->
+          <!-- Fandoms results -->
           <div v-if="searchResults.communities.length > 0" class="p-4 border-t border-gray-200 dark:border-gray-700">
             <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
               <i class="fas fa-users mr-2 text-purple-500"></i>
-              Communities
+              Fandoms
             </h3>
             <div class="space-y-1">
               <div

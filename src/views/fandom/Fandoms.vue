@@ -56,7 +56,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Featured Banner -->
       <div v-if="activeCategory === 'All'" class="mb-12">
-        <div class="relative bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 rounded-2xl overflow-hidden p-8 text-white">
+        <div class="relative bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-800 rounded-2xl overflow-hidden p-8 text-white">
           <div class="absolute inset-0 bg-black/20"></div>
           <div class="relative z-10">
             <div class="flex items-center justify-between">
@@ -81,7 +81,7 @@
       <!-- Fandoms Grid -->
       <div v-if="filteredCommunities.length > 0">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          <CommunityCard
+          <FandomCard
             v-for="community in filteredCommunities"
             :key="community.id"
             :community="community"
@@ -100,8 +100,8 @@
 
       <!-- Empty state -->
       <div v-else class="flex flex-col items-center justify-center py-20 text-center">
-        <div class="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 rounded-3xl flex items-center justify-center mb-6">
-          <i class="fas fa-search text-4xl text-blue-500"></i>
+        <div class="w-32 h-32 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30 rounded-3xl flex items-center justify-center mb-6">
+          <i class="fas fa-search text-4xl text-primary-500"></i>
         </div>
         <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">No fandoms found</h3>
         <p class="text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
@@ -109,13 +109,13 @@
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
           <button
-            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
             @click="search = ''; activeCategory = 'All'"
           >
             Clear Filters
           </button>
           <button
-            class="border border-gray-300 dark:border-gray-600 hover:border-blue-500 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-6 py-3 rounded-xl font-medium transition-colors"
+            class="border border-gray-300 dark:border-gray-600 hover:border-primary-500 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-6 py-3 rounded-xl font-medium transition-colors"
             @click="$router.push('/create-fandom')"
           >
             Create a Fandom
@@ -128,7 +128,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import CommunityCard from '@/components/community/CommunityCard.vue'
+import FandomCard from '@/components/fandom/FandomCard.vue'
 import { COMMUNITY_CATEGORIES } from '@/constants/communityCategories'
 import { useFandomsStore } from '@/store/fandoms'
 
