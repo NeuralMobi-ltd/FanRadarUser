@@ -322,11 +322,11 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFandomsStore } from '@/store/fandoms'
-import { getCategoryDescription } from '@/constants/categoryDescriptions'
-import { COMMUNITY_CATEGORIES } from '@/constants/communityCategories'
+import { useCategoriesStore } from '@/store/categories'
 
 const router = useRouter()
 const fandomsStore = useFandomsStore()
+const categoriesStore = useCategoriesStore()
 
 // Form state
 const formData = ref({
@@ -346,11 +346,8 @@ const newTag = ref('')
 const handleError = ref('')
 const suggestedTags = ref([])
 
-// Categories for selection (add .value for v-for)
-const categories = COMMUNITY_CATEGORIES.map(cat => ({
-  ...cat,
-  value: cat.name
-}))
+// Categories for selection
+const categories = computed(() => categoriesStore.getCategories.map(cat => ({ ...cat, value: cat.name })))
 
 // Validation
 const isFormValid = computed(() => {
@@ -424,8 +421,13 @@ function addSuggestedTag(tag) {
 }
 
 function getCategoryName(categoryValue) {
-  const cat = categories.find(c => c.value === categoryValue)
+  const cat = categories.value.find(c => c.value === categoryValue)
   return cat ? cat.name : categoryValue
+}
+
+// Replace constant helper with store-backed description
+function getCategoryDescription(value) {
+  return categoriesStore.getCategoryDescription(value, getCategoryName(value))
 }
 
 function createFandom() {
@@ -460,3 +462,7 @@ watch(() => formData.value.category, (cat) => {
   else suggestedTags.value = []
 })
 </script>
+
+<style>
+/* ...existing styles... */
+</style>

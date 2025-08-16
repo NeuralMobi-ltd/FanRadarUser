@@ -12,7 +12,7 @@
   <!-- Sidebar -->
   <aside 
     :class="[
-      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-visible transition-transform duration-300 ease-in-out z-50',
+      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-visible transition-transform duration-300 ease-in-out z-40',
       // Mobile: Fixed overlay
       'lg:relative lg:translate-x-0',
       showMobileMenu ? 'fixed inset-y-0 left-0 w-64 translate-x-0' : 'fixed inset-y-0 left-0 w-64 -translate-x-full',
@@ -108,7 +108,7 @@
       </div>
 
       <!-- Divider -->
-      <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+      <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
       <!-- Recent Fandoms -->
       <div class="space-y-1">

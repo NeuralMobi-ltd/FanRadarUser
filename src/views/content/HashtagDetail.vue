@@ -16,12 +16,12 @@
       <div class="absolute bottom-6 left-6 text-white">
         <div class="flex items-center mb-2">
           <div class="px-3 py-1 bg-purple-600 rounded-full text-sm font-medium mr-3 flex items-center gap-2">
-            <span>Hashtag</span>
+            <span>{{ $t('content.hashtag.label') }}</span>
           </div>
           <div class="flex items-center text-sm">
-            <span>{{ hashtagStats.posts }} posts</span>
+            <span>{{ $t('common.postsCount', { count: hashtagStats.posts }) }}</span>
             <span class="mx-2">•</span>
-            <span>{{ hashtagStats.growth }}% growth this week</span>
+            <span>{{ hashtagStats.growth }}% {{ $t('content.hashtag.growthThisWeek') }}</span>
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-1">#{{ hashtagName }}</h1>
@@ -63,7 +63,7 @@
         />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
-        No posts found for this hashtag.
+        {{ $t('content.hashtag.empty.posts') }}
       </div>
     </div>
 
@@ -76,7 +76,7 @@
         />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
-        No news found for this hashtag.
+        {{ $t('content.hashtag.empty.news') }}
       </div>
     </div>
 
@@ -91,14 +91,14 @@
             </div>
             <div>
               <h3 class="font-bold text-gray-900 dark:text-white">#{{ tag.name }}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">{{ tag.posts }} posts</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('common.postsCount', { count: tag.posts }) }}</p>
             </div>
           </div>
           <p class="text-gray-600 dark:text-gray-300 text-sm">{{ tag.description }}</p>
         </div>
       </template>
       <div v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
-        No related hashtags found.
+        {{ $t('content.hashtag.empty.related') }}
       </div>
     </div>
 
@@ -107,8 +107,8 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Content Coming Soon</h3>
-        <p class="text-gray-500 dark:text-gray-400">This section is currently under development.</p>
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('common.contentComingSoon') }}</h3>
+        <p class="text-gray-500 dark:text-gray-400">{{ $t('common.sectionUnderDevelopment') }}</p>
       </div>
     </div>
   </div>
@@ -117,65 +117,41 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
 import NewsPost from '@/components/common/NewsPost.vue'
-import { 
-  getHashtagDescription, 
-  getHashtagImage, 
-  getHashtagStats 
-} from '@/constants/hashtagConstants'
+import { getHashtagImage } from '@/config/media'
 import { useHashtagsStore } from '@/store/hashtags'
 
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 const hashtagName = computed(() => route.params.hashtag || '')
 const activeTab = ref('posts')
 
 // Initialize store
 const hashtagsStore = useHashtagsStore()
 
-// Hashtag description using imported constant
-const hashtagDescription = computed(() => {
-  return getHashtagDescription(hashtagName.value)
-})
-
-// Hashtag statistics using imported constant
-const hashtagStats = computed(() => getHashtagStats(hashtagName.value))
+// Hashtag description/statistics from store
+const hashtagDescription = computed(() => hashtagsStore.getHashtagDescription(hashtagName.value))
+const hashtagStats = computed(() => hashtagsStore.getHashtagStats(hashtagName.value))
 
 // Tabs data - update counts from stores
 const tabs = computed(() => [
-  { 
-    id: 'posts', 
-    label: 'Posts', 
-    count: posts.value.length.toString() 
-  },
-  { 
-    id: 'news', 
-    label: 'News', 
-    count: newsData.value.length.toString() 
-  },
-  { 
-    id: 'related', 
-    label: 'Related', 
-    count: hashtagsStore.getAllRelatedHashtags.length.toString() 
-  }
+  { id: 'posts', label: t('content.hashtag.tabs.posts'), count: posts.value.length.toString() },
+  { id: 'news', label: t('content.hashtag.tabs.news'), count: newsData.value.length.toString() },
+  { id: 'related', label: t('content.hashtag.tabs.related'), count: hashtagsStore.getAllRelatedHashtags.length.toString() }
 ])
 
 // Get data from stores
 const posts = computed(() => {
   const hashtagPosts = hashtagsStore.getPostsByHashtag(hashtagName.value)
-  if (hashtagPosts.length > 0) {
-    return hashtagPosts
-  }
-  return hashtagsStore.getDefaultPostsForHashtag(hashtagName.value)
+  return hashtagPosts.length > 0 ? hashtagPosts : hashtagsStore.getDefaultPostsForHashtag(hashtagName.value)
 })
 
 const newsData = computed(() => {
   const hashtagNews = hashtagsStore.getNewsByHashtag(hashtagName.value)
-  if (hashtagNews.length > 0) {
-    return hashtagNews
-  }
-  return hashtagsStore.getDefaultNewsForHashtag(hashtagName.value)
+  return hashtagNews.length > 0 ? hashtagNews : hashtagsStore.getDefaultNewsForHashtag(hashtagName.value)
 })
 
 const relatedHashtags = computed(() => hashtagsStore.getAllRelatedHashtags)
@@ -186,17 +162,9 @@ const navigateToHashtag = (tag) => {
 }
 
 // Methods to handle post interactions
-function likePost(postId) {
-  hashtagsStore.likeHashtagPost(hashtagName.value, postId)
-}
-
-function commentPost(postId) {
-  console.log('Comment on post:', postId)
-}
-
-function sharePost(postId) {
-  hashtagsStore.shareHashtagPost(hashtagName.value, postId)
-}
+function likePost(postId) { hashtagsStore.likeHashtagPost(hashtagName.value, postId) }
+function commentPost(postId) { console.log('Comment on post:', postId) }
+function sharePost(postId) { hashtagsStore.shareHashtagPost(hashtagName.value, postId) }
 </script>
 
 <style scoped>

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
-import { getCategoryImage } from '@/constants/categoryImages'
+// Replace constants helper with config media util
+import { getCategoryImage } from '@/config/media'
 
 export const useNewsStore = defineStore('news', {
   state: () => ({
@@ -45,7 +46,7 @@ export const useNewsStore = defineStore('news', {
         sourceLogo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh0WlsRbXVcu8pEm_2mW4elXckoAGaz1KIGQ&s',
         title: 'Attack on Titan Final Movie Date Revealed',
         summary: 'Studio announces official release date for the epic finale.',
-        description: 'Studio Wit reveals the official release date for Attack on Titan final movie, promising an epic conclusion.',
+        description: 'Studio Wit révèle la date de sortie officielle du film final d\'Attack on Titan, promettant une conclusion épique.',
         image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=200&fit=crop',
         date: '6h ago',
         timeAgo: '6h ago',
@@ -62,7 +63,7 @@ export const useNewsStore = defineStore('news', {
         sourceLogo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSh0WlsRbXVcu8pEm_2mW4elXckoAGaz1KIGQ&s',
         title: 'League of Legends World Championship 2024',
         summary: 'Teams prepare for the biggest esports event of the year.',
-        description: 'Complete coverage of LoL Worlds 2024 with team analysis, predictions, and tournament format details.',
+        description: 'Couverture complète des Worlds 2024 de LoL avec analyse des équipes, prévisions et détails sur le format du tournoi.',
         image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=200&h=200&fit=crop',
         date: '8h ago',
         timeAgo: '8h ago',

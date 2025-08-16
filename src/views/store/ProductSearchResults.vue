@@ -17,7 +17,7 @@
           <div class="flex items-center space-x-2">
             <button
               @click="viewMode = VIEW_MODES.GRID"
-              :class="[
+              :class=" [
                 'p-2 rounded-lg transition-colors',
                 viewMode === VIEW_MODES.GRID 
                   ? 'bg-green-500 text-white' 
@@ -28,7 +28,7 @@
             </button>
             <button
               @click="viewMode = VIEW_MODES.LIST"
-              :class="[
+              :class=" [
                 'p-2 rounded-lg transition-colors',
                 viewMode === VIEW_MODES.LIST 
                   ? 'bg-green-500 text-white' 
@@ -87,7 +87,7 @@
               <div class="absolute top-2 right-2">
                 <button
                   @click.stop="toggleWishlist(product)"
-                  :class="[
+                  :class=" [
                     'p-2 rounded-full transition-colors',
                     product.isWishlisted 
                       ? 'bg-red-500 text-white' 
@@ -158,7 +158,7 @@
                 <div class="space-y-2">
                   <button
                     @click.stop="toggleWishlist(product)"
-                    :class="[
+                    :class=" [
                       'p-2 rounded-full transition-colors',
                       product.isWishlisted 
                         ? 'bg-red-500 text-white' 
@@ -193,7 +193,7 @@
               v-for="page in visiblePages"
               :key="page"
               @click="currentPage = page"
-              :class="[
+              :class=" [
                 'px-3 py-2 rounded-lg cursor-pointer',
                 page === currentPage
                   ? 'bg-green-500 text-white'
@@ -235,15 +235,6 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/store/products'
-import { 
-  PRICE_RANGES,
-  PRODUCT_CATEGORIES,
-  PRODUCT_BRANDS,
-  RATING_FILTERS,
-  VIEW_MODES,
-  PAGINATION_CONFIG,
-  SEARCH_CONFIG
-} from '@/constants/productSearchConstants'
 
 const route = useRoute()
 const router = useRouter()
@@ -251,10 +242,12 @@ const productsStore = useProductsStore()
 
 const searchQuery = ref('')
 const isLoading = ref(false)
-const viewMode = ref(SEARCH_CONFIG.DEFAULT_VIEW_MODE)
-const sortBy = ref(SEARCH_CONFIG.DEFAULT_SORT)
+const VIEW_MODES = { GRID: 'grid', LIST: 'list' }
+const viewMode = ref(VIEW_MODES.GRID)
+const sortBy = ref('relevance')
 const currentPage = ref(1)
-const itemsPerPage = ref(PAGINATION_CONFIG.DEFAULT_ITEMS_PER_PAGE)
+const itemsPerPage = ref(20)
+const PAGINATION_DELTA = 2
 
 // Filter states
 const selectedPriceRanges = ref([])
@@ -262,11 +255,22 @@ const selectedCategories = ref([])
 const selectedBrands = ref([])
 const selectedRatings = ref([])
 
-// Filter options from constants
-const priceRanges = ref(PRICE_RANGES)
-const categories = ref(PRODUCT_CATEGORIES)
-const brands = ref(PRODUCT_BRANDS)
-const ratings = ref(RATING_FILTERS)
+// Filter options derived from store
+const priceRanges = ref([
+  { value: '0-25', label: 'Under $25' },
+  { value: '25-50', label: '$25 - $50' },
+  { value: '50-100', label: '$50 - $100' },
+  { value: '100-200', label: '$100 - $200' },
+  { value: '200+', label: '$200 & Above' }
+])
+const categories = computed(() => (productsStore.categories || []).map((name, idx) => ({ id: idx + 1, name })))
+const brands = computed(() => (productsStore.brands || []).map((name, idx) => ({ id: idx + 1, name })))
+const ratings = ref([
+  { value: 4, label: '4 Stars & Up' },
+  { value: 3, label: '3 Stars & Up' },
+  { value: 2, label: '2 Stars & Up' },
+  { value: 1, label: '1 Star & Up' }
+])
 
 // Computed properties
 const filteredProducts = computed(() => {
@@ -305,7 +309,7 @@ const paginatedProducts = computed(() => {
 const visiblePages = computed(() => {
   const total = totalPages.value
   const current = currentPage.value
-  const delta = PAGINATION_CONFIG.PAGINATION_DELTA
+  const delta = PAGINATION_DELTA
 
   const range = []
   const rangeWithDots = []
@@ -338,7 +342,6 @@ const visiblePages = computed(() => {
 // Methods
 const loadSearchResults = () => {
   searchQuery.value = route.query.q || ''
-  // In a real app, this would trigger an API call
 }
 
 const clearFilters = () => {
@@ -354,10 +357,7 @@ const goToProduct = (product) => {
 }
 
 const addToCart = (product) => {
-  // Add to cart logic using store
   console.log('Added to cart:', product.name)
-  // TODO: Use cart store when implemented
-  // Show toast notification
 }
 
 const toggleWishlist = (product) => {

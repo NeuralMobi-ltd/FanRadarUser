@@ -83,7 +83,7 @@ FanRadarMart is an e-commerce web application where users can search for product
 
 - `src/components/` - Vue components
 - `src/store/` - Pinia stores for state management
-- `src/constants/` - Mock data and constants
+- `src/config/` - App configuration and media helpers (e.g., `media.js` for images)
 - `public/` - Static assets
 
 ## Notes
@@ -93,5 +93,6 @@ FanRadarMart is an e-commerce web application where users can search for product
   ```bash
   npm run build
   ```
+- Constants folder removed: use Pinia stores as the single source of truth (store == api == database). Media comes from `src/config/media.js` instead of constants.
 
 Enjoy using FanRadarMart!

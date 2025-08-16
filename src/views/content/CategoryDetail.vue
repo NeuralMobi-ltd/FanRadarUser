@@ -15,13 +15,13 @@
       <!-- Category Info -->
       <div class="absolute bottom-6 left-6 text-white">
         <div class="flex items-center mb-2">
-          <div class="px-3 py-1 rounded-full text-sm font-medium mr-3 flex items-center gap-2" :class="getCategoryColor(categoryName)">
-            <span>Category</span>
+          <div class="px-3 py-1 rounded-full text-sm font-medium mr-3 flex items-center gap-2" :class="categoriesStore.getCategoryColor(categoryName)">
+            <span>{{ $t('content.category.label') }}</span>
           </div>
           <div class="flex items-center text-sm">
-            <span>{{ categoryStats.communities }} communities</span>
+            <span>{{ categoryStats.communities }} {{ $t('content.category.communities') }}</span>
             <span class="mx-2">•</span>
-            <span>{{ categoryStats.members }} members</span>
+            <span>{{ categoryStats.members }} {{ $t('content.category.members') }}</span>
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-1">
@@ -58,11 +58,11 @@
           v-for="community in communities"
           :key="community.id"
           :community="community"
-          button-text="Join"
+          :button-text="$t('common.join')"
         />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
-        No fandoms found for this category.
+        {{ $t('content.category.empty.fandoms') }}
       </div>
     </div>
 
@@ -79,7 +79,7 @@
         />
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
-        No posts found for this category.
+        {{ $t('content.category.empty.posts') }}
       </div>
     </div>
 
@@ -92,7 +92,7 @@
         />
       </template>
       <div v-else class="text-center text-gray-500 dark:text-gray-400 py-8">
-        No news found for this category.
+        {{ $t('content.category.empty.news') }}
       </div>
     </div>
 
@@ -101,8 +101,8 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
         </svg>
-        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Content Coming Soon</h3>
-        <p class="text-gray-500 dark:text-gray-400">This section is currently under development.</p>
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('common.contentComingSoon') }}</h3>
+        <p class="text-gray-500 dark:text-gray-400">{{ $t('common.sectionUnderDevelopment') }}</p>
       </div>
     </div>
   </div>
@@ -111,20 +111,19 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
 import NewsPost from '@/components/common/NewsPost.vue'
 import CommunityCard from '@/components/community/CommunityCard.vue'
-import { 
-  getCategoryDescription, 
-  getCategoryImage, 
-  getCategoryColor, 
-  getCategoryStats 
-} from '@/constants'
+import { getCategoryImage } from '@/config/media'
 import { useFandomsStore } from '@/store/fandoms'
 import { usePostsStore } from '@/store/posts'
 import { useNewsStore } from '@/store/news'
+import { useCategoriesStore } from '@/store/categories'
 
 const route = useRoute()
+const { t } = useI18n()
+const categoriesStore = useCategoriesStore()
 const categoryName = computed(() => route.params.category || '')
 const activeTab = ref('communities')
 
@@ -141,29 +140,29 @@ const formattedCategoryName = computed(() => {
     .join(' ')
 })
 
-// Category description using imported constant
+// Category description using store-backed getter
 const categoryDescription = computed(() => {
-  return getCategoryDescription(categoryName.value, formattedCategoryName.value)
+  return categoriesStore.getCategoryDescription(categoryName.value, formattedCategoryName.value)
 })
 
-// Category statistics
-const categoryStats = computed(() => getCategoryStats(categoryName.value))
+// Category statistics using store-backed getter
+const categoryStats = computed(() => categoriesStore.getCategoryStats(categoryName.value))
 
 // Tabs data - update counts from stores
 const tabs = computed(() => [
   { 
     id: 'communities', 
-    label: 'Fandoms', 
+    label: t('content.category.tabs.fandoms'), 
     count: communitiesStore.getCommunitiesCountByCategory(categoryName.value).toString() 
   },
   { 
     id: 'posts', 
-    label: 'Posts', 
+    label: t('content.category.tabs.posts'), 
     count: postsStore.getPostsByCategory(categoryName.value).length.toString() 
   },
   { 
     id: 'news', 
-    label: 'News', 
+    label: t('content.category.tabs.news'), 
     count: newsStore.getNewsByCategory(categoryName.value).length.toString() 
   }
 ])
@@ -173,13 +172,11 @@ const communities = computed(() => communitiesStore.getCommunitiesByCategory(cat
 const posts = computed(() => postsStore.getPostsByCategory(categoryName.value))
 const newsData = computed(() => {
   const categoryNews = newsStore.getNewsByCategory(categoryName.value)
-  console.log('Category news data:', categoryNews)
   if (categoryNews.length > 0) {
     return categoryNews
   }
   // Use default news generator for categories without specific data
   const defaultNews = newsStore.getDefaultNewsForCategory(categoryName.value, formattedCategoryName.value)
-  console.log('Default news data:', defaultNews)
   return defaultNews
 })
 
@@ -189,8 +186,7 @@ function likePost(postId) {
 }
 
 function commentPost(postId) {
-  console.log('Comment on post:', postId)
-  // Open comment modal or navigation in a real app
+  // TODO: Open comment modal or navigate
 }
 
 function sharePost(postId) {

@@ -86,19 +86,18 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import { 
-  USER_INTEREST_CATEGORIES, 
-  MAX_CATEGORY_SELECTION, 
-  CATEGORY_SELECTION_CONFIG 
-} from '@/constants/userCategories'
+import { useCategoriesStore } from '@/store/categories'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const categoriesStore = useCategoriesStore()
 
-// Use categories from constants
-const categories = USER_INTEREST_CATEGORIES
-const maxSelections = MAX_CATEGORY_SELECTION
-const config = CATEGORY_SELECTION_CONFIG
+// Pull categories from store
+const categories = categoriesStore.getCategories.map(c => c.name)
+
+// Selection config (could be moved to a preferences store later)
+const maxSelections = 5
+const config = { maxSelections: 5, minSelections: 5 }
 
 const selected = ref([])
 

@@ -242,7 +242,9 @@ const messages = {
       createFandom: 'Create Fandom',
       loadMoreFandoms: 'Load More Fandoms',
       clearFiltersCta: 'Clear Filters',
-      createAFandom: 'Create a Fandom'
+      createAFandom: 'Create a Fandom',
+      whatsOnYourMind: "What's on your mind?",
+      addTagsPlaceholder: 'Add tags (press Enter or Tab)...'
     },
     content: {
       news: {
@@ -638,7 +640,9 @@ const messages = {
       createFandom: 'Créer un fandom',
       loadMoreFandoms: 'Afficher plus de fandoms',
       clearFiltersCta: 'Effacer les filtres',
-      createAFandom: 'Créer un fandom'
+      createAFandom: 'Créer un fandom',
+      whatsOnYourMind: 'Qu’avez‑vous en tête ?',
+      addTagsPlaceholder: 'Ajoutez des tags (Entrée ou Tab)…'
     },
     content: {
       news: {

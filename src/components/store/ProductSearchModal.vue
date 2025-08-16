@@ -182,8 +182,8 @@
 <script setup>
 import { computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { POPULAR_PRODUCTS, MOCK_PRODUCTS, MOCK_CATEGORIES, MOCK_BRANDS } from '@/constants/productSearchConstants'
 import { useProductSearchStore } from '@/store/productSearch'
+import { useProductsStore } from '@/store/products'
 
 const props = defineProps({
   isVisible: Boolean,
@@ -193,8 +193,9 @@ const props = defineProps({
 const emit = defineEmits(['close', 'search'])
 const router = useRouter()
 const productSearchStore = useProductSearchStore()
+const productsStore = useProductsStore()
 
-const popularProducts = computed(() => POPULAR_PRODUCTS)
+const popularProducts = computed(() => productsStore.featuredProducts.slice(0, 5))
 const recentSearches = computed(() => productSearchStore.recentSearches)
 const searchResults = computed(() => productSearchStore.searchResults)
 const isSearching = computed(() => productSearchStore.isSearching)
@@ -212,19 +213,7 @@ const highlightSearchTerm = (text) => {
 }
 
 const performSearch = async () => {
-  if (!props.query?.trim()) {
-    productSearchStore.setSearchResults({ products: [], categories: [], brands: [] })
-    return
-  }
-  productSearchStore.setIsSearching(true)
-  await new Promise(resolve => setTimeout(resolve, 400))
-  const query = props.query.toLowerCase()
-  productSearchStore.setSearchResults({
-    products: MOCK_PRODUCTS.filter(p => p.name.toLowerCase().includes(query)),
-    categories: MOCK_CATEGORIES.filter(c => c.name.toLowerCase().includes(query)),
-    brands: MOCK_BRANDS.filter(b => b.name.toLowerCase().includes(query))
-  })
-  productSearchStore.setIsSearching(false)
+  await productSearchStore.fetchSearchResults(props.query || '')
 }
 
 const selectSearch = (term) => {

@@ -322,11 +322,11 @@
 import { ref, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFandomsStore } from '@/store/fandoms'
-import { getCategoryDescription } from '@/constants/categoryDescriptions'
-import { COMMUNITY_CATEGORIES } from '@/constants/communityCategories'
+import { useCategoriesStore } from '@/store/categories'
 
 const router = useRouter()
 const fandomsStore = useFandomsStore()
+const categoriesStore = useCategoriesStore()
 
 // Form state
 const formData = ref({
@@ -346,11 +346,8 @@ const newTag = ref('')
 const handleError = ref('')
 const suggestedTags = ref([])
 
-// Categories for selection (add .value for v-for)
-const categories = COMMUNITY_CATEGORIES.map(cat => ({
-  ...cat,
-  value: cat.name
-}))
+// Categories for selection
+const categories = computed(() => categoriesStore.getCategories.map(cat => ({ ...cat, value: cat.name })))
 
 // Validation
 const isFormValid = computed(() => {
@@ -367,9 +364,7 @@ function onLogoChange(e) {
   const file = e.target.files[0]
   if (!file) return
   const reader = new FileReader()
-  reader.onload = (ev) => {
-    formData.value.avatar = ev.target.result
-  }
+  reader.onload = (ev) => { formData.value.avatar = ev.target.result }
   reader.readAsDataURL(file)
 }
 
@@ -377,14 +372,11 @@ function onCoverChange(e) {
   const file = e.target.files[0]
   if (!file) return
   const reader = new FileReader()
-  reader.onload = (ev) => {
-    formData.value.coverImage = ev.target.result
-  }
+  reader.onload = (ev) => { formData.value.coverImage = ev.target.result }
   reader.readAsDataURL(file)
 }
 
 function generateHandle() {
-  // Auto-generate handle from title
   let handle = formData.value.title
     .toLowerCase()
     .replace(/[^a-z0-9\s-]/g, '')
@@ -401,7 +393,6 @@ function validateHandle() {
     handleError.value = 'Handle can only contain lowercase letters, numbers, and hyphens.'
     return
   }
-  // Check for uniqueness (simulate by checking existing fandoms)
   const exists = fandomsStore.allFandoms.some(f => f.handle === handle)
   handleError.value = exists ? 'This handle is already taken.' : ''
 }
@@ -413,46 +404,35 @@ function addTag() {
   newTag.value = ''
 }
 
-function removeTag(tag) {
-  formData.value.tags = formData.value.tags.filter(t => t !== tag)
-}
-
-function addSuggestedTag(tag) {
-  if (!formData.value.tags.includes(tag) && formData.value.tags.length < 10) {
-    formData.value.tags.push(tag)
-  }
-}
+function removeTag(tag) { formData.value.tags = formData.value.tags.filter(t => t !== tag) }
+function addSuggestedTag(tag) { if (!formData.value.tags.includes(tag) && formData.value.tags.length < 10) formData.value.tags.push(tag) }
 
 function getCategoryName(categoryValue) {
-  const cat = categories.find(c => c.value === categoryValue)
+  const cat = categories.value.find(c => c.value === categoryValue)
   return cat ? cat.name : categoryValue
+}
+
+// Replace previous getCategoryDescriptionFromStore with the name used in template
+function getCategoryDescription(value) {
+  return categoriesStore.getCategoryDescription(value, getCategoryName(value))
 }
 
 function createFandom() {
   if (!isFormValid.value) return
-  // Prepare data for store
-  const fandomData = {
-    ...formData.value,
-    categoryName: getCategoryName(formData.value.category)
-  }
+  const fandomData = { ...formData.value, categoryName: getCategoryName(formData.value.category) }
   const newFandom = fandomsStore.createFandom(fandomData)
-  // Try to navigate by name, fallback to path if route name is missing
   try {
     if (newFandom && newFandom.handle) {
       router.push({ name: 'FandomDetail', params: { handle: newFandom.handle } })
     } else {
-      // fallback: try path-based navigation
       router.push(`/fandom/${newFandom.handle || formData.value.handle}`)
     }
   } catch (e) {
-    // fallback: try path-based navigation
     router.push(`/fandom/${newFandom && newFandom.handle ? newFandom.handle : formData.value.handle}`)
   }
 }
 
-// Watch category to update suggested tags
 watch(() => formData.value.category, (cat) => {
-  // Example: set suggested tags based on category
   if (cat === 'Sports') suggestedTags.value = ['Football', 'Basketball', 'Tennis', 'Cricket', 'Olympics']
   else if (cat === 'Music') suggestedTags.value = ['Pop', 'Rock', 'KPop', 'Jazz', 'Indie']
   else if (cat === 'Gaming') suggestedTags.value = ['PC', 'Console', 'Esports', 'RPG', 'Shooter']
@@ -460,3 +440,7 @@ watch(() => formData.value.category, (cat) => {
   else suggestedTags.value = []
 })
 </script>
+
+<style scoped>
+/* ...existing code... */
+</style>

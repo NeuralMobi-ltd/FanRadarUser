@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { getHashtagImage } from '@/constants/hashtagImages'
+import { getHashtagImage } from '@/config/media'
 
 export const useHashtagsStore = defineStore('hashtags', {
   state: () => ({
@@ -154,7 +154,29 @@ export const useHashtagsStore = defineStore('hashtags', {
         posts: '2.1M',
         description: 'Anime discussions, reviews, fan art, and seasonal anime content.'
       }
-    ]
+    ],
+
+    // Inlined hashtag descriptions and stats (from constants)
+    descriptions: {
+      LoLPhase5: 'Discover the latest updates and discussions about League of Legends Phase 5.',
+      LoLWorlds: 'Follow the excitement of League of Legends World Championship.',
+      Swifties: 'Join Taylor Swift fans sharing their love and latest updates.',
+      AnimeSpring2024: 'Spring anime season discussions and recommendations.',
+      MarvelPhase6: 'Marvel Cinematic Universe Phase 6 theories and news.',
+      KPopComeback: 'Latest K-Pop comebacks and music releases.',
+      GameOfThrones2024: 'House of the Dragon and Game of Thrones universe content.',
+      NintendoDirect: 'Nintendo Direct announcements and gaming news.'
+    },
+    stats: {
+      LoLPhase5: { posts: '2.3M', growth: '24' },
+      LoLWorlds: { posts: '897K', growth: '18' },
+      Swifties: { posts: '3.1M', growth: '32' },
+      AnimeSpring2024: { posts: '1.8M', growth: '15' },
+      MarvelPhase6: { posts: '2.1M', growth: '28' },
+      KPopComeback: { posts: '1.6M', growth: '22' },
+      GameOfThrones2024: { posts: '945K', growth: '19' },
+      NintendoDirect: { posts: '1.2M', growth: '12' }
+    }
   }),
 
   getters: {
@@ -211,7 +233,11 @@ export const useHashtagsStore = defineStore('hashtags', {
     // Get all related hashtags
     getAllRelatedHashtags: (state) => {
       return state.relatedHashtags
-    }
+    },
+
+    // New getters for inlined descriptions and stats
+    getHashtagDescription: (state) => (hashtag) => state.descriptions[hashtag] || `Join the conversation about #${hashtag} and connect with like-minded fans.`,
+    getHashtagStats: (state) => (hashtag) => state.stats[hashtag] || { posts: '500K', growth: '10' }
   },
 
   actions: {

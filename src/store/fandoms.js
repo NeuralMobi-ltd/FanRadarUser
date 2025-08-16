@@ -222,6 +222,24 @@ export const useFandomsStore = defineStore('fandoms', {
           joinedDate: 'Feb 2022'
         }
       ]
+    },
+    // New config to replace constants
+    config: {
+      memberRoles: {
+        ADMIN: 'admin',
+        MODERATOR: 'moderator',
+        MEMBER: 'member'
+      },
+      roleOptions: [
+        { value: 'member', label: 'Member' },
+        { value: 'moderator', label: 'Moderator' },
+        { value: 'admin', label: 'Admin' }
+      ],
+      tabs: [
+        { id: 'posts', label: 'Posts' },
+        { id: 'members', label: 'Members' },
+        { id: 'about', label: 'About' }
+      ]
     }
   }),
   
@@ -419,6 +437,60 @@ export const useFandomsStore = defineStore('fandoms', {
     getCommunitiesByCategory: (state) => (category) => {
       if (!category) return [];
       return state.allFandoms.filter(f => f.category === category);
+    },
+
+    // Return fandom detail from store or generate defaults
+    getFandomDetail: (state) => (handle) => {
+      if (!handle) {
+        return {
+          name: 'Fandom',
+          description: 'Welcome to this fandom',
+          fullDescription: 'This is a newly created fandom on FanRadar.',
+          coverImage: 'https://source.unsplash.com/1200x675/?community',
+          logo: 'https://source.unsplash.com/160x160/?logo',
+          members: '0',
+          onlineMembers: '0',
+          totalPosts: '0',
+          createdDate: new Date().getFullYear().toString(),
+          rules: [],
+          tags: [],
+          hashtags: []
+        }
+      }
+      const found = state.allFandoms.find(f => f.handle === handle)
+      if (found) {
+        return {
+          name: found.name,
+          description: found.description || '',
+          fullDescription: found.fullDescription || (found.description || ''),
+          coverImage: found.coverImage || 'https://source.unsplash.com/1200x675/?community',
+          logo: found.logo || 'https://source.unsplash.com/160x160/?logo',
+          members: found.membersCount || '0',
+          onlineMembers: found.onlineMembers || '0',
+          totalPosts: found.totalPosts || '0',
+          createdDate: found.createdAt || new Date().getFullYear().toString(),
+          rules: found.rules || [],
+          tags: found.tags || [],
+          hashtags: found.hashtags || [] ,
+          category: found.category || ''
+        }
+      }
+      const displayName = handle.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      return {
+        name: displayName,
+        description: `Welcome to ${displayName}!`,
+        fullDescription: `This is the ${displayName} fandom on FanRadar. Create posts, add members and grow the community.`,
+        coverImage: 'https://source.unsplash.com/1200x675/?community',
+        logo: 'https://source.unsplash.com/160x160/?logo',
+        members: '0',
+        onlineMembers: '0',
+        totalPosts: '0',
+        createdDate: new Date().getFullYear().toString(),
+        rules: [],
+        tags: [],
+        hashtags: [],
+        category: ''
+      }
     }
   }
 })

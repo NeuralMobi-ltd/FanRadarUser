@@ -512,8 +512,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
 import Post from '@/components/common/Post.vue'
-import { FANDOM_TABS, MEMBER_ROLES, ROLE_OPTIONS } from '@/constants/fandomConstants'
-import { getFandomData } from '@/constants/fandomUtils'
 
 const route = useRoute()
 const router = useRouter()
@@ -532,7 +530,7 @@ const postMedia = ref([])
 const isPinned = ref(false)
 const isAnnouncement = ref(false)
 const newMemberEmail = ref('')
-const newMemberRole = ref(MEMBER_ROLES.MEMBER)
+const newMemberRole = ref(fandomsStore.config.memberRoles.MEMBER)
 const memberSearch = ref('')
 const newHashtagTag = ref('')
 const newHashtagPosts = ref('')
@@ -548,7 +546,7 @@ const currentUser = computed(() => ({
   avatar: authStore.user?.avatar || '/public/images/me.png'
 }))
 
-// Get fandom data from constants
+// Fandom data from store
 const fandom = ref({
   name: '',
   description: '',
@@ -564,16 +562,9 @@ const fandom = ref({
   hashtags: []
 })
 
-// User relationship with fandom - check from store
-const isAdmin = computed(() => {
-  return fandomsStore.isAdmin(fandomName.value)
-})
+const isAdmin = computed(() => fandomsStore.isAdmin(fandomName.value))
+const isMember = computed(() => fandomsStore.isMember(fandomName.value))
 
-const isMember = computed(() => {
-  return fandomsStore.isMember(fandomName.value)
-})
-
-// Leave (desjoin) fandom
 const leaveFandom = () => {
   if (confirm('Are you sure you want to leave this fandom?')) {
     fandomsStore.leaveFandom(fandomName.value, currentUser.value.id)
@@ -581,23 +572,21 @@ const leaveFandom = () => {
   }
 }
 
-// Initialize based on fandom name and user
 onMounted(() => {
   loadFandomData()
 })
 
 const loadFandomData = () => {
-  fandom.value = getFandomData(fandomName.value)
+  fandom.value = fandomsStore.getFandomDetail(fandomName.value)
 }
 
-// Navigation function for hashtags
 const navigateToHashtag = (hashtag) => {
   router.push(`/hashtag/${hashtag}`)
 }
 
-// Initialize tabs after fandom data is loaded - use constants
+// Tabs from store config
 const tabs = computed(() => {
-  return FANDOM_TABS.map(tab => {
+  return fandomsStore.config.tabs.map(tab => {
     let count = ''
     if (tab.id === 'posts') {
       count = posts.value.length.toString()
@@ -608,24 +597,16 @@ const tabs = computed(() => {
   })
 })
 
-// Get posts from store
-const posts = computed(() => {
-  return fandomsStore.getFandomPosts(fandomName.value)
-})
-
-// Get members from store
-const members = computed(() => {
-  return fandomsStore.getFandomMembers(fandomName.value)
-})
+const posts = computed(() => fandomsStore.getFandomPosts(fandomName.value))
+const members = computed(() => fandomsStore.getFandomMembers(fandomName.value))
 
 const joinFandom = () => {
-  // Add to store
-  fandomsStore.setUserRole(fandomName.value, MEMBER_ROLES.MEMBER)
+  fandomsStore.setUserRole(fandomName.value, fandomsStore.config.memberRoles.MEMBER)
   console.log(`Joined fandom: ${fandom.value.name}`)
 }
 
-// Make constants available to template
-const roleOptions = ROLE_OPTIONS
+// Role options from store config
+const roleOptions = fandomsStore.config.roleOptions
 
 // Enhanced media handling
 const onFileChange = (type, event) => {
@@ -647,7 +628,6 @@ const removeMedia = (index) => {
   postMedia.value.splice(index, 1)
 }
 
-// Enhanced createPost function
 const createPost = () => {
   if (newPostContent.value.trim() || postMedia.value.length > 0) {
     const newPost = {
@@ -666,14 +646,10 @@ const createPost = () => {
       fandom: fandom.value.name,
       isPinned: isPinned.value,
       isAnnouncement: isAnnouncement.value,
-      authorRole: isAdmin.value ? MEMBER_ROLES.ADMIN : MEMBER_ROLES.MEMBER,
-      category: fandom.value.category ? fandom.value.category : 'sports' // <-- add category to post
+      authorRole: isAdmin.value ? fandomsStore.config.memberRoles.ADMIN : fandomsStore.config.memberRoles.MEMBER,
+      category: fandom.value.category ? fandom.value.category : 'sports'
     }
-    
-    // Add to store instead of local array
     fandomsStore.addFandomPost(fandomName.value, newPost)
-    
-    // Reset form
     newPostContent.value = ''
     postMedia.value = []
     isPinned.value = false
@@ -681,7 +657,6 @@ const createPost = () => {
   }
 }
 
-// Sort posts to show pinned and announcements first
 const sortedPosts = computed(() => {
   return [...posts.value].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1
@@ -692,7 +667,6 @@ const sortedPosts = computed(() => {
   })
 })
 
-// Admin member management functions
 const addMember = () => {
   if (newMemberEmail.value.trim()) {
     const newMember = {
@@ -705,12 +679,9 @@ const addMember = () => {
       posts: 0,
       joinedDate: 'Today'
     }
-    
-    // Add to store instead of local array
     fandomsStore.addFandomMember(fandomName.value, newMember)
-    
     newMemberEmail.value = ''
-    newMemberRole.value = MEMBER_ROLES.MEMBER
+    newMemberRole.value = fandomsStore.config.memberRoles.MEMBER
   }
 }
 
@@ -728,7 +699,6 @@ const filteredMembers = computed(() => {
   return fandomsStore.searchFandomMembers(fandomName.value, memberSearch.value)
 })
 
-// Post interaction functions using store
 function likePost(postId) {
   fandomsStore.likeFandomPost(fandomName.value, postId)
 }
@@ -741,74 +711,48 @@ function sharePost(postId) {
   console.log('Share post:', postId)
 }
 
-// Delete post function
 const deletePost = (postId) => {
   if (confirm('Are you sure you want to delete this post?')) {
     fandomsStore.deleteFandomPost(fandomName.value, postId)
   }
 }
 
-// Edit fandom functions
 const saveFandomChanges = () => {
   fandom.value.name = editFandom.value.name
   fandom.value.description = editFandom.value.description
   showEditFandom.value = false
 }
 
-// Edit rules functions
-const addRule = () => {
-  editRules.value.push('')
-}
-
-const removeRule = (index) => {
-  editRules.value.splice(index, 1)
-}
-
+const addRule = () => { editRules.value.push('') }
+const removeRule = (index) => { editRules.value.splice(index, 1) }
 const saveRulesChanges = () => {
   fandom.value.rules = editRules.value.filter(rule => rule.trim())
   showEditRules.value = false
 }
 
-// Hashtag management functions
 const addHashtag = () => {
   if (newHashtagTag.value.trim() && newHashtagPosts.value.trim()) {
-    editHashtags.value.push({
-      tag: newHashtagTag.value.trim(),
-      posts: newHashtagPosts.value.trim()
-    })
+    editHashtags.value.push({ tag: newHashtagTag.value.trim(), posts: newHashtagPosts.value.trim() })
     newHashtagTag.value = ''
     newHashtagPosts.value = ''
   }
 }
 
-const removeHashtag = (index) => {
-  editHashtags.value.splice(index, 1)
-}
-
+const removeHashtag = (index) => { editHashtags.value.splice(index, 1) }
 const saveHashtagsChanges = () => {
-  fandom.value.hashtags = editHashtags.value.filter(hashtag => hashtag.tag.trim() && hashtag.posts.trim())
+  fandom.value.hashtags = editHashtags.value.filter(h => h.tag.trim() && h.posts.trim())
   showEditHashtags.value = false
 }
 
-// Initialize edit data when modals open
 const initializeEditData = () => {
   editFandom.value = { ...fandom.value }
   editRules.value = [...fandom.value.rules]
   editHashtags.value = [...(fandom.value.hashtags || [])]
 }
 
-// Watch for modal opens to initialize data
-watch(showEditFandom, (newVal) => {
-  if (newVal) initializeEditData()
-})
-
-watch(showEditRules, (newVal) => {
-  if (newVal) initializeEditData()
-})
-
-watch(showEditHashtags, (newVal) => {
-  if (newVal) initializeEditData()
-})
+watch(showEditFandom, (newVal) => { if (newVal) initializeEditData() })
+watch(showEditRules, (newVal) => { if (newVal) initializeEditData() })
+watch(showEditHashtags, (newVal) => { if (newVal) initializeEditData() })
 </script>
 
 <style scoped>

@@ -11,7 +11,7 @@
 
   <!-- Sidebar -->
   <aside 
-    :class="[
+    :class=" [
       'bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out z-50',
       // Mobile: Fixed overlay
       'lg:relative lg:translate-x-0',
@@ -46,7 +46,7 @@
             v-for="filter in quickFilters" 
             :key="filter.value"
             @click="toggleQuickFilter(filter.value)"
-            :class="[
+            :class=" [
               'px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200',
               activeQuickFilters.includes(filter.value)
                 ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
@@ -74,7 +74,7 @@
             v-for="category in categoriesWithCounts" 
             :key="category.slug"
             @click="selectCategory(category.slug)"
-            :class="[
+            :class=" [
               'w-full flex items-center justify-between p-3 rounded-xl transition-all duration-200 group text-left',
               selectedCategory === category.slug
                 ? 'bg-green-50 border-2 border-green-200 text-green-700 dark:bg-green-900/20 dark:border-green-700 dark:text-green-300'
@@ -82,7 +82,7 @@
             ]"
           >
             <div class="flex items-center gap-3">
-              <div :class="[
+              <div :class=" [
                 'w-8 sm:w-10 h-8 sm:h-10 rounded-lg flex items-center justify-center transition-colors',
                 selectedCategory === category.slug
                   ? 'bg-green-200 text-green-700 dark:bg-green-800 dark:text-green-300'
@@ -235,11 +235,6 @@ import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
-import { 
-  STORE_HEADER,
-  STORE_CATEGORIES,
-  SIDEBAR_SECTIONS
-} from '@/constants/storeSidebarConstants'
 
 // Initialize stores and router
 const router = useRouter()
@@ -269,9 +264,25 @@ const categoryCounts = computed(() => productsStore.getCategoryCounts())
 const totalProducts = computed(() => productsStore.getTotalProducts())
 const cartItemCount = computed(() => productsStore.getCartItemCount())
 
+// Build STORE_CATEGORIES from products store categories
+const STORE_CATEGORIES = computed(() => {
+  const map = [
+    { name: 'All Products', slug: 'all', icon: 'fas fa-th-large' },
+    { name: 'Apparel', slug: 'apparel', icon: 'fas fa-tshirt' },
+    { name: 'Accessories', slug: 'accessories', icon: 'fas fa-gem' },
+    { name: 'Home & Living', slug: 'home', icon: 'fas fa-home' },
+    { name: 'Tech Gadgets', slug: 'tech', icon: 'fas fa-laptop' },
+    { name: 'Collectibles', slug: 'collectibles', icon: 'fas fa-trophy' },
+    { name: 'Books', slug: 'books', icon: 'fas fa-book' }
+  ]
+  // Only include categories present in store to avoid stale items
+  const present = new Set((productsStore.categories || []).map(c => c))
+  return map.filter(item => item.slug === 'all' || present.has(item.name))
+})
+
 // Combine categories with counts
 const categoriesWithCounts = computed(() => {
-  return STORE_CATEGORIES.map(category => ({
+  return STORE_CATEGORIES.value.map(category => ({
     ...category,
     count: categoryCounts.value[category.slug] || '0'
   }))

@@ -30,7 +30,7 @@
             </div>
             <div class="text-right">
               <p class="text-sm text-gray-500 dark:text-gray-400">Don't miss out!</p>
-              <p class="text-xs text-gray-400">Updates every {{ Math.floor(DROP_CONFIG.AUTO_ROTATE_INTERVAL / 1000) }}s</p>
+              <p class="text-xs text-gray-400">Updates every {{ Math.floor(martStore.dropConfig.AUTO_ROTATE_INTERVAL / 1000) }}s</p>
             </div>
           </div>
 
@@ -275,7 +275,7 @@
                   v-model="priceRange" 
                   class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
                 >
-                  <option v-for="range in MART_PRICE_RANGES" :key="range.value" :value="range.value">{{ range.label }}</option>
+                  <option v-for="range in martStore.priceRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
                   <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -329,7 +329,7 @@
                   v-model="sortBy" 
                   class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
                 >
-                  <option v-for="option in MART_SORT_OPTIONS" :key="option.value" :value="option.value">{{ option.label }}</option>
+                  <option v-for="option in martStore.sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
                   <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -567,91 +567,66 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
-import { 
-  MART_CATEGORIES,
-  MART_PRICE_RANGES,
-  MART_SORT_OPTIONS,
-  MART_CONFIG,
-  MART_HERO_FEATURES,
-  MART_HERO_CONTENT
-} from '@/constants/martConstants'
-import { 
-  PRODUCT_DROPS,
-  DROP_URGENCY_MESSAGES,
-  DROP_CONFIG
-} from '@/constants/martPageConstants'
+import { useMartStore } from '@/store/mart'
 
 // Initialize stores
 const productsStore = useProductsStore()
 const storeSidebarStore = useStoreSidebarStore()
+const martStore = useMartStore()
 
-const selectedCategory = ref(MART_CONFIG.DEFAULT_CATEGORY)
-const priceRange = ref(MART_CONFIG.DEFAULT_PRICE_RANGE)
+const selectedCategory = ref(martStore.config.DEFAULT_CATEGORY)
+const priceRange = ref(martStore.config.DEFAULT_PRICE_RANGE)
 const selectedBrand = ref('')
-const sortBy = ref(MART_CONFIG.DEFAULT_SORT)
+const sortBy = ref(martStore.config.DEFAULT_SORT)
 const currentPage = ref(1)
 const viewMode = ref('grid') // 'grid' or 'list'
-const itemsPerPage = MART_CONFIG.DEFAULT_ITEMS_PER_PAGE
+const itemsPerPage = martStore.config.DEFAULT_ITEMS_PER_PAGE
 
 // Product Drops State
 const currentDropIndex = ref(0)
 const countdownTimer = ref(null)
 const rotationTimer = ref(null)
 
-// Use constants for options
-const categories = ref(MART_CATEGORIES)
-const heroFeatures = ref(MART_HERO_FEATURES)
-const heroContent = ref(MART_HERO_CONTENT)
+// Use store for options
+const categories = computed(() => productsStore.categories)
+const heroFeatures = computed(() => martStore.heroFeatures)
+const heroContent = computed(() => martStore.heroContent)
 
 // Product Drops Computed
-const currentDrop = computed(() => PRODUCT_DROPS[currentDropIndex.value])
-const otherDrops = computed(() => 
-  PRODUCT_DROPS.filter((_, index) => index !== currentDropIndex.value)
-)
+const currentDrop = computed(() => martStore.productDrops[currentDropIndex.value])
+const otherDrops = computed(() => martStore.productDrops.filter((_, index) => index !== currentDropIndex.value))
 
 // Product Drops Methods
 const formatCountdown = (endTime) => {
   const now = new Date().getTime()
   const end = new Date(endTime).getTime()
   const difference = end - now
-
-  if (difference <= 0) {
-    return 'EXPIRED'
-  }
-
+  if (difference <= 0) return 'EXPIRED'
   const days = Math.floor(difference / (1000 * 60 * 60 * 24))
   const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
   const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-
-  if (days > 0) {
-    return `${days}d ${hours}h ${minutes}m`
-  } else if (hours > 0) {
-    return `${hours}h ${minutes}m ${seconds}s`
-  } else {
-    return `${minutes}m ${seconds}s`
-  }
+  if (days > 0) return `${days}d ${hours}h ${minutes}m`
+  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
+  return `${minutes}m ${seconds}s`
 }
 
 const getUrgencyStyle = (urgencyLevel) => {
-  return DROP_URGENCY_MESSAGES[urgencyLevel] || DROP_URGENCY_MESSAGES.low
+  return martStore.dropUrgencyMessages[urgencyLevel] || martStore.dropUrgencyMessages.low
 }
 
 const viewDrop = (drop) => {
   console.log('Viewing drop:', drop.title)
-  // TODO: Navigate to drop detail page or open modal
 }
 
 const startDropRotation = () => {
   rotationTimer.value = setInterval(() => {
-    currentDropIndex.value = (currentDropIndex.value + 1) % PRODUCT_DROPS.length
-  }, DROP_CONFIG.AUTO_ROTATE_INTERVAL)
+    currentDropIndex.value = (currentDropIndex.value + 1) % martStore.productDrops.length
+  }, martStore.dropConfig.AUTO_ROTATE_INTERVAL)
 }
 
 const startCountdownUpdate = () => {
-  countdownTimer.value = setInterval(() => {
-    // Force reactivity update for countdown
-  }, DROP_CONFIG.COUNTDOWN_UPDATE_INTERVAL)
+  countdownTimer.value = setInterval(() => {}, martStore.dropConfig.COUNTDOWN_UPDATE_INTERVAL)
 }
 
 // Lifecycle
@@ -661,12 +636,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (rotationTimer.value) {
-    clearInterval(rotationTimer.value)
-  }
-  if (countdownTimer.value) {
-    clearInterval(countdownTimer.value)
-  }
+  if (rotationTimer.value) clearInterval(rotationTimer.value)
+  if (countdownTimer.value) clearInterval(countdownTimer.value)
 })
 
 // Get available brands from store
@@ -774,8 +745,8 @@ const hasActiveFilters = computed(() => {
 
 // Clear all filters (including sidebar)
 const clearAllFilters = () => {
-  selectedCategory.value = MART_CONFIG.DEFAULT_CATEGORY
-  priceRange.value = MART_CONFIG.DEFAULT_PRICE_RANGE
+  selectedCategory.value = martStore.config.DEFAULT_CATEGORY
+  priceRange.value = martStore.config.DEFAULT_PRICE_RANGE
   selectedBrand.value = ''
   currentPage.value = 1
   storeSidebarStore.clearAllFilters()

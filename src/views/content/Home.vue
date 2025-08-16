@@ -10,7 +10,7 @@
             <div class="flex-1 min-w-0">
               <textarea
                 v-model="newPostContent"
-                placeholder="What's on your mind?"
+                :placeholder="$t('common.whatsOnYourMind')"
                 class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base lg:text-lg font-medium"
                 rows="2"
                 @input="autoResize"
@@ -34,7 +34,7 @@
                   @keydown.tab.prevent="addTag"
                   type="text"
                   class="w-full px-2 sm:px-3 py-2 rounded-lg border border-primary-200 dark:border-primary-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs sm:text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-                  placeholder="Add tags (press Enter or Tab)..."
+                  :placeholder="$t('common.addTagsPlaceholder')"
                 />
               </div>
               <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
@@ -79,14 +79,16 @@
             <router-link to="/news" class="text-blue-500 text-xs sm:text-sm hover:text-blue-600 transition-colors touch-button">{{ $t('common.showMore') }}</router-link>
           </div>
           <!-- Natural height container for news scrolling -->
-          <div class="overflow-hidden">
-            <div class="overflow-x-auto overflow-y-hidden scrollbar-hide pb-3 sm:pb-4 -mx-3 sm:-mx-4 px-3 sm:px-4">
+          <div class="overflow-hidden ">
+            <div class="overflow-x-auto overflow-y-hidden scrollbar-hide mask-edges-x snap-x snap-mandatory pb-3 sm:pb-4 -mx-3 sm:-mx-4 px-3 sm:px-4">
               <div class="flex gap-2 sm:gap-3 lg:gap-4" style="width: max-content;">
                 <NewsPost 
                   v-for="news in newsItems" 
                   :key="news.id" 
                   :article="news" 
-                  class="w-64 sm:w-72 lg:w-80 flex-shrink-0"
+                  class="flex-shrink-0 snap-start"
+                  :cardWidth="'25rem'"
+                  :cardHeight="'11.5rem'"
                   @click:like="likeNews(news)"
                 />
               </div>
@@ -194,7 +196,49 @@
           </div>
         </div>
       </div>
-      <!-- Optionally, a sidebar could go here -->
+      
+      <!-- Right Sidebar: Trending Fandoms & Hashtags -->
+      <div class="hidden lg:block w-full lg:w-80 xl:w-96 flex-shrink-0">
+        <div class="sticky space-y-4">
+          <!-- Trending Fandoms -->
+          <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingFandoms') }}</h3>
+            <ul class="space-y-4">
+              <li v-for="community in trendingCommunities" :key="community.id" class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img :src="community.avatar" :alt="community.name" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-200 dark:ring-primary-700" />
+                  <div>
+                    <p class="font-medium text-gray-900 dark:text-white">{{ community.name }}</p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">{{ community.members }} {{ $t('common.members') }}</p>
+                  </div>
+                </div>
+                <button @click.stop="joinCommunity(community.id)" class="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow">
+                  {{ $t('common.join') }}
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Trending Hashtags -->
+          <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingHashtags') }}</h3>
+            <ul class="space-y-3">
+              <li v-for="tag in trendingHashtags" :key="tag.name"
+                  @click="goToHashtag(tag.name)"
+                  class="flex items-center justify-between cursor-pointer hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-xl p-2 transition">
+                <div>
+                  <p class="font-medium text-gray-900 dark:text-white">#{{ tag.name }}</p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">{{ $t('common.postsCount', { count: tag.posts }) }}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span :class="tag.growth >= 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-semibold">{{ Math.abs(tag.growth) }}%</span>
+                  <i class="fas fa-arrow-up-right-from-square text-xs text-gray-400"></i>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -202,22 +246,31 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { usePostsStore } from '@/store/posts'
 import { useNewsStore } from '@/store/news'
 import { useAuthStore } from '@/store/auth'
+import { useTrendsStore } from '@/store/trends'
 import Post from '@/components/common/Post.vue'
 import NewsPost from '@/components/common/NewsPost.vue'
+
+const router = useRouter()
 
 // Stores
 const postsStore = usePostsStore()
 const newsStore = useNewsStore()
 const authStore = useAuthStore()
+const trendsStore = useTrendsStore()
 
 // Expose reactive store state
 const { filteredPosts } = storeToRefs(postsStore)
 const activeFeed = computed(() => postsStore.activeFeed)
 const loadingMore = computed(() => postsStore.loadingMore)
 const hasMorePosts = computed(() => postsStore.hasMorePosts)
+
+// Sidebar data
+const trendingCommunities = computed(() => trendsStore.trendingCommunities)
+const trendingHashtags = computed(() => trendsStore.trendingHashtags)
 
 // Current user for alt text, with username alias
 const currentUser = computed(() => {
@@ -311,4 +364,27 @@ const newsItems = computed(() => newsStore.recentNews || newsStore.newsItems)
 function likeNews(news) {
   newsStore.toggleLike(news.id)
 }
+
+// Sidebar handlers
+function joinCommunity(id) {
+  trendsStore.joinCommunity(id)
+}
+function goToHashtag(name) {
+  router.push(`/hashtag/${name}`)
+}
 </script>
+
+<style scoped>
+/* Hide scrollbar (already present) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Subtle edge fade for horizontal scrollers */
+.mask-edges-x {
+  -webkit-mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+}
+</style>

@@ -22,25 +22,23 @@
         <!-- Horizontal Scroll Container -->
         <div class="overflow-x-auto pb-3 sm:pb-4 scrollbar-hide -mx-3 sm:-mx-4 px-3 sm:px-4">
           <div class="flex gap-3 sm:gap-4 lg:gap-6 w-max">
-            <div v-for="trend in currentTrends" :key="trend.tag" 
-                 @click="navigateToHashtag(trend.tag)"
-                 class="w-72 sm:w-80 lg:w-96 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg active:scale-95 transition-all duration-300 cursor-pointer flex-shrink-0 touch-manipulation">
-              <div class="flex items-center mb-3 sm:mb-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 dark:bg-gray-700 rounded-lg sm:rounded-xl flex items-center justify-center mr-3 sm:mr-4">
-                  <i :class="trend.icon" class="text-lg sm:text-2xl text-blue-500"></i>
-                </div>
+            <div v-for="tag in trendingHashtags" :key="tag.name" 
+                 @click="navigateToHashtag(tag.name)"
+                 class="w-64 sm:w-72 lg:w-80 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg active:scale-95 transition-all duration-300 cursor-pointer flex-shrink-0 touch-manipulation">
+              <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <div>
-                  <h3 class="font-bold text-gray-900 dark:text-white text-base sm:text-lg">#{{ trend.tag }}</h3>
-                  <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">{{ $t('common.postsCount', { count: trend.posts }) }}</p>
+                  <h3 class="font-bold text-gray-900 dark:text-white text-base sm:text-lg">#{{ tag.name }}</h3>
+                  <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">{{ $t('common.postsCount', { count: tag.posts }) }}</p>
                 </div>
+                <span :class="tag.growth >= 0 ? 'text-green-600 bg-green-100 dark:bg-green-900/30' : 'text-red-600 bg-red-100 dark:bg-red-900/30'" class="px-2 py-1 rounded-full text-xs font-semibold">{{ Math.abs(tag.growth) }}%</span>
               </div>
-              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-3">{{ trend.description }}</p>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-2">{{ '#'+tag.name }} {{ $t('common.trending') }}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Popular Categories Section -->
+      <!-- Popular Categories Section (using popular communities from store) -->
       <div class="mb-6 sm:mb-8 lg:mb-10">
         <div class="flex items-center mb-4 sm:mb-6">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
@@ -54,20 +52,20 @@
         <!-- Horizontal Scroll Container -->
         <div class="overflow-x-auto pb-3 sm:pb-4 scrollbar-hide -mx-3 sm:-mx-4 px-3 sm:px-4">
           <div class="flex gap-3 sm:gap-4 lg:gap-6 w-max">
-            <div v-for="category in popularCategories" :key="category.name" 
-                 @click="navigateToCategory(category.name)"
+            <div v-for="community in popularCommunities" :key="community.id" 
+                 @click="navigateToCategory(community.name)"
                  class="relative w-48 h-28 sm:w-56 sm:h-36 lg:w-64 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 active:scale-95 transition-transform flex-shrink-0 touch-manipulation">
-              <img :src="category.image" :alt="category.name" class="w-full h-full object-cover">
+              <img :src="community.avatar" :alt="community.name" class="w-full h-full object-cover">
               <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
               <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
-                <h3 class="text-white font-bold text-sm sm:text-lg">{{ category.name }}</h3>
-                <p class="text-white/80 text-xs sm:text-sm">{{ category.communities }} {{ $t('common.fandoms') }}</p>
+                <h3 class="text-white font-bold text-sm sm:text-lg">{{ community.name }}</h3>
+                <p class="text-white/80 text-xs sm:text-sm">{{ community.members }} {{ $t('common.members') }}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-   
+      
       <!-- Fan News Section -->
       <div class="mb-6 sm:mb-8 lg:mb-10">
         <div class="flex items-center justify-between mb-4 sm:mb-6">
@@ -124,9 +122,10 @@ const router = useRouter()
 const newsStore = useNewsStore()
 const trendsStore = useTrendsStore()
 
+// Use store-backed data only
 const fanNews = computed(() => newsStore.newsItems)
-const currentTrends = computed(() => trendsStore.currentTrends || [])
-const popularCategories = computed(() => trendsStore.popularCategories || [])
+const trendingHashtags = computed(() => trendsStore.trendingHashtags)
+const popularCommunities = computed(() => trendsStore.popularCommunities)
 
 const navigateToCategory = (categoryName) => {
   router.push(`/category/${categoryName.toLowerCase()}`)

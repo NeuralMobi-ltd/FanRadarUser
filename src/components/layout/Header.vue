@@ -72,6 +72,16 @@
             <MoonIcon v-else class="h-5 w-5" />
           </button>
 
+          <!-- Language Selector (mobile) -->
+          <select
+            v-model="locale"
+            @change="onChangeLocale"
+            class="px-2 py-1 text-xs rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200"
+          >
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+          </select>
+
           <!-- Notifications (mobile/tablet) -->
           <div v-if="isAuthenticated" class="relative">
             <button
@@ -141,6 +151,16 @@
             <SunIcon v-if="isDark" class="h-4 sm:h-5 w-4 sm:w-5" />
             <MoonIcon v-else class="h-4 sm:h-5 w-4 sm:w-5" />
           </button>
+
+          <!-- Language Selector (desktop) -->
+          <select
+            v-model="locale"
+            @change="onChangeLocale"
+            class="px-2 py-1 text-sm rounded-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200"
+          >
+            <option value="en">EN</option>
+            <option value="fr">FR</option>
+          </select>
 
           <!-- Authenticated and Guest User Actions -->
           <template v-if="isAuthenticated">
@@ -303,18 +323,6 @@
     :user-name="userName"
     @submit="handleCreatePost"
   />
-
-  <!-- Language Selector (for testing, can be moved elsewhere) -->
-  <div class="fixed bottom-4 right-4 z-50">
-    <select
-      v-model="locale"
-      @change="onChangeLocale"
-      class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-full shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm p-2"
-    >
-      <option value="en">EN</option>
-      <option value="fr">FR</option>
-    </select>
-  </div>
 </template>
 
 <script setup>
