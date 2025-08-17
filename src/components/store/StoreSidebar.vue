@@ -12,7 +12,7 @@
   <!-- Sidebar -->
   <aside 
     :class=" [
-      'bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out z-50',
+      'bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 overflow-y-auto transition-transform duration-300 ease-in-out z-20',
       // Mobile: Fixed overlay
       'lg:relative lg:translate-x-0',
       showMobileFilters ? 'fixed inset-y-0 left-0 w-80 translate-x-0' : 'fixed inset-y-0 left-0 w-80 -translate-x-full',
@@ -90,9 +90,9 @@
               ]">
                 <i :class="category.icon + ' text-sm'"></i>
               </div>
-              <span class="font-medium text-sm">{{ category.name }}</span>
+              <span class="font-medium text-sm text-gray-900 dark:text-white">{{ category.name }}</span>
             </div>
-            <span class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg text-xs font-medium">
+            <span class="bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-white px-2 py-1 rounded-lg text-xs font-medium">
               {{ category.count }}
             </span>
           </button>
@@ -163,10 +163,10 @@
               v-model="storeSidebarStore.selectedBrands"
               class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
             />
-            <span class="flex-1 text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+            <span class="flex-1 text-xs sm:text-sm font-medium text-gray-700 dark:text-white group-hover:text-gray-900 dark:group-hover:text-white">
               {{ brand.name }}
             </span>
-            <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-1 rounded">
+            <span class="text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-white px-2 py-1 rounded">
               {{ brand.products }}
             </span>
           </label>
@@ -309,7 +309,6 @@ watch(() => route.query.category, (newCategory) => {
 // Methods
 const selectCategory = (categorySlug) => {
   selectedCategory.value = categorySlug
-  
   // Update the route query parameter
   const query = { ...route.query }
   if (categorySlug === 'all') {
@@ -317,8 +316,10 @@ const selectCategory = (categorySlug) => {
   } else {
     query.category = categorySlug
   }
-  
   router.push({ query })
+  // Propagate to store and apply immediately
+  storeSidebarStore.setCategory(categorySlug)
+  storeSidebarStore.applyFilters()
 }
 
 const toggleQuickFilter = (filterValue) => {
@@ -328,6 +329,9 @@ const toggleQuickFilter = (filterValue) => {
   } else {
     activeQuickFilters.value.push(filterValue)
   }
+  // Update store and apply immediately
+  storeSidebarStore.setQuickFilters(activeQuickFilters.value)
+  storeSidebarStore.applyFilters()
 }
 
 const closeMobileFilters = () => {

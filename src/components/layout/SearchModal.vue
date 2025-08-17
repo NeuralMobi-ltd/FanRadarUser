@@ -1,15 +1,33 @@
 <template>
-  <!-- Search Dropdown positioned below search input -->
+  <!-- Search Dropdown positioned below search input or as overlay -->
   <div 
     v-if="isVisible" 
-    class="absolute top-full left-0 right-0 z-50 mt-2"
+    :class="wrapperClass"
   >
     <!-- Search dropdown -->
     <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-96">
+      <!-- Top search bar (shown when used as overlay on phones) -->
+      <div v-if="placement === 'overlay'" class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center gap-2">
+        <i class="fas fa-search text-gray-400"></i>
+        <input
+          v-model="localQuery"
+          @keydown.enter.prevent="emitSearch"
+          type="text"
+          class="flex-1 bg-gray-50 dark:bg-gray-700/60 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 text-sm"
+          :placeholder="'Search FanRadar'"
+        />
+        <button v-if="localQuery" @click="clearLocalQuery" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Clear">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+        <button @click="closeSearch" class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" aria-label="Close">
+          <i class="fas fa-chevron-up text-sm"></i>
+        </button>
+      </div>
+
       <!-- Trending searches and results -->
       <div class="overflow-y-auto max-h-96">
         <!-- Show recent searches or search results based on query -->
-        <div v-if="!query">
+        <div v-if="!effectiveQuery">
           <!-- Recent searches section -->
           <div v-if="recentSearches.length > 0" class="p-4 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
@@ -180,14 +198,14 @@
                 @click="viewAllResults"
                 class="w-full py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
               >
-                See all results for "{{ query }}"
+                See all results for "{{ effectiveQuery }}"
               </button>
             </div>
 
             <!-- No results -->
             <div v-if="!hasResults && !isSearching" class="text-center py-4">
               <i class="fas fa-search text-xl text-gray-300 dark:text-gray-600 mb-2"></i>
-              <p class="text-sm text-gray-500 dark:text-gray-400">No results found for "{{ query }}"</p>
+              <p class="text-sm text-gray-500 dark:text-gray-400">No results found for "{{ effectiveQuery }}"</p>
             </div>
           </div>
         </div>
@@ -203,10 +221,11 @@ import { useSearchStore } from '@/store/search'
 
 const props = defineProps({
   isVisible: Boolean,
-  query: String
+  query: String,
+  placement: { type: String, default: 'inline' } // 'inline' | 'overlay'
 })
 
-const emit = defineEmits(['close', 'search'])
+const emit = defineEmits(['close', 'search', 'update:query'])
 
 const router = useRouter()
 const isSearching = ref(false)
@@ -216,6 +235,17 @@ const searchStore = useSearchStore()
 // Use store data instead of local data
 const recentSearches = computed(() => searchStore.getRecentSearches)
 const trendingSearches = computed(() => searchStore.trendingSearches)
+
+const localQuery = ref(props.query || '')
+
+watch(() => props.query, (val) => {
+  if ((val || '') !== localQuery.value) localQuery.value = val || ''
+})
+
+watch(localQuery, (val) => {
+  emit('update:query', val)
+  performSearch()
+})
 
 const searchResults = ref({
   people: [],
@@ -229,14 +259,22 @@ const hasResults = computed(() =>
   searchResults.value.posts.length > 0
 )
 
+const wrapperClass = computed(() =>
+  props.placement === 'overlay'
+    ? 'fixed top-14 left-0 right-0 z-[60] px-2'
+    : 'absolute top-full left-0 right-0 z-50 mt-2'
+)
+
+const effectiveQuery = computed(() => (localQuery.value || '').trim())
+
 const highlightSearchTerm = (text) => {
-  if (!props.query || !text) return text
-  const regex = new RegExp(`(${props.query})`, 'gi')
+  if (!effectiveQuery.value || !text) return text
+  const regex = new RegExp(`(${effectiveQuery.value})`, 'gi')
   return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</mark>')
 }
 
 const performSearch = async () => {
-  if (!props.query?.trim()) {
+  if (!effectiveQuery.value) {
     searchResults.value = { people: [], fandoms: [], posts: [] }
     return
   }
@@ -247,7 +285,7 @@ const performSearch = async () => {
   await new Promise(resolve => setTimeout(resolve, 300))
 
   // Use search store to get results
-  const results = searchStore.performGlobalSearch(props.query)
+  const results = searchStore.performGlobalSearch(effectiveQuery.value)
   
   searchResults.value = {
     people: results.people || [],
@@ -256,6 +294,10 @@ const performSearch = async () => {
   }
 
   isSearching.value = false
+}
+
+const emitSearch = () => {
+  if (effectiveQuery.value) emit('search', effectiveQuery.value)
 }
 
 const selectSearch = (term) => {
@@ -284,16 +326,20 @@ const clearRecentSearches = () => {
   searchStore.clearRecentSearches()
 }
 
+const clearLocalQuery = () => {
+  localQuery.value = ''
+}
+
 const closeSearch = () => {
   emit('close')
 }
 
 const viewAllResults = () => {
-  if (props.query?.trim()) {
-    addToRecentSearches(props.query.trim())
+  if (effectiveQuery.value) {
+    addToRecentSearches(effectiveQuery.value)
     router.push({
       name: 'SearchResults',
-      query: { q: props.query.trim() }
+      query: { q: effectiveQuery.value }
     })
     closeSearch()
   }
@@ -313,9 +359,4 @@ const goToFandom = (fandom) => {
   router.push(`/fandom/${fandom.handle}`)
   closeSearch()
 }
-
-// Perform search when query changes
-watch(() => props.query, () => {
-  performSearch()
-})
 </script>

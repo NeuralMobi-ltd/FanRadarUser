@@ -1,33 +1,74 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
     <!-- Search Header -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-6">
-      <div class="max-w-4xl mx-auto px-4">
-        <div class="flex items-center space-x-3 mb-4">
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-4 md:py-6">
+      <div class="max-w-4xl mx-auto px-3 sm:px-4">
+        <div class="flex items-center space-x-3 mb-2 md:mb-4">
           <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
             <i class="fas fa-hashtag text-blue-600 dark:text-blue-400 text-sm"></i>
           </div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white truncate">
             Search Results for "{{ searchQuery }}"
           </h1>
         </div>
-        <p class="text-gray-600 dark:text-gray-300">
+        <p class="hidden md:block text-gray-600 dark:text-gray-300">
           Found {{ totalResults }} results across posts, people, news, and fandoms
         </p>
+
+        <!-- Mobile search input -->
+        <div class="md:hidden mt-3">
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1">
+              <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+              <input
+                v-model="searchQuery"
+                @keyup.enter="onSearchSubmit"
+                type="text"
+                class="w-full pl-9 pr-10 py-2 text-sm rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/60 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Search FanRadar"
+              />
+              <button v-if="searchQuery" @click="searchQuery=''; onSearchSubmit()" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <button @click="onSearchSubmit" class="px-3 py-2 text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700">Go</button>
+          </div>
+        </div>
+
+        <!-- Mobile/Tablet filters: horizontal chips -->
+        <div class="md:hidden mt-3 -mx-3 px-3">
+          <div class="relative overflow-x-auto no-scrollbar">
+            <div class="flex items-center gap-2">
+              <button
+                v-for="f in filters"
+                :key="f.key"
+                @click="setFilter(f.key)"
+                :class="[
+                  'px-3 py-1.5 rounded-full text-sm whitespace-nowrap border transition-colors',
+                  (activeFilter || 'all') === f.key
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600'
+                ]"
+              >
+                {{ f.label }}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Search Results Content -->
-    <div class="max-w-4xl mx-auto px-4 py-6">
+    <div class="max-w-4xl mx-auto px-3 sm:px-4 py-4 md:py-6">
       <!-- All Results -->
-      <div v-if="activeFilter === 'all'" class="space-y-8">
+      <div v-if="activeFilter === 'all'" class="space-y-6 md:space-y-8">
         <!-- Posts Section -->
         <div v-if="filteredResults.posts.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-file-text mr-2 text-blue-500"></i>
             Posts
           </h2>
-          <div class="space-y-4">
+          <div class="space-y-3 md:space-y-4">
             <Post 
               v-for="post in filteredResults.posts.slice(0, 3)"
               :key="post.id"
@@ -39,11 +80,11 @@
 
         <!-- People Section -->
         <div v-if="filteredResults.people.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-user mr-2 text-orange-500"></i>
             People
           </h2>
-          <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
             <div
               v-for="person in filteredResults.people.slice(0, 4)"
               :key="person.id"
@@ -93,11 +134,11 @@
 
         <!-- News Section -->
         <div v-if="filteredResults.news.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-newspaper mr-2 text-red-500"></i>
             News
           </h2>
-          <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
             <NewsPost 
               v-for="article in filteredResults.news.slice(0, 4)"
               :key="article.id"
@@ -109,11 +150,11 @@
 
         <!-- Fandoms Section -->
         <div v-if="filteredResults.fandoms.length > 0">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+          <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-users mr-2 text-purple-500"></i>
             Fandoms
           </h2>
-          <div class="grid md:grid-cols-2 gap-4">
+          <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
             <CommunityCard 
               v-for="fandom in filteredResults.fandoms.slice(0, 4)"
               :key="fandom.id"
@@ -125,7 +166,7 @@
       </div>
 
       <!-- Posts Only -->
-      <div v-else-if="activeFilter === 'posts'" class="space-y-4">
+      <div v-else-if="activeFilter === 'posts'" class="space-y-3 md:space-y-4">
         <Post 
           v-for="post in filteredResults.posts"
           :key="post.id"
@@ -135,7 +176,7 @@
       </div>
 
       <!-- People Only -->
-      <div v-else-if="activeFilter === 'people'" class="grid md:grid-cols-1 gap-4">
+      <div v-else-if="activeFilter === 'people'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
         <div
           v-for="person in filteredResults.people"
           :key="person.id"
@@ -183,7 +224,7 @@
       </div>
 
       <!-- News Only -->
-      <div v-else-if="activeFilter === 'news'" class="grid md:grid-cols-2 gap-4">
+      <div v-else-if="activeFilter === 'news'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
         <NewsPost 
           v-for="article in filteredResults.news"
           :key="article.id"
@@ -193,7 +234,7 @@
       </div>
 
       <!-- Fandoms Only -->
-      <div v-else-if="activeFilter === 'fandoms'" class="grid md:grid-cols-2 gap-4">
+      <div v-else-if="activeFilter === 'fandoms'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
         <CommunityCard 
           v-for="fandom in filteredResults.fandoms"
           :key="fandom.id"
@@ -314,6 +355,22 @@ const formatFollowers = (count) => {
   return (count / 1000000).toFixed(1).replace('.0', '') + 'M'
 }
 
+const filters = [
+  { key: 'all', label: 'All' },
+  { key: 'posts', label: 'Posts' },
+  { key: 'people', label: 'People' },
+  { key: 'news', label: 'News' },
+  { key: 'fandoms', label: 'Fandoms' }
+]
+
+const onSearchSubmit = () => {
+  router.push({ name: 'SearchResults', query: { q: (searchQuery.value || '').trim(), filter: route.query.filter || 'all' } })
+}
+
+const setFilter = (key) => {
+  router.push({ name: 'SearchResults', query: { q: route.query.q || searchQuery.value || '', filter: key } })
+}
+
 // Watch for filter changes in URL
 watch(() => route.query.filter, (newFilter) => {
   activeFilter.value = newFilter || 'all'
@@ -339,5 +396,9 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  line-clamp: 2; /* standard property for compatibility */
 }
+
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
 </style>

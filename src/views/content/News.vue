@@ -1,17 +1,18 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 md:pt-6">
     <!-- Page Header -->
-    <div class="mb-8">
-      <div class="flex items-center justify-between">
+    <div class="mb-6 sm:mb-8">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $t('routes.news') }}</h1>
-          <p class="text-gray-600 dark:text-gray-400 mt-1">{{ $t('content.news.subtitle') }}</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{{ $t('routes.news') }}</h1>
+          <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">{{ $t('content.news.subtitle') }}</p>
         </div>
-        <div class="flex items-center space-x-4">
+        <div class="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:space-x-4">
           <!-- Filter Dropdown -->
           <select 
             v-model="selectedCategory" 
-            class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+            class="w-full sm:w-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 sm:px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+            aria-label="Filter category"
           >
             <option value="all">{{ $t('content.news.filters.all') }}</option>
             <option value="breaking">{{ $t('content.news.filters.breaking') }}</option>
@@ -24,7 +25,8 @@
           <!-- Sort Options -->
           <select 
             v-model="sortBy" 
-            class="bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+            class="w-full sm:w-auto bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-3 sm:px-4 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-sm hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+            aria-label="Sort news"
           >
             <option value="recent">{{ $t('content.news.sort.recent') }}</option>
             <option value="popular">{{ $t('content.news.sort.popular') }}</option>
@@ -96,7 +98,7 @@
     </div>
 
     <!-- News Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
       <NewsPost
         v-for="news in filteredNews"
         :key="news.id"
@@ -197,6 +199,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/***** Ensure line-clamp works even without the Tailwind plugin *****/
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-clamp: 2;
+}
+
 /* Custom styles for news page */
 .news-grid {
   display: grid;

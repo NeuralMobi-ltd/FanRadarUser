@@ -1,16 +1,18 @@
 <template>
-  <div class="p-6">
+  <div class="p-4 sm:p-6">
     <div class="max-w-6xl mx-auto">
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">My Orders</h1>
+      <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8">My Orders</h1>
 
       <!-- Filter Tabs -->
-      <div class="flex space-x-1 mb-6">
+      <div class="flex space-x-2 overflow-x-auto whitespace-nowrap pb-1 -mx-2 px-2 mb-4 sm:mb-6">
         <button 
           v-for="status in orderStatuses" 
           :key="status" 
           @click="activeStatus = status"
-          :class="['px-4 py-2 rounded-lg font-medium transition-colors', 
-                   activeStatus === status ? 'bg-green-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600']"
+          :class="['inline-flex items-center justify-center text-center leading-tight px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg font-medium text-sm sm:text-base border transition-colors', 
+                   activeStatus === status 
+                     ? 'bg-green-600 text-white border-transparent' 
+                     : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-300 dark:border-gray-600']"
         >
           {{ status.charAt(0).toUpperCase() + status.slice(1) }}
         </button>
@@ -33,29 +35,29 @@
         </router-link>
       </div>
 
-      <div v-else class="space-y-6">
+      <div v-else class="space-y-4 sm:space-y-6">
         <div 
           v-for="order in filteredOrders" 
           :key="order.id" 
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
         >
           <!-- Order Header -->
-          <div class="p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
-            <div class="flex flex-wrap items-center justify-between gap-4">
+          <div class="p-4 sm:p-6 bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+            <div class="flex flex-wrap items-start sm:items-center justify-between gap-2 sm:gap-4">
               <div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Order #{{ order.id }}</h3>
-                <p class="text-gray-600 dark:text-gray-400">Placed on {{ formatDate(order.date) }}</p>
+                <h3 class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Order #{{ order.id }}</h3>
+                <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Placed on {{ formatDate(order.date) }}</p>
               </div>
-              <div class="flex items-center gap-4">
+              <div class="flex items-center gap-2 sm:gap-4">
                 <span 
                   :class="getStatusColor(order.status)" 
-                  class="px-3 py-1 rounded-full text-sm font-medium"
+                  class="px-2.5 py-1 rounded-full text-xs sm:text-sm font-medium"
                 >
                   {{ order.status.charAt(0).toUpperCase() + order.status.slice(1) }}
                 </span>
                 <router-link 
                   :to="`/orders/${order.id}`" 
-                  class="text-green-600 hover:text-green-700 font-medium"
+                  class="text-sm sm:text-base text-green-600 hover:text-green-700 font-medium"
                 >
                   View Details
                 </router-link>
@@ -64,44 +66,44 @@
           </div>
 
           <!-- Order Items -->
-          <div class="p-6">
-            <div class="space-y-4">
-              <div v-for="item in order.items" :key="item.id" class="flex items-center gap-4">
+          <div class="p-4 sm:p-6">
+            <div class="space-y-3 sm:space-y-4">
+              <div v-for="item in order.items" :key="item.id" class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                 <img 
                   :src="item.image" 
                   :alt="item.name" 
-                  class="w-16 h-16 object-cover rounded-lg"
+                  class="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg"
                 >
                 <div class="flex-1">
-                  <h4 class="font-medium text-gray-900 dark:text-white">{{ item.name }}</h4>
-                  <p class="text-gray-600 dark:text-gray-400 text-sm">Quantity: {{ item.quantity }}</p>
+                  <h4 class="text-sm sm:text-base font-medium text-gray-900 dark:text-white">{{ item.name }}</h4>
+                  <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Quantity: {{ item.quantity }}</p>
                 </div>
                 <div class="text-right">
-                  <p class="font-semibold text-gray-900 dark:text-white">${{ (item.price * item.quantity).toFixed(2) }}</p>
+                  <p class="text-sm sm:text-base font-semibold text-gray-900 dark:text-white">${{ (item.price * item.quantity).toFixed(2) }}</p>
                 </div>
               </div>
             </div>
             
             <!-- Order Total -->
-            <div class="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <span class="text-lg font-semibold text-gray-900 dark:text-white">Total: ${{ order.total.toFixed(2) }}</span>
-              <div class="flex gap-2">
+            <div class="mt-5 sm:mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <span class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Total: ${{ order.total.toFixed(2) }}</span>
+              <div class="flex gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
                 <button 
                   v-if="order.status === 'delivered'" 
-                  class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm"
                 >
                   Leave Review
                 </button>
                 <button 
                   v-if="order.status === 'processing'" 
                   @click="cancelOrder(order.id)" 
-                  class="px-4 py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors"
+                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors text-sm"
                 >
                   Cancel Order
                 </button>
                 <button 
                   v-if="order.status === 'delivered'" 
-                  class="px-4 py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors"
+                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors text-sm"
                 >
                   Reorder
                 </button>

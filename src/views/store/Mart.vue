@@ -1,196 +1,137 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
     <!-- Main Content -->
-    <div class="p-6">
+    <div class="p-4 sm:p-5 md:p-6">
         <!-- Hero Banner -->
-        <div class="relative bg-gradient-to-r from-green-600 to-green-800 rounded-2xl p-8 mb-8 overflow-hidden">
+        <div class="relative bg-gradient-to-r from-green-600 to-green-800 rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-6 sm:mb-8 overflow-hidden">
           <div class="absolute inset-0 bg-black/20"></div>
           <div class="relative z-10 text-white">
             <h1 class="text-4xl font-bold mb-4">{{ heroContent.title }}</h1>
             <p class="text-xl mb-6">{{ heroContent.subtitle }}</p>
             <div class="flex flex-wrap gap-4">
-              <span 
-                v-for="feature in heroFeatures" 
-                :key="feature.text"
-                class="bg-white/20 backdrop-blur px-4 py-2 rounded-full text-sm"
-              >
-                {{ feature.icon }} {{ feature.text }}
-              </span>
             </div>
           </div>
         </div>
 
         <!-- Product Drops Section -->
-        <div class="mb-8">
+        <div class="mb-6 sm:mb-8">
           <!-- Section Header -->
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-2">🔥 Hot Drops</h2>
-              <p class="text-gray-600 dark:text-gray-400">Limited-time exclusive releases</p>
-            </div>
-            <div class="text-right">
-              <p class="text-sm text-gray-500 dark:text-gray-400">Don't miss out!</p>
-              <p class="text-xs text-gray-400">Updates every {{ Math.floor(martStore.dropConfig.AUTO_ROTATE_INTERVAL / 1000) }}s</p>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
+            <div class="flex items-center gap-3 text-sm">
+              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+                <i class="far fa-clock"></i>
+                <span>Next ends in: {{ countdownText }}</span>
+              </span>
+              <button class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
+                View all
+              </button>
             </div>
           </div>
 
           <!-- Featured Drop -->
-          <div class="relative bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-2xl p-8 mb-6 overflow-hidden">
+          <div class="relative bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-5 sm:mb-6 overflow-hidden">
             <div class="absolute inset-0 bg-black/20"></div>
             <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
             <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
             
-            <div class="relative z-10 text-white">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
-                  <span class="bg-white/20 backdrop-blur px-3 py-1 rounded-full text-sm font-semibold">
-                    {{ currentDrop.badge }}
-                  </span>
-                  <span 
-                    :class="[
-                      'px-3 py-1 rounded-full text-sm font-semibold animate-pulse',
-                      getUrgencyStyle(currentDrop.urgencyLevel).bgColor,
-                      getUrgencyStyle(currentDrop.urgencyLevel).color
-                    ]"
-                  >
-                    {{ getUrgencyStyle(currentDrop.urgencyLevel).text }}
-                  </span>
-                </div>
-                <div class="text-right">
-                  <p class="text-sm opacity-90">Ends in</p>
-                  <div class="text-2xl font-bold">{{ formatCountdown(currentDrop.endTime) }}</div>
-                </div>
-              </div>
-
-                <div class="grid md:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h3 class="text-4xl font-bold mb-3">{{ currentDrop.title }}</h3>
-                  <p class="text-xl mb-6 opacity-90">{{ currentDrop.subtitle }}</p>
-                  
-                  <!-- Features -->
-                  <div class="grid grid-cols-2 gap-3 mb-6">
-                  <div v-for="feature in currentDrop.features" :key="feature" class="flex items-center gap-2">
-                    <span class="text-lg">{{ feature.split(' ')[0] }}</span>
-                    <span class="text-sm opacity-90">{{ feature.split(' ').slice(1).join(' ') }}</span>
-                  </div>
-                  </div>
-
-                  <!-- Price and Stock -->
-                  <div class="flex items-center gap-6 mb-6">
-                  <div>
-                    <span class="text-lg line-through opacity-60">${{ currentDrop.originalPrice }}</span>
-                    <span class="text-3xl font-bold ml-3">${{ currentDrop.dropPrice }}</span>
-                    <span class="bg-green-500 text-white px-2 py-1 rounded-full text-sm ml-3">
-                    {{ currentDrop.discount }}% OFF
+            <div class="relative z-10 text-white" v-if="currentDrop">
+              <div class="flex flex-col lg:flex-row items-center gap-8">
+                <!-- Left content -->
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="px-2 py-1 text-xs rounded-full bg-white/20 font-semibold tracking-wide">{{ currentDrop.badge }}</span>
+                    <span 
+                      class="px-2 py-1 text-xs rounded-full font-semibold"
+                      :class="[getUrgencyStyle(currentDrop.urgencyLevel).bgColor, 'text-gray-900']"
+                    >
+                      {{ getUrgencyStyle(currentDrop.urgencyLevel).text }}
                     </span>
                   </div>
+                  <h3 class="text-3xl md:text-4xl font-extrabold leading-tight mb-2">{{ currentDrop.title }}</h3>
+                  <p class="text-white/90 text-lg mb-5">{{ currentDrop.subtitle }}</p>
+
+                  <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
+                    <li v-for="f in currentDrop.features" :key="f" class="flex items-center gap-2 text-white/90">
+                      <i class="fas fa-check-circle text-green-300"></i>
+                      <span>{{ f }}</span>
+                    </li>
+                  </ul>
+
+                  <div class="flex flex-wrap items-center gap-4 mb-4">
+                    <div class="text-4xl font-extrabold">${{ currentDrop.dropPrice }}</div>
+                    <div class="text-white/70 line-through text-xl">${{ currentDrop.originalPrice }}</div>
+                    <span class="px-2 py-1 bg-red-600 rounded-full text-white text-sm font-semibold">-{{ currentDrop.discount }}%</span>
                   </div>
 
-                  <!-- Stock Bar -->
-                  <div class="mb-6">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm opacity-90">Stock Level</span>
-                    <span class="text-sm font-semibold">{{ currentDrop.stockLeft }} / {{ currentDrop.totalStock }} left</span>
-                  </div>
-                  <div class="w-full bg-white/20 rounded-full h-2">
-                    <div 
-                    class="bg-gradient-to-r from-yellow-400 to-red-500 h-2 rounded-full transition-all duration-500"
-                    :style="{ width: `${(currentDrop.stockLeft / currentDrop.totalStock) * 100}%` }"
-                    ></div>
-                  </div>
+                  <div class="flex items-center gap-3 mb-4">
+                    <div class="w-56 h-2 bg-white/20 rounded-full overflow-hidden">
+                      <div class="h-full bg-emerald-400" :style="{ width: soldPercent(currentDrop) + '%' }"></div>
+                    </div>
+                    <div class="text-sm text-white/90">{{ currentDrop.totalStock - currentDrop.stockLeft }} sold • {{ currentDrop.stockLeft }} left</div>
                   </div>
 
-                  <!-- CTA Button -->
-                  <button 
-                  @click="viewDrop(currentDrop)"
-                  class="bg-white text-purple-600 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold text-lg transition-all hover:scale-105 flex items-center gap-3"
-                  >
-                  <i class="fas fa-bolt"></i>
-                  Claim This Drop
-                  </button>
+                  <div class="flex items-center gap-2 mb-6">
+                    <i class="far fa-clock"></i>
+                    <span class="font-semibold tracking-wide">{{ countdownText }}</span>
+                  </div>
+
+                  <div class="flex flex-wrap gap-3">
+                    <button @click="viewDrop(currentDrop)" class="px-4 py-2 rounded-lg bg-white text-gray-900 hover:bg-gray-100 font-medium">Shop drop</button>
+                    <button @click="viewDrop(currentDrop)" class="px-4 py-2 rounded-lg border border-white/40 hover:bg-white/10 font-medium">Details</button>
+                  </div>
                 </div>
 
-                <!-- Product Image/Preview -->
-                <div class="relative">
-                  <div class="bg-white/10 backdrop-blur rounded-2xl p-6 border border-white/20">
-                  <div class="aspect-square bg-white/20 rounded-xl flex items-center justify-center overflow-hidden">
-                    <img 
-                    src="https://ae01.alicdn.com/kf/S2c27aa2921084b97a9478c28e6c3973ah.jpg_640x640q90.jpg"
-                    :alt="currentDrop.title"
-                    class="w-full h-full object-contain"
-                    />
-                  </div>
-                  </div>
+                <!-- Right image -->
+                <div class="flex-1 w-full">
+                  <img :src="currentDrop.image" :alt="currentDrop.title" class="rounded-lg sm:rounded-xl w-full max-h-56 sm:max-h-80 object-cover ring-1 sm:ring-2 ring-white/30 shadow-xl" />
                 </div>
-                </div>
+              </div>
             </div>
           </div>
 
           <!-- Other Drops Grid -->
-          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div 
-              v-for="drop in otherDrops" 
+              v-for="drop in otherDrops"
               :key="drop.id"
-              class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-105"
+              class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105"
             >
-              <!-- Drop Header -->
-              <div class="p-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800 border-b border-gray-200 dark:border-gray-600">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 px-2 py-1 rounded-full text-xs font-semibold">
-                    {{ drop.badge }}
-                  </span>
-                  <span 
-                    :class="[
-                      'px-2 py-1 rounded-full text-xs font-semibold',
-                      getUrgencyStyle(drop.urgencyLevel).bgColor.replace('bg-', 'bg-opacity-20 bg-'),
-                      getUrgencyStyle(drop.urgencyLevel).color
-                    ]"
-                  >
+              <div class="relative">
+                <img :src="drop.image" :alt="drop.title" class="w-full h-36 sm:h-44 object-cover" />
+                <div class="absolute top-2 left-2 flex gap-2">
+                  <span class="px-2 py-0.5 text-[11px] rounded-full bg-black/60 text-white">{{ drop.badge }}</span>
+                  <span :class="[getUrgencyStyle(drop.urgencyLevel).bgColor, 'text-gray-900 px-2 py-0.5 text-[11px] rounded-full font-semibold']">
                     {{ getUrgencyStyle(drop.urgencyLevel).text }}
                   </span>
                 </div>
-                <h4 class="font-bold text-gray-900 dark:text-white">{{ drop.title }}</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ drop.subtitle }}</p>
+                <div class="absolute bottom-2 right-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full">
+                  <i class="far fa-clock mr-1"></i>{{ formatCountdown(drop.endTime, nowTime) }}
+                </div>
               </div>
-
-              <!-- Drop Content -->
               <div class="p-4">
-                <!-- Countdown -->
-                <div class="text-center mb-4">
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mb-1">Ends in</p>
-                  <div class="text-lg font-bold text-red-600 dark:text-red-400">
-                    {{ formatCountdown(drop.endTime) }}
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ drop.title }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ drop.subtitle }}</p>
+                <div class="flex items-center gap-2 mt-3">
+                  <span class="text-lg font-bold text-gray-900 dark:text-white">${{ drop.dropPrice }}</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ drop.originalPrice }}</span>
+                  <span class="px-2 py-0.5 text-xs bg-red-600 text-white rounded-full">-{{ drop.discount }}%</span>
+                </div>
+                <div class="mt-3">
+                  <div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div class="h-full bg-green-500" :style="{ width: soldPercent(drop) + '%' }"></div>
+                  </div>
+                  <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <span>{{ drop.totalStock - drop.stockLeft }} sold</span>
+                    <span>{{ drop.stockLeft }} left</span>
                   </div>
                 </div>
-
-                <!-- Price -->
-                <div class="text-center mb-4">
-                  <span class="text-sm text-gray-400 line-through">${{ drop.originalPrice }}</span>
-                  <span class="text-xl font-bold text-green-600 dark:text-green-400 ml-2">${{ drop.dropPrice }}</span>
-                  <div class="text-xs text-green-600 dark:text-green-400 mt-1">{{ drop.discount }}% OFF</div>
-                </div>
-
-                <!-- Stock -->
-                <div class="mb-4">
-                  <div class="flex items-center justify-between mb-1">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">Stock</span>
-                    <span class="text-xs text-gray-700 dark:text-gray-300">{{ drop.stockLeft }} left</span>
+                <div class="flex items-center justify-between mt-4">
+                  <div class="text-xs text-gray-600 dark:text-gray-300">
+                    <i class="fas fa-tag mr-1 text-green-500"></i>{{ drop.category }}
                   </div>
-                  <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                    <div 
-                      class="bg-gradient-to-r from-green-400 to-blue-500 h-1.5 rounded-full"
-                      :style="{ width: `${(drop.stockLeft / drop.totalStock) * 100}%` }"
-                    ></div>
-                  </div>
+                  <button @click="viewDrop(drop)" class="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg">View</button>
                 </div>
-
-                <!-- Action Button -->
-                <button 
-                  @click="viewDrop(drop)"
-                  class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg font-medium transition-colors text-sm"
-                >
-                  View Drop
-                </button>
               </div>
             </div>
           </div>
@@ -200,171 +141,108 @@
         <div v-if="storeSidebarStore.hasActiveFilters" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Active Filters</h3>
-            <span class="text-xs bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
+            <span class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
               {{ storeSidebarStore.getActiveFilterCount }} applied
             </span>
           </div>
           <div class="flex flex-wrap gap-2">
             <!-- Category Filter -->
             <span v-if="storeSidebarStore.appliedFilters.category" class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
-              Category: {{ storeSidebarStore.appliedFilters.category }}
-              <button @click="storeSidebarStore.clearCategoryFilter()" class="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5">
-                <i class="fas fa-times text-xs"></i>
-              </button>
+              <i class="fas fa-layer-group"></i>
+              <span>Category: {{ storeSidebarStore.appliedFilters.category }}</span>
+              <button class="ml-1 hover:text-blue-900 dark:hover:text-blue-200" @click="storeSidebarStore.clearCategoryFilter()">✕</button>
             </span>
             
             <!-- Brand Filters -->
             <span v-for="brand in storeSidebarStore.appliedFilters.brands" :key="brand" class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">
-              {{ brand }}
-              <button @click="storeSidebarStore.toggleBrand(brand)" class="hover:bg-purple-200 dark:hover:bg-purple-800 rounded-full p-0.5">
-                <i class="fas fa-times text-xs"></i>
-              </button>
+              <i class="fas fa-copyright"></i>
+              <span>{{ brandNameFromSlug(brand) }}</span>
+              <button class="ml-1 hover:text-purple-900 dark:hover:text-purple-200" @click="removeBrandFilter(brand)">✕</button>
             </span>
             
             <!-- Price Filter -->
             <span v-if="storeSidebarStore.appliedFilters.priceMin || storeSidebarStore.appliedFilters.priceMax" class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
-              ${{ storeSidebarStore.appliedFilters.priceMin || 0 }} - ${{ storeSidebarStore.appliedFilters.priceMax || '∞' }}
-              <button @click="storeSidebarStore.clearPriceFilter()" class="hover:bg-green-200 dark:hover:bg-green-800 rounded-full p-0.5">
-                <i class="fas fa-times text-xs"></i>
-              </button>
+              <i class="fas fa-dollar-sign"></i>
+              <span>
+                Price: 
+                {{ storeSidebarStore.appliedFilters.priceMin ?? 0 }} - 
+                {{ storeSidebarStore.appliedFilters.priceMax ?? '∞' }}
+              </span>
+              <button class="ml-1 hover:text-green-900 dark:hover:text-green-200" @click="storeSidebarStore.clearPriceFilter()">✕</button>
             </span>
             
             <!-- Quick Filters -->
             <span v-for="filter in storeSidebarStore.appliedFilters.quickFilters" :key="filter" class="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm">
-              {{ filter }}
-              <button @click="removeQuickFilter(filter)" class="hover:bg-orange-200 dark:hover:bg-orange-800 rounded-full p-0.5">
-                <i class="fas fa-times text-xs"></i>
-              </button>
+              <i class="fas fa-bolt"></i>
+              <span>{{ quickFilterLabel(filter) }}</span>
+              <button class="ml-1 hover:text-orange-900 dark:hover:text-orange-200" @click="removeQuickFilter(filter)">✕</button>
             </span>
             
             <!-- Search Filter -->
             <span v-if="storeSidebarStore.appliedFilters.search" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm">
-              "{{ storeSidebarStore.appliedFilters.search }}"
-              <button @click="storeSidebarStore.clearSearchFilter()" class="hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full p-0.5">
-                <i class="fas fa-times text-xs"></i>
-              </button>
+              <i class="fas fa-search"></i>
+              <span>{{ storeSidebarStore.appliedFilters.search }}</span>
+              <button class="ml-1 hover:text-gray-900 dark:hover:text-white" @click="storeSidebarStore.clearSearchFilter()">✕</button>
             </span>
           </div>
         </div>
 
         <!-- Filter and Sort Bar -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-          <div class="flex flex-wrap items-center justify-between gap-4">
-            <div class="flex flex-wrap items-center gap-4">
-              <!-- Category Dropdown -->
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
-                <select 
-                  v-model="selectedCategory" 
-                  class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
-                >
-                  <option value="">All Categories</option>
-                  <option v-for="category in categories" :key="category" :value="category">{{ category }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
+          <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3 sm:gap-4">
+              <!-- Search -->
+              <div class="relative w-full sm:w-auto">
+                <input
+                  :value="storeSidebarStore.appliedFilters.search"
+                  @input="updateSearch($event.target.value)"
+                  type="text"
+                  placeholder="Search in products..."
+                  class="w-full sm:w-64 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                />
+                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
               </div>
 
-              <!-- Price Range Dropdown -->
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price Range</label>
-                <select 
-                  v-model="priceRange" 
-                  class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
-                >
-                  <option v-for="range in martStore.priceRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
-              </div>
+              <!-- Category -->
+              <select v-model="selectedCategory" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
+                <option value="">All Categories</option>
+                <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
+              </select>
 
-              <!-- Brand Dropdown -->
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Brand</label>
-                <select 
-                  v-model="selectedBrand" 
-                  class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
-                >
-                  <option value="">All Brands</option>
-                  <option v-for="brand in availableBrands" :key="brand" :value="brand">{{ brand }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
-              </div>
+              <!-- Brand -->
+              <select v-model="selectedBrand" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
+                <option value="">All Brands</option>
+                <option v-for="b in availableBrands" :key="b" :value="b">{{ b }}</option>
+              </select>
 
-              <!-- Clear Filters Button -->
-              <div class="pt-6">
-                <button 
-                  v-if="hasActiveFilters"
-                  @click="clearAllFilters"
-                  class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
-                >
-                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                  </svg>
-                  Clear Filters
-                </button>
-              </div>
+              <!-- Price -->
+              <select v-model="priceRange" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
+                <option v-for="r in martStore.priceRanges" :key="r.value" :value="r.value">{{ r.label }}</option>
+              </select>
             </div>
             
-            <div class="flex items-center gap-4">
-              <div class="text-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400">Results</p>
-                <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ filteredProducts.length }}</p>
-              </div>
-              
-              <!-- Sort Dropdown -->
-              <div class="relative">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Sort By</label>
-                <select 
-                  v-model="sortBy" 
-                  class="appearance-none px-4 py-2 pr-8 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors min-w-[150px]"
-                >
-                  <option v-for="option in martStore.sortOptions" :key="option.value" :value="option.value">{{ option.label }}</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none mt-6">
-                  <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                  </svg>
-                </div>
+            <div class="flex items-center gap-3 sm:gap-4">
+              <!-- Sort -->
+              <select v-model="sortBy" class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
+                <option v-for="s in martStore.sortOptions" :key="s.value" :value="s.value">{{ s.label }}</option>
+              </select>
+
+              <!-- View toggle -->
+              <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='grid' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']" @click="viewMode='grid'">
+                  <i class="fas fa-th-large"></i>
+                </button>
+                <button :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='list' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']" @click="viewMode='list'">
+                  <i class="fas fa-list"></i>
+                </button>
               </div>
 
-              <!-- View Toggle -->
-              <div class="pt-6">
-                <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
-                  <button
-                    @click="viewMode = 'grid'"
-                    :class="[
-                      'px-3 py-2 text-sm font-medium transition-colors',
-                      viewMode === 'grid' 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                    ]"
-                  >
-                    <i class="fas fa-th-large"></i>
-                  </button>
-                  <button
-                    @click="viewMode = 'list'"
-                    :class="[
-                      'px-3 py-2 text-sm font-medium transition-colors',
-                      viewMode === 'list' 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                    ]"
-                  >
-                    <i class="fas fa-list"></i>
-                  </button>
-                </div>
-              </div>
+              <!-- Clear -->
+              <button v-if="hasActiveFilters" @click="clearAllFilters" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
+                Clear
+              </button>
+
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredProducts.length }} results</span>
             </div>
           </div>
         </div>
@@ -379,7 +257,7 @@
         </div>
 
         <!-- Grid View -->
-        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           <div 
             v-for="product in paginatedProducts" 
             :key="product.id"
@@ -387,178 +265,68 @@
           >
             <!-- Product Image -->
             <div class="relative overflow-hidden">
-              <img 
-                :src="product.image" 
-                :alt="product.name"
-                class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-300"
-              />
-              <div class="absolute top-3 left-3">
-                <span 
-                  v-if="product.sale"
-                  class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium"
-                >
-                  {{ product.sale }}% OFF
-                </span>
-              </div>
-              <div class="absolute top-3 right-3">
-                <button 
-                  @click="toggleWishlist(product.id)"
-                  class="p-2 bg-white/90 backdrop-blur rounded-full hover:bg-white transition-colors"
-                >
-                  <i 
-                    :class="[
-                      'fas fa-heart',
-                      product.isWishlisted ? 'text-red-500' : 'text-gray-400'
-                    ]"
-                  ></i>
-                </button>
+              <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+              <div class="absolute top-3 left-3 flex gap-2">
+                <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full">New</span>
+                <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
               </div>
             </div>
 
             <!-- Product Info -->
             <div class="p-4">
-              <div class="mb-2">
-                <span class="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">
-                  {{ product.category }}
-                </span>
-              </div>
-              <h3 class="font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
-                {{ product.name }}
-              </h3>
-              <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">
-                {{ product.description }}
-              </p>
-              
-              <!-- Price and Rating -->
-              <div class="flex items-center justify-between mb-4">
-                <div>
-                  <span v-if="product.originalPrice" class="text-sm text-gray-400 line-through mr-2">
-                    ${{ product.originalPrice }}
-                  </span>
-                  <span class="text-lg font-bold text-green-600 dark:text-green-400">
-                    ${{ product.price }}
-                  </span>
+              <h3 class="text-gray-900 dark:text-white font-semibold mb-1 line-clamp-2">{{ product.name }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.brand }} • {{ product.category }}</p>
+              <div class="flex items-center justify-between">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
+                  <span v-if="product.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ product.originalPrice }}</span>
                 </div>
-                <div class="flex items-center gap-1">
-                  <i class="fas fa-star text-yellow-400 text-sm"></i>
-                  <span class="text-sm text-gray-600 dark:text-gray-300">{{ product.rating }}</span>
-                </div>
+                <button @click="toggleWishlist(product.id)" class="text-gray-400 hover:text-red-500">
+                  <i :class="['fas', product.isWishlisted ? 'fa-heart text-red-500' : 'fa-heart']"></i>
+                </button>
               </div>
-
-              <!-- Add to Cart Button -->
-              <button 
-                @click="addToCart(product)"
-                class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <i class="fas fa-shopping-cart"></i>
-                Add to Cart
-              </button>
+              <div class="mt-3 flex items-center justify-between">
+                <div class="text-yellow-400">
+                  <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                </div>
+                <button @click="addToCart(product)" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Add to Cart</button>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- List View -->
-        <div v-else class="space-y-4">
+        <!-- List View images size for mobile -->
+        <div v-else class="space-y-3 sm:space-y-4">
           <div 
             v-for="product in paginatedProducts" 
             :key="product.id"
             class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 group"
           >
             <div class="flex">
-              <!-- Product Image -->
-              <div class="relative w-48 h-48 flex-shrink-0 overflow-hidden">
-                <img 
-                  :src="product.image" 
-                  :alt="product.name"
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                />
-                <div class="absolute top-3 left-3">
-                  <span 
-                    v-if="product.sale"
-                    class="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium"
-                  >
-                    {{ product.sale }}% OFF
-                  </span>
-                </div>
-              </div>
-
-              <!-- Product Info -->
-              <div class="flex-1 p-6 flex flex-col justify-between">
-                <div>
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-medium text-green-600 dark:text-green-400 uppercase tracking-wide">
-                      {{ product.category }}
-                    </span>
-                    <button 
-                      @click="toggleWishlist(product.id)"
-                      class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                    >
-                      <i 
-                        :class="[
-                          'fas fa-heart',
-                          product.isWishlisted ? 'text-red-500' : 'text-gray-400'
-                        ]"
-                      ></i>
-                    </button>
-                  </div>
-                  
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                    {{ product.name }}
-                  </h3>
-                  <p class="text-gray-600 dark:text-gray-300 mb-4">
-                    {{ product.description }}
-                  </p>
-                  
-                  <!-- Brand and Rating -->
-                  <div class="flex items-center gap-4 mb-4">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">
-                      Brand: <span class="font-medium">{{ product.brand }}</span>
-                    </span>
-                    <div class="flex items-center gap-1">
-                      <i class="fas fa-star text-yellow-400 text-sm"></i>
-                      <span class="text-sm text-gray-600 dark:text-gray-300">{{ product.rating }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Price and Actions -->
+              <img :src="product.image" :alt="product.name" class="w-40 h-40 object-cover" />
+              <div class="p-4 flex-1">
+                <h3 class="text-gray-900 dark:text-white font-semibold mb-1">{{ product.name }}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.brand }} • {{ product.category }}</p>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">{{ product.description }}</p>
                 <div class="flex items-center justify-between">
-                  <div>
-                    <span v-if="product.originalPrice" class="text-sm text-gray-400 line-through mr-2">
-                      ${{ product.originalPrice }}
-                    </span>
-                    <span class="text-2xl font-bold text-green-600 dark:text-green-400">
-                      ${{ product.price }}
-                    </span>
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
+                    <span v-if="product.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ product.originalPrice }}</span>
                   </div>
-                  <button 
-                    @click="addToCart(product)"
-                    class="bg-green-600 hover:bg-green-700 text-white py-2 px-6 rounded-lg font-medium transition-colors flex items-center gap-2"
-                  >
-                    <i class="fas fa-shopping-cart"></i>
-                    Add to Cart
-                  </button>
+                  <div class="flex items-center gap-3">
+                    <div class="text-yellow-400">
+                      <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                    </div>
+                    <button @click="addToCart(product)" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Add to Cart</button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Pagination -->
-        <div class="flex justify-center mt-8" v-if="totalPages > 1">
-          <div class="flex items-center gap-2">
-            <button @click="currentPage--" :disabled="currentPage === 1" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50">
-              Previous
-            </button>
-            <span v-for="page in totalPages" :key="page" @click="currentPage = page" 
-                  :class="['px-3 py-2 border rounded-lg cursor-pointer', currentPage === page ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700']">
-              {{ page }}
-            </span>
-            <button @click="currentPage++" :disabled="currentPage === totalPages" class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg disabled:opacity-50">
-              Next
-            </button>
-          </div>
-        </div>
+        <!-- Bottom padding for mobile nav -->
+        <div class="h-14 md:h-0"></div>
     </div>
   </div>
 </template>
@@ -586,6 +354,7 @@ const itemsPerPage = martStore.config.DEFAULT_ITEMS_PER_PAGE
 const currentDropIndex = ref(0)
 const countdownTimer = ref(null)
 const rotationTimer = ref(null)
+const nowTime = ref(Date.now())
 
 // Use store for options
 const categories = computed(() => productsStore.categories)
@@ -595,10 +364,11 @@ const heroContent = computed(() => martStore.heroContent)
 // Product Drops Computed
 const currentDrop = computed(() => martStore.productDrops[currentDropIndex.value])
 const otherDrops = computed(() => martStore.productDrops.filter((_, index) => index !== currentDropIndex.value))
+const countdownText = computed(() => currentDrop.value ? formatCountdown(currentDrop.value.endTime, nowTime.value) : '')
 
 // Product Drops Methods
-const formatCountdown = (endTime) => {
-  const now = new Date().getTime()
+const formatCountdown = (endTime, nowMs) => {
+  const now = nowMs || new Date().getTime()
   const end = new Date(endTime).getTime()
   const difference = end - now
   if (difference <= 0) return 'EXPIRED'
@@ -615,6 +385,11 @@ const getUrgencyStyle = (urgencyLevel) => {
   return martStore.dropUrgencyMessages[urgencyLevel] || martStore.dropUrgencyMessages.low
 }
 
+const soldPercent = (drop) => {
+  if (!drop?.totalStock) return 0
+  return Math.min(100, Math.round(((drop.totalStock - drop.stockLeft) / drop.totalStock) * 100))
+}
+
 const viewDrop = (drop) => {
   console.log('Viewing drop:', drop.title)
 }
@@ -626,7 +401,9 @@ const startDropRotation = () => {
 }
 
 const startCountdownUpdate = () => {
-  countdownTimer.value = setInterval(() => {}, martStore.dropConfig.COUNTDOWN_UPDATE_INTERVAL)
+  countdownTimer.value = setInterval(() => {
+    nowTime.value = Date.now()
+  }, martStore.dropConfig.COUNTDOWN_UPDATE_INTERVAL)
 }
 
 // Lifecycle
@@ -772,6 +549,19 @@ const removeQuickFilter = (filter) => {
   const filters = storeSidebarStore.appliedFilters.quickFilters.filter(f => f !== filter)
   storeSidebarStore.setQuickFilters(filters)
 }
+
+const updateSearch = (val) => {
+  storeSidebarStore.setSearchQuery(val)
+}
+
+const brandNameFromSlug = (slug) => slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+
+const removeBrandFilter = (slug) => {
+  storeSidebarStore.selectedBrands = storeSidebarStore.selectedBrands.filter(b => b !== slug)
+  storeSidebarStore.appliedFilters.brands = storeSidebarStore.appliedFilters.brands.filter(b => b !== slug)
+}
+
+const quickFilterLabel = (q) => ({ new: 'New', sale: 'On Sale', popular: 'Popular', exclusive: 'Exclusive' }[q] || q)
 
 // Watch for changes in filtered products to reset pagination
 watch(filteredProducts, () => {

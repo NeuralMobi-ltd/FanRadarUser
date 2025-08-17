@@ -23,7 +23,8 @@
     <div v-else-if="isSearchRoute && isAuthenticated">
       <Header />
       <div class="pt-14 md:pt-16 flex flex-col md:flex-row">
-        <SearchPageSidebar class="order-2 md:order-1" />
+        <!-- Hide SearchPageSidebar on mobile (md:hidden), show only on desktop -->
+        <SearchPageSidebar class="hidden md:block order-2 md:order-1" />
         <main class="flex-1 min-h-screen w-full md:w-auto order-1 md:order-2 pb-24 md:pb-0">
           <router-view />
         </main>
@@ -53,8 +54,12 @@
     </div>
 
     <!-- Mobile Bottom Navigation (show ONLY on tablet and phone, not on desktop) -->
-    <div class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-lg rounded-t-2xl px-2 pb-2 pt-1" style="padding-bottom: env(safe-area-inset-bottom)">
-      <MobileBottomNav v-if="isAuthenticated && !isLandingPage && !isAuthPage" />
+    <div
+      v-if="showBottomNav"
+      class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-900/95 border-t border-gray-200 dark:border-gray-700 shadow-lg px-2 pb-2 pt-1"
+      style="padding-bottom: env(safe-area-inset-bottom)"
+    >
+      <MobileBottomNav />
     </div>
   </div>
 </template>
@@ -100,6 +105,14 @@ const isAuthPage = computed(() =>
 const isHomeOrExplore = computed(() => {
   const p = route.path
   return p === '/' || p === '/home' || p.startsWith('/explore')
+})
+
+// Honor route meta to show/hide MobileBottomNav
+const showBottomNav = computed(() => {
+  const allow = route.meta?.showBottomNav !== false
+  const notAuthPage = !['/login', '/signup', '/choose-categories'].includes(route.path)
+  const notLanding = route.path !== '/'
+  return isAuthenticated.value && allow && notAuthPage && notLanding
 })
 </script>
 

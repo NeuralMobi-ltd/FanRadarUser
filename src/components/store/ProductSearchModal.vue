@@ -2,7 +2,8 @@
   <!-- Product Search Dropdown positioned below search input -->
   <div 
     v-if="isVisible" 
-    class="absolute top-full left-0 right-0 z-50 mt-2"
+    class="absolute top-full z-50 mt-2"
+    :class="fullWidth ? 'left-0 right-0 w-full' : 'left-0 w-[560px] sm:w-[600px] lg:w-[640px] max-w-[92vw]'"
   >
     <!-- Search dropdown -->
     <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-96">
@@ -187,7 +188,8 @@ import { useProductsStore } from '@/store/products'
 
 const props = defineProps({
   isVisible: Boolean,
-  query: String
+  query: String,
+  fullWidth: { type: Boolean, default: true }
 })
 
 const emit = defineEmits(['close', 'search'])

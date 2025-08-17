@@ -6,11 +6,11 @@
     </div>
 
     <!-- Profile Content -->
-    <div v-else-if="userProfile" class="max-w-4xl mx-auto px-4 py-8">
+    <div v-else-if="userProfile" class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
       <!-- Profile Header -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
         <!-- Cover Photo with gradient fallback -->
-        <div class="h-32 rounded-t-xl relative overflow-visible">
+        <div class="h-24 sm:h-32 rounded-t-xl relative overflow-visible">
           <!-- Cover Photo if exists, otherwise gradient -->
           <div 
             v-if="userProfile?.coverPhoto" 
@@ -27,13 +27,13 @@
         </div>
         
         <!-- Avatar positioned outside cover photo -->
-        <div class="relative -mt-12 px-6">
+        <div class="relative -mt-10 sm:-mt-12 px-4 sm:px-6">
           <div class="flex items-end">
             <div class="relative z-30">
               <img 
                 :src="userProfile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&h=160&fit=crop&crop=face'" 
                 :alt="userProfile?.name || 'User'"
-                class="w-24 h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 object-cover shadow-lg"
+                class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 object-cover shadow-lg"
               />
               <div v-if="userProfile?.verified" class="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 z-10">
                 <i class="fas fa-check text-white text-xs"></i>
@@ -43,7 +43,7 @@
         </div>
 
         <!-- Profile Info -->
-        <div class="px-6 pt-4 pb-6">
+        <div class="px-4 sm:px-6 pt-4 pb-6">
           <div class="mb-6">
             <!-- Profile Details -->
             <div class="mb-4">
@@ -59,7 +59,7 @@
               </p>
 
               <!-- Action Buttons moved here -->
-              <div class="flex space-x-3 mb-4">
+              <div class="flex flex-wrap gap-2 sm:space-x-3 mb-4">
                 <button 
                   v-if="isOwnProfile"
                   @click="$router.push('/edit-account')"
@@ -88,7 +88,7 @@
           </div>
 
           <!-- Stats and Tabs Navigation -->
-          <div class="flex justify-start space-x-8 text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
+          <div class="flex justify-between sm:justify-start space-x-4 sm:space-x-8 text-xs sm:text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
             <button 
               @click="activeTab = 'posts'"
               class="text-center hover:text-blue-600 transition-colors"
@@ -115,80 +115,169 @@
       </div>
 
       <!-- Navigation Tabs -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6 overflow-hidden">
-        <div class="flex bg-gray-50 dark:bg-gray-700/50">
-          <button 
-            @click="activeTab = 'posts'"
-            :class=" [
-              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
-              activeTab === 'posts' 
-                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            ]"
-          >
-            <i class="fas fa-th-large text-lg"></i>
-            <span class="font-semibold">Posts</span>
-            <div v-if="activeTab === 'posts'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-          </button>
-          
-          <button 
-            @click="activeTab = 'followers'"
-            :class=" [
-              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
-              activeTab === 'followers' 
-                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            ]"
-          >
-            <i class="fas fa-users text-lg"></i>
-            <span class="font-semibold">Followers</span>
-            <div v-if="activeTab === 'followers'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-          </button>
-          
-          <button 
-            @click="activeTab = 'following'"
-            :class=" [
-              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
-              activeTab === 'following' 
-                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            ]"
-          >
-            <i class="fas fa-user-plus text-lg"></i>
-            <span class="font-semibold">Following</span>
-            <div v-if="activeTab === 'following'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-          </button>
+      <div class="mb-6">
+        <!-- Mobile scrollable tabs -->
+        <div class="sm:hidden relative">
+          <!-- Gradient overlays -->
+          <div
+            class="pointer-events-none absolute inset-y-0 left-0 w-8 bg-gradient-to-r from-gray-50 dark:from-gray-900 to-transparent z-10 transition-opacity duration-200"
+            :class="{ 'opacity-0': !canScrollLeft }"
+          ></div>
+          <div
+            class="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-gray-50 dark:from-gray-900 to-transparent z-10 transition-opacity duration-200"
+            :class="{ 'opacity-0': !canScrollRight }"
+          ></div>
 
-          <!-- My Fandoms Tab (conditionally rendered) -->
-            <button 
-              v-if="myFandoms.length > 0"
-              @click="activeTab = 'fandoms'"
-              :class=" [
-                'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
-                activeTab === 'fandoms' 
-                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
-                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-              ]"
-            >
-              <i class="fas fa-users text-lg"></i>
-              <span class="font-semibold">My Fandoms</span>
-              <div v-if="activeTab === 'fandoms'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-            </button>
-          
-          <button 
-            v-if="isOwnProfile"
-            @click="activeTab = 'saved'"
-            :class=" [
-              'flex-1 flex items-center justify-center space-x-2 py-4 px-6 font-medium transition-all duration-200 relative',
-              activeTab === 'saved' 
-                ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm' 
-                : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white dark:hover:bg-gray-800'
-            ]"
-          >
-            <i class="fas fa-bookmark text-lg"></i>
-            <span class="font-semibold">Saved</span>
-            <div v-if="activeTab === 'saved'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600"></div>
-          </button>
+          <!-- Scrollable container -->
+          <div ref="tabScroll" class="no-scrollbar overflow-x-auto px-2" @wheel.passive="onWheelScroll">
+            <div class="flex items-center gap-3 py-1 min-w-max">
+              <button 
+                @click="activeTab = 'posts'"
+                :data-tab="'posts'"
+                :class="[
+                  'shrink-0 h-11 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shadow-sm',
+                  activeTab === 'posts' 
+                    ? 'bg-blue-600 text-white shadow-blue-500/25 shadow-lg transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md'
+                ]"
+              >
+                <i class="fas fa-th-large text-base"></i>
+                <span>Posts</span>
+              </button>
+              
+              <button 
+                @click="activeTab = 'followers'"
+                :data-tab="'followers'"
+                :class="[
+                  'shrink-0 h-11 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shadow-sm',
+                  activeTab === 'followers' 
+                    ? 'bg-blue-600 text-white shadow-blue-500/25 shadow-lg transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md'
+                ]"
+              >
+                <i class="fas fa-users text-base"></i>
+                <span>Followers</span>
+              </button>
+              
+              <button 
+                @click="activeTab = 'following'"
+                :data-tab="'following'"
+                :class="[
+                  'shrink-0 h-11 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shadow-sm',
+                  activeTab === 'following' 
+                    ? 'bg-blue-600 text-white shadow-blue-500/25 shadow-lg transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md'
+                ]"
+              >
+                <i class="fas fa-user-plus text-base"></i>
+                <span>Following</span>
+              </button>
+
+              <button 
+                v-if="myFandoms.length > 0"
+                @click="activeTab = 'fandoms'"
+                :data-tab="'fandoms'"
+                :class="[
+                  'shrink-0 h-11 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shadow-sm',
+                  activeTab === 'fandoms' 
+                    ? 'bg-blue-600 text-white shadow-blue-500/25 shadow-lg transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md'
+                ]"
+              >
+                <i class="fas fa-users text-base"></i>
+                <span>Fandoms</span>
+              </button>
+
+              <button 
+                v-if="isOwnProfile"
+                @click="activeTab = 'saved'"
+                :data-tab="'saved'"
+                :class="[
+                  'shrink-0 h-11 px-4 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200 whitespace-nowrap shadow-sm',
+                  activeTab === 'saved' 
+                    ? 'bg-blue-600 text-white shadow-blue-500/25 shadow-lg transform scale-105' 
+                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-md'
+                ]"
+              >
+                <i class="fas fa-bookmark text-base"></i>
+                <span>Saved</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Desktop segmented control -->
+        <div class="hidden sm:block">
+          <div class="bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl">
+            <div class="flex">
+              <button 
+                @click="activeTab = 'posts'"
+                :class="[
+                  'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
+                  activeTab === 'posts' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ]"
+              >
+                <i class="fas fa-th-large text-base"></i>
+                <span>Posts</span>
+              </button>
+              
+              <button 
+                @click="activeTab = 'followers'"
+                :class="[
+                  'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
+                  activeTab === 'followers' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ]"
+              >
+                <i class="fas fa-users text-base"></i>
+                <span>Followers</span>
+              </button>
+              
+              <button 
+                @click="activeTab = 'following'"
+                :class="[
+                  'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
+                  activeTab === 'following' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ]"
+              >
+                <i class="fas fa-user-plus text-base"></i>
+                <span>Following</span>
+              </button>
+
+              <button 
+                v-if="myFandoms.length > 0"
+                @click="activeTab = 'fandoms'"
+                :class="[
+                  'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
+                  activeTab === 'fandoms' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ]"
+              >
+                <i class="fas fa-users text-base"></i>
+                <span>Fandoms</span>
+              </button>
+
+              <button 
+                v-if="isOwnProfile"
+                @click="activeTab = 'saved'"
+                :class="[
+                  'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
+                  activeTab === 'saved' 
+                    ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm' 
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                ]"
+              >
+                <i class="fas fa-bookmark text-base"></i>
+                <span>Saved</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -196,7 +285,7 @@
       <div class="space-y-6">
         <!-- Posts Tab -->
         <div v-if="activeTab === 'posts'">
-          <div v-if="userPosts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div v-if="userPosts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Post 
               v-for="post in userPosts"
               :key="post.id"
@@ -355,7 +444,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useUsersStore } from '@/store/users'
@@ -509,8 +598,43 @@ function editUserPost(postId) {
   }
 }
 
+const tabScroll = ref(null)
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+
+const updateTabScrollState = () => {
+  const el = tabScroll.value
+  if (!el) return
+  const { scrollLeft, scrollWidth, clientWidth } = el
+  canScrollLeft.value = scrollLeft > 0
+  canScrollRight.value = scrollLeft + clientWidth < scrollWidth - 1
+}
+
+const scrollTabs = (dir) => {
+  const el = tabScroll.value
+  if (!el) return
+  el.scrollBy({ left: dir * 160, behavior: 'smooth' })
+}
+
+const onWheelScroll = (e) => {
+  const el = tabScroll.value
+  if (!el) return
+  if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+    el.scrollLeft += e.deltaY
+    e.preventDefault()
+  }
+}
+
 onMounted(() => {
   fetchUserProfile()
+  requestAnimationFrame(updateTabScrollState)
+  if (tabScroll.value) tabScroll.value.addEventListener('scroll', updateTabScrollState, { passive: true })
+  window.addEventListener('resize', updateTabScrollState)
+})
+
+onUnmounted(() => {
+  if (tabScroll.value) tabScroll.value.removeEventListener('scroll', updateTabScrollState)
+  window.removeEventListener('resize', updateTabScrollState)
 })
 
 watch(() => route.params.user, () => {
@@ -524,6 +648,15 @@ watch(() => authStore.user, () => {
     fetchUserProfile()
   }
 }, { deep: true })
+
+watch(() => activeTab.value, () => {
+  const el = tabScroll.value
+  if (!el) return
+  const selected = el.querySelector(`[data-tab="${activeTab.value}"]`)
+  if (selected && selected.scrollIntoView) {
+    selected.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
+  }
+})
 </script>
 
 <style scoped>
@@ -531,4 +664,6 @@ watch(() => authStore.user, () => {
   background-clip: text;
   -webkit-background-clip: text;
 }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>

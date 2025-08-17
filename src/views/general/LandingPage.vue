@@ -4,60 +4,90 @@
     <div class="absolute inset-0 -z-10 aurora"></div>
     <!-- Header -->
     <header class="relative z-50 bg-white/70 dark:bg-gray-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700 shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-20">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 sm:h-20">
           <!-- Left: Logo -->
           <div class="flex items-center relative">
             <router-link to="/" class="flex items-center space-x-2">
               <img 
                 src="/images/FanRadar.png"
                 alt="FanRadar" 
-                class="h-11 w-auto dark:hidden"
+                class="h-8 sm:h-11 w-auto dark:hidden"
               />
               <img 
                 src="/images/FanRadarWhite.png"
                 alt="FanRadar" 
-                class="h-11 w-auto hidden dark:block"
+                class="h-8 sm:h-11 w-auto hidden dark:block"
               />
             </router-link>
           </div>
 
           <!-- Navigation & Actions -->
-          <div class="flex items-center space-x-4">
+          <div class="flex items-center gap-2 sm:gap-4">
             <!-- Dark Mode Toggle -->
             <button 
               @click="toggleTheme"
-              class="p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
+              class="p-2 sm:p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
             >
-              <i v-if="!isDark" class="fas fa-moon w-5 h-5 group-hover:rotate-12 transition-transform"></i>
-              <i v-else class="fas fa-sun w-5 h-5 group-hover:rotate-12 transition-transform"></i>
+              <i v-if="!isDark" class="fas fa-moon w-4 sm:w-5 h-4 sm:h-5 group-hover:rotate-12 transition-transform"></i>
+              <i v-else class="fas fa-sun w-4 sm:w-5 h-4 sm:h-5 group-hover:rotate-12 transition-transform"></i>
             </button>
 
-            <!-- Language switcher -->
-            <select
-              v-model="locale"
-              @change="onChangeLocale"
-              class="px-3 py-2 rounded-lg border border-gray-300/60 dark:border-gray-700 bg-white/70 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/70"
-              aria-label="Select language"
-            >
-              <option value="en">EN</option>
-              <option value="fr">FR</option>
-            </select>
+            <!-- Language switcher (custom dropdown) -->
+            <div class="relative" ref="langWrapperRef">
+              <button 
+                type="button"
+                @click="toggleLangOpen"
+                :aria-expanded="isLangOpen.toString()"
+                class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-gray-300/60 dark:border-gray-700 bg-white/70 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/70"
+                aria-label="Select language"
+              >
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-[10px] font-bold">{{ currentLocaleShort }}</span>
+                <svg class="w-3.5 h-3.5 opacity-70" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.25 8.29a.75.75 0 01-.02-1.08z" clip-rule="evenodd"/>
+                </svg>
+              </button>
+              <div
+                v-if="isLangOpen"
+                class="absolute right-0 mt-2 w-52 rounded-xl border border-gray-200/60 dark:border-gray-700 bg-white/90 dark:bg-gray-800 shadow-xl overflow-hidden z-50"
+              >
+                <button
+                  v-for="opt in languages"
+                  :key="opt.code"
+                  @click="selectLanguage(opt.code)"
+                  class="w-full text-left px-3.5 py-2.5 text-sm flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700/60 text-gray-700 dark:text-gray-200"
+                >
+                  <span class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold text-gray-500 dark:text-gray-400 w-6">{{ opt.region }}</span>
+                    <span class="font-medium">{{ opt.label }}</span>
+                  </span>
+                  <svg v-if="locale === opt.code" class="w-4 h-4 text-blue-600 dark:text-blue-400" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 10l3 3 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
 
-            <!-- Login Button -->
+            <!-- Login Button (icon-only on phones) -->
             <router-link 
               to="/login"
-              class="px-6 py-2 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
+              aria-label="{{ $t('header.signIn') }}"
+              title="{{ $t('header.signIn') }}"
+              class="inline-flex items-center justify-center h-9 w-9 sm:h-auto sm:w-auto px-0 sm:px-6 py-0 sm:py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors rounded-xl border border-gray-300/60 dark:border-gray-700"
             >
-              {{ $t('header.signIn') }}
+              <LogIn class="w-5 h-5 sm:mr-2" />
+              <span class="hidden sm:inline">{{ $t('header.signIn') }}</span>
             </router-link>
 
-            <!-- Get Started Button -->
+            <!-- Get Started Button (icon-only on phones) -->
             <router-link 
               to="/signup"
-              class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-lg hover:shadow-xl"
+              aria-label="{{ $t('header.signUp') }}"
+              title="{{ $t('header.signUp') }}"
+              class="inline-flex items-center justify-center h-9 w-9 sm:h-auto sm:w-auto px-0 sm:px-6 py-0 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm sm:text-base transition-colors shadow-lg hover:shadow-xl"
             >
-              {{ $t('header.signUp') }}
+              <UserPlus class="w-5 h-5 sm:mr-2" />
+              <span class="hidden sm:inline">{{ $t('header.signUp') }}</span>
             </router-link>
           </div>
         </div>
@@ -67,85 +97,85 @@
     </header>
 
     <!-- Hero Section -->
-    <section class="relative pt-20 pb-32 overflow-hidden bg-gradient-to-b from-slate-50 via-primary-50/60 to-slate-100 dark:from-gray-800/70 dark:via-gray-900 dark:to-gray-900">
+    <section class="relative pt-16 sm:pt-20 pb-24 sm:pb-32 overflow-hidden bg-gradient-to-b from-slate-50 via-primary-50/60 to-slate-100 dark:from-gray-800/70 dark:via-gray-900 dark:to-gray-900">
       <!-- Background Elements -->
       <div class="absolute inset-0">
-        <div class="absolute top-0 left-0 w-72 h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-        <div class="absolute top-0 right-0 w-72 h-72 bg-secondary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div class="absolute -bottom-8 left-20 w-72 h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div class="absolute top-0 left-0 w-48 sm:w-72 h-48 sm:h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
+        <div class="absolute top-0 right-0 w-48 sm:w-72 h-48 sm:h-72 bg-secondary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-48 sm:w-72 h-48 sm:h-72 bg-primary-400 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
         <!-- subtle dotted pattern to break white space -->
         <div class="pointer-events-none absolute inset-0 pattern-dots opacity-[0.06] dark:opacity-[0.08]"></div>
         <!-- mesh gradient overlay for stronger color presence -->
         <div class="pointer-events-none absolute inset-0 mesh opacity-25 dark:opacity-20"></div>
       </div>
-      <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="relative max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div class="text-center">
-          <h1 class="text-5xl md:text-7xl font-black text-gray-900 dark:text-white mb-8 leading-tight">
+          <h1 class="text-3xl sm:text-5xl md:text-7xl font-black text-gray-900 dark:text-white mb-6 sm:mb-8 leading-tight">
             {{ $t('hero.titleBefore') }} <span class="text-primary-600">FanRadar</span> {{ $t('hero.titleAfter') }}
           </h1>
-          <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+          <p class="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 sm:mb-12 max-w-4xl mx-auto leading-relaxed px-4">
             {{ $t('hero.subtitle') }}
           </p>
-          <div class="flex flex-col sm:flex-row gap-6 justify-center items-center mb-10">
-            <router-link to="/login" class="group relative px-8 py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold text-lg shadow-2xl shadow-primary-500/25 hover:shadow-secondary-500/30 transform hover:scale-105 transition-all duration-300">
+          <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center mb-8 sm:mb-10 px-4">
+            <router-link to="/login" class="group relative w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-secondary-600 text-white rounded-2xl font-semibold text-base sm:text-lg shadow-2xl shadow-primary-500/25 hover:shadow-secondary-500/30 transform hover:scale-105 transition-all duration-300">
               <span class="relative z-10">{{ $t('hero.ctaPrimary') }}</span>
               <div class="absolute inset-0 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </router-link>
-            <router-link to="/login" class="flex items-center px-8 py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl font-semibold text-lg hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300">
-              <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <router-link to="/login" class="flex items-center justify-center w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-2xl font-semibold text-base sm:text-lg hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300">
+              <svg class="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
               {{ $t('hero.ctaSecondary') }}
             </router-link>
           </div>
           <!-- How it works teaser -->
-          <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('hero.teaser') }}</p>
+          <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 px-4">{{ $t('hero.teaser') }}</p>
         </div>
       </div>
       <!-- soft color glow under CTAs -->
-      <div class="pointer-events-none absolute left-1/2 top-[58%] -translate-x-1/2 w-[680px] h-[240px] bg-gradient-to-r from-primary-400/25 via-secondary-400/25 to-primary-400/25 blur-3xl rounded-full"></div>
+      <div class="pointer-events-none absolute left-1/2 top-[58%] -translate-x-1/2 w-[480px] sm:w-[680px] h-[180px] sm:h-[240px] bg-gradient-to-r from-primary-400/25 via-secondary-400/25 to-primary-400/25 blur-3xl rounded-full"></div>
       <!-- wave divider to transition into the next section background -->
       <div class="absolute inset-x-0 -bottom-1 text-gray-50 dark:text-gray-800 select-none" aria-hidden="true">
-        <svg class="w-full h-16 md:h-24" viewBox="0 0 1440 100" preserveAspectRatio="none">
+        <svg class="w-full h-12 sm:h-16 md:h-24" viewBox="0 0 1440 100" preserveAspectRatio="none">
           <path d="M0,0 C240,80 480,80 720,30 C960,-20 1200,-10 1440,20 L1440,100 L0,100 Z" fill="currentColor"></path>
         </svg>
       </div>
     </section>
 
     <!-- Stats Section -->
-    <section class="py-20 relative bg-gradient-to-b from-slate-50 via-primary-50/90 to-slate-100 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
+    <section class="py-16 sm:py-20 relative bg-gradient-to-b from-slate-50 via-primary-50/90 to-slate-100 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800">
       <div class="pointer-events-none absolute inset-0 pattern-dots opacity-[0.06] dark:opacity-[0.04]"></div>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           <div v-for="stat in stats" :key="stat.label" class="text-center group">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30 ring-1 ring-white/60 dark:ring-white/10 shadow-sm">
-              <component :is="stat.icon" class="w-8 h-8 text-primary-600 dark:text-primary-400" />
+            <div class="inline-flex items-center justify-center w-12 sm:w-16 h-12 sm:h-16 rounded-2xl mb-3 sm:mb-4 group-hover:scale-110 transition-transform duration-300 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30 ring-1 ring-white/60 dark:ring-white/10 shadow-sm">
+              <component :is="stat.icon" class="w-6 sm:w-8 h-6 sm:h-8 text-primary-600 dark:text-primary-400" />
             </div>
-            <div class="text-4xl font-black text-gray-900 dark:text-white mb-2">{{ stat.value }}</div>
-            <div class="text-gray-600 dark:text-gray-300 font-medium">{{ stat.label }}</div>
+            <div class="text-2xl sm:text-4xl font-black text-gray-900 dark:text-white mb-1 sm:mb-2">{{ stat.value }}</div>
+            <div class="text-sm sm:text-base text-gray-600 dark:text-gray-300 font-medium">{{ stat.label }}</div>
           </div>
         </div>
       </div>
     </section>
 
     <!-- How It Works Section -->
-    <section class="py-24 relative bg-gradient-to-b from-slate-50 via-primary-50/60 to-slate-100 dark:from-gray-900 dark:via-gray-800/60 dark:to-gray-900">
+    <section class="py-16 sm:py-24 relative bg-gradient-to-b from-slate-50 via-primary-50/60 to-slate-100 dark:from-gray-900 dark:via-gray-800/60 dark:to-gray-900">
       <div class="pointer-events-none absolute inset-0 pattern-dots opacity-[0.05] dark:opacity-[0.04]"></div>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-14">
-          <h2 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-4">{{ $t('howItWorks.title') }}</h2>
-          <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">{{ $t('howItWorks.subtitle') }}</p>
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div class="text-center mb-10 sm:mb-14">
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-3 sm:mb-4">{{ $t('howItWorks.title') }}</h2>
+          <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">{{ $t('howItWorks.subtitle') }}</p>
         </div>
-        <div class="grid md:grid-cols-3 gap-6">
-          <div v-for="(step, i) in howItWorks" :key="step.title" class="group relative p-8 rounded-3xl bg-gradient-to-br from-white/90 via-primary-50/70 to-secondary-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 ring-1 ring-gray-200/70 dark:ring-white/10 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
-            <div class="flex items-center justify-between mb-6">
-              <div class="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-2xl">
-                <component :is="step.icon" class="w-7 h-7 text-white" />
+        <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+          <div v-for="(step, i) in howItWorks" :key="step.title" class="group relative p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-white/90 via-primary-50/70 to-secondary-50/50 dark:from-gray-800 dark:via-gray-800 dark:to-gray-800 ring-1 ring-gray-200/70 dark:ring-white/10 shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300">
+            <div class="flex items-center justify-between mb-4 sm:mb-6">
+              <div class="inline-flex items-center justify-center w-12 sm:w-14 h-12 sm:h-14 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-2xl">
+                <component :is="step.icon" class="w-6 sm:w-7 h-6 sm:h-7 text-white" />
               </div>
-              <span class="text-sm font-semibold text-gray-400">Step {{ i + 1 }}</span>
+              <span class="text-xs sm:text-sm font-semibold text-gray-400">Step {{ i + 1 }}</span>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">{{ step.title }}</h3>
-            <p class="text-gray-600 dark:text-gray-300">{{ step.description }}</p>
+            <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">{{ step.title }}</h3>
+            <p class="text-sm sm:text-base text-gray-600 dark:text-gray-300">{{ step.description }}</p>
           </div>
         </div>
       </div>
@@ -293,8 +323,8 @@
 </template>
 
 <script>
-import { Users, MessageCircle, Star, Heart, TrendingUp, Zap, Globe, Shield, Twitter, Facebook, Instagram, Linkedin } from 'lucide-vue-next'
-import { computed, ref } from 'vue'
+import { Users, MessageCircle, Star, Heart, TrendingUp, Zap, Globe, Shield, Twitter, Facebook, Instagram, Linkedin, LogIn, UserPlus } from 'lucide-vue-next'
+import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useThemeStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 
@@ -312,7 +342,9 @@ export default {
     Twitter,
     Facebook,
     Instagram,
-    Linkedin
+    Linkedin,
+    LogIn,
+    UserPlus
   },
   setup() {
     const themeStore = useThemeStore()
@@ -330,6 +362,25 @@ export default {
       try { if (typeof localStorage !== 'undefined') localStorage.setItem('locale', locale.value) } catch {}
       if (typeof document !== 'undefined') document.documentElement.setAttribute('lang', locale.value)
     }
+
+    // Custom language dropdown state and options
+    const languages = [
+      { code: 'en', region: 'US', label: 'English' },
+      { code: 'fr', region: 'FR', label: 'Français' }
+    ]
+    const isLangOpen = ref(false)
+    const langWrapperRef = ref(null)
+    const currentLocaleShort = computed(() => (locale.value || 'en').toUpperCase())
+
+    const toggleLangOpen = () => { isLangOpen.value = !isLangOpen.value }
+    const selectLanguage = (code) => { locale.value = code; onChangeLocale(); isLangOpen.value = false }
+
+    const onClickOutside = (e) => {
+      if (!langWrapperRef.value) return
+      if (!langWrapperRef.value.contains(e.target)) isLangOpen.value = false
+    }
+    onMounted(() => { if (typeof document !== 'undefined') document.addEventListener('click', onClickOutside) })
+    onBeforeUnmount(() => { if (typeof document !== 'undefined') document.removeEventListener('click', onClickOutside) })
 
     // Landing page data (computed to react to locale changes)
     const stats = computed(() => [
@@ -391,6 +442,14 @@ export default {
       toggleTheme,
       locale,
       onChangeLocale,
+      // language dropdown
+      languages,
+      isLangOpen,
+      toggleLangOpen,
+      selectLanguage,
+      currentLocaleShort,
+      langWrapperRef,
+      // data
       stats,
       howItWorks,
       features,

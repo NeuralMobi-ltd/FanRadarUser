@@ -1,6 +1,14 @@
 export default {
     content: ["./index.html", "./src/**/*.{vue,js,ts}"],
     darkMode: 'class', // Enable class-based dark mode
+    safelist: [
+      // Ensure dark-mode tinted backgrounds and chips are kept
+      { pattern: /(bg|text|border)-(gray|green|blue|purple|emerald|orange|yellow|red)-(50|100|200|300|400|500|600|700|800|900)/ },
+      // Keep slashed-opacity variants used like bg-green-900/20, bg-blue-900/30
+      { pattern: /bg-(gray|green|blue|purple|emerald)-(700|800|900)\/(10|20|30|40|50)/ },
+      // Gradients used in Mart/Store
+      { pattern: /(from|via|to)-(green|emerald|purple|pink|red|blue)-(100|200|300|400|500|600|700|800|900)/ }
+    ],
     theme: {
       extend: {
         colors: {

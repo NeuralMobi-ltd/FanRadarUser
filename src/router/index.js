@@ -7,121 +7,144 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('@/views/general/LandingPage.vue'),
-    meta: { requiresAuth: false, titleKey: 'routes.home' }
+    meta: { requiresAuth: false, titleKey: 'routes.home', showBottomNav: false }
   },
   {
     path: '/dashboard',
     name: 'Dashboard',
     component: () => import('@/views/content/Home.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.dashboard' }
+    meta: { requiresAuth: true, titleKey: 'routes.dashboard', showBottomNav: true }
   },
   {
     path: '/explore',
     name: 'UserExplore',
     component: () => import('@/views/content/Explore.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.explore' }
+    meta: { requiresAuth: true, titleKey: 'routes.explore', showBottomNav: true }
   },
   {
     path: '/news',
     name: 'News',
     component: () => import('@/views/content/News.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.news' }
+    meta: { requiresAuth: true, titleKey: 'routes.news', showBottomNav: true }
   },
   {
     path: '/category/:category',
     name: 'CategoryDetail',
     component: () => import('@/views/content/CategoryDetail.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.category' }
+    meta: { requiresAuth: true, titleKey: 'routes.category', showBottomNav: true }
   },
   {
     path: '/hashtag/:hashtag',
     name: 'HashtagDetail',
     component: () => import('@/views/content/HashtagDetail.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.hashtag' }
+    meta: { requiresAuth: true, titleKey: 'routes.hashtag', showBottomNav: true }
   },
   {
     path: '/search',
     name: 'SearchResults',
     component: () => import('@/views/content/SearchResults.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.search' }
+    meta: { requiresAuth: true, titleKey: 'routes.search', showBottomNav: true }
   },
   {
     path: '/fandoms/browse',
     name: 'Fandoms',
     component: () => import('@/views/fandom/Fandoms.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.fandoms' }
+    meta: { requiresAuth: true, titleKey: 'routes.fandoms', showBottomNav: true }
   },
   {
     path: '/account/:user',
     name: 'Account',
     component: () => import('@/views/account/Account.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.account' }
+    meta: { requiresAuth: true, titleKey: 'routes.account', showBottomNav: true }
+  },
+  {
+    path: '/profile',
+    name: 'MyProfile',
+    beforeEnter: (to, from, next) => {
+      // Use auth store first, fall back to cached user in localStorage
+      try {
+        const authStore = useAuthStore()
+        let userName = authStore?.userName || authStore?.user?.userName
+        if (!userName) {
+          const cached = JSON.parse(localStorage.getItem('user') || '{}')
+          userName = cached.userName || cached.username || cached.name
+        }
+        if (userName) {
+          next({ name: 'Account', params: { user: encodeURIComponent(userName) } })
+        } else {
+          next('/login')
+        }
+      } catch {
+        next('/login')
+      }
+    },
+    meta: { requiresAuth: true, titleKey: 'routes.account', showBottomNav: true }
   },
   {
     path: '/edit-account',
     name: 'EditAccount',
     component: () => import('@/views/account/EditAccount.vue'),
-    meta: { titleKey: 'routes.editAccount' }
+    meta: { titleKey: 'routes.editAccount', showBottomNav: true }
   },
   {
     path: '/mart',
     name: 'Mart',
     component: () => import('@/views/store/Mart.vue'),
-    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.mart' }
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.mart', showBottomNav: true }
   },
   {
     path: '/mart/search',
     name: 'ProductSearchResults',
     component: () => import('@/views/store/ProductSearchResults.vue'),
-    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.productSearch' }
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.productSearch', showBottomNav: true }
   },
   {
     path: '/cart',
     name: 'Cart',
     component: () => import('@/components/store/MyCart.vue'),
-    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.cart' }
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.cart', showBottomNav: true }
   },
   {
     path: '/orders',
     name: 'Orders',
     component: () => import('@/components/store/MyOrder.vue'),
-    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.orders' }
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.orders', showBottomNav: true }
   },
   {
     path: '/orders/:id',
     name: 'OrderDetails',
     component: () => import('@/components/store/OrderDetails.vue'),
-    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.orderDetails' }
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.orderDetails', showBottomNav: true }
   },
   {
     path: '/create-fandom',
     name: 'CreateFandom',
     component: () => import('@/views/community/CreateFandom.vue'),
-    meta: { titleKey: 'routes.createFandom' }
+    meta: { titleKey: 'routes.createFandom', showBottomNav: true }
   },
   {
     path: '/fandom/:name',
     name: 'FandomDetail',
     component: () => import('@/views/fandom/FandomDetail.vue'),
-    meta: { requiresAuth: true, titleKey: 'routes.fandomDetail' }
+    meta: { requiresAuth: true, titleKey: 'routes.fandomDetail', showBottomNav: true }
   },
   {
     path: '/login',
     name: 'SignIn',
     component: () => import('@/views/auth/SignIn.vue'),
-    meta: { requiresAuth: false, titleKey: 'routes.signIn' }
+    meta: { requiresAuth: false, titleKey: 'routes.signIn', showBottomNav: false }
   },
   {
     path: '/signup',
     name: 'SignUp',
     component: () => import('@/views/auth/SignUp.vue'),
-    meta: { requiresAuth: false, titleKey: 'routes.signUp' }
+    meta: { requiresAuth: false, titleKey: 'routes.signUp', showBottomNav: false }
   },
   {
     path: '/choose-categories',
     name: 'ChooseCategories',
     component: () => import('@/views/auth/ChooseCategories.vue'),
-    meta: { requiresAuth: false, titleKey: 'routes.chooseCategories' }
+    meta: { requiresAuth: false, titleKey: 'routes.chooseCategories', showBottomNav: false }
   }
 ]
 

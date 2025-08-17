@@ -1,32 +1,40 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 mb-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 h-auto">
+  <div class="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 h-auto">
     <!-- Post Header -->
-    <div class="flex items-start justify-between mb-4">
-      <div class="flex items-center space-x-3">
-        <router-link :to="`/account/${post.username}`" class="relative">
-          <img :src="post.avatar || post.userAvatar" class="w-12 h-12 rounded-full ring-2 ring-gray-100 dark:ring-gray-700 hover:ring-blue-500 transition-all duration-200" :alt="post.username">
-          <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+    <div class="flex items-start justify-between mb-3 sm:mb-4">
+      <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+        <router-link :to="`/account/${post.username}`" class="relative flex-shrink-0">
+          <img :src="post.avatar || post.userAvatar" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-gray-100 dark:ring-gray-700 hover:ring-blue-500 transition-all duration-200" :alt="post.username">
+          <div class="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
         </router-link>
         
-        <div class="flex-1">
-          <div class="flex items-center space-x-2">
+        <div class="flex-1 min-w-0">
+          <!-- Top row: name • time -->
+          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 w-full leading-none mb-1 overflow-hidden">
             <router-link 
               :to="`/account/${post.username}`"
-              class="font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              class="block truncate min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               {{ post.username }}
             </router-link>
-            <div class="w-1 h-1 bg-gray-400 rounded-full"></div>
-            <span class="text-sm text-gray-500 dark:text-gray-400">{{ formatDate(post.date) }}</span>
+            <span aria-hidden="true" class="text-gray-400 dark:text-gray-500 text-xs sm:text-sm flex-shrink-0">•</span>
+            <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">{{ formatDate(post.date) }}</span>
           </div>
-          
-          <div class="flex items-center space-x-2 mt-1">
-            <span v-if="post.fandom || post.communityName" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-              <div class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1"></div>
+
+          <!-- Badges row: responsive design for all screens -->
+          <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-visible no-scrollbar py-0.5 max-w-full">
+            <span
+              v-if="post.fandom || post.communityName"
+              class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white dark:bg-blue-500 dark:text-white flex-shrink-0"
+            >
+              <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white/90 dark:bg-white rounded-full mr-1"></span>
               {{ post.fandom || post.communityName }}
             </span>
-            <span v-if="post.trending" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gradient-to-r from-red-500 to-pink-500 text-white animate-pulse">
-              <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+            <span
+              v-if="post.trending"
+              class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium text-white bg-gradient-to-r from-rose-600 to-fuchsia-600 flex-shrink-0"
+            >
+              <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 opacity-90" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
               </svg>
               Trending
@@ -35,9 +43,9 @@
         </div>
       </div>
       <!-- Post actions menu for owner -->
-      <div v-if="canEdit || canDelete" class="relative">
-        <button @click="showMenu = !showMenu" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-          <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+      <div v-if="canEdit || canDelete" class="relative flex-shrink-0">
+        <button @click="showMenu = !showMenu" class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="4" cy="10" r="2"/>
             <circle cx="10" cy="10" r="2"/>
             <circle cx="16" cy="10" r="2"/>
@@ -63,8 +71,8 @@
     </div>
 
     <!-- Post Content -->
-    <div class="mb-4">
-      <p class="text-gray-900 dark:text-white text-[15px] leading-relaxed whitespace-pre-wrap">{{ post.text || post.content }}</p>
+    <div class="mb-3 sm:mb-4">
+      <p class="text-gray-900 dark:text-white text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap">{{ post.text || post.content }}</p>
       
       <!-- Legacy Single Image Support -->
       <div v-if="post.image && !post.media" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
@@ -144,12 +152,14 @@
             v-for="(media, index) in post.media"
             :key="index"
             @click="goToSlide(index)"
-            :class="[
-              'w-2 h-2 rounded-full transition-all duration-200',
+            class="dot-btn p-0 m-0 border-0 outline-none focus:outline-none focus:ring-0 inline-block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 transition-all duration-200"
+            :class="
               currentSlide === index 
                 ? 'bg-blue-500 scale-110' 
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
-            ]"
+            "
+            aria-label="Go to media"
+            type="button"
           ></button>
         </div>
 
@@ -173,30 +183,30 @@
     </div>
 
     <!-- Post Actions -->
-    <div class="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
-      <div class="flex items-center space-x-1">
+    <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700">
+      <div class="flex items-center space-x-0.5 sm:space-x-1">
         <!-- Like Button -->
         <button 
           @click="$emit('like', post.id)"
-          class="flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
           :class="{ 'bg-red-50 dark:bg-red-900/20': post.isLiked }"
         >
           <div class="relative">
             <svg 
               :class="post.isLiked ? 'text-red-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-hover:text-red-500'"
-              class="w-5 h-5 transition-all duration-200"
+              class="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200"
               fill="currentColor" 
               viewBox="0 0 20 20"
             >
               <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
             </svg>
             <div v-if="post.isLiked" class="absolute inset-0 animate-ping">
-              <svg class="w-5 h-5 text-red-500 opacity-75" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-red-500 opacity-75" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
               </svg>
             </div>
           </div>
-          <span class="text-sm font-semibold" :class="post.isLiked ? 'text-red-500' : 'text-gray-700 dark:text-gray-300 group-hover:text-red-500'">
+          <span class="text-xs sm:text-sm font-semibold" :class="post.isLiked ? 'text-red-500' : 'text-gray-700 dark:text-gray-300 group-hover:text-red-500'">
             {{ formatNumber(post.likes) }}
           </span>
         </button>
@@ -204,36 +214,36 @@
         <!-- Comment Button -->
         <button 
           @click="toggleComments"
-          class="flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group"
+          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group"
           :class="{ 'bg-blue-50 dark:bg-blue-900/20': showComments }"
         >
-          <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">{{ formatNumber(post.comments) }}</span>
+          <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">{{ formatNumber(post.comments) }}</span>
         </button>
 
         <!-- Share Button -->
         <button 
           @click="sharePost"
-          class="flex items-center space-x-2 px-3 py-2 rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 group"
+          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 group"
         >
-          <svg class="w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
           </svg>
-          <span class="text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-green-500 transition-colors">{{ formatNumber(post.shares) }}</span>
+          <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-green-500 transition-colors">{{ formatNumber(post.shares) }}</span>
         </button>
       </div>
 
       <!-- Save Button -->
       <button 
         @click="toggleSave"
-        class="p-2 rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 group"
+        class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 group"
         :class="{ 'bg-yellow-50 dark:bg-yellow-900/20': isSaved }"
       >
         <svg 
           :class="isSaved ? 'text-yellow-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-hover:text-yellow-500'"
-          class="w-5 h-5 transition-all duration-200"
+          class="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200"
           fill="currentColor" 
           viewBox="0 0 20 20"
         >
@@ -304,8 +314,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { ref } from 'vue'
 
 const props = defineProps({
   post: {
@@ -488,7 +498,7 @@ function submitEdit(edited) {
 }
 
 /* Custom focus styles */
-button:focus {
+button:focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
   box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
@@ -551,5 +561,32 @@ p, span, div {
 
 .dot-active {
   animation: dotPulse 0.3s ease-out;
+}
+
+.dot-btn { 
+  appearance: none; 
+  -webkit-appearance: none; 
+  /* Remove mobile tap highlight and any default outlines that make the dot look bigger on phones */
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+  /* Ensure tiny size regardless of global mobile button min-size rules */
+  min-width: 0 !important;
+  min-height: 0 !important;
+  line-height: 0;
+}
+.dot-btn:focus,
+.dot-btn:active {
+  /* Cancel the component-wide button:focus shadow for tiny dots */
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* No scrollbar style for overflow-x-auto */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@media (max-width: 640px) {
+  /* Explicitly override global mobile target sizes for these dots */
+  .dot-btn { min-width: 0 !important; min-height: 0 !important; }
 }
 </style>

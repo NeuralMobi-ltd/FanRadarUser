@@ -3,10 +3,11 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Search Results Header -->
       <div class="mb-8">
-        <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-start sm:items-center justify-between flex-wrap gap-3 sm:gap-4">
           <div>
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              Search Results for "{{ searchQuery }}"
+              Search Results for
+              <span class="truncate inline-block align-bottom max-w-[60vw] sm:max-w-none">"{{ searchQuery }}"</span>
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
               {{ totalResults }} products found
@@ -14,26 +15,32 @@
           </div>
           
           <!-- View Toggle -->
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center space-x-2" role="group" aria-label="Toggle view mode">
             <button
               @click="viewMode = VIEW_MODES.GRID"
+              :aria-pressed="viewMode === VIEW_MODES.GRID"
               :class=" [
-                'p-2 rounded-lg transition-colors',
+                'p-2 rounded-lg transition-colors border',
                 viewMode === VIEW_MODES.GRID 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'bg-green-500 text-white border-transparent' 
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
               ]"
+              title="Grid view"
+              aria-label="Grid view"
             >
               <i class="fas fa-th w-4 h-4"></i>
             </button>
             <button
               @click="viewMode = VIEW_MODES.LIST"
+              :aria-pressed="viewMode === VIEW_MODES.LIST"
               :class=" [
-                'p-2 rounded-lg transition-colors',
+                'p-2 rounded-lg transition-colors border',
                 viewMode === VIEW_MODES.LIST 
-                  ? 'bg-green-500 text-white' 
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                  ? 'bg-green-500 text-white border-transparent' 
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
               ]"
+              title="List view"
+              aria-label="List view"
             >
               <i class="fas fa-list w-4 h-4"></i>
             </button>
@@ -42,12 +49,12 @@
       </div>
 
       <!-- Sort and Filter Bar -->
-      <div class="flex items-center justify-between mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div class="flex items-center space-x-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+        <div class="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
           <span class="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
           <select
             v-model="sortBy"
-            class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-56"
           >
             <option value="relevance">Relevance</option>
             <option value="price-low">Price: Low to High</option>
@@ -57,7 +64,7 @@
           </select>
         </div>
         
-        <div class="text-sm text-gray-600 dark:text-gray-400">
+        <div class="text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto">
           Showing {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, totalResults) }} of {{ totalResults }} results
         </div>
       </div>
@@ -127,17 +134,17 @@
           <div
             v-for="product in paginatedProducts"
             :key="product.id"
-            class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg transition-shadow cursor-pointer"
+            class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-lg transition-shadow cursor-pointer"
             @click="goToProduct(product)"
           >
-            <div class="flex items-center space-x-6">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
               <img
                 :src="product.image"
                 :alt="product.name"
-                class="w-24 h-24 object-cover rounded-lg"
+                class="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg"
               />
-              <div class="flex-1">
-                <h3 class="font-medium text-gray-900 dark:text-white text-lg mb-1">
+              <div class="flex-1 min-w-0">
+                <h3 class="font-medium text-gray-900 dark:text-white text-base sm:text-lg mb-1 line-clamp-2">
                   {{ product.name }}
                 </h3>
                 <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.category }}</p>
@@ -151,11 +158,11 @@
                   <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">({{ product.reviews }} reviews)</span>
                 </div>
               </div>
-              <div class="text-right">
-                <div class="text-2xl font-bold text-green-600 dark:text-green-400 mb-3">
+              <div class="text-left sm:text-right w-full sm:w-auto">
+                <div class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mb-3">
                   ${{ product.price }}
                 </div>
-                <div class="space-y-2">
+                <div class="flex sm:block gap-2">
                   <button
                     @click.stop="toggleWishlist(product)"
                     :class=" [
@@ -164,12 +171,13 @@
                         ? 'bg-red-500 text-white' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
+                    aria-label="Toggle wishlist"
                   >
                     <i class="fas fa-heart w-4 h-4"></i>
                   </button>
                   <button
                     @click.stop="addToCart(product)"
-                    class="block w-full py-2 px-6 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    class="flex-1 sm:block sm:w-full py-2 px-4 sm:px-6 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
                   >
                     Add to Cart
                   </button>
@@ -232,9 +240,9 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import { useProductsStore } from '@/store/products'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
