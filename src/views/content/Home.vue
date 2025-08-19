@@ -4,71 +4,116 @@
       <!-- Main Content -->
       <div class="flex-1 max-w-full lg:max-w-2xl xl:max-w-none flex flex-col overflow-hidden">
         <!-- Create Post Section -->
-        <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 mb-3 sm:mb-4 lg:mb-6 shadow-lg lg:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-200">
-          <div class="flex items-start space-x-2 sm:space-x-3 lg:space-x-4">
-            <img src="/public/images/me.png" class="w-8 sm:w-10 lg:w-12 h-8 sm:h-10 lg:h-12 rounded-full ring-2 ring-primary-200 dark:ring-primary-700 object-cover shadow" :alt="currentUser.username">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
+          <!-- User Avatar and Text Input -->
+          <div class="flex items-start space-x-3 sm:space-x-4">
+            <img 
+              src="/public/images/me.png" 
+              class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0" 
+              :alt="currentUser.username"
+            >
             <div class="flex-1 min-w-0">
               <textarea
                 v-model="newPostContent"
                 :placeholder="$t('common.whatsOnYourMind')"
-                class="w-full resize-none border-none outline-none bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base lg:text-lg font-medium"
-                rows="2"
+                class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base font-medium min-h-[3rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-colors"
+                rows="1"
                 @input="autoResize"
+                @focus="$event.target.style.minHeight = '5rem'"
+                @blur="$event.target.style.minHeight = '3rem'"
               ></textarea>
-              <!-- Tags Input -->
-              <div class="mt-2">
-                <div class="flex flex-wrap gap-1 sm:gap-2 mb-2" v-if="Array.isArray(tags) && tags.length">
-                  <span
-                    v-for="(tag, idx) in tags"
-                    :key="idx"
-                    class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-primary-500 to-secondary-500 text-white shadow-sm"
-                  >
-                    #{{ tag }}
-                    <button type="button" class="ml-1 text-white/80 hover:text-red-200 transition-colors" @click="removeTag(idx)">
-                    </button>
-                  </span>
-                </div>
-                <input
-                  v-model="tagInput"
-                  @keydown.enter.prevent="addTag"
-                  @keydown.tab.prevent="addTag"
-                  type="text"
-                  class="w-full px-2 sm:px-3 py-2 rounded-lg border border-primary-200 dark:border-primary-700 bg-white/80 dark:bg-gray-900/60 text-gray-900 dark:text-white text-xs sm:text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-primary-400 focus:border-transparent"
-                  :placeholder="$t('common.addTagsPlaceholder')"
-                />
-              </div>
-              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200 dark:border-gray-700 gap-3 sm:gap-0">
-                <div class="flex items-center space-x-3 sm:space-x-4 overflow-x-auto">
-                  <!-- Image Upload -->
-                  <label class="flex items-center gap-1 text-primary-600 hover:text-primary-700 dark:hover:text-primary-300 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/30 transition-all touch-button flex-shrink-0">
-                    <i class="fas fa-image text-sm"></i>
-                    <span class="hidden sm:inline text-xs">{{ $t('common.image') }}</span>
-                    <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
-                  </label>
-                  <!-- Video Upload -->
-                  <label class="flex items-center gap-1 text-secondary-600 hover:text-secondary-700 dark:hover:text-secondary-300 cursor-pointer px-2 py-1.5 rounded-lg hover:bg-secondary-50 dark:hover:bg-secondary-900/30 transition-all touch-button flex-shrink-0">
-                    <i class="fas fa-video text-sm"></i>
-                    <span class="hidden sm:inline text-xs">{{ $t('common.video') }}</span>
-                    <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
-                  </label>
-                </div>
-                <button
-                  @click="createPost"
-                  :disabled="!newPostContent.trim() && postMedia.length === 0"
-                  class="bg-gradient-to-r from-primary-600 to-secondary-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-semibold shadow hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm touch-button w-full sm:w-auto"
+            </div>
+          </div>
+
+          <!-- Tags Section -->
+          <div v-if="tags.length || tagInput" class="mt-4 pl-13 sm:pl-16">
+            <div class="flex flex-wrap gap-2 mb-3" v-if="Array.isArray(tags) && tags.length">
+              <span
+                v-for="(tag, idx) in tags"
+                :key="idx"
+                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+              >
+                #{{ tag }}
+                <button 
+                  type="button" 
+                  class="ml-2 text-blue-600 dark:text-blue-400 hover:text-red-500 transition-colors w-4 h-4 flex items-center justify-center" 
+                  @click="removeTag(idx)"
                 >
-                  {{ $t('common.post') }}
+                  <i class="fas fa-times text-xs"></i>
+                </button>
+              </span>
+            </div>
+            <input
+              v-model="tagInput"
+              @keydown.enter.prevent="addTag"
+              @keydown.tab.prevent="addTag"
+              type="text"
+              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              :placeholder="$t('common.addTagsPlaceholder')"
+            />
+          </div>
+
+          <!-- Media Preview -->
+          <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-4 pl-13 sm:pl-16">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div 
+                v-for="(media, index) in postMedia" 
+                :key="index" 
+                class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-square"
+              >
+                <img 
+                  v-if="media.type === 'image'" 
+                  :src="media.url" 
+                  class="w-full h-full object-cover" 
+                />
+                <video 
+                  v-else-if="media.type === 'video'" 
+                  :src="media.url" 
+                  class="w-full h-full object-cover"
+                  muted
+                ></video>
+                <button 
+                  @click="removeMedia(index)" 
+                  class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                >
+                  <i class="fas fa-times text-xs"></i>
                 </button>
               </div>
-              <!-- Preview selected media -->
-              <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                <div v-for="(media, index) in postMedia" :key="index" class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm">
-                  <img v-if="media.type === 'image'" :src="media.url" class="max-h-24 sm:max-h-32 lg:max-h-48 rounded-lg mb-2 w-full object-cover" />
-                  <video v-else-if="media.type === 'video'" :src="media.url" controls class="max-h-24 sm:max-h-32 lg:max-h-48 rounded-lg mb-2 w-full object-cover"></video>
-                  <button @click="removeMedia(index)" class="absolute top-1 right-1 text-xs text-white bg-red-500 rounded-full px-1.5 py-0.5 hover:bg-red-700 shadow touch-button">×</button>
-                </div>
-              </div>
             </div>
+          </div>
+
+          <!-- Action Bar -->
+          <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center space-x-1">
+              <!-- Image Upload -->
+              <label class="flex items-center justify-center w-10 h-10 rounded-xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all touch-target">
+                <i class="fas fa-image text-lg"></i>
+                <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
+              </label>
+              
+              <!-- Video Upload -->
+              <label class="flex items-center justify-center w-10 h-10 rounded-xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target">
+                <i class="fas fa-video text-lg"></i>
+                <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
+              </label>
+              
+              <!-- Add Tags Button -->
+              <button 
+                @click="() => { if (!tagInput && tags.length === 0) tagInput = ' ' }"
+                class="flex items-center justify-center w-10 h-10 rounded-xl text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all touch-target"
+              >
+                <i class="fas fa-hashtag text-lg"></i>
+              </button>
+            </div>
+
+            <!-- Post Button -->
+            <button
+              @click="createPost"
+              :disabled="!newPostContent.trim() && postMedia.length === 0"
+              class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm disabled:cursor-not-allowed transition-all text-sm touch-target min-w-[5rem]"
+            >
+              {{ $t('common.post') }}
+            </button>
           </div>
         </div>
 
@@ -205,7 +250,10 @@
             <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingFandoms') }}</h3>
             <ul class="space-y-4">
               <li v-for="community in trendingCommunities" :key="community.id" class="flex items-center justify-between">
-                <div class="flex items-center gap-3">
+                <div 
+                  class="flex items-center gap-3 cursor-pointer flex-1 hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-lg p-2 -m-2 transition-colors"
+                  @click="goToFandom(community)"
+                >
                   <img :src="community.avatar" :alt="community.name" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-200 dark:ring-primary-700" />
                   <div>
                     <p class="font-medium text-gray-900 dark:text-white">{{ community.name }}</p>
@@ -244,15 +292,15 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useRouter } from 'vue-router'
-import { usePostsStore } from '@/store/posts'
-import { useNewsStore } from '@/store/news'
-import { useAuthStore } from '@/store/auth'
-import { useTrendsStore } from '@/store/trends'
-import Post from '@/components/common/Post.vue'
 import NewsPost from '@/components/common/NewsPost.vue'
+import Post from '@/components/common/Post.vue'
+import { useAuthStore } from '@/store/auth'
+import { useNewsStore } from '@/store/news'
+import { usePostsStore } from '@/store/posts'
+import { useTrendsStore } from '@/store/trends'
+import { storeToRefs } from 'pinia'
+import { computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 
@@ -372,6 +420,11 @@ function joinCommunity(id) {
 function goToHashtag(name) {
   router.push(`/hashtag/${name}`)
 }
+function goToFandom(community) {
+  // Navigate to fandom detail page using the community name or slug
+  const fandomName = community.slug || community.name.toLowerCase().replace(/\s+/g, '-')
+  router.push(`/fandom/${encodeURIComponent(fandomName)}`)
+}
 </script>
 
 <style scoped>
@@ -386,5 +439,24 @@ function goToHashtag(name) {
 .mask-edges-x {
   -webkit-mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
   mask-image: linear-gradient(to right, transparent 0, black 16px, black calc(100% - 16px), transparent 100%);
+}
+
+/* Touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* Smooth textarea resize */
+textarea {
+  transition: min-height 0.2s ease;
 }
 </style>

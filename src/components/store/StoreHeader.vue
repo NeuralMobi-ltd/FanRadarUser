@@ -16,24 +16,34 @@
           </router-link>
         </div>
 
-        <!-- Search Bar (Tablet/Desktop) -->
-        <div class="hidden md:flex flex-1 max-w-2xl mx-2 sm:mx-4 lg:mx-8 ">
+        <!-- Search Bar (Desktop only) -->
+        <div class="hidden lg:flex flex-1 max-w-2xl mx-2 sm:mx-4 lg:mx-8 ">
           <div class="relative search-container w-full">
             <input
               v-model="searchQuery"
               @focus="showSearchModal = true"
               @click="showSearchModal = true"
+              @input="showSearchModal = true"
               type="text"
               placeholder="Search products..."
               class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-2 px-3 sm:px-4 pl-8 sm:pl-10 pr-10 sm:pr-12 text-sm sm:text-base text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              @keyup.enter="performSearch"
+              @keyup.enter="performDesktopSearch"
             />
             <svg class="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
+            <!-- Clear Button -->
+            <button
+              v-if="searchQuery"
+              @click="searchQuery = ''"
+              class="absolute right-8 sm:right-9 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              aria-label="Clear search"
+            >
+              <i class="fas fa-times text-xs"></i>
+            </button>
             <!-- Search Button -->
             <button
-              @click="performSearch"
+              @click="performDesktopSearch"
               class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white rounded-full p-1 sm:p-1.5 transition-colors"
               :disabled="!searchQuery.trim()"
             >
@@ -44,11 +54,12 @@
 
             <!-- Product Search Modal positioned relative to search input -->
             <ProductSearchModal 
+              class="product-search-modal"
               :is-visible="showSearchModal"
               :query="searchQuery" 
               :full-width="false"
               @close="showSearchModal = false" 
-              @search="performSearch"
+              @search="performDesktopSearch"
             />
           </div>
         </div>
@@ -59,7 +70,7 @@
           <div class="flex items-center space-x-2 md:hidden">
             <!-- Mobile Search Button -->
             <button
-              @click="showSearchModal = true"
+              @click="openMobileSearch"
               class="p-2 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 rounded-md"
             >
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -321,16 +332,159 @@
       </div>
     </div>
 
-    <!-- Mobile Product Search Modal -->
-    <ProductSearchModal 
-      v-if="showSearchModal"
-      class="lg:hidden"
-      :is-visible="showSearchModal"
-      :query="searchQuery" 
-      :full-width="true"
-      @close="showSearchModal = false" 
-      @search="performSearch"
-    />
+    <!-- Mobile Product Search Modal (like SearchModal.vue) -->
+    <div v-if="showMobileSearchModal" class="md:hidden">
+      <!-- Backdrop -->
+      <div 
+        class="fixed inset-0 z-[59] bg-black bg-opacity-25"
+        @click="closeMobileSearch"
+      ></div>
+      
+      <!-- Modal -->
+      <div class="fixed top-14 left-0 right-0 z-[60] px-2">
+        <!-- Search dropdown -->
+        <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-96">
+          <!-- Top search bar (shown when used as overlay on phones) -->
+          <div class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center gap-2">
+            <i class="fas fa-search text-gray-400"></i>
+            <input
+              ref="mobileSearchInput"
+              v-model="mobileSearchQuery"
+              @keydown.enter.prevent="performMobileSearch"
+              type="text"
+              class="flex-1 bg-gray-50 dark:bg-gray-700/60 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 text-sm"
+              placeholder="Search products..."
+            />
+            <button v-if="mobileSearchQuery" @click="clearLocalQuery" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Clear">
+              <i class="fas fa-times text-sm"></i>
+            </button>
+            <button @click="closeMobileSearch" class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" aria-label="Close">
+              <i class="fas fa-chevron-up text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Trending searches and results -->
+          <div class="overflow-y-auto max-h-96">
+            <!-- Show recent searches or search results based on query -->
+            <div v-if="!effectiveQuery">
+              <!-- Recent searches section -->
+              <div v-if="recentSearches.length > 0" class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Recent</h3>
+                  <button 
+                    @click="clearRecentSearches"
+                    class="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                
+                <!-- Recent search items -->
+                <div class="mt-2 space-y-1">
+                  <div
+                    v-for="search in recentSearches"
+                    :key="search"
+                    class="flex items-center justify-between p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <div 
+                      @click="selectSearch(search)"
+                      class="flex items-center space-x-3 flex-1 cursor-pointer"
+                    >
+                      <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <i class="fas fa-clock text-gray-500 dark:text-gray-400 text-sm"></i>
+                      </div>
+                      <span class="text-gray-900 dark:text-white text-sm">{{ search }}</span>
+                    </div>
+                    <button 
+                      @click.stop="removeRecentSearch(search)"
+                      class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 p-1"
+                    >
+                      <i class="fas fa-times text-xs"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Trending section -->
+              <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Trending Products</h3>
+              </div>
+              
+              <!-- Trending items -->
+              <div class="px-2">
+                <div
+                  v-for="trend in trendingProducts"
+                  :key="trend.id"
+                  @click="selectSearch(trend.name)"
+                  class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                >
+                  <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                    <i class="fas fa-fire text-green-500"></i>
+                  </div>
+                  <div>
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">{{ trend.name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ trend.searches }} searches</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Search results when query exists -->
+            <div v-else>
+              <!-- Loading -->
+              <div v-if="isSearching" class="p-4 text-center">
+                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto"></div>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">Searching...</p>
+              </div>
+
+              <!-- Results -->
+              <div v-else class="p-4">
+                <!-- Quick results preview -->
+                <div v-if="hasResults" class="space-y-4">
+                  <!-- Products -->
+                  <div v-if="searchResults.products.length > 0">
+                    <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2 flex items-center">
+                      <i class="fas fa-shopping-bag mr-2 text-green-500"></i>
+                      Products
+                    </h4>
+                    <div class="space-y-1">
+                      <div
+                        v-for="product in searchResults.products.slice(0, 3)"
+                        :key="product.id"
+                        @click="goToProduct(product)"
+                        class="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                      >
+                        <img :src="product.image" :alt="product.name" class="w-8 h-8 rounded object-cover" />
+                        <div class="flex-1">
+                          <p class="text-sm font-medium text-gray-900 dark:text-white" v-html="highlightSearchTerm(product.name)"></p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">${{ product.price }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- See all results button -->
+                <div v-if="hasResults" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <button
+                    @click="viewAllResults"
+                    class="w-full py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                  >
+                    See all results for "{{ effectiveQuery }}"
+                  </button>
+                </div>
+
+                <!-- No results -->
+                <div v-if="!hasResults && !isSearching" class="text-center py-4">
+                  <i class="fas fa-search text-xl text-gray-300 dark:text-gray-600 mb-2"></i>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">No products found for "{{ effectiveQuery }}"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </header>
 </template>
 
@@ -340,7 +494,7 @@ import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import { useStoreNotifications } from '@/store/storeNotifications'
 import { BellIcon } from '@heroicons/vue/24/outline'
-import { computed, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -349,10 +503,28 @@ const themeStore = useThemeStore()
 const notificationsStore = useStoreNotifications()
 
 const searchQuery = ref('')
+const mobileSearchQuery = ref('')
 const showUserMenu = ref(false)
 const showSearchModal = ref(false)
+const showMobileSearchModal = ref(false)
+const showMobileSearchResults = ref(false)
 const showNotificationsDropdown = ref(false)
 const cartItemsCount = ref(3) // Mock cart count
+const mobileSearchInput = ref(null)
+const isSearching = ref(false)
+
+// Store search functionality
+const recentSearches = ref(['iPhone 15', 'Gaming Headset', 'Laptop Stand'])
+const trendingProducts = ref([
+  { id: 1, name: 'iPhone 15 Pro', searches: '2.1k' },
+  { id: 2, name: 'Gaming Laptop', searches: '1.8k' },
+  { id: 3, name: 'Wireless Earbuds', searches: '1.5k' },
+  { id: 4, name: 'Smart Watch', searches: '1.2k' }
+])
+
+const searchResults = ref({
+  products: []
+})
 
 const user = computed(() => authStore.user)
 const isDark = computed(() => themeStore.isDark)
@@ -361,7 +533,117 @@ const unreadNotificationsCount = computed(() =>
   notificationsStore.notifications.filter(n => !n.read).length
 )
 
-const performSearch = () => {
+const effectiveQuery = computed(() => (mobileSearchQuery.value || '').trim())
+const hasResults = computed(() => searchResults.value.products.length > 0)
+
+// Watch for mobile search query changes
+watch(mobileSearchQuery, (val) => {
+  performSearch()
+})
+
+const highlightSearchTerm = (text) => {
+  if (!effectiveQuery.value || !text) return text
+  const regex = new RegExp(`(${effectiveQuery.value})`, 'gi')
+  return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</mark>')
+}
+
+const performSearch = async () => {
+  if (!effectiveQuery.value) {
+    searchResults.value = { products: [] }
+    return
+  }
+
+  isSearching.value = true
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300))
+
+  // Mock search results
+  const mockProducts = [
+    { id: 1, name: 'iPhone 15 Pro Max', price: 1199, image: '/public/images/F.png' },
+    { id: 2, name: 'Samsung Galaxy S24', price: 999, image: '/public/images/F.png' },
+    { id: 3, name: 'Gaming Laptop ASUS', price: 1499, image: '/public/images/F.png' }
+  ].filter(product => 
+    product.name.toLowerCase().includes(effectiveQuery.value.toLowerCase())
+  )
+
+  searchResults.value = { products: mockProducts }
+  isSearching.value = false
+}
+
+const selectSearch = (term) => {
+  addToRecentSearches(term)
+  router.push({
+    name: 'ProductSearchResults',
+    query: { q: term, type: 'products' }
+  })
+  closeMobileSearch()
+}
+
+const addToRecentSearches = (term) => {
+  const searches = recentSearches.value.filter(s => s !== term)
+  recentSearches.value = [term, ...searches].slice(0, 5)
+}
+
+const removeRecentSearch = (term) => {
+  recentSearches.value = recentSearches.value.filter(s => s !== term)
+}
+
+const clearRecentSearches = () => {
+  recentSearches.value = []
+}
+
+const clearLocalQuery = () => {
+  mobileSearchQuery.value = ''
+}
+
+const viewAllResults = () => {
+  if (effectiveQuery.value) {
+    addToRecentSearches(effectiveQuery.value)
+    router.push({
+      name: 'ProductSearchResults',
+      query: { q: effectiveQuery.value, type: 'products' }
+    })
+    closeMobileSearch()
+  }
+}
+
+const goToProduct = (product) => {
+  router.push(`/mart/product/${product.id}`)
+  closeMobileSearch()
+}
+
+const openMobileSearch = () => {
+  showMobileSearchModal.value = true
+  // Auto-focus the input after the modal is visible
+  nextTick(() => {
+    if (mobileSearchInput.value) {
+      mobileSearchInput.value.focus()
+    }
+  })
+}
+
+const closeMobileSearch = () => {
+  showMobileSearchModal.value = false
+  showMobileSearchResults.value = false
+  mobileSearchQuery.value = ''
+  searchResults.value = { products: [] }
+}
+
+const performMobileSearch = () => {
+  if (mobileSearchQuery.value.trim()) {
+    router.push({
+      name: 'ProductSearchResults',
+      query: { 
+        q: mobileSearchQuery.value.trim(),
+        type: 'products'
+      }
+    })
+    closeMobileSearch()
+  }
+}
+
+const performDesktopSearch = () => {
   if (searchQuery.value.trim()) {
     // Navigate to product search results page with search parameters specific to products
     router.push({
@@ -401,13 +683,18 @@ function markAllNotificationsRead() {
 
 // Close search modal when clicking outside
 const closeSearchOnClickOutside = (event) => {
-  if (showSearchModal.value && !event.target.closest('.search-container')) {
+  const inSearch = event.target.closest('.search-container')
+  const inModal = event.target.closest('.product-search-modal')
+  if (showSearchModal.value && !inSearch && !inModal) {
     showSearchModal.value = false
   }
 }
 
-// Add event listener for click outside
+// Add/Remove event listener for click outside
 if (typeof window !== 'undefined') {
   document.addEventListener('click', closeSearchOnClickOutside)
+  onBeforeUnmount(() => {
+    document.removeEventListener('click', closeSearchOnClickOutside)
+  })
 }
 </script>

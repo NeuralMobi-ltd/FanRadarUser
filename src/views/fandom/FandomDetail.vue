@@ -1,9 +1,37 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+  <!-- MOBILE PATCH: You can move/duplicate blocks inside these wrappers -->
+  <!-- MOBILE-ONLY header placeholder (show back button, title, actions) -->
+  <div class="sm:hidden sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
+      <!-- TODO: Replace with your back navigation -->
+      <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" @click="$router.back()">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
+        <!-- TODO: Bind fandom name here -->
+        {{ fandom?.name || 'Fandom' }}
+      </div>
+      <div class="flex items-center gap-2">
+        <!-- TODO: Add quick actions (follow, share, menu) -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Use these helpers to hide sidebars on phones, keep desktop layout intact -->
+  <!-- Example markers (wrap your existing sections accordingly) -->
+  <!-- MOBILE PATCH START: Hide left sidebar on phones -->
+  <!-- <aside class="hidden md:block"> ... </aside> -->
+  <!-- MOBILE PATCH END -->
+
+  <!-- MOBILE PATCH START: Turn tab bar into horizontal chips on phones -->
+  <!-- <div class="sm:hidden overflow-x-auto no-scrollbar -mx-3 px-3 py-2"> ... </div> -->
+  <!-- MOBILE PATCH END -->
+
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 pt-2 sm:pt-4">
     <!-- Fandom Header -->
-    <div class="relative mb-8">
+    <div class="relative mb-4 sm:mb-8">
       <!-- Cover Image -->
-      <div class="h-64 w-full rounded-xl overflow-hidden">
+      <div class="h-32 sm:h-40 md:h-64 w-full rounded-lg sm:rounded-xl overflow-hidden">
         <img 
           :src="fandom.coverImage" 
           :alt="fandom.name" 
@@ -13,71 +41,71 @@
       </div>
       
       <!-- Fandom Avatar/Logo -->
-      <div class="absolute bottom-0 right-0 m-6">
+      <div class="absolute bottom-0 right-0 m-2 sm:m-3 md:m-6">
         <img 
           :src="fandom.logo" 
           :alt="fandom.name" 
-          class="w-20 h-20 rounded-xl border-4 border-white shadow-lg" 
+          class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg sm:rounded-xl border-2 sm:border-4 border-white shadow-lg" 
         />
       </div>
       
       <!-- Fandom Info -->
-      <div class="absolute bottom-6 left-6 text-white">
-        <div class="flex items-center mb-2">
-          <div class="px-3 py-1 bg-blue-600 rounded-full text-sm font-medium mr-3 flex items-center gap-2">
+      <div class="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 md:bottom-6 md:left-6 text-white">
+        <div class="flex flex-col sm:flex-row sm:items-center mb-1 sm:mb-2">
+          <div class="px-2 py-0.5 sm:px-3 sm:py-1 bg-blue-600 rounded-full text-xs sm:text-sm font-medium mb-1 sm:mb-0 sm:mr-3 flex items-center gap-1 sm:gap-2 w-fit">
             <span>Fandom</span>
           </div>
-          <div class="flex items-center text-sm">
+          <div class="flex items-center text-xs sm:text-sm">
             <span>{{ fandom.members }} members</span>
-            <span class="mx-2">•</span>
+            <span class="mx-1 sm:mx-2">•</span>
             <span>{{ fandom.onlineMembers }} online</span>
           </div>
         </div>
-        <h1 class="text-4xl font-bold mb-1">{{ fandom.name }}</h1>
-        <p class="text-white/90 max-w-xl">{{ fandom.description }}</p>
+        <h1 class="text-xl sm:text-2xl md:text-4xl font-bold mb-1 leading-tight">{{ fandom.name }}</h1>
+        <p class="text-white/90 max-w-xl text-sm sm:text-base hidden sm:block">{{ fandom.description }}</p>
         <!-- Show category if present -->
-        <p v-if="fandom.category" class="mt-2 text-sm font-semibold text-blue-200 bg-blue-700/40 inline-block px-3 py-1 rounded-full">
+        <p v-if="fandom.category" class="mt-1 sm:mt-2 text-xs sm:text-sm font-semibold text-blue-200 bg-blue-700/40 inline-block px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
           {{ fandom.category }}
         </p>
       </div>
     </div>
 
     <!-- Admin Controls (Only visible to admins) -->
-    <div v-if="isAdmin" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-xl p-4 mb-6">
-      <div class="flex items-center justify-between">
+    <div v-if="isAdmin" class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6">
+      <div class="flex flex-col gap-3">
         <div class="flex items-center">
-          <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg flex items-center justify-center mr-3">
-            <i class="fas fa-crown text-yellow-600"></i>
+          <div class="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
+            <i class="fas fa-crown text-yellow-600 text-sm sm:text-base"></i>
           </div>
-          <span class="font-medium text-yellow-800 dark:text-yellow-200">Admin Panel</span>
+          <span class="font-medium text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Admin Panel</span>
         </div>
-        <div class="flex gap-2">
-          <button @click="showEditFandom = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-            <i class="fas fa-edit mr-2"></i>Edit Fandom
+        <div class="grid grid-cols-2 sm:flex gap-2 sm:gap-2">
+          <button @click="showEditFandom = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
+            <i class="fas fa-edit mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Fandom
           </button>
-          <button @click="showManageMembers = true" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
-            <i class="fas fa-users mr-2"></i>Manage Members
+          <button @click="showManageMembers = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors">
+            <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Manage </span>Members
           </button>
-          <button @click="showEditRules = true" class="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors">
-            <i class="fas fa-gavel mr-2"></i>Edit Rules
+          <button @click="showEditRules = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-purple-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-purple-700 transition-colors">
+            <i class="fas fa-gavel mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Rules
           </button>
-          <button @click="showEditHashtags = true" class="px-4 py-2 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-            <i class="fas fa-hashtag mr-2"></i>Edit Hashtags
+          <button @click="showEditHashtags = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-teal-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-700 transition-colors">
+            <i class="fas fa-hashtag mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Hashtags
           </button>
         </div>
       </div>
     </div>
 
     <!-- Visitor Actions (Only visible to non-members or non-admins) -->
-    <div v-if="!isMember" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl p-6 mb-6">
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">Join {{ fandom.name }}</h3>
-          <p class="text-blue-700 dark:text-blue-300">Connect with {{ fandom.members }} passionate fans and never miss an update!</p>
+    <div v-if="!isMember" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg sm:rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="text-center sm:text-left">
+          <h3 class="text-base sm:text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">Join {{ fandom.name }}</h3>
+          <p class="text-sm sm:text-base text-blue-700 dark:text-blue-300">Connect with {{ fandom.members }} passionate fans and never miss an update!</p>
         </div>
         <button 
           @click="joinFandom"
-          class="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center gap-2"
+          class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
         >
           <i class="fas fa-plus"></i>
           Join Fandom
@@ -86,47 +114,47 @@
     </div>
 
     <!-- Member Welcome (Only visible to members who are not admins) -->
-    <div v-if="isMember && !isAdmin" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-xl p-4 mb-6 flex items-center justify-between">
+    <div v-if="isMember && !isAdmin" class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-center">
-        <div class="w-8 h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mr-3">
-          <i class="fas fa-check text-green-600"></i>
+        <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
+          <i class="fas fa-check text-green-600 text-sm sm:text-base"></i>
         </div>
-        <span class="font-medium text-green-800 dark:text-green-200">You're a member of this fandom!</span>
+        <span class="font-medium text-green-800 dark:text-green-200 text-sm sm:text-base">You're a member of this fandom!</span>
       </div>
-      <button @click="leaveFandom" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors ml-4">Leave Fandom</button>
+      <button @click="leaveFandom" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">Leave Fandom</button>
     </div>
 
     <!-- Fandom Hashtags Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 mb-6">
-      <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white flex items-center">
-          <i class="fas fa-hashtag text-blue-500 mr-2"></i>
+    <div class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
+      <div class="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center">
+          <i class="fas fa-hashtag text-blue-500 mr-2 text-sm sm:text-base"></i>
           Trending Hashtags
         </h3>
-        <span class="text-sm text-gray-500 dark:text-gray-400">{{ fandom.hashtags?.length || 0 }} hashtags</span>
+        <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ computedHashtags.length }} hashtags</span>
       </div>
-      <div v-if="fandom.hashtags && fandom.hashtags.length > 0" class="flex flex-wrap gap-2">
+      <div v-if="computedHashtags.length > 0" class="flex flex-wrap gap-2">
         <button
-          v-for="hashtag in fandom.hashtags"
+          v-for="hashtag in computedHashtags"
           :key="hashtag.tag"
           @click="navigateToHashtag(hashtag.tag)"
-          class="group px-3 py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-200 dark:border-blue-700 transition-all duration-200 hover:scale-105"
+          class="group px-2.5 py-1.5 sm:px-3 sm:py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-200 dark:border-blue-700 transition-all duration-200 hover:scale-105"
         >
-          <div class="flex items-center space-x-2">
-            <span class="text-blue-600 dark:text-blue-400 font-medium">#{{ hashtag.tag }}</span>
+          <div class="flex items-center space-x-1.5 sm:space-x-2">
+            <span class="text-blue-600 dark:text-blue-400 font-medium text-sm">#{{ hashtag.tag }}</span>
             <span class="text-xs text-gray-500 dark:text-gray-400">{{ hashtag.posts }}</span>
           </div>
         </button>
       </div>
       <div v-else class="text-center py-4">
-        <i class="fas fa-hashtag text-gray-300 dark:text-gray-600 text-2xl mb-2"></i>
+        <i class="fas fa-hashtag text-gray-300 dark:text-gray-600 text-xl sm:text-2xl mb-2"></i>
         <p class="text-gray-500 dark:text-gray-400 text-sm">No hashtags yet</p>
       </div>
     </div>
 
     <!-- Tabs Navigation -->
-    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-      <div class="flex gap-8">
+    <div class="border-b border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
+      <div class="hidden sm:flex gap-8">
         <button 
           v-for="tab in tabs" 
           :key="tab.id"
@@ -142,84 +170,119 @@
           <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
         </button>
       </div>
+      <!-- Mobile chip tabs -->
+      <div class="sm:hidden -mx-3 px-3 py-2 overflow-x-auto no-scrollbar">
+        <div class="flex gap-2 min-w-max">
+          <button 
+            v-for="tab in tabs" 
+            :key="tab.id"
+            @click="activeTab = tab.id"
+            :class="[
+              'px-3 py-2 rounded-full text-sm font-medium border whitespace-nowrap',
+              activeTab === tab.id
+                ? 'bg-blue-600 text-white border-transparent'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
+            ]"
+          >
+            {{ tab.label }}
+            <span class="ml-2 px-1.5 py-0.5 text-xs bg-white/70 dark:bg-white/10 rounded-full text-gray-700 dark:text-gray-200" v-if="tab.count">{{ tab.count }}</span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Dynamic Content Based on Active Tab -->
-    <div v-if="activeTab === 'posts'" class="space-y-6">
-      <!-- Create Post (For members and admins with enhanced features for admins) -->
-      <div v-if="isMember" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <div class="flex items-start space-x-3">
-          <img :src="currentUser.avatar" class="w-10 h-10 rounded-full" :alt="currentUser.name">
-          <div class="flex-1">
+    <div v-if="activeTab === 'posts'" class="space-y-4 sm:space-y-6">
+      <!-- Create Post (match Home.vue design) -->
+      <div v-if="isMember" class="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
+        <!-- User Avatar and Text Input -->
+        <div class="flex items-start space-x-3 sm:space-x-4">
+          <img :src="currentUser.avatar" class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0" :alt="currentUser.name">
+          <div class="flex-1 min-w-0">
             <textarea
               v-model="newPostContent"
-              :placeholder="isAdmin ? 'Share an announcement or post with the fandom...' : 'Share something with the fandom...'"
-              class="w-full resize-none border border-gray-200 dark:border-gray-600 rounded-lg px-4 py-3 text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"
+              :placeholder="$t('common.whatsOnYourMind')"
+              class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base font-medium min-h-[3rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-colors"
+              rows="1"
+              @input="autoResize"
+              @focus="$event.target.style.minHeight = '5rem'"
+              @blur="$event.target.style.minHeight = '3rem'"
             ></textarea>
-            
-            <!-- Media Upload Section -->
-            <div class="mt-3 space-y-3">
-              <!-- Media Preview -->
-              <div v-if="postMedia.length > 0" class="grid grid-cols-2 gap-3">
-                <div v-for="(media, index) in postMedia" :key="index" class="relative">
-                  <img v-if="media.type === 'image'" :src="media.url" class="w-full h-32 object-cover rounded-lg" />
-                  <video v-else :src="media.url" controls class="w-full h-32 object-cover rounded-lg"></video>
-                  <button @click="removeMedia(index)" class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </div>
-              
-              <!-- Media Upload Controls -->
-              <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                  <!-- Image Upload -->
-                  <label class="text-blue-500 hover:text-blue-600 transition-colors cursor-pointer">
-                    <i class="fas fa-image mr-1"></i>
-                    <span class="text-sm">Image</span>
-                    <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
-                  </label>
-                  
-                  <!-- Video Upload -->
-                  <label class="text-purple-500 hover:text-purple-600 transition-colors cursor-pointer">
-                    <i class="fas fa-video mr-1"></i>
-                    <span class="text-sm">Video</span>
-                    <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
-                  </label>
-                  
-                  <!-- Admin-only: Pin Post -->
-                  <div v-if="isAdmin" class="flex items-center">
-                    <input type="checkbox" v-model="isPinned" id="pinPost" class="mr-2">
-                    <label for="pinPost" class="text-sm text-gray-600 dark:text-gray-400">Pin Post</label>
-                  </div>
-                  
-                  <!-- Admin-only: Announcement -->
-                  <div v-if="isAdmin" class="flex items-center">
-                    <input type="checkbox" v-model="isAnnouncement" id="announcement" class="mr-2">
-                    <label for="announcement" class="text-sm text-gray-600 dark:text-gray-400">Announcement</label>
-                  </div>
-                </div>
-                
-                <button
-                  @click="createPost"
-                  :disabled="!newPostContent.trim() && postMedia.length === 0"
-                  :class="[
-                    'px-4 py-2 rounded-lg font-medium transition-colors',
-                    isAnnouncement ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white',
-                    (!newPostContent.trim() && postMedia.length === 0) ? 'opacity-50 cursor-not-allowed' : ''
-                  ]"
-                >
-                  {{ isAnnouncement ? 'Post Announcement' : 'Post' }}
-                </button>
-              </div>
+          </div>
+        </div>
+
+        <!-- Tags Section (same as Home.vue) -->
+        <div v-if="tags.length || tagInput" class="mt-4 pl-13 sm:pl-16">
+          <div class="flex flex-wrap gap-2 mb-3" v-if="Array.isArray(tags) && tags.length">
+            <span
+              v-for="(tag, idx) in tags"
+              :key="idx"
+              class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+            >
+              #{{ tag }}
+              <button 
+                type="button" 
+                class="ml-2 text-blue-600 dark:text-blue-400 hover:text-red-500 transition-colors w-4 h-4 flex items-center justify-center" 
+                @click="removeTag(idx)"
+              >
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </span>
+          </div>
+          <input
+            v-model="tagInput"
+            @keydown.enter.prevent="addTag"
+            @keydown.tab.prevent="addTag"
+            type="text"
+            class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            :placeholder="$t('common.addTagsPlaceholder')"
+          />
+        </div>
+
+        <!-- Media Preview (same grid) -->
+        <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-4 pl-13 sm:pl-16">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div v-for="(media, index) in postMedia" :key="index" class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-square">
+              <img v-if="media.type === 'image'" :src="media.url" class="w-full h-full object-cover" />
+              <video v-else-if="media.type === 'video'" :src="media.url" class="w-full h-full object-cover" muted></video>
+              <button @click="removeMedia(index)" class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors">
+                <i class="fas fa-times text-xs"></i>
+              </button>
             </div>
           </div>
+        </div>
+
+        <!-- Action Bar (same as Home.vue) -->
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-center space-x-1">
+            <label class="flex items-center justify-center w-10 h-10 rounded-xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all touch-target">
+              <i class="fas fa-image text-lg"></i>
+              <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
+            </label>
+            <label class="flex items-center justify-center w-10 h-10 rounded-xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target">
+              <i class="fas fa-video text-lg"></i>
+              <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
+            </label>
+            <button 
+              @click="() => { if (!tagInput && tags.length === 0) tagInput = ' ' }"
+              class="flex items-center justify-center w-10 h-10 rounded-xl text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all touch-target"
+            >
+              <i class="fas fa-hashtag text-lg"></i>
+            </button>
+          </div>
+
+          <button
+            @click="createPost"
+            :disabled="!newPostContent.trim() && postMedia.length === 0"
+            class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm disabled:cursor-not-allowed transition-all text-sm touch-target min-w-[5rem]"
+          >
+            {{ $t('common.post') }}
+          </button>
         </div>
       </div>
 
       <!-- Posts List -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="grid grid-cols-1 gap-4 sm:gap-6">
         <Post
           v-for="post in sortedPosts"
           :key="post.id"
@@ -235,11 +298,11 @@
     </div>
 
     <!-- Members Tab with Admin Controls -->
-    <div v-else-if="activeTab === 'members'" class="space-y-6">
+    <div v-else-if="activeTab === 'members'" class="space-y-4 sm:space-y-6">
       <!-- Add Member (Admin Only) -->
-      <div v-if="isAdmin" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Member</h3>
-        <div class="flex items-center space-x-3">
+      <div v-if="isAdmin" class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Member</h3>
+        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
           <input
             v-model="newMemberEmail"
             type="email"
@@ -249,20 +312,20 @@
           <select v-model="newMemberRole" class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
             <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
           </select>
-          <button @click="addMember" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
+          <button @click="addMember" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
             Add Member
           </button>
         </div>
       </div>
 
       <!-- Members Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="member in members" :key="member.id" class="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div v-for="member in members" :key="member.id" class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center mb-4">
-            <img :src="member.avatar" :alt="member.name" class="w-12 h-12 rounded-full mr-4">
+            <img :src="member.avatar" :alt="member.name" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4">
             <div class="flex-1">
-              <h3 class="font-bold text-gray-900 dark:text-white">{{ member.name }}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400">@{{ member.username }}</p>
+              <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{{ member.name }}</h3>
+              <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">@{{ member.username }}</p>
             </div>
             <div class="flex items-center">
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
@@ -279,7 +342,7 @@
           
           <!-- Admin Controls for Members -->
           <div v-if="isAdmin && member.id !== currentUser.id" class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <select 
                 :value="member.role" 
                 @change="changeMemberRole(member.id, $event.target.value)"
@@ -293,7 +356,7 @@
             </div>
           </div>
           
-          <div class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 mt-4">
+          <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-4">
             <span>{{ member.posts }} posts</span>
             <span>Joined {{ member.joinedDate }}</span>
           </div>
@@ -301,50 +364,50 @@
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'about'" class="bg-white dark:bg-gray-800 rounded-xl p-8 border border-gray-200 dark:border-gray-700">
-      <div class="space-y-8">
+    <div v-else-if="activeTab === 'about'" class="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-gray-700">
+      <div class="space-y-6 sm:space-y-8">
         <div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">About {{ fandom.name }}</h3>
-          <p class="text-gray-600 dark:text-gray-300 leading-relaxed">{{ fandom.fullDescription }}</p>
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">About {{ fandom.name }}</h3>
+          <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">{{ fandom.fullDescription }}</p>
         </div>
         
         <div>
-          <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Fandom Rules</h4>
+          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Fandom Rules</h4>
           <ul class="space-y-2">
             <li v-for="rule in fandom.rules" :key="rule" class="flex items-start">
-              <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
-              <span class="text-gray-600 dark:text-gray-300">{{ rule }}</span>
+              <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
+              <span class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">{{ rule }}</span>
             </li>
           </ul>
         </div>
 
         <div>
-          <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Tags</h4>
+          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Tags</h4>
           <div class="flex flex-wrap gap-2">
-            <span v-for="tag in fandom.tags" :key="tag" class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
+            <span v-for="tag in fandom.tags" :key="tag" class="px-2.5 py-1 sm:px-3 sm:py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm">
               #{{ tag }}
             </span>
           </div>
         </div>
 
         <div>
-          <h4 class="text-lg font-bold text-gray-900 dark:text-white mb-3">Statistics</h4>
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-2xl font-bold text-blue-600">{{ fandom.members }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Members</div>
+          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Statistics</h4>
+          <div class="grid grid-cols-2 gap-3 sm:gap-4">
+            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ fandom.members }}</div>
+              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Members</div>
             </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-2xl font-bold text-green-600">{{ fandom.totalPosts }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Posts</div>
+            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div class="text-xl sm:text-2xl font-bold text-green-600">{{ fandom.totalPosts }}</div>
+              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Posts</div>
             </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-2xl font-bold text-purple-600">{{ fandom.onlineMembers }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Online</div>
+            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div class="text-xl sm:text-2xl font-bold text-purple-600">{{ fandom.onlineMembers }}</div>
+              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Online</div>
             </div>
-            <div class="text-center p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-2xl font-bold text-orange-600">{{ fandom.createdDate }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Created</div>
+            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <div class="text-xl sm:text-2xl font-bold text-orange-600">{{ fandom.createdDate }}</div>
+              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Created</div>
             </div>
           </div>
         </div>
@@ -507,11 +570,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import Post from '@/components/common/Post.vue'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
-import Post from '@/components/common/Post.vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -535,8 +598,12 @@ const memberSearch = ref('')
 const newHashtagTag = ref('')
 const newHashtagPosts = ref('')
 const editFandom = ref({})
+
+// Remove duplicate imports here and add missing state
 const editRules = ref([])
 const editHashtags = ref([])
+const tags = ref([])
+const tagInput = ref('')
 
 // Mock current user
 const currentUser = computed(() => ({
@@ -598,6 +665,43 @@ const tabs = computed(() => {
 })
 
 const posts = computed(() => fandomsStore.getFandomPosts(fandomName.value))
+// Compute trending hashtags from store or fallback to tags in posts
+const computedHashtags = computed(() => {
+  const raw = fandom.value?.hashtags ?? []
+  // If store provides hashtags, normalize to { tag, posts }
+  if (Array.isArray(raw) && raw.length) {
+    return raw
+      .map((h) => {
+        if (typeof h === 'string') {
+          const tag = h.replace(/^#/, '').trim()
+          return tag ? { tag, posts: '' } : null
+        }
+        if (h && typeof h === 'object') {
+          const tag = String(h.tag ?? h.name ?? h.title ?? '').replace(/^#/, '').trim()
+          const countLike = h.posts ?? h.count ?? h.uses ?? h.frequency
+          const posts = countLike != null && String(countLike).trim() !== '' ? `${countLike}` : ''
+          return tag ? { tag, posts } : null
+        }
+        return null
+      })
+      .filter(Boolean)
+  }
+
+  // Fallback: derive from post tags
+  const counts = new Map()
+  for (const p of posts.value || []) {
+    if (!Array.isArray(p.tags)) continue
+    for (const rawTag of p.tags) {
+      const t = String(rawTag).replace(/^#/, '').trim()
+      if (!t) continue
+      counts.set(t, (counts.get(t) || 0) + 1)
+    }
+  }
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([tag, count]) => ({ tag, posts: `${count} posts` }))
+})
 const members = computed(() => fandomsStore.getFandomMembers(fandomName.value))
 
 const joinFandom = () => {
@@ -605,29 +709,43 @@ const joinFandom = () => {
   console.log(`Joined fandom: ${fandom.value.name}`)
 }
 
+// Auto-resize textarea for mobile experience
+const autoResize = (event) => {
+  const textarea = event.target
+  textarea.style.height = 'auto'
+  textarea.style.height = Math.min(textarea.scrollHeight, 150) + 'px'
+}
+
 // Role options from store config
 const roleOptions = fandomsStore.config.roleOptions
 
+function addTag() {
+  const val = tagInput.value.trim().replace(/^#/, '')
+  if (!val) return
+  if (!tags.value.includes(val)) tags.value.push(val)
+  tagInput.value = ''
+}
+function removeTag(idx) { tags.value.splice(idx, 1) }
+
 // Enhanced media handling
+// Update file change to allow re-selecting same file
 const onFileChange = (type, event) => {
   const files = Array.from(event.target.files)
   files.forEach(file => {
     const reader = new FileReader()
     reader.onload = e => {
-      postMedia.value.push({
-        type,
-        url: e.target.result,
-        file
-      })
+      postMedia.value.push({ type, url: e.target.result, file })
     }
     reader.readAsDataURL(file)
   })
+  if (event?.target) event.target.value = ''
 }
 
 const removeMedia = (index) => {
   postMedia.value.splice(index, 1)
 }
 
+// Include tags in created post and reset after
 const createPost = () => {
   if (newPostContent.value.trim() || postMedia.value.length > 0) {
     const newPost = {
@@ -638,22 +756,22 @@ const createPost = () => {
       communityName: fandom.value.name,
       content: newPostContent.value,
       media: postMedia.value.map(m => ({ type: m.type, url: m.url })),
-      tags: [],
+      tags: [...tags.value],
       likes: 0,
       comments: 0,
       shares: 0,
       isLiked: false,
       fandom: fandom.value.name,
-      isPinned: isPinned.value,
-      isAnnouncement: isAnnouncement.value,
+      isPinned: false,
+      isAnnouncement: false,
       authorRole: isAdmin.value ? fandomsStore.config.memberRoles.ADMIN : fandomsStore.config.memberRoles.MEMBER,
       category: fandom.value.category ? fandom.value.category : 'sports'
     }
     fandomsStore.addFandomPost(fandomName.value, newPost)
     newPostContent.value = ''
     postMedia.value = []
-    isPinned.value = false
-    isAnnouncement.value = false
+    tags.value = []
+    tagInput.value = ''
   }
 }
 
@@ -753,10 +871,71 @@ const initializeEditData = () => {
 watch(showEditFandom, (newVal) => { if (newVal) initializeEditData() })
 watch(showEditRules, (newVal) => { if (newVal) initializeEditData() })
 watch(showEditHashtags, (newVal) => { if (newVal) initializeEditData() })
+
+import { onBeforeUnmount } from 'vue'
+
+// Breakpoint helpers you can use inside the template/logic
+const isMobile = ref(false)
+const isTablet = ref(false)
+const updateBreakpoints = () => {
+  const w = window.innerWidth
+  isMobile.value = w < 640 // < sm
+  isTablet.value = w >= 640 && w < 1024 // sm..md and < lg
+}
+
+onMounted(() => {
+  updateBreakpoints()
+  window.addEventListener('resize', updateBreakpoints)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateBreakpoints)
+})
 </script>
 
 <style scoped>
 .transition-all {
   transition: all 0.2s ease-in-out;
+}
+
+/* Mobile-friendly touch targets */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Responsive spacing utilities */
+.pl-13 {
+  padding-left: 3.25rem;
+}
+
+@media (min-width: 640px) {
+  .sm\:pl-16 {
+    padding-left: 4rem;
+  }
+}
+
+/* Hide scrollbar for Webkit browsers */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Smooth scrolling for overflow elements */
+.overflow-x-auto {
+  scroll-behavior: smooth;
+}
+
+/* Ensure good touch targets on mobile */
+@media (max-width: 640px) {
+  button, .touch-target, a {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 </style>

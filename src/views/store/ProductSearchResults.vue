@@ -1,60 +1,55 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
       <!-- Search Results Header -->
-      <div class="mb-8">
+      <div class="mb-6 sm:mb-8">
         <div class="flex items-start sm:items-center justify-between flex-wrap gap-3 sm:gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              Search Results for
-              <span class="truncate inline-block align-bottom max-w-[60vw] sm:max-w-none">"{{ searchQuery }}"</span>
+            <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+              Search Results for "{{ searchQuery }}"
             </h1>
-            <p class="text-gray-600 dark:text-gray-400 mt-1">
+            <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
               {{ totalResults }} products found
             </p>
           </div>
           
           <!-- View Toggle -->
-          <div class="flex items-center space-x-2" role="group" aria-label="Toggle view mode">
+          <div class="flex items-center space-x-1 sm:space-x-2">
             <button
               @click="viewMode = VIEW_MODES.GRID"
-              :aria-pressed="viewMode === VIEW_MODES.GRID"
               :class=" [
-                'p-2 rounded-lg transition-colors border',
+                'p-1.5 sm:p-2 rounded-lg transition-colors',
                 viewMode === VIEW_MODES.GRID 
-                  ? 'bg-green-500 text-white border-transparent' 
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
-              title="Grid view"
               aria-label="Grid view"
             >
-              <i class="fas fa-th w-4 h-4"></i>
+              <i class="fas fa-th w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
             <button
               @click="viewMode = VIEW_MODES.LIST"
-              :aria-pressed="viewMode === VIEW_MODES.LIST"
               :class=" [
-                'p-2 rounded-lg transition-colors border',
+                'p-1.5 sm:p-2 rounded-lg transition-colors',
                 viewMode === VIEW_MODES.LIST 
-                  ? 'bg-green-500 text-white border-transparent' 
-                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
+                  ? 'bg-green-500 text-white' 
+                  : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
-              title="List view"
               aria-label="List view"
             >
-              <i class="fas fa-list w-4 h-4"></i>
+              <i class="fas fa-list w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
           </div>
         </div>
       </div>
 
       <!-- Sort and Filter Bar -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
-        <div class="flex items-center space-x-3 sm:space-x-4 w-full sm:w-auto">
-          <span class="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
+        <div class="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 w-full sm:w-auto">
+          <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">Sort by:</span>
           <select
             v-model="sortBy"
-            class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-56"
+            class="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-48 lg:w-56"
           >
             <option value="relevance">Relevance</option>
             <option value="price-low">Price: Low to High</option>
@@ -64,7 +59,7 @@
           </select>
         </div>
         
-        <div class="text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto">
+        <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto text-center sm:text-right">
           Showing {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, totalResults) }} of {{ totalResults }} results
         </div>
       </div>
@@ -78,7 +73,7 @@
       <!-- Products Grid/List -->
       <div v-else-if="filteredProducts.length > 0">
         <!-- Grid View -->
-        <div v-if="viewMode === VIEW_MODES.GRID" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div v-if="viewMode === VIEW_MODES.GRID" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           <div
             v-for="product in paginatedProducts"
             :key="product.id"
@@ -89,29 +84,29 @@
               <img
                 :src="product.image"
                 :alt="product.name"
-                class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-36 sm:h-40 lg:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div class="absolute top-2 right-2">
                 <button
                   @click.stop="toggleWishlist(product)"
                   :class=" [
-                    'p-2 rounded-full transition-colors',
+                    'p-1.5 sm:p-2 rounded-full transition-colors',
                     product.isWishlisted 
                       ? 'bg-red-500 text-white' 
                       : 'bg-white/80 text-gray-600 hover:bg-white'
                   ]"
                 >
-                  <i class="fas fa-heart w-4 h-4"></i>
+                  <i class="fas fa-heart w-3 h-3 sm:w-4 sm:h-4"></i>
                 </button>
               </div>
             </div>
-            <div class="p-4">
-              <h3 class="font-medium text-gray-900 dark:text-white text-sm mb-1 line-clamp-2">
+            <div class="p-3 sm:p-4">
+              <h3 class="font-medium text-gray-900 dark:text-white text-xs sm:text-sm mb-1 line-clamp-2">
                 {{ product.name }}
               </h3>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mb-2">{{ product.category }}</p>
-              <div class="flex items-center justify-between">
-                <span class="text-lg font-bold text-green-600 dark:text-green-400">${{ product.price }}</span>
+              <p class="text-xs text-gray-500 dark:text-gray-400 mb-1 sm:mb-2">{{ product.category }}</p>
+              <div class="flex items-center justify-between mb-2 sm:mb-3">
+                <span class="text-sm sm:text-lg font-bold text-green-600 dark:text-green-400">${{ product.price }}</span>
                 <div class="flex items-center">
                   <span class="flex text-yellow-400 text-xs">
                     <i v-for="i in 5" :key="i" :class="i <= product.rating ? 'fas fa-star' : 'far fa-star'"></i>
@@ -121,7 +116,7 @@
               </div>
               <button
                 @click.stop="addToCart(product)"
-                class="w-full mt-3 py-2 px-4 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
+                class="w-full py-1.5 sm:py-2 px-3 sm:px-4 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
               >
                 Add to Cart
               </button>
@@ -130,7 +125,7 @@
         </div>
 
         <!-- List View -->
-        <div v-else class="space-y-4">
+        <div v-else class="space-y-3 sm:space-y-4">
           <div
             v-for="product in paginatedProducts"
             :key="product.id"
@@ -141,7 +136,7 @@
               <img
                 :src="product.image"
                 :alt="product.name"
-                class="w-full sm:w-24 h-40 sm:h-24 object-cover rounded-lg"
+                class="w-full sm:w-20 lg:w-24 h-32 sm:h-20 lg:h-24 object-cover rounded-lg"
               />
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium text-gray-900 dark:text-white text-base sm:text-lg mb-1 line-clamp-2">
@@ -159,25 +154,25 @@
                 </div>
               </div>
               <div class="text-left sm:text-right w-full sm:w-auto">
-                <div class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400 mb-3">
+                <div class="text-lg sm:text-xl lg:text-2xl font-bold text-green-600 dark:text-green-400 mb-2 sm:mb-3">
                   ${{ product.price }}
                 </div>
-                <div class="flex sm:block gap-2">
+                <div class="flex flex-col sm:flex-row sm:block gap-2">
                   <button
                     @click.stop="toggleWishlist(product)"
                     :class=" [
-                      'p-2 rounded-full transition-colors',
+                      'p-1.5 sm:p-2 rounded-full transition-colors',
                       product.isWishlisted 
                         ? 'bg-red-500 text-white' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
                     aria-label="Toggle wishlist"
                   >
-                    <i class="fas fa-heart w-4 h-4"></i>
+                    <i class="fas fa-heart w-3 h-3 sm:w-4 sm:h-4"></i>
                   </button>
                   <button
                     @click.stop="addToCart(product)"
-                    class="flex-1 sm:block sm:w-full py-2 px-4 sm:px-6 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    class="flex-1 sm:block sm:w-full py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
                   >
                     Add to Cart
                   </button>
@@ -188,21 +183,21 @@
         </div>
 
         <!-- Pagination -->
-        <div class="mt-8 flex items-center justify-center">
-          <nav class="flex items-center space-x-2">
+        <div class="mt-6 sm:mt-8 flex items-center justify-center">
+          <nav class="flex items-center space-x-1 sm:space-x-2">
             <button
               @click="currentPage = currentPage - 1"
               :disabled="currentPage === 1"
-              class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              class="p-1.5 sm:p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <i class="fas fa-chevron-left w-4 h-4"></i>
+              <i class="fas fa-chevron-left w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
             <span
               v-for="page in visiblePages"
               :key="page"
               @click="currentPage = page"
               :class=" [
-                'px-3 py-2 rounded-lg cursor-pointer',
+                'px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg cursor-pointer text-sm',
                 page === currentPage
                   ? 'bg-green-500 text-white'
                   : 'bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -213,24 +208,24 @@
             <button
               @click="currentPage = currentPage + 1"
               :disabled="currentPage === totalPages"
-              class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
+              class="p-1.5 sm:p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <i class="fas fa-chevron-right w-4 h-4"></i>
+              <i class="fas fa-chevron-right w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
           </nav>
         </div>
       </div>
 
       <!-- No Results -->
-      <div v-else class="text-center py-12">
-        <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
-        <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
+      <div v-else class="text-center py-8 sm:py-12">
+        <i class="fas fa-search text-3xl sm:text-4xl text-gray-300 dark:text-gray-600 mb-3 sm:mb-4"></i>
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
+        <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
           Try adjusting your search criteria or removing some filters
         </p>
         <button
           @click="clearFilters"
-          class="py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors"
+          class="py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
         >
           Clear All Filters
         </button>

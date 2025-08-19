@@ -1,6 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import { useAuthStore } from '@/store/auth'
 import { i18n } from '@/i18n'
+import { useAuthStore } from '@/store/auth'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
@@ -119,7 +119,7 @@ const routes = [
   {
     path: '/create-fandom',
     name: 'CreateFandom',
-    component: () => import('@/views/community/CreateFandom.vue'),
+    component: () => import('@/views/fandom/CreateFandom.vue'),
     meta: { titleKey: 'routes.createFandom', showBottomNav: true }
   },
   {
