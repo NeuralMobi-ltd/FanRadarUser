@@ -1,20 +1,26 @@
 // Central API configuration and endpoints
 export const API_CONFIG = {
   // Enable mocks while backend is not ready (can be overridden via env)
-  useMocks: (import.meta?.env?.VITE_USE_MOCKS ?? 'true') === 'true',
+  // Set default to false so real API is used unless explicitly enabled
+  useMocks: (import.meta?.env?.VITE_USE_MOCKS ?? 'false') === 'true',
   mockLatency: Number(import.meta?.env?.VITE_MOCK_LATENCY ?? 300),
 
   // Base URL of your backend API (adjust for prod/staging via env if needed)
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+  // Updated default base URL to Laravel backend
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
 
   // Auth
   auth: {
-    login: '/api/auth/login',
-    register: '/api/auth/register',
-    profile: '/api/users/profile',
-    updateProfile: '/api/users/profile',
-    updateAvatar: '/api/users/avatar',
-    updateCover: '/api/users/cover-photo',
+    // Primary (current backend) endpoints
+    login: '/api/Y/auth/login',
+    register: '/api/Y/auth/register',
+  logout: '/api/Y/auth/logout',
+  // Profile endpoints (backend uses same path for GET (show) & POST (update))
+  profile: '/api/Y/users/profile',
+  updateProfile: '/api/Y/users/profile', // also used for image updates via form-data
+  updateAvatar: '/api/Y/users/profile',
+  updateCover: '/api/Y/users/profile',
+    // Legacy / fallback endpoints (optional) can be added here if needed
   },
 
   // Users
@@ -32,11 +38,13 @@ export const API_CONFIG = {
     trendingPosts: '/api/trending/posts',
   },
   posts: {
-    create: '/api/posts',
-    like: (postId) => `/api/posts/${postId}/like`,
-    comments: (postId) => `/api/posts/${postId}/comments`,
-    share: (postId) => `/api/posts/${postId}/share`,
-    saved: '/api/posts/saved',
+  // NOTE: Backend currently uses /api/Y/... for mutable post routes (create/update/delete)
+  create: '/api/Y/posts/create', // backend route observed in Postman screenshot
+  update: (postId) => `/api/Y/posts/${postId}/update`,
+  delete: (postId) => `/api/Y/posts/${postId}/delete`,
+  like: (postId) => `/api/posts/${postId}/like`, // keep non-Y like (adjust if backend also namespaces)
+  comments: (postId) => `/api/posts/${postId}/comments`,
+  saved: '/api/posts/saved',
   },
 
   // Categories & Hashtags

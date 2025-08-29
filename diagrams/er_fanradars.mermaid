@@ -1,0 +1,115 @@
+%% Entity-Relationship Diagram (Logical Data Model)
+erDiagram
+  USERS ||--o{ POSTS : "publishes"
+  USERS ||--o{ COMMENTS : "writes"
+  POSTS ||--o{ COMMENTS : "receives"
+  USERS ||--o{ FOLLOWS : "follows" 
+  USERS ||--o{ ORDERS : "places"
+  ORDERS ||--o{ ORDER_ITEMS : "contains"
+  PRODUCTS ||--o{ ORDER_ITEMS : "in"
+  USERS ||--o{ CART_ITEMS : "has"
+  PRODUCTS ||--o{ CART_ITEMS : "selected"
+  USERS ||--o{ NOTIFICATIONS : "receives"
+  FANDOMS ||--o{ POSTS : "hosts"
+  FANDOMS ||--o{ FANDOM_MEMBERS : "membership"
+  USERS ||--o{ FANDOM_MEMBERS : "joins"
+  POSTS ||--o{ POST_HASHTAGS : "tagged"
+  HASHTAGS ||--o{ POST_HASHTAGS : "index"
+
+  USERS {
+    int id PK
+    string username
+    string email
+    string role
+    string first_name
+    string last_name
+    date date_naissance
+    string profile_image
+  }
+
+  POSTS {
+    int id PK
+    int user_id FK
+    int fandom_id FK
+    text content
+    json media
+    json tags
+    datetime created_at
+  }
+
+  COMMENTS {
+    int id PK
+    int post_id FK
+    int user_id FK
+    text content
+    datetime created_at
+  }
+
+  FANDOMS {
+    int id PK
+    string name
+    string handle
+    text description
+    int members_count
+  }
+
+  FANDOM_MEMBERS {
+    int id PK
+    int user_id FK
+    int fandom_id FK
+    string role
+    datetime joined_at
+  }
+
+  HASHTAGS {
+    int id PK
+    string tag
+    int uses
+  }
+
+  POST_HASHTAGS {
+    int id PK
+    int post_id FK
+    int hashtag_id FK
+  }
+
+  PRODUCTS {
+    int id PK
+    string name
+    decimal price
+    string currency
+    int stock
+  }
+
+  ORDERS {
+    int id PK
+    int user_id FK
+    string status
+    decimal total
+    datetime created_at
+  }
+
+  ORDER_ITEMS {
+    int id PK
+    int order_id FK
+    int product_id FK
+    int quantity
+    decimal unit_price
+  }
+
+  CART_ITEMS {
+    int id PK
+    int user_id FK
+    int product_id FK
+    int quantity
+    decimal unit_price
+  }
+
+  NOTIFICATIONS {
+    int id PK
+    int user_id FK
+    string type
+    json data
+    datetime created_at
+    datetime read_at
+  }

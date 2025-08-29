@@ -58,7 +58,6 @@
           :post="post"
           @like="likePost"
           @comment="commentPost"
-          @share="sharePost"
           class="w-full mb-0"
         />
       </template>
@@ -164,7 +163,7 @@ const navigateToHashtag = (tag) => {
 // Methods to handle post interactions
 function likePost(postId) { hashtagsStore.likeHashtagPost(hashtagName.value, postId) }
 function commentPost(postId) { console.log('Comment on post:', postId) }
-function sharePost(postId) { hashtagsStore.shareHashtagPost(hashtagName.value, postId) }
+// sharePost removed
 </script>
 
 <style scoped>

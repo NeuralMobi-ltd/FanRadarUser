@@ -182,7 +182,7 @@
       </div>
     </div>
 
-    <!-- Post Actions -->
+    <!-- Post Actions (share removed) -->
     <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700">
       <div class="flex items-center space-x-0.5 sm:space-x-1">
         <!-- Like Button -->
@@ -221,17 +221,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">{{ formatNumber(post.comments) }}</span>
-        </button>
-
-        <!-- Share Button -->
-        <button 
-          @click="sharePost"
-          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 group"
-        >
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-green-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-          </svg>
-          <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-green-500 transition-colors">{{ formatNumber(post.shares) }}</span>
         </button>
       </div>
 
@@ -332,7 +321,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['like', 'comment', 'share', 'delete', 'edit'])
+const emit = defineEmits(['like', 'comment', 'delete', 'edit'])
 
 // Instagram-style carousel state
 const currentSlide = ref(0)
@@ -420,20 +409,6 @@ const toggleSave = () => {
   // Emit save event or handle save logic
 }
 
-const sharePost = () => {
-  emit('share', props.post.id)
-  // Copy link to clipboard or open share dialog
-  if (navigator.share) {
-    navigator.share({
-      title: `Post by ${props.post.username}`,
-      text: props.post.text || props.post.content,
-      url: window.location.href
-    })
-  } else {
-    navigator.clipboard.writeText(window.location.href)
-    console.log('Link copied to clipboard')
-  }
-}
 
 const addComment = () => {
   if (newComment.value.trim()) {

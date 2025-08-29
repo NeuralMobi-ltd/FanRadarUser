@@ -22,15 +22,14 @@ export const usePostsStore = defineStore('posts', {
             caption: 'Anime reaction video'
           }
         ],
-        likes: 124,
-        comments: 23,
-        shares: 8,
+  likes: 124,
+  comments: 23,
         isLiked: false,
         fandom: 'Anime',
         trending: true,
         likedBy: []
       },
-      {
+{
         id: 2,
         username: 'Jean Dubois',
         avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
@@ -49,9 +48,8 @@ export const usePostsStore = defineStore('posts', {
             caption: 'Team celebration'
           }
         ],
-        likes: 89,
-        comments: 15,
-        shares: 12,
+  likes: 89,
+  comments: 15,
         isLiked: true,
         fandom: 'League of Legends',
         trending: true,
@@ -68,16 +66,15 @@ export const usePostsStore = defineStore('posts', {
             type: 'video',
             url: 'https://www.w3schools.com/html/movie.mp4',
             caption: 'NewJeans MV highlight'
-          },
+          },      
           {
             type: 'image',
             url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
             caption: 'Choreography snapshot'
           }
         ],
-        likes: 156,
-        comments: 34,
-        shares: 28,
+  likes: 156,
+  comments: 34,
         isLiked: false,
         fandom: 'K-Pop',
         trending: true,
@@ -106,9 +103,8 @@ export const usePostsStore = defineStore('posts', {
             caption: 'PS5 graphics showcase'
           }
         ],
-        likes: 78,
-        comments: 19,
-        shares: 6,
+  likes: 78,
+  comments: 19,
         isLiked: true,
         fandom: 'Gaming',
         trending: false,
@@ -120,9 +116,8 @@ export const usePostsStore = defineStore('posts', {
         avatar: 'https://randomuser.me/api/portraits/women/12.jpg',
         date: new Date(Date.now() - 3600000 * 16),
         text: "Theory: What if the TVA from Loki will play a major role in the upcoming Avengers movie? The multiverse implications are huge! 🤔 #Marvel #MCU",
-        likes: 203,
-        comments: 67,
-        shares: 45,
+  likes: 203,
+  comments: 67,
         isLiked: false,
         fandom: 'Marvel',
         trending: true,
@@ -146,9 +141,8 @@ export const usePostsStore = defineStore('posts', {
             caption: 'Fight scene highlight'
           }
         ],
-        likes: 145,
-        comments: 28,
-        shares: 17,
+  likes: 145,
+  comments: 28,
         isLiked: true,
         fandom: 'Anime',
         trending: false,
@@ -173,7 +167,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['PremierLeague', 'Football', 'MatchDay', 'Referee'],
           likes: 234,
           comments: 56,
-          shares: 18,
           isLiked: false,
           fandom: 'Sport'
         },
@@ -188,7 +181,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['NBA', 'Rookies', 'Basketball', 'HotTake'],
           likes: 189,
           comments: 43,
-          shares: 12,
           isLiked: true,
           fandom: 'Sport'
         },
@@ -203,7 +195,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['Formula1', 'F1Regulations', 'Aerodynamics', 'Racing'],
           likes: 312,
           comments: 89,
-          shares: 24,
           isLiked: false,
           fandom: 'Sport'
         }
@@ -220,7 +211,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['LeagueOfLegends', 'Gaming', 'Meta', 'Patch'],
           likes: 156,
           comments: 34,
-          shares: 22,
           isLiked: false,
           fandom: 'Gaming'
         },
@@ -233,9 +223,8 @@ export const usePostsStore = defineStore('posts', {
         text: 'This is a sample post with a single image.',
         image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
         tags: ['Vue', 'Pinia', 'Mock'],
-        likes: 12,
-        comments: 2,
-        shares: 1,
+  likes: 12,
+  comments: 2,
         isLiked: false,
         isSaved: false,
         fandom: 'Vue Fans',
@@ -270,9 +259,8 @@ export const usePostsStore = defineStore('posts', {
           { type: 'video', url: 'https://www.w3schools.com/html/mov_bbb.mp4' }
         ],
         tags: ['Carousel', 'Media'],
-        likes: 8,
-        comments: 1,
-        shares: 0,
+  likes: 8,
+  comments: 1,
         isLiked: true,
         isSaved: true,
         fandom: 'Media Lovers',
@@ -298,7 +286,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['PS5', 'PlayStation', 'Gaming', 'Exclusive'],
           likes: 203,
           comments: 67,
-          shares: 45,
           isLiked: true,
           fandom: 'Gaming'
         }
@@ -315,7 +302,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['AttackOnTitan', 'Anime', 'Manga', 'Episode'],
           likes: 445,
           comments: 123,
-          shares: 78,
           isLiked: false,
           fandom: 'Entertainment'
         },
@@ -330,7 +316,6 @@ export const usePostsStore = defineStore('posts', {
           tags: ['Marvel', 'Movies', 'Review', 'Cinema'],
           likes: 89,
           comments: 45,
-          shares: 12,
           isLiked: false,
           fandom: 'Entertainment'
         }
@@ -378,7 +363,7 @@ export const usePostsStore = defineStore('posts', {
           media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
           likes: p.likes || 0,
           comments: p.comments || 0,
-          shares: p.shares || 0,
+          // shares removed
           isLiked: !!p.isLiked,
           fandom: p.fandom?.name || null,
           trending: !!p.trending
@@ -400,7 +385,7 @@ export const usePostsStore = defineStore('posts', {
           media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
           likes: p.likes || 0,
           comments: p.comments || 0,
-          shares: p.shares || 0,
+          // shares removed
           isLiked: !!p.isLiked,
           fandom: p.fandom?.name || null,
           trending: !!p.trending
@@ -424,6 +409,51 @@ export const usePostsStore = defineStore('posts', {
       }
       return res
     },
+    async updatePostApi(postId, payload) {
+      const res = await PostsService.update(postId, payload)
+      const p = res?.post || res?.data?.post || res
+      if (p?.id) {
+        const idx = this.posts.findIndex(x => x.id === p.id)
+        if (idx !== -1) {
+          this.posts[idx] = {
+            ...this.posts[idx],
+            text: p.description || p.content || this.posts[idx].text,
+            media: (p.media || []).map(m => ({ type: m.type || 'image', url: typeof m === 'string' ? m : m.url })),
+            trending: !!p.trending
+          }
+        }
+      }
+      return res
+    },
+    async deletePostApi(postId) {
+      const res = await PostsService.remove(postId)
+      if (res?.success || res?.message) {
+        this.deletePost(postId)
+      }
+      return res
+    },
+    async fetchUserPosts(userId, params = {}) {
+      try {
+        const { posts } = await PostsService.userPosts(userId, params)
+        if (Array.isArray(posts)) {
+          this.posts = posts.map(p => ({
+            id: p.id,
+            username: p.author?.name || p.username || '',
+            avatar: p.author?.avatar || p.profile_image || p.avatar,
+            date: new Date(p.created_at || p.createdAt || Date.now()),
+            text: p.description || p.body || p.content || '',
+            media: (p.media || []).map(m => ({ type: m.type || 'image', url: typeof m === 'string' ? m : m.url })),
+            likes: p.likes || p.likes_count || 0,
+            comments: p.comments || p.comments_count || 0,
+            isLiked: !!p.isLiked || !!p.liked,
+            fandom: p.fandom?.name || p.fandom || null,
+            trending: !!p.trending
+          }))
+        }
+      } catch (e) {
+        // ignore keep existing
+      }
+    },
     async likePostApi(postId) {
       try {
         await PostsService.like(postId)
@@ -436,9 +466,8 @@ export const usePostsStore = defineStore('posts', {
     addPost(post) {
       const newPost = {
         id: Date.now(),
-        likes: 0,
-        comments: 0,
-        shares: 0,
+  likes: 0,
+  comments: 0,
         isLiked: false,
         fandom: null,
         trending: false,
@@ -461,12 +490,7 @@ export const usePostsStore = defineStore('posts', {
       }
     },
     
-    sharePost(postId) {
-      const post = this.posts.find(p => p.id === postId)
-      if (post) {
-        post.shares += 1
-      }
-    },
+  // sharePost removed
     
     setActiveFeed(feed) {
       this.activeFeed = feed
@@ -485,7 +509,6 @@ export const usePostsStore = defineStore('posts', {
           text: p.content,
           likes: p.likes || 0,
           comments: p.comments || 0,
-          shares: p.shares || 0,
           isLiked: !!p.isLiked,
           fandom: p.fandom?.name || null,
           trending: !!p.trending
@@ -505,7 +528,6 @@ export const usePostsStore = defineStore('posts', {
             text: 'The new iPhone is amazing! Camera quality is incredible 📱 #tech #iPhone',
             likes: 23,
             comments: 5,
-            shares: 2,
             isLiked: false,
             fandom: 'Technology',
             trending: false,

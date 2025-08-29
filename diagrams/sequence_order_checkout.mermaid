@@ -1,0 +1,22 @@
+%% Sequence Diagram: Checkout Order
+sequenceDiagram
+  autonumber
+  participant U as Utilisateur
+  participant FE as Frontend
+  participant API as API Laravel
+  participant PAY as Système Paiement
+  participant DB as Base de Données
+
+  U->>FE: Valide panier
+  FE->>API: POST /api/store/orders (items, adresse, payment_method)
+  API->>DB: Vérifie stock produits
+  alt Stock insuffisant
+    API-->>FE: 409 { message: "Stock insuffisant" }
+  else Stock OK
+    API->>PAY: Crée intention paiement
+    PAY-->>API: Confirmation paiement
+    API->>DB: Insert Order + Items
+    DB-->>API: Order ID
+    API-->>FE: 201 { order }
+    FE-->>U: Affiche confirmation
+  end

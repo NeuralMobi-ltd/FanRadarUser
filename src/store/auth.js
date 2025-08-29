@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import AuthService from '@/services/authService'
+import API_CONFIG from '@/config/api'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -14,7 +15,7 @@ export const useAuthStore = defineStore('auth', {
     },
     posts: []
   }),
-  
+
   getters: {
     isAuthenticated: (state) => !!state.user && !!state.token,
     userName: (state) => state.user?.userName,
@@ -51,16 +52,48 @@ export const useAuthStore = defineStore('auth', {
 
     mapApiUserToState(apiUser) {
       if (!apiUser) return null
+      // Map preferred_categories (IDs) to names using categories store if available (lazy require to avoid circular dep)
+      let categoryIds = apiUser.preferred_categories || apiUser.categories || []
+      let categoryNames = []
+      try {
+        // Dynamically import store to avoid build-time circular issues
+        const { useCategoriesStore } = require('@/store/categories')
+        const catStore = useCategoriesStore()
+        const nameList = catStore.getCategories.map(c => c.name)
+        // If backend sends IDs (1-based), map by index-1; if names already, just pass through
+        categoryNames = categoryIds.every(id => typeof id === 'number')
+          ? categoryIds.map(id => nameList[id - 1]).filter(Boolean)
+          : categoryIds
+      } catch (e) {
+        categoryNames = categoryIds // fallback
+      }
+      const resolveImage = (p, fallback) => {
+        if (!p) return fallback
+        if (/^https?:/i.test(p)) return p
+        if (p.startsWith('storage/')) {
+          const base = import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || ''
+          return `${base.replace(/\/$/, '')}/${p}`
+        }
+        return p
+      }
       return {
         id: apiUser.id,
-        userName: apiUser.username || apiUser.userName || apiUser.name || 'user',
-        userEmail: apiUser.email,
-        name: apiUser.name,
-        avatar: apiUser.avatar || apiUser.avatarUrl || '/images/me.png',
-        bio: apiUser.bio || '',
-        coverPhoto: apiUser.coverPhoto || '',
-        verified: apiUser.isVerified || apiUser.verified || false,
-        joinedDate: apiUser.joinedDate || new Date().toISOString(),
+  userName: apiUser.username || [apiUser.first_name, apiUser.last_name].filter(Boolean).join(' ') || apiUser.userName || apiUser.name || 'user',
+  userEmail: apiUser.email,
+  name: [apiUser.first_name, apiUser.last_name].filter(Boolean).join(' ') || apiUser.name || apiUser.username,
+  firstName: apiUser.first_name || null,
+  lastName: apiUser.last_name || null,
+  avatar: resolveImage(apiUser.profile_image || apiUser.avatar || apiUser.avatarUrl, '/images/me.png'),
+  coverPhoto: resolveImage(apiUser.background_image || apiUser.cover_photo || apiUser.coverPhoto, ''),
+  bio: apiUser.bio || '',
+  birthDate: apiUser.date_naissance || apiUser.birth_date || null,
+  gender: apiUser.gender || null,
+        categories: categoryNames,
+  role: apiUser.role || null,
+  permissions: apiUser.permissions || [],
+  verified: apiUser.isVerified || apiUser.verified || false,
+  stats: apiUser.stats || { followers: 0, following: 0, posts: 0 },
+  joinedDate: apiUser.created_at || apiUser.joinedDate || new Date().toISOString(),
       }
     },
 
@@ -94,6 +127,37 @@ export const useAuthStore = defineStore('auth', {
         localStorage.setItem('user', JSON.stringify(this.user))
       }
     },
+
+    // Persist profile changes to backend (first_name, last_name, etc.)
+    async updateProfileRemote(payload) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.updateProfile(payload)
+        const response = res?.data || res
+        const apiUser = response.user || response
+        if (apiUser) {
+          this.user = this.mapApiUserToState(apiUser)
+          localStorage.setItem('user', JSON.stringify(this.user))
+        } else {
+          // If backend returns only success flag, merge manually
+          this.updateUserProfile(payload)
+        }
+        return { success: true, user: this.user }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'Profile update failed')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    async updateProfileImage(file) {
+      return this.updateProfileRemote({ profile_image: file })
+    },
+    async updateBackgroundImage(file) {
+      return this.updateProfileRemote({ background_image: file })
+    },
     
     // Update user stats
     updateUserStats(stats) {
@@ -112,7 +176,7 @@ export const useAuthStore = defineStore('auth', {
           timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
           likes: 24,
           comments: 5,
-          shares: 2,
+          // shares removed
           media: [
             {
               type: 'image',
@@ -133,7 +197,7 @@ export const useAuthStore = defineStore('auth', {
           timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
           likes: 89,
           comments: 23,
-          shares: 12,
+          // shares removed
           media: [
             {
               type: 'image',
@@ -154,7 +218,7 @@ export const useAuthStore = defineStore('auth', {
           timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
           likes: 45,
           comments: 8,
-          shares: 6,
+          // shares removed
           type: 'text'
         },
         {
@@ -163,7 +227,7 @@ export const useAuthStore = defineStore('auth', {
           timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
           likes: 156,
           comments: 34,
-          shares: 28,
+          // shares removed
           media: [
             {
               type: 'image',
@@ -189,7 +253,7 @@ export const useAuthStore = defineStore('auth', {
           timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
           likes: 67,
           comments: 12,
-          shares: 15,
+          // shares removed
           type: 'text'
         }
       ]
@@ -204,7 +268,7 @@ export const useAuthStore = defineStore('auth', {
         timestamp: new Date().toISOString(),
         likes: 0,
         comments: 0,
-        shares: 0,
+  // shares removed
         image: postData.image || null,
         type: postData.image ? 'image' : 'text'
       }
@@ -263,37 +327,58 @@ export const useAuthStore = defineStore('auth', {
 
         if (token) this.setToken(token)
         this.user = this.mapApiUserToState(apiUser)
+        // Update stats store if backend provided
+        if (apiUser?.stats) {
+          this.userStats = { ...this.userStats, ...apiUser.stats }
+        }
         if (this.user) localStorage.setItem('user', JSON.stringify(this.user))
-        // Optionally initialize posts
-        this.initializeMockPosts()
+  // Remove mock posts when real feed is integrated; comment out for production
+  // this.initializeMockPosts()
         return { success: true, user: this.user }
       } catch (error) {
-        // Fallback to mock login to avoid blocking UI during backend bring-up
-        // Remove this fallback when backend is ready
-        const { email } = credentials
-        const userData = {
-          id: 1,
-          userName: email.split('@')[0],
-          userEmail: email,
-          avatar: 'https://ui-avatars.com/api/?name=' + email.split('@')[0] + '&background=6366f1&color=fff&size=256',
-          bio: 'FanRadar user',
-          coverPhoto: '',
-          verified: false,
-          joinedDate: new Date().toISOString(),
+        const status = error?.response?.status
+        if (status === 401) {
+          this.setError('Invalid email or password.')
+          return { success: false, error: this.error }
         }
-        this.user = userData
-        localStorage.setItem('user', JSON.stringify(userData))
-        this.initializeMockPosts()
-        this.setError('Connected in mock mode. Backend not reachable.')
-        return { success: true, user: userData, mock: true }
+        // Optional fallback only if mocks enabled
+        try {
+          const { API_CONFIG } = require('@/config/api')
+          if (API_CONFIG?.useMocks) {
+            const { email } = credentials
+            const userData = {
+              id: 1,
+              userName: email.split('@')[0],
+              userEmail: email,
+              avatar: 'https://ui-avatars.com/api/?name=' + email.split('@')[0] + '&background=6366f1&color=fff&size=256',
+              bio: 'FanRadar user (mock)',
+              coverPhoto: '',
+              verified: false,
+              joinedDate: new Date().toISOString(),
+            }
+            this.user = userData
+            localStorage.setItem('user', JSON.stringify(userData))
+            this.initializeMockPosts()
+            this.setError('Backend unreachable. Using mock session.')
+            return { success: true, user: userData, mock: true }
+          }
+        } catch (_) { /* ignore */ }
+        this.setError(error?.response?.data?.message || 'Login failed')
+        return { success: false, error: this.error }
       } finally {
         this.setLoading(false)
       }
     },
     
     // Logout action
-    logout() {
-      this.clearSession()
+    async logout() {
+      try {
+        await AuthService.logout()
+      } catch (_) {
+        // ignore
+      } finally {
+        this.clearSession()
+      }
     },
 
     clearSession() {

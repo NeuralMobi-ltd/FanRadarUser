@@ -161,7 +161,7 @@ export const useFandomsStore = defineStore('fandoms', {
           tags: ['match', 'tactics', 'analysis'],
           likes: 89,
           comments: 23,
-          shares: 5,
+          // shares removed
           isLiked: false,
           fandom: ''
         },
@@ -175,7 +175,7 @@ export const useFandomsStore = defineStore('fandoms', {
           tags: ['tactics', 'formation', 'substitutions'],
           likes: 156,
           comments: 34,
-          shares: 12,
+          // shares removed
           isLiked: true,
           fandom: ''
         }

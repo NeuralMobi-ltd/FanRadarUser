@@ -289,7 +289,6 @@
           :post="post"
           @like="likePost"
           @comment="commentPost"
-          @share="sharePost"
           @delete="deletePost"
           :can-delete="isAdmin || post.username === currentUser.name"
           class="w-full mb-0"
@@ -825,9 +824,7 @@ function commentPost(postId) {
   console.log('Comment on post:', postId)
 }
 
-function sharePost(postId) {
-  console.log('Share post:', postId)
-}
+// sharePost removed
 
 const deletePost = (postId) => {
   if (confirm('Are you sure you want to delete this post?')) {

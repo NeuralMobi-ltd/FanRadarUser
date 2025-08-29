@@ -1,0 +1,463 @@
+\documentclass[12pt,a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{geometry}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{appendix}
+
+% Configuration de la page
+\geometry{margin=1in}
+
+% Suppression des listings de code pour une version purement descriptive.
+
+% Configuration des titres de chapitres
+\titleformat{\chapter}[display]
+{\normalfont\huge\bfseries}{\chaptertitlename\ \thechapter}{20pt}{\Huge}
+
+% Commandes pour les guillemets français
+\newcommand{\og}{«}
+\newcommand{\fg}{»}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\Huge \textbf{Rapport de Stage}}\\
+    \vspace{1cm}
+    {\LARGE \textbf{FanRadars.com}}\\
+    \vspace{1cm}
+    {\Large Plateforme de suivi des tendances des communautés de fans}\\
+    \vspace{2cm}
+    {\Large Rédigé par}\\
+    \vspace{0.5cm}
+    {\Large Votre Nom}\\
+    \vspace{2cm}
+    {\Large Stage effectué au sein de}\\
+    \vspace{0.5cm}
+    {\Large NeuralMobi Ltd}\\
+    \vspace{0.5cm}
+    {\Large Londres, Royaume-Uni}\\
+    \vspace{2cm}
+    {\Large Du 01 Janvier 2023 au 30 Juin 2023}\\
+    \vspace{2cm}
+    {\Large Encadré par : Nom du Maître de Stage}\\
+    \vspace{1cm}
+    {\Large Année Universitaire 2022-2023}
+\end{titlepage}
+
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Je tiens à exprimer ma gratitude à toutes les personnes qui ont contribué de près ou de loin à la réalisation de ce stage et à l'élaboration de ce rapport.
+
+Mes premiers remerciements vont à M. [Nom du Maître de Stage], mon maître de stage au sein de NeuralMobi Ltd, pour sa confiance, ses précieux conseils et son accompagnement tout au long de ce projet. Son expertise et sa vision ont été déterminantes pour la réussite de FanRadars.com.
+
+Je remercie également l'ensemble de l'équipe de NeuralMobi pour leur accueil chaleureux, leur collaboration et leur soutien technique durant ces six mois de stage.
+
+Un remerciement particulier à [Nom du Responsable Pédagogique], mon enseignant référent à [Nom de Votre École/Université], pour son suivi, ses conseils avisés et sa disponibilité.
+
+Enfin, je tiens à remercier ma famille et mes amis pour leur soutien indéfectible tout au long de cette expérience enrichissante.
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce rapport présente le travail réalisé durant mon stage de six mois au sein de NeuralMobi Ltd, entreprise spécialisée dans le développement d'applications mobiles et de solutions intelligentes basées sur l'IA.
+
+Le projet FanRadars.com consiste en la conception et le développement d'une plateforme web et mobile dédiée au suivi et à l'analyse des tendances au sein des communautés de fans (fandoms). La plateforme intègre un système de surveillance des tendances, une marketplace curated et une couche analytique avancée.
+
+Mon intervention a couvert l'ensemble du cycle de développement, depuis l'analyse des besoins et la conception technique jusqu'à la réalisation et aux tests. J'ai principalement travaillé sur la spécification de l'API REST, l'intégration frontend avec Vue.js, la modélisation des données et la mise en place des mécanismes de sécurité.
+
+Ce document détaille le contexte du projet, les choix techniques effectués, les défis rencontrés et les solutions apportées, ainsi que les perspectives d'évolution de la plateforme.
+
+\textbf{Mots-clés :} Communautés de fans, tendances, Laravel, Vue.js, marketplace, analytics, application mobile, NeuralMobi, stage
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\chapter{Introduction}
+\section{Contexte}
+Les communautés de fans (fandoms) représentent aujourd'hui des écosystèmes culturels et économiques puissants, rassemblant des millions de personnes autour de passions communes. Ces communautés génèrent en permanence un flux important de contenus, d'interactions et de tendances émergentes. FanRadars.com vise à offrir une plateforme complète permettant de suivre, d'analyser et de monétiser ces tendances à travers différents canaux : posts, fanarts, discussions, hashtags et ventes de produits dérivés.
+
+\section{Motivations du projet}
+\begin{itemize}
+  \item Aider les créateurs de contenu et les marques à détecter les tendances émergentes en temps réel
+  \item Offrir aux fans un espace d'expression et de partage structuré autour de leurs passions
+  \item Proposer des outils analytiques avancés pour mesurer l'engagement et la performance des contenus
+  \item Intégrer une marketplace dédiée aux produits dérivés et aux drops exclusifs
+  \item Créer une plateforme extensible capable d'intégrer à l'avenir des fonctionnalités basées sur l'IA
+\end{itemize}
+
+\section{Structure du rapport}
+Ce rapport suit une progression classique en six parties principales :
+\begin{enumerate}
+  \item Présentation de l'entreprise et du projet
+  \item Cahier des charges et analyse des besoins
+  \item Conception technique (architecture, modèles de données)
+  \item Réalisation technique (développement backend et frontend)
+  \item Aspects sécurité, tests et déploiement
+  \item Perspectives et conclusion
+\end{enumerate}
+
+\chapter{Présentation de l'entreprise et du projet}
+\section{NeuralMobi Ltd}
+\subsection{Présentation générale}
+\textbf{Nom:} NeuralMobi Ltd\\
+\textbf{Siège:} 71--75 Shelton Street, Covent Garden, London, WC2H 9JQ, Royaume-Uni\\
+\textbf{Statut:} Entreprise privée\\
+\textbf{Secteur:} Technologies mobiles et intelligence artificielle\\
+\textbf{Positionnement:} Passerelle entre la recherche en IA et des solutions mobiles utilisables par le grand public et les professionnels.
+
+NeuralMobi développe des applications mobiles, jeux et plateformes SaaS enrichis par l'IA. L'entreprise combine conception UX, ingénierie logicielle, et recherche appliquée pour proposer des expériences intelligentes et accessibles.
+
+\subsection{Mission et vision}
+La mission de NeuralMobi est de repousser les limites des technologies mobiles en intégrant une IA de pointe dans les applications et jeux afin de rendre l'innovation utile et accessible. Sa vision est d'entretenir une culture \og innovation-first \fg soutenue par un fort investissement R\&D pour créer des outils intelligents destinés aux développeurs, créateurs et utilisateurs finaux.
+
+\subsection{Produits et services clés}
+\begin{itemize}
+  \item \textbf{Applications et jeux mobiles IA-driven} : expériences augmentées (personnalisation, génération de contenu, gouvernance adaptative)
+  \item \textbf{Outils développeurs} : voice-to-code, design-to-code, productivité intelligente (assistants contextuels, automatisation des tests)
+  \item \textbf{Plateformes SaaS} : flux créatifs collaboratifs, orchestration de données et analytics en temps réel
+\end{itemize}
+
+\section{Projet FanRadars.com}
+\subsection{Rôle du projet dans la roadmap}
+FanRadars.com illustre la convergence des expertises de NeuralMobi : social content, analytics temps réel et monétisation communautaire. Le projet agit comme laboratoire pour des composants réutilisables (pipeline d'ingestion, moteurs de tendance, modules marketplace) et futures intégrations IA (résumés automatiques, recommandations, modération assistée).
+
+\subsection{Objectifs fonctionnels}
+\begin{enumerate}
+  \item Gestion utilisateurs, profils enrichis, préférences (catégories / fandoms)
+  \item Publication multimédia (posts, fanarts), tagging (hashtags), et fil d'actualité personnalisé
+  \item Radar de tendances : agrégation de signaux (likes, commentaires, vitesse de propagation) pour un score dynamique
+  \item Marketplace intégrée : produits dérivés, drops exclusifs, gestion panier / commandes
+  \item Module analytics : métriques d'engagement, top fandoms, performance marketplaces
+  \item Notifications temps réel (activités sociales, transactions, tendances)
+  \item API extensible pour futures fonctionnalités IA (résumés, recommandations, détection d'anomalies)
+\end{enumerate}
+
+\subsection{Périmètre du stage}
+\begin{itemize}
+  \item Spécification contractuelle des endpoints REST (document API détaillé)
+  \item Intégration frontend (Vue 3 + Pinia + Axios) et normalisation des stores
+  \item Conception du schéma de données initial (utilisateurs, posts, fandoms, produits, commandes)
+  \item Ébauche pipeline tendances (concept scoring + facteurs pondérés)
+  \item Sécurisation basique : stratégie de tokens, politiques d'accès, validation
+  \item Préparation des bases pour modules analytics et IA (modèles d'évènements)
+\end{itemize}
+
+\chapter{Cahier des charges}
+\section{Besoins fonctionnels}
+\begin{enumerate}
+  \item Gestion des utilisateurs, rôles et permissions (Admin, Writer, User)
+  \item Création/édition/modération des contenus (posts, fan art, articles)
+  \item Système de vote et classement (Radar Rank)
+  \item Import/monitoring d'hashtags et mots-clés (scraping/API)
+  \item Marketplace (produits, drops, panier, paiement)
+  \item Module analytics (trafic, heatmaps, top fandoms)
+  \item Application mobile synchronisée
+\end{enumerate}
+
+\section{Besoins non-fonctionnels}
+\begin{itemize}
+  \item Performances et scalabilité (microservices / queues pour ingestion)
+  \item Sécurité : chiffrement, protections XSS/CSRF/SQLi
+  \item Conformité RGPD (export/suppression de données)
+  \item Haute disponibilité et sauvegarde
+  \item Temps de réponse API < 200ms pour les endpoints critiques
+  \accessibilité : respect des guidelines WCAG niveau AA
+\end{itemize}
+
+\chapter{Analyse et conception}
+\section{Architecture logicielle}
+L'architecture technique retenue pour FanRadars.com est la suivante :
+\begin{itemize}
+  \item Backend : Laravel (API RESTful)
+  \item Frontend web : Vue.js (SPA)
+  \item Mobile : Flutter (applications iOS et Android)
+  \item Base de données : MySQL
+  \item Hébergement : AWS
+  \item Traitements asynchrones : Redis + Laravel Horizon
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{architecture.png}
+  \caption{Architecture générale de la plateforme FanRadars.com}
+  \label{fig:architecture}
+\end{figure}
+
+\section{Modèle de données}
+Le schéma de données principal comprend les entités suivantes :
+\begin{itemize}
+  \item \texttt{users(id, username, email, role, password\_hash, created\_at)}
+  \item \texttt{fandoms(id, name, slug, description, category, members\_count)}
+  \item \texttt{posts(id, user\_id, fandom\_id, content, media\_url, tags, created\_at)}
+  \item \texttt{products(id, title, price, stock, metadata)}
+  \item \texttt{orders(id, user\_id, product\_id, quantity, status, created\_at)}
+  \item \texttt{analytics\_events(id, event\_type, payload, created\_at)}
+\end{itemize}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{modele-donnees.png}
+  \caption{Modèle conceptuel de données}
+  \label{fig:modele-donnees}
+\end{figure}
+
+\section{Diagrammes UML}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/class_fanradars.png}
+  \caption{Diagramme de classes (FanRadar)}
+  \label{fig:class-diagram}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/usecase_fanradars.png}
+  \caption{Diagramme de cas d'utilisation (FanRadar)}
+  \label{fig:usecase-diagram}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/er_fanradars.png}
+  \caption{Modèle entité-relation (logique)}
+  \label{fig:er-diagram}
+\end{figure}
+
+\subsection{Diagrammes de séquence}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/sequence_post_creation.png}
+  \caption{Séquence : création de post}
+  \label{fig:seq-post-creation}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/sequence_follow_toggle.png}
+  \caption{Séquence : follow / unfollow}
+  \label{fig:seq-follow-toggle}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{diagrams/sequence_order_checkout.png}
+  \caption{Séquence : processus de commande / checkout}
+  \label{fig:seq-order-checkout}
+\end{figure}
+
+\section{Références des diagrammes}
+Ci-dessous la liste des diagrammes fournis (fichiers Mermaid originaux et images exportées attendues dans le dossier `diagrams/`):
+\begin{itemize}
+  \item `diagrams/usecase_fanradars.mermaid` → image : `diagrams/usecase_fanradars.png` — diagramme de cas d'utilisation (acteurs et flux principaux).
+  \item `diagrams/class_fanradars.mermaid` → image : `diagrams/class_fanradars.png` — diagramme de classes et relations de domaine (User, Post, Fandom, Product, Order).
+  \item `diagrams/er_fanradars.mermaid` → image : `diagrams/er_fanradars.png` — modèle entité-relation logique pour la base de données.
+  \item `diagrams/sequence_post_creation.mermaid` → image : `diagrams/sequence_post_creation.png` — séquence détaillant la création d'un post (formulaire → API → store → notification).
+  \item `diagrams/sequence_follow_toggle.mermaid` → image : `diagrams/sequence_follow_toggle.png` — séquence follow/unfollow (client → endpoint toggle → store mise à jour).
+  \item `diagrams/sequence_order_checkout.mermaid` → image : `diagrams/sequence_order_checkout.png` — séquence de checkout et création de commande.
+\end{itemize}
+
+Export recommandés : PNG ou SVG selon le rendu LaTeX choisi; placer les fichiers dans `diagrams/` et vérifier les noms exacts ci-dessus avant compilation.
+
+\subsection{Instructions d'export des diagrammes}
+Pour générer des images à partir des fichiers Mermaid, utiliser soit le CLI officiel Mermaid, soit un service en ligne / VS Code extension. Exemple avec le CLI (Node.js) :
+\begin{verbatim}
+npx mmdc -i diagrams/class_fanradars.mermaid -o diagrams/class_fanradars.png
+npx mmdc -i diagrams/usecase_fanradars.mermaid -o diagrams/usecase_fanradars.png
+npx mmdc -i diagrams/er_fanradars.mermaid -o diagrams/er_fanradars.png
+npx mmdc -i diagrams/sequence_post_creation.mermaid -o diagrams/sequence_post_creation.png
+npx mmdc -i diagrams/sequence_follow_toggle.mermaid -o diagrams/sequence_follow_toggle.png
+npx mmdc -i diagrams/sequence_order_checkout.mermaid -o diagrams/sequence_order_checkout.png
+\end{verbatim}
+
+Remarque : Sur Windows PowerShell, exécuter les commandes telles quelles si `npx` est disponible. Alternativement, exporter en SVG pour une meilleure qualité dans le PDF final.
+
+\chapter{Réalisation technique}
+\section{Backend (Laravel)}
+Le backend a été développé avec le framework Laravel qui offre une structure robuste pour la construction d'APIs RESTful.
+
+\subsection{Authentification et autorisation}
+Mise en place d'un système d'authentification via Laravel Sanctum qui fournit des tokens API sécurisés. Gestion fine des permissions avec les Policies Laravel.
+
+\paragraph{Policies et contrôle d'accès.} Les règles d'autorisation encapsulent la logique: un auteur ou un administrateur peut modifier / supprimer son contenu; les autres rôles disposent de permissions cadrées (modération ciblée). L'implémentation suit le pattern classique Policy par ressource (PostPolicy, CommentPolicy, etc.).
+
+\subsection{Structure de l'API}
+L'API respecte des verbes HTTP standard (GET liste/détail, POST création ou action, PUT/PATCH modification, DELETE suppression) et expose des routes cohérentes par ressource (posts, fandoms, utilisateurs) ainsi que des sous-routes d'actions (ex: vote, follow) renvoyant un état idempotent (compteurs et drapeaux mis à jour). Les réponses sont paginées pour les collections et normalisées (métadonnées + tableau de données) conformément au contrat documenté. La structure de domaine et les relations sont détaillées en Figure~\ref{fig:class-diagram} (diagramme de classes) et Figure~\ref{fig:er-diagram} (modèle ER).
+
+\subsection{Gestion des fichiers}
+Utilisation de Laravel Filesystem avec stockage sur Amazon S3 pour une scalabilité optimale. Validation stricte des types MIME et des tailles de fichiers.
+
+\section{Frontend (Vue.js)}
+Le frontend est une Single Page Application développée avec Vue.js 3 et Composition API.
+
+\subsection{Structure de l'application}
+L'arborescence frontend est organisée par responsabilités : composants réutilisables, vues (pages), gestion d'état (stores Pinia), services d'accès API, routage et ressources. Cette structuration favorise la maintenabilité et la découverte rapide des éléments métiers (voir diagramme de classes / modules).
+
+\subsection{Gestion d'état avec Pinia}
+Chaque store encapsule un sous-domaine (authentification, posts, notifications). Les états clés (ex: utilisateur courant, jeton, collections paginées) sont centralisés tandis que les actions orchestrent les services API et mettent à jour les compteurs et drapeaux (loading, error). Les mutations implicites conservent un flux unidirectionnel clair.
+
+\subsection{Services API}
+Une couche de services centralise les interactions HTTP : sérialisation des paramètres, homogénéisation des erreurs (format standard code/message/fields), transformations (normalisation des dates et nesting). Cela isole totalement les composants UI des détails réseau.
+
+\section{Mobile (Flutter)}
+L'application mobile est développée avec Flutter pour assurer une compatibilité cross-platform (iOS et Android).
+
+\subsection{Architecture Flutter}
+Utilisation de l'architecture BLoC (Business Logic Component) pour une séparation claire entre la logique métier et l'interface utilisateur.
+
+\subsection{Communication avec l'API}
+Intégration de Dio comme client HTTP et mise en place d'un intercepteur pour gérer automatiquement l'authentification.
+
+L'application mobile réplique la même logique d'abstraction côté client : un service d'authentification gère les formulaires, la persistance sécurisée du token et le rafraîchissement anticipé.
+
+\chapter{Sécurité et confidentialité}
+\section{Mesures techniques de sécurité}
+\begin{itemize}
+  \item Chiffrement TLS pour toutes les communications
+  \item Hashage sécurisé des mots de passe avec bcrypt
+  \item Protection contre les attaques XSS via sanitization des inputs
+  \item Protection CSRF avec tokens
+  \item Validation stricte des données d'entrée
+  \item Limitation du taux de requêtes (rate limiting) sur les endpoints sensibles
+\end{itemize}
+
+\section{Conformité RGPD}
+Mise en place des mécanismes nécessaires pour respecter le Règlement Général sur la Protection des Données :
+\begin{itemize}
+  \item Consentement explicite pour le traitement des données
+  \item Droit à l'effacement des données personnelles
+  \item Droit à la portabilité des données
+  \item Registre des traitements de données
+  \item Chiffrement des données sensibles
+\end{itemize}
+
+\section{Gestion des secrets}
+Utilisation de Laravel dotenv pour la gestion des variables d'environnement et exclusion systématique des fichiers de configuration contenant des secrets des dépôts versionnés.
+
+\chapter{Tests et validation}
+\section{Stratégie de test}
+Une approche de test pyramidale a été adoptée avec :
+\begin{itemize}
+  \item Tests unitaires pour les fonctions et méthodes individuelles
+  \item Tests d'intégration pour les interactions entre modules
+  \item Tests end-to-end pour valider les scénarios utilisateur complets
+\end{itemize}
+
+\section{Tests backend}
+Utilisation de PHPUnit pour les tests backend avec un taux de couverture visé de 80\%.
+
+Les tests unitaires backend couvrent la création, la validation, les scénarios d'autorisation et les événements (score recalculé). Chaque cas vérifie statut HTTP, structure de réponse et effets sur la base.
+
+\section{Tests frontend}
+Utilisation de Jest et Vue Test Utils pour les tests unitaires des composants Vue.js.
+
+Les tests composants (UI) vérifient rendu conditionnel, pagination, états de chargement et gestion d'erreurs simulées, assurant l'ergonomie en conditions réelles.
+
+\section{Tests de performance}
+Réalisation de tests de charge avec Artillery pour valider les performances de l'API sous charge.
+
+Les tests de performance scénarisent montée progressive (échauffement) puis charge stabilisée, mesurant latence p95, erreurs et saturation éventuelle des endpoints critiques.
+
+\chapter{Déploiement et maintenance}
+\section{Environnements}
+Mise en place de trois environnements distincts :
+\begin{itemize}
+  \item \textbf{Développement} : pour le travail quotidien des développeurs
+  \item \textbf{Staging} : pour les tests de validation avant mise en production
+  \item \textbf{Production} : environnement live accessible aux utilisateurs
+\end{itemize}
+
+\section{CI/CD}
+Implémentation d'un pipeline CI/CD avec GitHub Actions pour automatiser les tests et le déploiement.
+
+Le pipeline CI/CD automatise lint, tests, construction et déploiement conditionnel sur la branche principale après validation. Les secrets sont injectés via le gestionnaire sécurisé de la plateforme.
+
+\section{Monitoring}
+Mise en place d'un système de monitoring avec :
+\begin{itemize}
+  \item Sentry pour le suivi des erreurs en temps réel
+  \item Laravel Telescope pour le debugging en développement
+  \item Prometheus et Grafana pour la surveillance des performances
+  \item Logging structuré avec Elasticsearch, Logstash et Kibana (ELK Stack)
+\end{itemize}
+
+\chapter{Perspectives et évolutions futures}
+\section{Améliorations prévues}
+\begin{itemize}
+  \item Intégration de l'IA pour la détection automatique de tendances
+  \item Système de recommandation de contenu personnalisé
+  \item Chat en temps réel entre membres des communautés
+  \item Fonctionnalités avancées de modération assistée par IA
+  \item Intégration avec d'autres plateformes sociales (API Twitter, Instagram, etc.)
+  \item Application desktop avec Electron
+\end{itemize}
+
+\section{Évolutions techniques}
+\begin{itemize}
+  \item Migration vers une architecture microservices
+  \item Implémentation de GraphQL en complément de REST
+  \item Utilisation de technologies serverless pour certaines fonctions
+  \item Intégration de WebSockets pour les notifications en temps réel
+  \item Mise en place d'un système de cache distribué avec Redis
+\end{itemize}
+
+\chapter{Conclusion}
+Le projet FanRadars.com a représenté une opportunité exceptionnelle de participer au développement complet d'une plateforme ambitieuse, depuis la conception jusqu'au dépléoiement. Ce stage m'a permis de consolider mes compétences en développement full-stack, particulièrement avec les technologies Laravel et Vue.js, et de me confronter aux défis réels du développement d'une application web moderne.
+
+La plateforme répond aux objectifs initiaux en offrant un espace dédié aux communautés de fans avec des fonctionnalités de suivi des tendances, de partage de contenu et de marketplace. L'architecture technique choisie a fait ses preuves en termes de robustesse et de scalabilité.
+
+Les principaux défis ont concerné la modélisation des données pour supporter la complexité des relations entre entités, la mise en place d'un système de scoring pertinent pour les tendances, et la gestion des uploads de fichiers avec validation et stockage sécurisé.
+
+Ce projet s'inscrit parfaitement dans la vision de NeuralMobi qui souhaite intégrer l'IA dans des produits accessibles au grand public. Les bases techniques solides mises en place pendant ce stage permettront d'ajouter par la suite des fonctionnalités intelligentes comme la détection automatique de tendances ou la modération assistée.
+
+D'un point de vue personnel, cette expérience a été extrêmement enrichissante et m'a confirmé mon attrait pour le développement d'applications web complexes et innovantes.
+
+\begin{appendix}
+\chapter{Captures d'écran}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{screenshot-homepage.png}
+  \caption{Page d'accueil de FanRadars.com}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{screenshot-dashboard.png}
+  \caption{Tableau de bord des tendances}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.8\textwidth]{screenshot-marketplace.png}
+  \caption{Marketplace des produits dérivés}
+\end{figure}
+
+\chapter{Code source significatif}
+\section{Modèle Post}
+Le modèle Post relie utilisateur, communauté (fandom), votes et commentaires. Un score dynamique ("radar score") pondère popularité et fraîcheur temporelle (décroissance exponentielle) pour classer les contenus.
+
+\section{Composant PostList}
+Le composant de liste gère la pagination incrémentale, l'actualisation optimiste après interaction (vote) et l'affichage adaptatif des états (chargement, fin de liste). Il illustre le flux unidirectionnel: action utilisateur → service → mise à jour du store → re-rendu. La séquence complète de création d'un post et son traitement côté client/serveur est présentée en Figure~\ref{fig:seq-post-creation}.
+
+\chapter{Bibliographie et webographie}
+\begin{itemize}
+  \item Laravel Documentation. \url{https://laravel.com/docs}
+  \item Vue.js Guide. \url{https://vuejs.org/guide}
+  \item Flutter Documentation. \url{https://flutter.dev/docs}
+  \item Richardson, L. \& Ruby, S. (2007). RESTful Web Services. O'Reilly Media.
+  \item Fowler, M. (2002). Patterns of Enterprise Application Architecture. Addison-Wesley.
+  \item Microsoft REST API Guidelines. \url{https://github.com/microsoft/api-guidelines}
+  \item OWASP Secure Coding Practices. \url{https://owasp.org/www-project-secure-coding-practices}
+\end{itemize}
+\end{appendix}
+
+\end{document}

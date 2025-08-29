@@ -27,7 +27,12 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true }
     }
-    const { data } = await http.post(API_CONFIG.auth.register, payload)
+    // Simplified: no image handling. Accept plain object (JSON) only.
+    const body = { ...payload }
+    if (body.password && !body.password_confirmation) {
+      body.password_confirmation = body.password
+    }
+    const { data } = await http.post(API_CONFIG.auth.register, body)
     return data
   },
   async getProfile() {
@@ -45,24 +50,49 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, user: payload }
     }
-    const { data } = await http.put(API_CONFIG.auth.updateProfile, payload)
+    let body = payload
+    let headers = {}
+    // Accept either plain object or FormData. If object contains File(s), convert.
+    if (!(payload instanceof FormData)) {
+      const hasFile = Object.values(payload || {}).some(v => v instanceof File || v instanceof Blob)
+      if (hasFile) {
+        const fd = new FormData()
+        Object.entries(payload).forEach(([k, v]) => {
+          if (Array.isArray(v)) {
+            v.forEach(item => fd.append(`${k}[]`, item))
+          } else if (v !== undefined && v !== null) {
+            fd.append(k, v)
+          }
+        })
+        body = fd
+      }
+    }
+    if (body instanceof FormData) headers['Content-Type'] = 'multipart/form-data'
+    const { data } = await http.post(API_CONFIG.auth.updateProfile, body, { headers })
     return data
   },
-  async updateAvatar(formData) {
-    if (API_CONFIG.useMocks) {
-      await delay(API_CONFIG.mockLatency)
-      return { success: true }
-    }
-    const { data } = await http.put(API_CONFIG.auth.updateAvatar, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-    return data
+  async updateAvatar(file) {
+    const fd = new FormData()
+    fd.append('profile_image', file)
+    return this.updateProfile(fd)
   },
-  async updateCover(formData) {
+  async updateCover(file) {
+    const fd = new FormData()
+    fd.append('background_image', file)
+    return this.updateProfile(fd)
+  },
+  async logout() {
     if (API_CONFIG.useMocks) {
-      await delay(API_CONFIG.mockLatency)
+      await delay(150)
       return { success: true }
     }
-    const { data } = await http.put(API_CONFIG.auth.updateCover, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
-    return data
+    try {
+      const { data } = await http.post(API_CONFIG.auth.logout || '/api/Y/auth/logout')
+      return data
+    } catch (e) {
+      // Even if backend logout fails, proceed to clear client session
+      return { success: false, error: e?.response?.data || e.message }
+    }
   }
 }
 

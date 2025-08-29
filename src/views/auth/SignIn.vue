@@ -1,80 +1,104 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-md bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-      <div class="p-8">
-        <div class="text-center mb-8">
-          <h1 class="text-3xl font-bold text-gray-800 dark:text-white">{{ $t('auth.signIn.title') }}</h1>
-          <p class="text-gray-600 dark:text-gray-300 mt-2">{{ $t('auth.signIn.subtitle') }}</p>
-        </div>
-        
-        <!-- Google Sign In Button -->
-        <button 
-          @click="signInWithGoogle"
-          class="w-full flex items-center justify-center gap-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg py-3 px-4 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors mb-6"
-        >
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.71 17.57V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
-            <path d="M12 23C14.97 23 17.46 21.99 19.28 20.34L15.71 17.57C14.73 18.23 13.48 18.63 12 18.63C9.14 18.63 6.72 16.7 5.84 14.1H2.18V16.94C4 20.53 7.7 23 12 23Z" fill="#34A853"/>
-            <path d="M5.84 14.1C5.62 13.43 5.5 12.72 5.5 12C5.5 11.28 5.62 10.57 5.84 9.9V7.06H2.18C1.43 8.55 1 10.22 1 12C1 13.78 1.43 15.45 2.18 16.94L5.84 14.1Z" fill="#FBBC05"/>
-            <path d="M12 5.38C13.62 5.38 15.06 5.94 16.21 7.02L19.36 3.87C17.45 2.09 14.97 1 12 1C7.7 1 4 3.47 2.18 7.06L5.84 9.9C6.72 7.3 9.14 5.38 12 5.38Z" fill="#EA4335"/>
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center p-4">
+    <div class="w-full max-w-md">
+      <!-- Logo/Brand Section -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
+          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
           </svg>
-          {{ $t('auth.signIn.withGoogle') }}
-        </button>
-        
-        <div class="flex items-center mb-6">
-          <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
-          <span class="mx-4 text-gray-500 dark:text-gray-400">{{ $t('auth.signIn.or') }}</span>
-          <div class="flex-1 border-t border-gray-300 dark:border-gray-600"></div>
         </div>
-        
-        <form @submit.prevent="onSignIn">
-          <!-- Show error message if any -->
-          <div v-if="errorMessage" class="mb-4 p-3 bg-red-100 text-red-700 rounded-lg text-sm">
-            {{ errorMessage }}
-          </div>
+        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
+        <p class="text-gray-600 dark:text-gray-300 mt-1">Sign in to your account</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+        <div class="p-8">
+          <form @submit.prevent="onSignIn">
+            <!-- Show error message if any -->
+            <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+              <div class="flex items-center">
+                <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+                <span class="text-red-700 dark:text-red-400 text-sm font-medium">{{ errorMessage }}</span>
+              </div>
+            </div>
+            
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
+                  Email Address
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                  </div>
+                  <input 
+                    v-model="email" 
+                    id="email" 
+                    type="email" 
+                    required 
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                    placeholder="Enter your email"
+                  />
+                </div>
+              </div>
+              
+              <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
+                  Password
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input 
+                    v-model="password" 
+                    id="password" 
+                    type="password" 
+                    required 
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                    placeholder="Enter your password"
+                  />
+                </div>
+                <div class="flex justify-end">
+                  <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors">
+                    Forgot password?
+                  </router-link>
+                </div>
+              </div>
+            </div>
+            
+            <button 
+              type="submit" 
+              class="w-full mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              :disabled="loading"
+            >
+              <span v-if="loading" class="mr-3">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+              {{ loading ? 'Signing In...' : 'Sign In' }}
+            </button>
+          </form>
           
-          <div class="mb-4">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="email">{{ $t('auth.signIn.emailLabel') }}</label>
-            <input 
-              v-model="email" 
-              id="email" 
-              type="email" 
-              required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              :placeholder="$t('auth.signIn.emailPlaceholder')"
-            />
+          <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <p class="text-center text-gray-600 dark:text-gray-400">
+              Don't have an account?
+              <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-semibold ml-1 transition-colors">
+                Sign up
+              </router-link>
+            </p>
           </div>
-          <div class="mb-6">
-            <label class="block text-gray-700 dark:text-gray-300 mb-2 text-sm font-medium" for="password">{{ $t('auth.signIn.passwordLabel') }}</label>
-            <input 
-              v-model="password" 
-              id="password" 
-              type="password" 
-              required 
-              class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white" 
-              :placeholder="$t('auth.signIn.passwordPlaceholder')"
-            />
-            <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:underline float-right mt-2">{{ $t('auth.signIn.forgot') }}</router-link>
-          </div>
-          <button 
-            type="submit" 
-            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center justify-center"
-            :disabled="loading"
-          >
-            <span v-if="loading" class="mr-2">
-              <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            </span>
-            {{ loading ? $t('auth.signIn.submitting') : $t('auth.signIn.submit') }}
-          </button>
-        </form>
-        
-        <p class="mt-6 text-center text-gray-600 dark:text-gray-400">
-          {{ $t('auth.signIn.noAccount') }}
-          <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:underline font-medium">{{ $t('auth.signIn.signUpLink') }}</router-link>
-        </p>
+        </div>
       </div>
     </div>
   </div>
@@ -105,7 +129,7 @@ async function onSignIn() {
   errorMessage.value = ''
   
   try {
-    const success = await authStore.login({
+    const { success, error } = await authStore.login({
       email: email.value,
       password: password.value
     })
@@ -113,7 +137,7 @@ async function onSignIn() {
     if (success) {
       router.push('/')
     } else {
-      errorMessage.value = authStore.error || t('auth.signIn.errors.loginFailed')
+      errorMessage.value = error || authStore.error || t('auth.signIn.errors.loginFailed')
     }
   } catch (error) {
     errorMessage.value = error.message || t('auth.signIn.errors.unexpected')
@@ -122,7 +146,4 @@ async function onSignIn() {
   }
 }
 
-function signInWithGoogle() {
-  console.log('Signing in with Google')
-}
 </script>

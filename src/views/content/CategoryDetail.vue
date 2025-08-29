@@ -74,7 +74,6 @@
           :post="post"
           @like="likePost"
           @comment="commentPost"
-          @share="sharePost"
           class="w-full mb-0"
         />
       </template>
@@ -189,9 +188,6 @@ function commentPost(postId) {
   // TODO: Open comment modal or navigate
 }
 
-function sharePost(postId) {
-  postsStore.sharePost(postId)
-}
 </script>
 
 <style scoped>

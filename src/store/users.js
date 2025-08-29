@@ -63,7 +63,6 @@ export const useUsersStore = defineStore('users', {
         ],
         likes: 145,
         comments: 32,
-        shares: 12,
         date: '2h ago',
         isLiked: false
       },
@@ -81,7 +80,6 @@ export const useUsersStore = defineStore('users', {
         ],
         likes: 289,
         comments: 43,
-        shares: 17,
         date: '1d ago',
         isLiked: true
       }

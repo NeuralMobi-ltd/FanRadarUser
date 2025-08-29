@@ -17,7 +17,6 @@ export const useHashtagsStore = defineStore('hashtags', {
           tags: ['LoLPhase5', 'Gaming', 'Trending'],
           likes: 234,
           comments: 56,
-          shares: 18,
           isLiked: false,
           fandom: 'Gaming'
         },
@@ -32,7 +31,6 @@ export const useHashtagsStore = defineStore('hashtags', {
           tags: ['LoLPhase5', 'Analysis', 'Content'],
           likes: 189,
           comments: 43,
-          shares: 12,
           isLiked: true,
           fandom: 'Content'
         }
@@ -49,7 +47,6 @@ export const useHashtagsStore = defineStore('hashtags', {
           tags: ['Swifties', 'TaylorSwift', 'Music'],
           likes: 456,
           comments: 89,
-          shares: 34,
           isLiked: false,
           fandom: 'Music'
         }
@@ -66,7 +63,6 @@ export const useHashtagsStore = defineStore('hashtags', {
           tags: ['AnimeSpring2024', 'Anime', 'Season'],
           likes: 298,
           comments: 67,
-          shares: 23,
           isLiked: true,
           fandom: 'Anime'
         }
@@ -204,7 +200,6 @@ export const useHashtagsStore = defineStore('hashtags', {
           tags: [hashtag, 'Community', 'Discussion'],
           likes: 45,
           comments: 12,
-          shares: 3,
           isLiked: false,
           fandom: 'General'
         }
@@ -265,16 +260,7 @@ export const useHashtagsStore = defineStore('hashtags', {
       }
     },
 
-    // Share hashtag post
-    shareHashtagPost(hashtag, postId) {
-      const posts = this.hashtagPosts[hashtag]
-      if (posts) {
-        const post = posts.find(p => p.id === postId)
-        if (post) {
-          post.shares += 1
-        }
-      }
-    },
+  // shareHashtagPost removed
 
     // Add related hashtag
     addRelatedHashtag(hashtag) {

@@ -204,7 +204,6 @@
             class="bg-white dark:bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all duration-200"
             @like="likePost"
             @comment="openComments"
-            @share="sharePost"
           />
           
           <!-- Load More Button -->
@@ -399,9 +398,6 @@ function likePost(postId) {
 function openComments(postId) {
   // no-op placeholder for now
   console.debug('openComments', postId)
-}
-function sharePost(postId) {
-  postsStore.sharePost(postId)
 }
 async function loadMorePosts() {
   await postsStore.loadMorePosts()

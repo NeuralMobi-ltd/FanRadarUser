@@ -49,28 +49,43 @@
           </button>
         </div>
         
+        <!-- Error message -->
+        <div v-if="errorMsg" class="mb-4 p-3 rounded-lg bg-red-100 text-red-700 text-sm font-medium">
+          {{ errorMsg }}
+        </div>
+
         <!-- Continue button with better feedback -->
         <button
           type="submit"
           @click="submitCategories"
           :class="[
             'w-full py-3 rounded-xl font-semibold text-white transition-all duration-300 flex items-center justify-center',
-            canContinue 
+            canContinue && !loading 
               ? 'bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-blue-200 dark:hover:shadow-blue-900'
-              : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed'
+              : 'bg-gray-300 dark:bg-gray-600 cursor-not-allowed',
+            loading ? 'opacity-80' : ''
           ]"
-          :disabled="!canContinue"
+          :disabled="!canContinue || loading"
         >
-          {{ $t('auth.chooseCategories.continue') }}
-          <svg 
-            v-if="selected.length === 5"
-            xmlns="http://www.w3.org/2000/svg" 
-            class="h-5 w-5 ml-2 animate-bounce-horizontal" 
-            viewBox="0 0 20 20" 
-            fill="currentColor"
-          >
-            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
+          <span v-if="loading" class="flex items-center gap-2">
+            <svg class="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V1C5.373 1 1 5.373 1 12h3z" />
+            </svg>
+            {{ $t('common.loading') || 'Loading...' }}
+          </span>
+          <span v-else class="flex items-center">
+            {{ $t('auth.chooseCategories.continue') }}
+            <svg 
+              v-if="selected.length === 5"
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-5 w-5 ml-2 animate-bounce-horizontal" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </span>
         </button>
         
         <p class="mt-4 text-center text-sm" :class="selected.length === 5 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'">
@@ -83,41 +98,83 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
+import { useRegistrationStore } from '@/store/registration'
+import AuthService from '@/services/authService'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
+const registrationStore = useRegistrationStore()
 
-// Pull categories from store
+// Category names list
 const categories = categoriesStore.getCategories.map(c => c.name)
 
-// Selection config (could be moved to a preferences store later)
+// Selection limits
 const maxSelections = 5
 const config = { maxSelections: 5, minSelections: 5 }
-
 const selected = ref([])
 
-// Computed properties for better reactivity
+// UI computed
 const remainingSelections = computed(() => maxSelections - selected.value.length)
 const canContinue = computed(() => selected.value.length === config.minSelections)
 const progressPercentage = computed(() => (selected.value.length / maxSelections) * 100)
 
 function toggleCategory(cat) {
   if (selected.value.includes(cat)) {
-    selected.value = selected.value.filter(c => c !== cat) 
+    selected.value = selected.value.filter(c => c !== cat)
   } else if (selected.value.length < maxSelections) {
     selected.value.push(cat)
   }
 }
 
-function submitCategories() {
-  authStore.user = { username: 'yassel', categories: selected.value }
-  authStore.isAuthenticated = true
-  router.push('/')
+onMounted(() => {
+  if (!registrationStore.email || !registrationStore.password) {
+    router.replace('/signup')
+  }
+})
+
+const loading = ref(false)
+const errorMsg = ref('')
+
+async function submitCategories() {
+  if (!canContinue.value || loading.value) return
+  loading.value = true
+  errorMsg.value = ''
+  try {
+    const payload = {
+      email: registrationStore.email,
+      password: registrationStore.password,
+      first_name: registrationStore.first_name,
+      last_name: registrationStore.last_name,
+      username: registrationStore.username || undefined,
+      gender: registrationStore.gender || undefined,
+      date_naissance: registrationStore.birth_date || undefined,
+      preferred_categories: selected.value.map(name => {
+        const idx = categories.indexOf(name)
+        return idx >= 0 ? idx + 1 : null
+      }).filter(id => id !== null)
+    }
+    const res = await AuthService.register(payload)
+    const response = res?.data || res
+    const token = response.token
+    const apiUser = response.user
+    if (token) authStore.setToken(token)
+    if (apiUser) {
+      authStore.user = authStore.mapApiUserToState(apiUser)
+      authStore.updateUserProfile({ categories: selected.value })
+      localStorage.setItem('user', JSON.stringify(authStore.user))
+    }
+    registrationStore.clear()
+    router.push('/')
+  } catch (e) {
+    errorMsg.value = e?.response?.data?.message || 'Registration failed'
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -127,11 +184,7 @@ function submitCategories() {
 }
 
 @keyframes bounce-horizontal {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(4px);
-  }
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
 }
 </style>

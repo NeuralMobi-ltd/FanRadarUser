@@ -1,0 +1,775 @@
+FanRadar Required API Endpoints (DETAIL VERSION)
+Base URL: http://127.0.0.1:8000
+NOTE: /api/Y/users/profile (GET + POST) intentionally excluded (already integrated).
+
+Common Objects (aligned to current frontend store mappings):
+UserSummary: { id, username, first_name?, last_name?, profile_image_url?, avatar?, is_following?, followers_count?, following_count? }
+Post: {
+  id,
+  author: { id?, name, avatar },
+  content,                 // store maps to 'text'
+  media: [ { url, type? } | url ],
+  tags: [string],
+  fandom?: { id?, name },
+  likes: number,
+  comments: number,
+  isLiked: boolean,
+  trending?: boolean,
+  createdAt: ISO8601 string
+}
+Category: { id, name, slug, description?, icon? }
+Fandom: { id, name, handle, description?, cover_image_url?, logo_url?, members_count, posts_count, categories:[Category], is_member?, role?, created_at }
+Notification: { id, type, data:object, read:boolean, read_at?, created_at }
+Product: { id, name, description?, price, currency, images:[url], brand, category, stock, attributes?:object, rating?:number }
+CartItem: { id, product:Product(minimal), quantity, unit_price, total_price, options?:{ size?, color? } }
+Order: { id, status, items:[CartItem], subtotal, shipping, total, currency, created_at }
+
+Auth Header (when required): Authorization: Bearer <token>
+Pagination (when present): query params ?page=<int>&limit=<int>; response: { data:[...], meta:{ page, limit, total, last_page } }
+
+====================
+USER RELATIONSHIPS & CONTENT
+====================
+GET /api/users/:userId/posts
+  Auth: optional (logged-in improves like/follow flags)
+  Params: userId (path), page?, limit?
+  Response: { data:[Post], meta }
+GET /api/users/:userId/followers
+  Auth: optional
+  Response: { data:[UserSummary], meta }
+GET /api/users/:userId/following
+  Auth: optional
+  Response: { data:[UserSummary], meta }
+POST /api/users/:userId/follow
+  Auth: required
+  Purpose: Toggle follow/unfollow target user OR perform explicit action when body.action supplied.
+  Id Path Param: :userId (integer | username/slug if backend supports; MUST 404 if target not found or equals auth user when self-follow disallowed).
+  Body (optional JSON): { action:"follow"|"unfollow" }
+    If body omitted => implicit toggle (follow if not following, else unfollow).
+    If body provided => perform explicit action (idempotent: repeating same action returns 200 with current state, not error).
+  Headers: Authorization: Bearer <token>
+  Rate Limit (recommendation): Max 10 follow/unfollow operations per 10 seconds per auth user to mitigate abuse (429 on exceed).
+  Responses:
+    200 Follow executed (implicit or explicit):
+      {
+        "message": "Followed user.",
+        "following": true,            // now following = relationship exists
+        "follower_count": 121,        // updated follower count of TARGET user
+        "following_count": 56         // (optional) updated following count of AUTH user
+      }
+    200 Unfollow executed:
+      {
+        "message": "Unfollowed user.",
+        "following": false,
+        "follower_count": 120,
+        "following_count": 55         // optional if you return it above
+      }
+    200 Idempotent explicit action (already in desired state):
+      {
+        "message": "Already following.", // or "Already not following." for unfollow
+        "following": true,
+        "follower_count": 121,
+        "following_count": 56
+      }
+    400 Invalid action value (when provided): { message:"Invalid action" }
+    401 Unauthenticated: { message:"Unauthenticated" }
+    403 Forbidden (attempt to follow self if disallowed): { message:"Cannot follow self" }
+    404 Target not found: { message:"Resource not found" }
+    429 Rate limited: { message:"Too many requests" }
+  Notes:
+    - Ensure atomic update to avoid race conditions causing incorrect counts.
+    - follower_count reflects target user's followers AFTER operation.
+    - following_count (if returned) reflects auth user's following AFTER operation.
+    - Always return both counts or document omission (frontend uses when present, falls back to manual +/- otherwise).
+    - Backend should ignore unknown extra fields in body.
+  Curl Examples:
+    (Implicit toggle) curl -X POST -H "Authorization: Bearer <TOKEN>" http://127.0.0.1:8000/api/users/42/follow
+    (Explicit) curl -X POST -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"action":"unfollow"}' http://127.0.0.1:8000/api/users/42/follow
+  Frontend Expectation: uses following boolean & counts to optimistically update UI; message optional for user feedback.
+GET /api/posts/saved
+  Auth: required
+  Response: { posts:[Post], meta }
+
+====================
+FEED & POSTS
+====================
+GET /api/feed/home
+  Auth: required
+  Query: page?, limit?
+  Response: { posts:[Post], meta }
+GET /api/feed/explore
+  Auth: optional
+  Response: { posts:[Post], meta }
+GET /api/trending/posts
+  Auth: optional
+  Response: { posts:[Post] }
+POST /api/posts
+  Auth: required
+  Content-Type: application/json OR multipart/form-data (when uploading new media)
+  JSON Body: { content:string, tags?:[string], fandom_id?:number, media_urls?:[string] }
+  Multipart Fields (alternative): content, tags[]?, fandom_id?, media_files[] (files)
+  Response: { success:true, post:Post }
+POST /api/posts/:postId/like
+  Auth: required
+  Body: empty
+  Response: { liked:true|false, isLiked:true|false, likes:number }
+POST /api/posts/:postId/comments
+  Auth: required
+  Body: { content:string }
+  Response: { success:true, comment:{ id, author:UserSummary, content, createdAt } }
+
+====================
+CATEGORIES & HASHTAGS
+====================
+GET /api/categories
+  Auth: optional
+  Response: { data:[Category] }
+GET /api/categories/:category/content
+  Auth: optional
+  Query: page?, limit?
+  Response: { data:[Post], category:Category, meta }
+GET /api/hashtags/:hashtag/posts
+  Auth: optional
+  Query: page?, limit?
+  Response: { data:[Post], hashtag, meta }
+
+====================
+FANDOMS
+====================
+GET /api/fandoms
+  Auth: optional
+  Query: page?, limit?, category_id?
+  Response: { data:[Fandom], meta }
+GET /api/fandoms/trending
+  Auth: optional
+  Response: { data:[Fandom] }
+GET /api/fandoms/categories
+  Auth: optional
+  Response: { data:[Category] }
+GET /api/fandoms/search?q=QUERY
+  Auth: optional
+  Response: { data:[Fandom], query:QUERY }
+GET /api/fandoms/:idOrHandle
+  Auth: optional
+  Response: { fandom:Fandom }
+GET /api/fandoms/:idOrHandle/posts
+  Auth: optional
+  Query: page?, limit?
+  Response: { data:[Post], meta, fandom_id }
+GET /api/fandoms/:idOrHandle/members
+  Auth: optional
+  Query: page?, limit?
+  Response: { data:[UserSummary], meta }
+POST /api/fandoms/:idOrHandle/join
+  Auth: required
+  Body: empty
+  Response: { is_member:true|false, members_count }
+POST /api/fandoms
+  Auth: required
+  Content: multipart/form-data recommended for images
+  Fields: name, handle, description?, categories[]?, cover_image(file)?, logo(file)?
+  Response: { success:true, fandom:Fandom }
+PUT /api/fandoms/:idOrHandle
+  Auth: required (must be owner/admin)
+  Body: JSON or multipart (same fields as create)
+  Response: { success:true, fandom:Fandom }
+PUT /api/fandoms/:idOrHandle/role/:userId
+  Auth: required (admin)
+  Body: { role:"member"|"moderator"|"admin" }
+  Response: { success:true, user:{ id, role } }
+GET /api/fandoms/:idOrHandle/hashtags
+  Auth: optional
+  Response: { data:[ { hashtag, uses } ] }
+POST /api/upload/image
+  Auth: required
+  Content: multipart/form-data (field: image)
+  Response: { url }
+
+====================
+SEARCH
+====================
+GET /api/search/global?q=QUERY[&type=posts|fandoms|users|products]
+  Auth: optional
+  Response (multi-type): {
+    query: QUERY,
+    posts?: [Post], fandoms?: [Fandom], users?: [UserSummary], products?: [Product]
+  }
+GET /api/search/suggestions?q=PARTIAL
+  Auth: optional
+  Response: { query:PARTIAL, suggestions:[string] }
+
+====================
+NOTIFICATIONS
+====================
+GET /api/notifications
+  Auth: required
+  Query: page?, limit?, unread_only?
+  Response: { data:[Notification], meta, unread_count }
+PUT /api/notifications/:id/read
+  Auth: required
+  Body: empty
+  Response: { id, read:true, unread_count }
+PUT /api/notifications/mark-all-read
+  Auth: required
+  Body: empty
+  Response: { success:true, unread_count:0 }
+
+====================
+STORE / E-COMMERCE
+====================
+GET /api/store/products
+  Auth: optional
+  Query: page?, limit?, category?, brand?, minPrice?, maxPrice?, sort? (price_asc|price_desc|newest)
+  Response: { data:[Product], meta, filters_applied:{} }
+GET /api/store/products/search?q=QUERY
+  Auth: optional
+  Response: { query:QUERY, data:[Product] }
+GET /api/store/categories
+  Auth: optional
+  Response: { data:[ { id, name, slug, product_count } ] }
+GET /api/store/brands
+  Auth: optional
+  Response: { data:[ { id, name, product_count } ] }
+GET /api/store/cart
+  Auth: required
+  Response: { items:[CartItem], totals:{ items, subtotal, shipping, total, currency } }
+POST /api/store/cart
+  Auth: required
+  Body: { product_id:number, quantity:number, size?, color? }
+  Response: { success:true, item:CartItem, totals }
+PUT /api/store/cart/:itemId
+  Auth: required
+  Body: { quantity:number }
+  Response: { success:true, item:CartItem, totals }
+DELETE /api/store/cart/:itemId
+  Auth: required
+  Response: { success:true, totals }
+POST /api/store/wishlist/:productId
+  Auth: required
+  Body: empty
+  Response: { wished:true|false, count }
+GET /api/store/orders
+  Auth: required
+  Query: page?, limit?, status?
+  Response: { data:[Order], meta }
+GET /api/store/orders/:orderId
+  Auth: required
+  Response: { order:Order }
+PUT /api/store/orders/:orderId/cancel
+  Auth: required
+  Body: { reason?:string }
+  Response: { success:true, order:{ id, status:"cancelled" } }
+POST /api/store/orders
+  Auth: required
+  Body: { items:[ { product_id, quantity, size?, color? } ], shipping_address:{...}, payment_method, note? }
+  Response: { success:true, order:Order }
+
+====================
+AUXILIARY (OPTIONAL FUTURE)
+====================
+GET /api/trending/hashtags
+  Auth: optional
+  Response: { data:[ { hashtag, uses, posts_count } ] }
+
+====================
+REQUEST/RESPONSE CONVENTIONS
+====================
+Headers:
+  Authorization: Bearer <token>   (after login)
+  Content-Type: application/json  (unless multipart)
+Multipart image field hints: profile_image, background_image, image, cover_image, logo, media_files[]
+
+Status Codes (typical):
+ 200 Success / 201 Created (resource creation)
+ 204 No Content (optional for deletes)
+ 400 Bad Request (malformed)
+ 401 Unauthorized (login required)
+ 403 Forbidden (no permission)
+ 404 Not Found
+ 409 Conflict (duplicate handle/order state)
+ 422 Validation (errors object)
+ 500 Server Error
+
+Error Response Example (422): { message:"Validation failed", errors:{ field:["message"] } }
+
+====================
+MAPPING NOTES
+====================
+preferred_categories: Backend may return IDs; frontend maps IDs -> names via categories store.
+Image paths: If value starts with "storage/" prefix with Base URL.
+Toggle endpoints (follow, like, wishlist): single POST assumed; if backend provides DELETE use that instead for removal.
+Ensure date fields (created_at, updated_at, date_naissance) are parsed as ISO strings in frontend.
+
+====================
+FRONTEND STORE MODULE REQUIREMENTS (Contracts Backend Must Support)
+====================
+All stores expect stable IDs (integers) and ISO 8601 timestamps. Nullables should be null (NOT omitted) when absent.
+
+auth store (already working)
+  Needs: After login/register, user object with: { id, username, first_name, last_name, email, profile_image (path), background_image (path|null), date_naissance, preferred_categories:[id|name], stats?:{ followers, following, posts } }
+  Token: string (JWT or opaque). If exp exists, include exp (unix ts) so we can auto-logout.
+
+categories store
+  Endpoint: GET /api/categories
+  Response array stable order (used for preferred_categories ID mapping). Each: { id, name, slug, description?, icon? }
+  Changes: If order can change, provide explicit id usage only; we will stop using positional index.
+
+posts/news store (home/explore/trending/saved)
+  Feed endpoints MUST return { posts:[Post], meta? }
+  Required Post fields for mapping: id, author.name, author.avatar, content, createdAt, likes, comments, isLiked, trending?
+  Media accepted as array of URLs OR objects { url, type }
+  Like toggle: backend returns { liked, isLiked, likes }
+  New comment: { id, author, content, createdAt }
+
+user relationships store (followers/following)
+  Endpoints: /api/users/:id/followers, /following, follow toggle
+  Each user summary must include: id, username, first_name, last_name, profile_image_url, is_following:boolean, followers_count?, following_count?
+  Follow toggle must return updated counts for BOTH follower_count and following_count of current user AND target if possible.
+
+fandoms store
+  Listing endpoints: /api/fandoms, /trending, /search, /:idOrHandle, /:idOrHandle/posts, /:idOrHandle/members
+  Fandom shape must include: id, name, handle, description?, cover_image_url?, logo_url?, members_count, posts_count, is_member:boolean, role?:"member"|"moderator"|"admin"|"owner"
+  Join toggle: Return { is_member, members_count }
+  Role update: Return user id + new role
+  Hashtags: list of { hashtag, uses }
+
+search store
+  Global search: Provide arrays only for types returned. Do not return huge payloads—cap each list (e.g., 5-10 items) for preview; include counts optionally: counts:{ posts, fandoms, users, products }
+  Suggestions: { query, suggestions:[string] }
+
+notifications store
+  GET /api/notifications returns: { data:[Notification], meta, unread_count }
+  Notification object: { id, type, data (type-specific payload), read:boolean, created_at, read_at:null|timestamp }
+  Mark read endpoints must return updated unread_count.
+
+cart store
+  Cart GET returns: { items:[CartItem], totals:{ items, subtotal, shipping, total, currency } }
+  CartItem required: { id, product:{ id, name, price, currency, images:[url] }, quantity, unit_price, total_price, options? }
+  All currency fields numeric (no formatted strings). Provide currency code (e.g., "USD").
+
+products store
+  Product list supports filters & sorting. Provide meta.
+  Product minimal card: { id, name, price, currency, images:[url], brand, category, rating?, stock }
+  Product detail (future): add description (HTML or markdown), attributes, related_products:[id,...]
+
+orders store
+  List: { data:[Order], meta }
+  Order: { id, status (pending|paid|shipped|completed|cancelled), items:[CartItem], subtotal, shipping, total, currency, created_at }
+  Cancel returns updated order with status:"cancelled".
+
+wishlist integration
+  Toggle returns { wished:boolean, count (wishlist total items) }
+
+trends store (hashtags)
+  trending hashtags: { hashtag, uses, posts_count }
+
+search performance
+  Provide server-side limit param; default 10. Support ?page for scrolling results when type specified.
+
+GENERAL BACKEND FIELD RULES
+  Always include id on root objects.
+  Use snake_case for backend keys (current convention) – frontend maps if needed.
+  Date fields ISO8601 ("YYYY-MM-DDTHH:MM:SSZ" preferred) except date_naissance can be date-only (YYYY-MM-DD).
+  Numeric counts never as strings.
+  Empty collections as [], not null.
+  Boolean flags explicitly true/false (never 0/1) for liked, is_member, is_following, read.
+
+ERROR CONTRACT
+  Validation (422): { message:"Validation failed", errors:{ field:[msg,...] } }
+  Auth expired (401): { message:"Unauthenticated" }
+  Permission (403): { message:"Forbidden" }
+  Not found (404): { message:"Resource not found" }
+
+FIELD CHANGE POLICY
+  If backend must rename/remove a field, expose deprecated field for one release cycle with null + warning header: X-Deprecated-Fields: field1,field2
+
+PERFORMANCE / PAGINATION
+  Large list endpoints should allow limit up to 50; default 20.
+  meta object required keys: page, limit, total, last_page (ceil(total/limit)).
+  Provide ETag or Last-Modified headers for cacheable lists (optional enhancement).
+
+SECURITY
+  All modifying endpoints require Authorization header.
+  Reject multipart without required content field (return 422).
+  Rate limit write actions (posts, comments, likes) – return 429 with { message:"Too many requests" }.
+
+MEDIA HANDLING
+  Return fully qualified URLs OR relative paths starting with storage/; no mix of both in same array.
+  If upload returns { url }, ensure URL immediately accessible (no processing delay) or include status field.
+
+FUTURE EXTENSIONS (placeholders – no implementation yet)
+  Reactions: POST /api/posts/:postId/reactions { type } -> { reactions:{ like:10, love:2, ... }, user_reaction:"like" }
+  Polls: POST /api/posts (poll) type differentiation { poll:{ question, options:[...], expires_at } }
+  Real-time notifications: websocket channel; fallback to polling every 30s.
+
+BACKEND TODO SUMMARY FOR DEV
+  1. Confirm all endpoints naming & namespace (/api or /api/Y for profile only?).
+  2. Ensure consistent Post and Fandom shapes across all endpoints.
+  3. Implement toggle semantics (follow, like, wishlist, join) returning updated counts.
+  4. Provide pagination meta consistently.
+  5. Supply wishlist count and cart totals after any mutation.
+  6. Guarantee stable category IDs and order (or supply explicit mapping version).
+  7. Include role info in fandom member lists when requester is moderator/admin.
+  8. Add unread_count to notifications list & update responses.
+  9. Use standard error contract; include errors object for 422.
+ 10. Return fully-qualified media URLs OR instruct frontend to prefix base; choose one.
+
+====================
+DETAILED ENDPOINT SPECIFICATIONS (ALL)
+====================
+Legend:
+  :param   Path variable
+  [q]      Optional query param
+  Auth: R = required, O = optional
+  Std Errors (implicit unless overridden): 401,403,404,422,429,500
+
+AUTH (core)  (Already implemented in frontend; backend ensure standard responses)
+POST /api/login  Auth: O
+  Body: { email|string OR username|string, password:string }
+  Success 200: { token, user:{ ...auth store needs... } }
+  Errors: 422 invalid credentials (message:"Invalid credentials") OR 401.
+POST /api/register  Auth: O
+  Body: { username, email, password, password_confirmation, first_name, last_name, date_naissance(YYYY-MM-DD), preferred_categories:[id,...] }
+  Success 201: { token, user }
+POST /api/logout  Auth: R
+  Body: empty
+  Success 204 or 200 { success:true }
+
+PROFILE (excluded earlier but spec for completeness)
+GET /api/Y/users/profile  Auth: R  -> { user }
+POST /api/Y/users/profile Auth: R (multipart or JSON) fields: first_name,last_name,username?,date_naissance,profile_image?,background_image? -> { user }
+
+USERS & RELATIONSHIPS
+GET /api/users/:userId/posts        Auth: O  -> { data:[Post], meta }
+GET /api/users/:userId/followers    Auth: O  -> { data:[UserSummary], meta }
+GET /api/users/:userId/following    Auth: O  -> { data:[UserSummary], meta }
+POST /api/users/:userId/follow      Auth: R  -> (detailed earlier)
+GET /api/posts/saved                Auth: R  -> { posts:[Post], meta }
+
+FEED & POSTS
+GET /api/feed/home                  Auth: R  -> { posts:[Post], meta }
+GET /api/feed/explore               Auth: O  -> { posts:[Post], meta }
+  Explanation:
+    Purpose: public "explore" feed to surface discoverable content across the platform. Unlike the authenticated home feed, explore mixes trending, recommended and fresh posts to help users discover new fandoms and creators.
+
+    Auth: optional — if Authorization header present, include user-specific flags (e.g. author.is_following, isLiked) and bias rankings toward user interests when appropriate.
+
+    Query parameters:
+      - page (int) — default 1
+      - limit (int) — default 20, max 50 recommended
+      - q (string) — optional keyword search/filter
+      - fandom_id (int) — optional filter by fandom
+      - sort (string) — e.g. newest | trending | relevance
+      - tags (csv) — optional tag filtering
+      - cursor (string) — optional cursor token (if cursor pagination used)
+
+    Response (200):
+      {
+        "posts": [ /* Post objects per contract */ ],
+        "meta": { "page":1, "limit":20, "total":400, "last_page":20 }  // meta recommended
+      }
+
+    Ranking / personalization guidelines:
+      - Unauthenticated: prioritize trending and high-engagement posts with freshness decay.
+      - Authenticated: blend personalized signals (preferred_categories, follows, past likes) with trending signals.
+      - Use deterministic tie-breakers for stable pagination (created_at desc, id).
+
+    Performance & caching:
+      - Cache popular explore pages with short TTL (30–120s).
+      - Prefer cursor pagination for large datasets to avoid offset penalties.
+      - Provide ETag/Last-Modified headers where applicable.
+
+    Edge cases & behavior:
+      - Empty results must return { posts: [], meta: { page, limit, total:0, last_page:0 } } not null.
+      - Invalid params produce 422 with field errors.
+      - Keep response shape consistent (media array shape, ISO dates, numeric counts).
+
+    Frontend expectations:
+      - Feed must return author.{id,name,avatar} and post flags (isLiked, trending) when available.
+      - Store expects { posts:[Post], meta? } exactly as other feed endpoints.
+      - For optimistic interactions (likes/follows) frontend will call dedicated toggles and rely on their responses to update feed entries.
+
+    Testing checklist (suggested):
+      - Pagination meta correctness and page boundaries.
+      - Auth vs unauth responses (flags present when auth supplied).
+      - Sorting stability across pages.
+      - Load/latency under expected concurrency and cache hit/miss scenarios.
+GET /api/trending/posts             Auth: O  -> { posts:[Post] }
+POST /api/posts                     Auth: R  -> { success:true, post:Post }
+POST /api/posts/:postId/like        Auth: R  -> { liked, isLiked, likes }
+POST /api/posts/:postId/comments    Auth: R  -> { success:true, comment }
+
+CATEGORIES & HASHTAGS
+GET /api/categories                 Auth: O  -> { data:[Category] }
+GET /api/categories/:category/content Auth: O -> { data:[Post], category:Category, meta }
+GET /api/hashtags/:hashtag/posts    Auth: O  -> { data:[Post], hashtag, meta }
+
+FANDOMS
+GET /api/fandoms                    Auth: O  -> { data:[Fandom], meta }
+GET /api/fandoms/trending           Auth: O  -> { data:[Fandom] }
+GET /api/fandoms/categories         Auth: O  -> { data:[Category] }
+GET /api/fandoms/search?q=QUERY     Auth: O  -> { data:[Fandom], query:QUERY, meta? }
+GET /api/fandoms/:idOrHandle        Auth: O  -> { fandom:Fandom }
+GET /api/fandoms/:idOrHandle/posts  Auth: O  -> { data:[Post], meta, fandom_id }
+GET /api/fandoms/:idOrHandle/members Auth: O -> { data:[UserSummary], meta }
+POST /api/fandoms/:idOrHandle/join  Auth: R  -> { is_member, members_count }
+POST /api/fandoms                   Auth: R  -> { success:true, fandom:Fandom }
+PUT /api/fandoms/:idOrHandle        Auth: R  -> { success:true, fandom:Fandom }
+PUT /api/fandoms/:idOrHandle/role/:userId Auth: R -> { success:true, user:{ id, role } }
+GET /api/fandoms/:idOrHandle/hashtags Auth: O -> { data:[ { hashtag, uses } ] }
+POST /api/upload/image              Auth: R  -> { url }
+
+SEARCH
+GET /api/search/global?q=QUERY[&type=...] Auth: O -> multi-type or single-type shape
+GET /api/search/suggestions?q=PART  Auth: O -> { query, suggestions }
+
+NOTIFICATIONS
+GET /api/notifications              Auth: R  -> { data:[Notification], meta, unread_count }
+PUT /api/notifications/:id/read     Auth: R  -> { id, read:true, unread_count }
+PUT /api/notifications/mark-all-read Auth: R -> { success:true, unread_count:0 }
+
+STORE
+GET /api/store/products             Auth: O  -> { data:[Product], meta, filters_applied:{} }
+GET /api/store/products/search?q=Q  Auth: O  -> { query:Q, data:[Product] }
+GET /api/store/categories           Auth: O  -> { data:[{ id, name, slug, product_count }] }
+GET /api/store/brands               Auth: O  -> { data:[{ id, name, product_count }] }
+GET /api/store/cart                 Auth: R  -> { items:[CartItem], totals:{} }
+POST /api/store/cart                Auth: R  -> { success:true, item:CartItem, totals }
+PUT /api/store/cart/:itemId         Auth: R  -> { success:true, item:CartItem, totals }
+DELETE /api/store/cart/:itemId      Auth: R  -> { success:true, totals }
+POST /api/store/wishlist/:productId Auth: R  -> { wished, count }
+GET /api/store/orders               Auth: R  -> { data:[Order], meta }
+GET /api/store/orders/:orderId      Auth: R  -> { order:Order }
+PUT /api/store/orders/:orderId/cancel Auth: R -> { success:true, order:{ id, status:"cancelled" } }
+POST /api/store/orders              Auth: R  -> { success:true, order:Order }
+
+AUXILIARY
+GET /api/trending/hashtags          Auth: O  -> { data:[ { hashtag, uses, posts_count } ] }
+
+FUTURE / REAL-TIME (Not implemented)
+POST /api/posts/:postId/reactions   Auth: R  -> { reactions:{...}, user_reaction }
+WEBSOCKET channel notifications.<userId> events notification.created / notification.read
+
+EXPLICIT ERROR EXAMPLES
+  401: { message:"Unauthenticated" }
+  403: { message:"Forbidden" }
+  404: { message:"Resource not found" }
+  409 (conflict): { message:"Handle already taken" }
+  422: { message:"Validation failed", errors:{ field:["reason"] } }
+  429: { message:"Too many requests" }
+
+PERFORMANCE NOTES
+  - Use indexed pagination (page) for consistency; consider cursor for large feeds later.
+  - Provide Cache-Control for categories, brands (e.g., 300s) and ETag to allow conditional GET.
+  - Prefer lean payloads: exclude heavy nested relationships unless requested.
+
+SECURITY NOTES
+  - Sanitize and strip HTML in content except approved tags (or reject with 422) to prevent XSS.
+  - Validate file MIME types server-side (do not trust extension).
+  - Enforce max upload size per file and total per request.
+
+MIGRATION / DEPRECATION
+  - Introduce new fields alongside old for one release: old=null + X-Deprecated-Fields header.
+
+TESTING CHECKLIST (Backend Dev)
+  [ ] Auth: login/register invalid credentials
+  [ ] Follow: toggle twice results consistent counts
+  [ ] Post create with & without media
+  [ ] Like race: concurrent likes increments once
+  [ ] Pagination meta correctness (page boundaries)
+  [ ] Hashtag feed returns correct hashtag key
+  [ ] Fandom join/leave updates members_count
+  [ ] Cart operations adjust totals correctly
+  [ ] Order cancel forbidden after shipped
+  [ ] Notifications unread_count updates
+  [ ] Global search type filter returns only requested type
+
+  ====================
+  RESPONSE EXAMPLES (FOR BACKEND REFERENCE)
+  ====================
+  Notation: Example objects show all commonly returned fields. Omit optional ones (set null) if not available.
+
+  UserSummary example:
+  {
+    "id": 7,
+    "username": "janedoe",
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "profile_image_url": "https://cdn.app/storage/avatars/jane.jpg",
+    "is_following": false,
+    "followers_count": 121,
+    "following_count": 56
+  }
+
+  Post example:
+  {
+    "id": 451,
+    "author": { "id": 7, "name": "Jane Doe", "avatar": "https://cdn.app/storage/avatars/jane_thumb.jpg" },
+    "content": "Excited for the new season! #football",
+    "media": [],
+    "tags": ["football"],
+    "fandom": { "id": 3, "name": "Premier League" },
+    "likes": 12,
+    "comments": 2,
+  // shares removed
+    "isLiked": false,
+    "trending": false,
+    "createdAt": "2025-08-28T11:22:33Z"
+  }
+
+  Fandom example:
+  {
+    "id": 3,
+    "name": "Premier League",
+    "handle": "premier-league",
+    "description": "Top tier English football league.",
+    "cover_image_url": "https://cdn.app/storage/fandoms/3/cover.jpg",
+    "logo_url": "https://cdn.app/storage/fandoms/3/logo.png",
+    "members_count": 54023,
+    "posts_count": 81234,
+    "categories": [{"id":1,"name":"Sports","slug":"sports"}],
+    "is_member": true,
+    "role": "member",
+    "created_at": "2024-11-02T09:10:11Z"
+  }
+
+  1. GET /api/hashtags/football/posts
+  Request: /api/hashtags/football/posts?page=1&limit=20
+  Response 200:
+  {
+    "data": [ { /* Post example */ } ],
+    "hashtag": "football",
+    "meta": { "page": 1, "limit": 20, "total": 87, "last_page": 5 }
+  }
+
+  2. GET /api/categories/sports/content
+  {
+    "data": [ { /* Post example */ } ],
+    "category": { "id":1, "name":"Sports", "slug":"sports" },
+    "meta": { "page":1, "limit":20, "total":120, "last_page":6 }
+  }
+
+  3. POST /api/users/42/follow (follow)
+  {
+    "message": "Followed user.",
+    "following": true,
+    "follower_count": 122,
+    "following_count": 57
+  }
+
+  4. POST /api/users/42/follow (unfollow)
+  {
+    "message": "Unfollowed user.",
+    "following": false,
+    "follower_count": 121,
+    "following_count": 56
+  }
+
+  5. GET /api/feed/home
+  {
+    "posts": [ { /* Post example */ } ],
+    "meta": { "page":1, "limit":20, "total":400, "last_page":20 }
+  }
+
+  6. POST /api/posts
+  {
+    "success": true,
+  "post": { /* Post example with likes=0,comments=0,isLiked=false */ }
+  }
+
+  7. POST /api/posts/451/like (like)
+  {
+    "liked": true,
+    "isLiked": true,
+    "likes": 13
+  }
+
+  8. POST /api/posts/451/like (unlike)
+  {
+    "liked": false,
+    "isLiked": false,
+    "likes": 12
+  }
+
+  9. POST /api/posts/451/comments
+  {
+    "success": true,
+    "comment": {
+      "id": 9101,
+      "author": { /* UserSummary example */ },
+      "content": "Great!",
+      "createdAt": "2025-08-28T11:25:10Z"
+    }
+  }
+
+  10. GET /api/fandoms/premier-league/posts
+  {
+    "data": [ { /* Post example */ } ],
+    "meta": { "page":1, "limit":20, "total":81234, "last_page":4062 },
+    "fandom_id": 3
+  }
+
+  11. GET /api/store/cart
+  {
+    "items": [ {
+      "id": 1,
+      "product": { "id":900, "name":"Team Jersey", "price":79.99, "currency":"USD", "images":["https://cdn.app/p/900.jpg"] },
+      "quantity": 2,
+      "unit_price": 79.99,
+      "total_price": 159.98,
+      "options": { "size": "M", "color": "Blue" }
+    } ],
+    "totals": { "items":1, "subtotal":159.98, "shipping":0, "total":159.98, "currency":"USD" }
+  }
+
+  12. GET /api/notifications
+  {
+    "data": [ {
+      "id": 1001,
+      "type": "post.liked",
+      "data": { "post_id":451, "by_user": { /* UserSummary example */ } },
+      "read": false,
+      "created_at": "2025-08-28T11:30:00Z",
+      "read_at": null
+    } ],
+    "meta": { "page":1, "limit":20, "total":10, "last_page":1 },
+    "unread_count": 3
+  }
+
+  13. GET /api/search/global?q=football
+  {
+    "query": "football",
+    "posts": [ { /* Post example */ } ],
+    "fandoms": [ { /* Fandom example */ } ],
+    "users": [ { /* UserSummary example */ } ],
+    "products": [ { "id":900, "name":"Team Jersey", "price":79.99, "currency":"USD", "images":["https://cdn.app/p/900.jpg"], "brand":"Adidas", "category":"Apparel", "stock":42 } ],
+    "counts": { "posts":3400, "fandoms":25, "users":140, "products":60 }
+  }
+
+  14. ERROR 422 (validation)
+  {
+    "message": "Validation failed",
+    "errors": { "content": ["The content field is required."] }
+  }
+
+  15. ERROR 404
+  { "message": "Resource not found" }
+
+  16. ERROR 401
+  { "message": "Unauthenticated" }
+
+  17. ERROR 429
+  { "message": "Too many requests" }
+
+  18. POST /api/store/wishlist/900
+  { "wished": true, "count": 4 }
+
+  19. POST /api/fandoms/premier-league/join (leave)
+  { "is_member": false, "members_count": 54023 }
+
+  20. POST /api/upload/image
+  { "url": "https://cdn.app/storage/uploads/tmp/abc123.jpg" }
+
+  // Add analogous shapes for remaining store/order endpoints as already described above.
+
+  End of file.
