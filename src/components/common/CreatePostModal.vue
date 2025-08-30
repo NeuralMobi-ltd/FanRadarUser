@@ -1,23 +1,27 @@
 <template>
-  <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur p-4">
-    <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+  <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden border border-gray-200 dark:border-gray-700 animate-in fade-in-0 zoom-in-95 duration-300 flex flex-col">
       <!-- Header -->
-      <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-          {{ editPost ? 'Edit Post' : 'Create Post' }}
-        </h3>
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+            <i class="fas fa-plus text-white text-lg"></i>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+            {{ editPost ? 'Edit Post' : 'Create Post' }}
+          </h3>
+        </div>
         <button
           @click="() => { $emit('close'); $emit('update:modelValue', false) }"
-          class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700 transition-all duration-200"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-          </svg>
+          <i class="fas fa-times text-lg"></i>
         </button>
       </div>
 
       <!-- Content -->
-      <div class="p-4 space-y-4">
+      <div class="flex-1 overflow-y-auto">
+        <div class="p-6 space-y-6">
         <!-- User Info for editing -->
         <div v-if="editPost" class="flex items-center space-x-3 pb-3 border-b border-gray-200 dark:border-gray-700">
           <img :src="userAvatar || '/images/me.png'" class="w-8 h-8 rounded-full object-cover" :alt="userName">
@@ -28,17 +32,17 @@
         </div>
 
         <!-- Main Text Input -->
-        <div class="flex items-start space-x-3">
+        <div class="flex items-start space-x-4">
           <img 
             :src="userAvatar || '/images/me.png'" 
-            class="w-10 h-10 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0" 
+            class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0" 
             :alt="userName"
           >
           <div class="flex-1 min-w-0">
             <textarea
               v-model="postContent"
               :placeholder="postContent ? '' : 'What\'s on your mind?'"
-              class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base font-medium min-h-[6rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-colors"
+              class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium min-h-[8rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
               rows="4"
               @input="autoResize"
             ></textarea>
@@ -46,18 +50,16 @@
         </div>
 
         <!-- Tags Section -->
-        <div v-if="showTagInput || tags.length" class="pl-13">
-          <div class="flex flex-wrap gap-2 mb-3" v-if="Array.isArray(tags) && tags.length">
+        <div v-if="showTagInput || tags.length" class="pl-16">
+          <div class="flex flex-wrap gap-3 mb-4" v-if="Array.isArray(tags) && tags.length">
             <span
               v-for="(tag, idx) in tags"
               :key="idx"
-              class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm"
+              class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               #{{ tag }}
-              <button type="button" class="ml-1.5 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
+              <button type="button" class="ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
+                <i class="fas fa-times text-xs"></i>
               </button>
             </span>
           </div>
@@ -67,82 +69,124 @@
             @keydown.enter.prevent="addTag"
             @keydown.tab.prevent="addTag"
             type="text"
-            class="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+            class="w-full px-6 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             placeholder="Add tags (press Enter or Tab)..."
           />
         </div>
-          
+
+        <!-- Category / Subcategory Selection Display: only show subcategory to user per requirement -->
+        <div v-if="selectedSubcategory" class="pl-16">
+          <div class="flex flex-wrap gap-3">
+            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
+              <i class="fas fa-tag mr-2 text-sm"></i>
+              {{ selectedSubcategory }}
+            </span>
+          </div>
+        </div>
         <!-- Media Preview -->
-        <div v-if="postMedia.length > 0" class="pl-13">
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div v-if="postMedia.length > 0" class="pl-16">
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
             <div 
               v-for="(media, i) in postMedia" 
               :key="i" 
-              class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-square"
+              class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden aspect-square group hover:shadow-lg transition-all duration-200"
             >
               <img
                 v-if="media.type === 'image'"
                 :src="media.url"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
               />
               <video
                 v-else-if="media.type === 'video'"
                 :src="media.url"
-                class="w-full h-full object-cover"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                 muted
               ></video>
               <button
                 @click="removeMedia(i)"
-                class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                class="absolute top-3 right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
               >
-                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
-                </svg>
+                <i class="fas fa-times text-sm"></i>
               </button>
             </div>
           </div>
         </div>
+        </div>
       </div>
 
       <!-- Action Bar -->
-      <div class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-gray-700">
-        <div class="flex items-center space-x-1">
-          <!-- Image Upload -->
-          <label class="flex items-center justify-center w-10 h-10 rounded-xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all touch-target">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-            </svg>
-            <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
-          </label>
-          
-          <!-- Video Upload -->
-          <label class="flex items-center justify-center w-10 h-10 rounded-xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target">
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M2 6a2 2 0 012-2h6a2 2 0 012 2v8a2 2 0 01-2 2H4a2 2 0 01-2-2V6zM14.553 7.106A1 1 0 0014 8v4a1 1 0 00.553.894l2 1A1 1 0 0018 13V7a1 1 0 00-1.447-.894l-2 1z" />
-            </svg>
-            <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
-          </label>
-          
-          <!-- Tag Input Toggle -->
-          <button 
-            @click="toggleTagInput" 
-            class="flex items-center justify-center w-10 h-10 rounded-xl text-gray-600 hover:text-gray-700 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-all touch-target"
-            :class="{ 'text-blue-600 bg-blue-50 dark:bg-blue-900/20': showTagInput || tags.length }"
-          >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-            </svg>
-          </button>
+      <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+        <!-- Upload progress and errors -->
+        <div class="px-6 pt-4">
+          <div v-if="uploadProgress > 0 && uploadProgress < 100" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden mb-2">
+            <div :style="{ width: uploadProgress + '%' }" class="h-3 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full"></div>
+          </div>
+          <p v-if="error" class="text-sm text-red-600 dark:text-red-400 mb-2 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg">{{ error }}</p>
         </div>
 
-        <!-- Post Button -->
-        <button
-          @click="submit"
-          :disabled="!postContent.trim() && postMedia.length === 0"
-          class="px-6 py-2.5 rounded-xl font-semibold shadow-sm transition-all text-sm touch-target min-w-[5rem] bg-blue-600 hover:bg-blue-700 text-white disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed"
-        >
-          {{ editPost ? 'Update' : 'Post' }}
-        </button>
+        <div class="flex items-center justify-between p-6">
+          <div class="flex items-center space-x-2">
+            <!-- Image Upload -->
+            <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <i class="fas fa-image text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
+            </label>
+            
+            <!-- Video Upload -->
+            <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <i class="fas fa-video text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
+            </label>
+            
+            <!-- Tag Input Toggle -->
+            <button 
+              @click="toggleTagInput" 
+              class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group"
+              :class="{ 'text-blue-600 bg-blue-50 dark:bg-blue-900/20': showTagInput || tags.length }"
+              title="Add tags"
+            >
+              <i class="fas fa-hashtag text-xl group-hover:scale-110 transition-transform duration-200"></i>
+            </button>
+
+            <!-- Category Picker -->
+            <div class="relative">
+              <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group" 
+                :class="{ 'text-green-600 bg-green-50 dark:bg-green-900/20': selectedCategory }"
+                title="Choose category">
+                <i class="fas fa-list text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              </button>
+              <div v-if="showCategoryPicker" class="absolute left-0 bottom-full mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">Choose Category</div>
+                <ul class="max-h-48 overflow-auto space-y-1">
+                  <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
+                    <button @click.prevent="() => selectCategory(c.name)" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-sm transition-colors duration-200 text-gray-900 dark:text-white"
+                      :class="{ 'bg-green-50 dark:bg-green-900/20 text-green-600': selectedCategory === c.name }">
+                      {{ c.name }}
+                    </button>
+                  </li>
+                </ul>
+                <div v-if="availableSubcategories().length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">Choose Subcategory <span class="text-red-500">*</span></div>
+                  <select ref="subcategorySelectEl" v-model="selectedSubcategory" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                    <option value="">— select subcategory —</option>
+                    <option v-for="(s, i) in availableSubcategories()" :key="i" :value="s">{{ s }}</option>
+                  </select>
+                  <p v-if="needSubcategory && !selectedSubcategory" class="mt-2 text-xs text-red-500">Subcategory required.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post Button -->
+          <button
+            @click="submit"
+            :disabled="loading || (!postContent.trim() && postMedia.length === 0) || needSubcategory && selectedCategory && !selectedSubcategory"
+            class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
+          >
+            <i v-if="loading" class="fas fa-spinner fa-spin text-lg"></i>
+            <span>{{ loading ? (editPost ? 'Updating...' : 'Posting...') : (editPost ? 'Update' : 'Post') }}</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -150,6 +194,9 @@
 
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue'
+import PostsService from '@/services/postsService'
+import { usePostsStore } from '@/store/posts'
+import { useCategoriesStore } from '@/store/categories'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -158,7 +205,7 @@ const props = defineProps({
   editPost: Object
 })
 
-const emit = defineEmits(['close', 'submit', 'update:modelValue'])
+const emit = defineEmits(['close', 'submit', 'posted', 'update:modelValue'])
 
 const postContent = ref('')
 const postMedia = ref([])
@@ -167,6 +214,29 @@ const tagInput = ref('')
 // Control visibility of the tag input separately from its content
 const showTagInput = ref(false)
 const tagInputEl = ref(null)
+const subcategorySelectEl = ref(null)
+const loading = ref(false)
+const error = ref('')
+const uploadProgress = ref(0)
+const postsStore = usePostsStore()
+const categoriesStore = useCategoriesStore()
+
+// Category picker state
+const selectedCategory = ref('')
+const selectedSubcategory = ref('')
+const showCategoryPicker = ref(false)
+const subcategoriesMap = {
+  Music: ['Pop', 'Rock', 'Hip-Hop', 'Electronic'],
+  Gaming: ['PC', 'Console', 'Mobile', 'Indie'],
+  Movies: ['Action', 'Drama', 'Comedy', 'Documentary'],
+  'TV Shows': ['Drama', 'Sitcom', 'Reality', 'Anime'],
+  Art: ['Painting', 'Digital', 'Illustration', 'Sculpture'],
+  // Expanded sports list as requested: football, basket(ball) etc.
+  Sports: ['Football', 'Basketball', 'Soccer', 'Tennis', 'Cricket', 'Baseball', 'Rugby', 'Esports']
+}
+const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
+// True when current category has subcategories and one must be selected before posting
+const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
 
 // Computed property for formatted date
 const editPostDate = computed(() => {
@@ -208,6 +278,28 @@ function addTag() {
   tagInput.value = ''
 }
 
+function selectCategory(name) {
+  selectedCategory.value = name
+  selectedSubcategory.value = ''
+  // Keep picker open if subcategories exist so user can immediately choose one
+  if (availableSubcategories().length) {
+    showCategoryPicker.value = true
+    nextTick(() => {
+      subcategorySelectEl.value?.focus()
+    })
+  } else {
+    // If no subcategories, we can close picker
+    showCategoryPicker.value = false
+  }
+}
+
+function onSubcategorySelect() {
+  // Auto-close picker once subcategory is selected
+  if (selectedSubcategory.value) {
+    showCategoryPicker.value = false
+  }
+}
+
 function removeTag(idx) {
   tags.value.splice(idx, 1)
 }
@@ -232,20 +324,124 @@ function removeMedia(index) {
   postMedia.value.splice(index, 1)
 }
 
-function submit() {
-  if (postContent.value.trim() || postMedia.value.length > 0) {
-    emit('submit', {
-      text: postContent.value,
+async function submit() {
+  if (!postContent.value.trim() && postMedia.value.length === 0) return
+  // Enforce subcategory selection when category has subcategories
+  if (needSubcategory.value && !selectedSubcategory.value) {
+    error.value = 'Please choose a subcategory.'
+    return
+  }
+  loading.value = true
+  error.value = ''
+
+  // Build backend-friendly payload
+  // Derive a short title from the first line or first 60 chars of content when no explicit title input
+  const derivedTitle = (() => {
+    const txt = postContent.value || ''
+    const firstLine = txt.split('\n')[0].trim()
+    if (firstLine) return firstLine.length > 60 ? firstLine.slice(0, 57) + '...' : firstLine
+    return 'Untitled post'
+  })()
+
+  const payload = {
+    title: derivedTitle,
+    description: postContent.value,
+    // Backend requires content_status; default to 'draft' to avoid validation errors
+    content_status: 'draft',
+    tags: tags.value || []
+  }
+
+  // Attach category info when selected. Only subcategory is essential to user; still include both if available.
+  if (selectedCategory.value) payload.category = selectedCategory.value
+  if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
+
+  // Collect file objects (for upload) and existing URLs (if any)
+  const files = postMedia.value.filter(m => m.file).map(m => m.file)
+  const existingUrls = postMedia.value.filter(m => !m.file).map(m => m.url)
+  if (files.length) payload.medias = files // backend expects medias[] for file uploads
+  if (existingUrls.length) payload.media_urls = existingUrls
+
+  try {
+    let resp
+    // Prepare optimistic post to show immediately
+    const optimistic = {
+      id: `temp-${Date.now()}`,
+      content: postContent.value,
       media: postMedia.value.map(m => ({ type: m.type, url: m.url })),
-      tags: [...tags.value]
-    })
+      username: props.userName || 'You',
+      avatar: props.userAvatar || '/images/me.png',
+      date: new Date(),
+      likes: 0,
+      comments: 0,
+      isLiked: false,
+      uploading: true,
+      uploadProgress: 0
+    }
+    postsStore.addPost(optimistic)
+
+    const config = {
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.lengthComputable) {
+          uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        } else if (progressEvent.total) {
+          uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+        }
+        // Update optimistic post progress
+        try {
+          postsStore.updatePost(optimistic.id, { ...optimistic, uploadProgress: uploadProgress.value })
+        } catch (e) {}
+      }
+    }
+
+    if (props.editPost && props.editPost.id) {
+      resp = await PostsService.update(props.editPost.id, payload, config)
+    } else {
+      resp = await PostsService.create(payload, config)
+    }
+
+    const created = resp.post || resp.data || resp
+
+    // Replace optimistic post with real one
+    try {
+      postsStore.updatePost(optimistic.id, {
+        id: created.id || optimistic.id,
+        text: created.content || created.text || optimistic.content,
+        media: (created.media || optimistic.media).map(m => (typeof m === 'string' ? { type: 'image', url: m } : { type: m.type || 'image', url: m.url })),
+        username: created.author?.name || props.userName || 'You',
+        avatar: created.author?.avatar || props.userAvatar || '/images/me.png',
+        date: new Date(created.created_at || created.createdAt || Date.now()),
+        uploading: false,
+        uploadProgress: 100
+      })
+    } catch (e) {
+      // Fallback: add the created post and remove optimistic
+      postsStore.deletePost(optimistic.id)
+      postsStore.addPost(created)
+    }
+
+    emit('submit', resp)
+    emit('posted', resp)
+
+    // Reset form and close
     postContent.value = ''
     postMedia.value = []
     tags.value = []
     tagInput.value = ''
     showTagInput.value = false
+    selectedCategory.value = ''
+    selectedSubcategory.value = ''
+    showCategoryPicker.value = false
     emit('close')
     emit('update:modelValue', false)
+  } catch (err) {
+    // Mark optimistic post as failed
+    error.value = err?.response?.data?.message || err?.message || 'Failed to create post.'
+    console.error('CreatePostModal submit error', err)
+    try {
+      postsStore.updatePost(optimistic.id, { ...optimistic, uploading: false, failed: true })
+    } catch (e) {}
+  } finally {
+    loading.value = false
   }
 }
 
@@ -257,6 +453,10 @@ watch(() => props.modelValue, (val) => {
     tags.value = []
     tagInput.value = ''
     showTagInput.value = false
+    selectedCategory.value = ''
+    selectedSubcategory.value = ''
+    showCategoryPicker.value = false
+    error.value = ''
   } else if (props.editPost) {
     postContent.value = props.editPost.content || props.editPost.text || ''
     tags.value = Array.isArray(props.editPost.tags) ? [...props.editPost.tags] : []
@@ -269,18 +469,92 @@ watch(() => props.modelValue, (val) => {
 <style scoped>
 /* Mobile-friendly touch targets */
 .touch-target {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: 48px;
+  min-height: 48px;
 }
 
 /* Responsive spacing utilities */
-.pl-13 {
-  padding-left: 3.25rem;
+.pl-16 {
+  padding-left: 4rem;
 }
 
-@media (min-width: 640px) {
-  .sm\:pl-16 {
-    padding-left: 4rem;
+@media (max-width: 640px) {
+  .pl-16 {
+    padding-left: 3rem;
   }
+  
+  .touch-target {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Animation utilities */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes zoom-in {
+  from { transform: scale(0.95); }
+  to { transform: scale(1); }
+}
+
+@keyframes slide-in-from-bottom {
+  from { 
+    opacity: 0; 
+    transform: translateY(0.5rem); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.3s ease-out, zoom-in 0.3s ease-out;
+}
+
+.fade-in-0 {
+  animation: fade-in 0.3s ease-out;
+}
+
+.zoom-in-95 {
+  animation: zoom-in 0.3s ease-out;
+}
+
+.slide-in-from-bottom-2 {
+  animation: slide-in-from-bottom 0.2s ease-out;
+}
+
+.duration-300 {
+  animation-duration: 0.3s;
+}
+
+.duration-200 {
+  animation-duration: 0.2s;
+}
+
+/* Gradient border effect for avatar */
+.border-3 {
+  border-width: 3px;
+}
+
+/* Custom scrollbar for category list */
+.overflow-auto::-webkit-scrollbar {
+  width: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background: rgb(156 163 175 / 0.5);
+  border-radius: 2px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb:hover {
+  background: rgb(156 163 175 / 0.8);
 }
 </style>

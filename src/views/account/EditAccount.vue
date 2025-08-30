@@ -115,25 +115,25 @@
         <form @submit.prevent="saveProfile" class="space-y-5 sm:space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name</label>
-              <input 
-                v-model="profileForm.name"
-                type="text" 
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First name</label>
+              <input
+                v-model="profileForm.first_name"
+                type="text"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your full name"
+                placeholder="First name"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Username</label>
-              <input 
-                v-model="profileForm.username"
-                type="text" 
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last name</label>
+              <input
+                v-model="profileForm.last_name"
+                type="text"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your username"
+                placeholder="Last name"
               />
             </div>
           </div>
-          
+
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
             <input 
@@ -223,7 +223,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { CameraIcon } from '@heroicons/vue/24/outline'
 
@@ -235,16 +235,21 @@ const saving = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
+// UI form state + preview sources
 const profileForm = ref({
-  name: '',
-  username: '',
+  first_name: '',
+  last_name: '',
   email: '',
   bio: '',
-  avatar: 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256',
-  coverPhoto: '',
+  avatar: 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256', // preview (data URL or absolute path)
+  coverPhoto: '', // preview (data URL or absolute path)
   password: '',
   confirmPassword: ''
 })
+
+// Hold actual File objects selected so we can send them to backend
+const avatarFile = ref(null)
+const coverFile = ref(null)
 
 const passwordError = computed(() => {
   if (profileForm.value.password && profileForm.value.confirmPassword) {
@@ -258,13 +263,17 @@ const passwordError = computed(() => {
 onMounted(() => {
   // Load current user data
   if (authStore.user) {
+    // Prefer the normalized fields provided by auth store (camelCase)
+    const identifier = authStore.user.userName || authStore.user.userEmail?.split('@')[0] || authStore.user.name || 'User'
+    const first = authStore.user.firstName || (authStore.user.name ? authStore.user.name.split(' ')[0] : '') || authStore.user.userName || ''
+    const last = authStore.user.lastName || (authStore.user.name ? authStore.user.name.split(' ').slice(1).join(' ') : '') || ''
     profileForm.value = {
-      name: authStore.user.userName || '',
-      username: authStore.user.userName || authStore.user.userEmail?.split('@')[0] || '',
-      email: authStore.user.userEmail || '',
-      bio: authStore.user.bio || 'Digital creator | Photography enthusiast | Coffee lover',
-      avatar: authStore.user.avatar || 'https://ui-avatars.com/api/?name=User&background=6366f1&color=fff&size=256',
-      coverPhoto: authStore.user.coverPhoto || '',
+      first_name: first,
+      last_name: last,
+      email: authStore.user.userEmail || authStore.user.email || '',
+      bio: authStore.user.bio || '',
+      avatar: authStore.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(identifier)}&background=6366f1&color=fff&size=256`,
+      coverPhoto: authStore.user.coverPhoto || authStore.user.background_image || '',
       password: '',
       confirmPassword: ''
     }
@@ -278,23 +287,21 @@ function triggerProfilePhotoUpload() {
 
 function handleProfilePhotoChange(event) {
   const file = event.target.files[0]
-  if (file) {
-    // Validate file size (2MB limit)
-    if (file.size > 2 * 1024 * 1024) {
-      alert('Profile photo must be less than 2MB')
-      return
-    }
-    
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileForm.value.avatar = e.target.result
-    }
-    reader.readAsDataURL(file)
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) {
+    alert('Profile photo must be less than 2MB')
+    return
   }
+  avatarFile.value = file
+  // Generate preview
+  const reader = new FileReader()
+  reader.onload = (e) => { profileForm.value.avatar = e.target.result }
+  reader.readAsDataURL(file)
 }
 
 function removeProfilePhoto() {
-  profileForm.value.avatar = `https://ui-avatars.com/api/?name=${profileForm.value.name}&background=6366f1&color=fff&size=256`
+  const name = `${profileForm.value.first_name || ''} ${profileForm.value.last_name || ''}`.trim() || (authStore.user?.userName || authStore.user?.userEmail?.split('@')[0]) || 'User'
+  profileForm.value.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff&size=256`
 }
 
 // Cover Photo Functions
@@ -304,26 +311,28 @@ function triggerCoverUpload() {
 
 function handleCoverChange(event) {
   const file = event.target.files[0]
-  if (file) {
-    // Validate file size (5MB limit)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Cover photo must be less than 5MB')
-      return
-    }
-    
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      profileForm.value.coverPhoto = e.target.result
-    }
-    reader.readAsDataURL(file)
+  if (!file) return
+  if (file.size > 5 * 1024 * 1024) {
+    alert('Cover photo must be less than 5MB')
+    return
   }
+  coverFile.value = file
+  const reader = new FileReader()
+  reader.onload = (e) => { profileForm.value.coverPhoto = e.target.result }
+  reader.readAsDataURL(file)
 }
 
 function removeCoverPhoto() {
   profileForm.value.coverPhoto = ''
+  coverFile.value = null
 }
 
-function saveProfile() {
+function clearPasswordFields() {
+  profileForm.value.password = ''
+  profileForm.value.confirmPassword = ''
+}
+
+async function saveProfile() {
   // Validate passwords if provided
   if (profileForm.value.password || profileForm.value.confirmPassword) {
     if (profileForm.value.password !== profileForm.value.confirmPassword) {
@@ -337,37 +346,77 @@ function saveProfile() {
   }
 
   saving.value = true
-
   try {
-    // Update auth store with new profile data
-    authStore.updateUserProfile({
-      userName: profileForm.value.name,
-      userEmail: profileForm.value.email,
-      bio: profileForm.value.bio,
-      avatar: profileForm.value.avatar,
-      coverPhoto: profileForm.value.coverPhoto,
-      ...(profileForm.value.password && { password: profileForm.value.password })
-    })
-    
-    // Show success message
+    // Build FormData for backend (supports images + other fields)
+    const fd = new FormData()
+    const appendIf = (k, v) => { if (v !== undefined && v !== null && String(v).trim() !== '') fd.append(k, v) }
+
+    // include username if available (backend may validate it)
+    const username = authStore.user?.userName || authStore.user?.username || (profileForm.value.email ? profileForm.value.email.split('@')[0] : '')
+    appendIf('username', username)
+    appendIf('first_name', profileForm.value.first_name)
+    appendIf('last_name', profileForm.value.last_name)
+    appendIf('email', profileForm.value.email)
+    appendIf('bio', profileForm.value.bio)
+    if (avatarFile.value) fd.append('profile_image', avatarFile.value)
+    if (coverFile.value) fd.append('background_image', coverFile.value)
+    if (profileForm.value.password) {
+      fd.append('password', profileForm.value.password)
+      fd.append('password_confirmation', profileForm.value.password) // typical backend requirement
+    }
+
+    const { success, error } = await authStore.updateProfileRemote(fd)
+    if (!success) {
+      alert(error || 'Failed to update profile on server')
+      return
+    }
+
+    // Sync form with normalized store user (ensures we show stored URLs not stale Data URLs)
+    const u = authStore.user
+    profileForm.value.first_name = u.firstName || profileForm.value.first_name
+    profileForm.value.last_name = u.lastName || profileForm.value.last_name
+  profileForm.value.email = u.userEmail || profileForm.value.email
+  clearPasswordFields()
+    profileForm.value.avatar = u.avatar || profileForm.value.avatar
+    profileForm.value.coverPhoto = u.coverPhoto || profileForm.value.coverPhoto
+
     alert('Profile updated successfully!')
-    
-    // Navigate back to profile
     setTimeout(() => {
-      router.push(`/account/${profileForm.value.username}`)
+      const idOrName = authStore.user?.userName || authStore.user?.userEmail?.split('@')[0] || authStore.user?.id
+      router.push(`/account/${idOrName}`)
     }, 100)
-    
-  } catch (error) {
-    console.error('Error saving profile:', error)
-    alert('Error saving profile. Please try again.')
+  } catch (e) {
+    console.error('Error saving profile:', e)
+    // If backend returned validation errors (Laravel-like), show them
+    const resp = e?.response?.data
+    if (resp) {
+      // If errors object exists, join messages
+      if (resp.errors) {
+        const messages = Object.values(resp.errors).flat().join('\n')
+        alert(messages)
+      } else if (resp.message) {
+        alert(resp.message)
+      } else {
+        alert(JSON.stringify(resp))
+      }
+    } else {
+      alert('Error saving profile. Please try again.')
+    }
   } finally {
     saving.value = false
   }
 }
 
 function cancelEdit() {
-  router.push(`/account/${profileForm.value.username}`)
+  clearPasswordFields()
+  const idOrName = authStore.user?.userName || authStore.user?.userEmail?.split('@')[0] || authStore.user?.id
+  router.push(`/account/${idOrName}`)
 }
+
+// Ensure password fields never persist if user navigates away
+onBeforeRouteLeave(() => {
+  clearPasswordFields()
+})
 </script>
 
 <style scoped>

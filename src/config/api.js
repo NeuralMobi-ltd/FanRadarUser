@@ -25,10 +25,11 @@ export const API_CONFIG = {
 
   // Users
   users: {
-    posts: (userId) => `/api/users/${userId}/posts`,
-    followers: (userId) => `/api/users/${userId}/followers`,
-    following: (userId) => `/api/users/${userId}/following`,
-    follow: (userId) => `/api/users/${userId}/follow`,
+  // Backend namespaced under /api/Y for user-specific resources
+  posts: (userId) => `/api/Y/users/${userId}/posts`,
+  followers: (userId) => `/api/Y/users/${userId}/followers`,
+  following: (userId) => `/api/Y/users/${userId}/following`,
+  follow: (userId) => `/api/Y/users/${userId}/follow`,
   },
 
   // Feed / Posts

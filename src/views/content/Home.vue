@@ -7,10 +7,10 @@
         <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
           <!-- User Avatar and Text Input -->
           <div class="flex items-start space-x-3 sm:space-x-4">
-            <img 
-              src="/public/images/me.png" 
-              class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0" 
-              :alt="currentUser.username"
+            <img
+              :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar || '/public/images/me.png'"
+              class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0"
+              :alt="authStore.user?.username || currentUser.username"
             >
             <div class="flex-1 min-w-0">
               <textarea
@@ -26,7 +26,7 @@
           </div>
 
           <!-- Tags Section -->
-          <div v-if="tags.length || tagInput" class="mt-4 pl-13 sm:pl-16">
+          <div v-if="tags.length || tagInput || showTagInput" class="mt-4 pl-13 sm:pl-16">
             <div class="flex flex-wrap gap-2 mb-3" v-if="Array.isArray(tags) && tags.length">
               <span
                 v-for="(tag, idx) in tags"
@@ -48,9 +48,17 @@
               @keydown.enter.prevent="addTag"
               @keydown.tab.prevent="addTag"
               type="text"
+              ref="tagInputEl"
               class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               :placeholder="$t('common.addTagsPlaceholder')"
             />
+          </div>
+
+          <!-- Selected Subcategory Badge (only show subcategory per requirement) -->
+          <div v-if="selectedSubcategory" class="mt-2 pl-13 sm:pl-16">
+            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
+              <i class="fas fa-tag mr-1.5 text-xs"></i>{{ selectedSubcategory }}
+            </span>
           </div>
 
           <!-- Media Preview -->
@@ -99,23 +107,63 @@
               
               <!-- Add Tags Button -->
               <button 
-                @click="() => { if (!tagInput && tags.length === 0) tagInput = ' ' }"
-                class="flex items-center justify-center w-10 h-10 rounded-xl text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all touch-target"
+                @click="toggleTagInput"
+                class="flex items-center justify-center w-10 h-10 rounded-xl transition-all touch-target"
+                :class="(showTagInput || tags.length) ? 'text-green-600 bg-green-50 dark:bg-green-900/30' : 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20'"
+                title="Add tags"
               >
                 <i class="fas fa-hashtag text-lg"></i>
               </button>
+
+              <!-- Category Picker -->
+              <div class="relative">
+                <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-10 h-10 rounded-xl text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-all touch-target" title="Choose category">
+                  <i class="fas fa-list text-lg"></i>
+                </button>
+                <div v-if="showCategoryPicker" class="absolute left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-48 z-50">
+                  <div class="mb-2 text-xs text-gray-500">Category</div>
+                  <ul class="max-h-40 overflow-auto">
+                      <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
+                        <button @click.prevent="selectCategory(c.name)" 
+                          class="w-full text-left px-2 py-1 rounded text-sm text-gray-900 dark:text-white transition-colors"
+                          :class="selectedCategory === c.name ? 'bg-green-50 dark:bg-green-900/30 text-green-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700'">
+                          {{ c.name }}
+                        </button>
+                      </li>
+                  </ul>
+                  <div v-if="availableSubcategories().length" class="mt-3">
+                    <div class="mb-1 text-xs text-gray-500 flex items-center gap-1">Subcategory <span class="text-red-500" v-if="needSubcategory">*</span></div>
+                    <select v-model="selectedSubcategory" @change="onSubcategorySelect" ref="subcategorySelectEl" class="w-full px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
+                      <option value="">— select —</option>
+                      <option v-for="(s, i) in availableSubcategories()" :key="i" :value="s">{{ s }}</option>
+                    </select>
+                    <p v-if="needSubcategory && !selectedSubcategory" class="mt-1 text-[10px] text-red-500">Subcategory required.</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Post Button -->
-            <button
-              @click="createPost"
-              :disabled="!newPostContent.trim() && postMedia.length === 0"
-              class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm disabled:cursor-not-allowed transition-all text-sm touch-target min-w-[5rem]"
-            >
-              {{ $t('common.post') }}
-            </button>
+            <div class="flex items-center space-x-3">
+              <div v-if="creating" class="w-40 mr-2">
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                  <div :style="{ width: `${uploadProgress}%` }" class="h-2 bg-blue-500 dark:bg-blue-400 transition-all"></div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ uploadProgress }}%</div>
+              </div>
+
+              <button
+                @click="createPost"
+                :disabled="creating || (!newPostContent.trim() && postMedia.length === 0) || (needSubcategory && !selectedSubcategory)"
+                class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm disabled:cursor-not-allowed transition-all text-sm touch-target min-w-[5rem]"
+              >
+                <i v-if="creating" class="fas fa-spinner fa-spin mr-2"></i>
+                {{ $t('common.post') }}
+              </button>
+            </div>
           </div>
         </div>
+        <p v-if="createError" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ createError }}</p>
 
         <!-- News Section (Horizontal Scroll ONLY) -->
         <div class="py-2 border-b border-gray-200 dark:border-gray-800 mb-3 sm:mb-4 overflow-hidden">
@@ -294,11 +342,12 @@
 import NewsPost from '@/components/common/NewsPost.vue'
 import Post from '@/components/common/Post.vue'
 import { useAuthStore } from '@/store/auth'
+import { useCategoriesStore } from '@/store/categories'
 import { useNewsStore } from '@/store/news'
 import { usePostsStore } from '@/store/posts'
 import { useTrendsStore } from '@/store/trends'
 import { storeToRefs } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -320,10 +369,26 @@ const trendingCommunities = computed(() => trendsStore.trendingCommunities)
 const trendingHashtags = computed(() => trendsStore.trendingHashtags)
 
 // Current user for alt text, with username alias
+import AuthService from '@/services/authService'
+
+const fetchedProfile = ref(null)
+
+onMounted(async () => {
+  try {
+    const profileResp = await AuthService.getProfile()
+    // AuthService.getProfile returns either the user object (mock) or API response data
+    const user = profileResp?.user || profileResp?.data || profileResp
+    if (user) fetchedProfile.value = user
+  } catch (e) {
+    // ignore - fallback to auth store
+  }
+})
+
 const currentUser = computed(() => {
-  const u = authStore.user || {}
+  const u = fetchedProfile.value || authStore.user || {}
   return {
-    username: u.userName || 'You',
+    username: u.userName || u.username || 'You',
+    avatar: u.avatar || u.profile_image || '/public/images/me.png',
     ...u
   }
 })
@@ -332,7 +397,28 @@ const currentUser = computed(() => {
 const newPostContent = ref('')
 const tags = ref([])
 const tagInput = ref('')
-const postMedia = ref([]) // [{ type: 'image'|'video', url: '...' }]
+const showTagInput = ref(false)
+const tagInputEl = ref(null)
+const postMedia = ref([]) // [{ type: 'image'|'video', url: '...', file }]
+const creating = ref(false)
+const uploadProgress = ref(0)
+const createError = ref('')
+// Category picker
+const categoriesStore = useCategoriesStore()
+const selectedCategory = ref('')
+const selectedSubcategory = ref('')
+const showCategoryPicker = ref(false)
+const subcategorySelectEl = ref(null)
+const subcategoriesMap = {
+  Music: ['Pop', 'Rock', 'Hip-Hop', 'Electronic'],
+  Gaming: ['PC', 'Console', 'Mobile', 'Indie'],
+  Movies: ['Action', 'Drama', 'Comedy', 'Documentary'],
+  'TV Shows': ['Drama', 'Sitcom', 'Reality', 'Anime'],
+  Art: ['Painting', 'Digital', 'Illustration', 'Sculpture'],
+  Sports: ['Football', 'Basketball', 'Esports', 'Tennis']
+}
+const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
+const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
 
 function autoResize(e) {
   const el = e?.target
@@ -346,6 +432,30 @@ function addTag() {
   if (!val) return
   if (!tags.value.includes(val)) tags.value.push(val)
   tagInput.value = ''
+}
+
+async function toggleTagInput() {
+  showTagInput.value = !showTagInput.value
+  if (showTagInput.value) {
+    await nextTick()
+    tagInputEl.value?.focus()
+  }
+}
+
+function selectCategory(name) {
+  selectedCategory.value = name
+  selectedSubcategory.value = ''
+  // Keep picker open if subcategories exist so user can immediately choose one
+  if (availableSubcategories().length) {
+    showCategoryPicker.value = true
+    nextTick(() => { subcategorySelectEl.value?.focus() })
+  } else {
+    showCategoryPicker.value = false
+  }
+}
+
+function onSubcategorySelect() {
+  if (selectedSubcategory.value) showCategoryPicker.value = false
 }
 
 function removeTag(idx) {
@@ -370,25 +480,62 @@ function removeMedia(index) {
 }
 
 async function createPost() {
+  createError.value = ''
+  // Build backend-friendly payload
+  const title = (newPostContent.value || '').split('\n')[0].slice(0, 120)
   const payload = {
-    content: newPostContent.value,
-    media: postMedia.value.map(m => ({ type: m.type, url: m.url }))
+    title,
+    description: newPostContent.value,
+    content_status: 'draft',
+    tags: Array.isArray(tags.value) ? tags.value.slice() : []
   }
-  // Use store action; backend is mocked when API not ready
+
+  // attach category info when selected
+  if (selectedCategory.value) payload.category = selectedCategory.value
+  if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
+
+  // Attach files if present (server expects medias[] for file uploads)
+  const files = postMedia.value.map(m => m.file).filter(Boolean)
+  if (files.length) payload.medias = files
+
+  if (!payload.description?.trim() && !files.length) return
+
+  creating.value = true
+  uploadProgress.value = 0
+
   try {
-    if (payload.content?.trim() || payload.media.length) {
-      await postsStore.createPost(payload)
-    }
-  } catch (_) {
-    // Fallback to local add
-    postsStore.addPost({ text: payload.content, media: payload.media })
-  }
+    // Assume postsStore.createPost forwards axios config (onUploadProgress)
+    await postsStore.createPost(payload, {
+      onUploadProgress: progressEvent => {
+        try {
+          if (progressEvent.lengthComputable) {
+            uploadProgress.value = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+          }
+        } catch (e) {
+          // ignore progress calc errors
+        }
+      }
+    })
+
+  // success: clear inputs
   newPostContent.value = ''
   tags.value = []
   tagInput.value = ''
-  // Revoke blobs
-  postMedia.value.forEach(m => { if (m?.url?.startsWith('blob:')) URL.revokeObjectURL(m.url) })
-  postMedia.value = []
+  showTagInput.value = false
+  selectedCategory.value = ''
+  selectedSubcategory.value = ''
+    // Revoke blobs
+    postMedia.value.forEach(m => { if (m?.url?.startsWith('blob:')) URL.revokeObjectURL(m.url) })
+    postMedia.value = []
+  } catch (err) {
+    createError.value = (err && err.message) ? err.message : 'Failed to create post'
+    // Optionally add a fallback local post so user doesn't lose content
+    postsStore.addPost({ text: payload.description, media: postMedia.value.map(m => ({ type: m.type, url: m.url })) })
+  } finally {
+    creating.value = false
+    // keep progress visible for a short moment then reset
+    setTimeout(() => { uploadProgress.value = 0 }, 600)
+  }
 }
 
 // Post item handlers

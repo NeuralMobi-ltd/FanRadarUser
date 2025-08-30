@@ -69,12 +69,12 @@ export const useAuthStore = defineStore('auth', {
       }
       const resolveImage = (p, fallback) => {
         if (!p) return fallback
+        // If it's already an absolute URL, return as-is
         if (/^https?:/i.test(p)) return p
-        if (p.startsWith('storage/')) {
-          const base = import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || ''
-          return `${base.replace(/\/$/, '')}/${p}`
-        }
-        return p
+        // Otherwise prefix with API base URL (handles 'storage/..', 'default_background.png', etc.)
+        const base = import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || ''
+        const cleaned = String(p).replace(/^\/*/, '') // remove leading slashes
+        return `${base.replace(/\/$/, '')}/${cleaned}`
       }
       return {
         id: apiUser.id,

@@ -67,6 +67,7 @@
     :user-avatar="userAvatar"
     :user-name="userName"
     @submit="handleCreatePost"
+    @posted="handleCreatePost"
   />
 </template>
 
@@ -75,11 +76,13 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { usePostsStore } from '@/store/posts'
 
 const route = useRoute()
 const authStore = useAuthStore()
 
 const showCreateModal = ref(false)
+const postsStore = usePostsStore()
 const cartCount = ref(3) // Mock cart count - replace with actual store
 
 const userName = computed(() => authStore.userName)
@@ -98,8 +101,13 @@ const isActiveRoute = (path) => {
 }
 
 function handleCreatePost(post) {
-  // Handle post creation
-  console.log('Creating post:', post)
+  if (!post) return
+  const created = post.post || post.data || post
+  try {
+    postsStore.addPost(created)
+  } catch (e) {
+    console.warn('Failed to add post to store', e)
+  }
 }
 </script>
 

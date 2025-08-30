@@ -395,8 +395,8 @@ export const usePostsStore = defineStore('posts', {
         // keep mock data
       }
     },
-    async createPost(payload) {
-      const res = await PostsService.create(payload)
+    async createPost(payload, config = {}) {
+      const res = await PostsService.create(payload, config)
       const p = res?.data?.post || res?.data || res?.post || res
       if (p) {
         this.addPost({

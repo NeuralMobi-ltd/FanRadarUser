@@ -491,6 +491,7 @@
     :user-avatar="userAvatar"
     :user-name="userName"
     @submit="handleCreatePost"
+    @posted="handleCreatePost"
   />
 </template>
 
@@ -502,6 +503,7 @@ import { useThemeStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 import SearchModal from '@/components/layout/SearchModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { usePostsStore } from '@/store/posts'
 import { useNotificationsStore } from '@/store/notifications' // <-- new
 
 import {
@@ -540,6 +542,7 @@ const showAppModal = ref(false)
 const showSearchSidebar = ref(false)
 const showSearchModal = ref(false)
 const showCreatePostModal = ref(false)
+const postsStore = usePostsStore()
 const showLanguageDropdown = ref(false)
 const searchQuery = ref('')
 const modalPostContent = ref('')
@@ -632,8 +635,14 @@ function submitModalPost() {
 }
 
 function handleCreatePost(post) {
-  // Use your store or emit event to add the post globally
-  // Example: postsStore.addPost(post)
+  if (!post) return
+  // If PostsService returned wrapper like { post: {...} } prefer post.post
+  const created = post.post || post.data || post
+  try {
+    postsStore.addPost(created)
+  } catch (e) {
+    console.warn('Failed to add post to store', e)
+  }
 }
 
 const onChangeLocale = () => {

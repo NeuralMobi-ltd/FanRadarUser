@@ -13,9 +13,9 @@
         <div class="h-24 sm:h-32 rounded-t-xl relative overflow-visible">
           <!-- Cover Photo if exists, otherwise gradient -->
           <div 
-            v-if="userProfile?.coverPhoto" 
+            v-if="coverSrc" 
             class="w-full h-full bg-cover bg-center rounded-t-xl"
-            :style="`background-image: url(${userProfile.coverPhoto})`"
+            :style="`background-image: url(${coverSrc})`"
           ></div>
           <div 
             v-else
@@ -30,9 +30,9 @@
         <div class="relative -mt-10 sm:-mt-12 px-4 sm:px-6">
           <div class="flex items-end">
             <div class="relative z-30">
-              <img 
-                :src="userProfile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&h=160&fit=crop&crop=face'" 
-                :alt="userProfile?.name || 'User'"
+              <img
+                :src="authStore.user?.avatar || userProfile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&h=160&fit=crop&crop=face'"
+                :alt="authStore.user?.userName || userProfile?.name || 'User'"
                 class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 object-cover shadow-lg"
               />
               <div v-if="userProfile?.verified" class="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 z-10">
@@ -451,6 +451,10 @@ import { useUsersStore } from '@/store/users'
 import { useFandomsStore } from '@/store/fandoms'
 import Post from '@/components/common/Post.vue'
 import CommunityCard from '@/components/community/CommunityCard.vue'
+import AuthService from '@/services/authService'
+import PostsService from '@/services/postsService'
+import FollowsService from '@/services/followsService'
+import API_CONFIG from '@/config/api'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -491,63 +495,119 @@ const myFandoms = computed(() => {
 
 const fetchUserProfile = async () => {
   loading.value = true
-  
   try {
-    let username = route.params.user
-    
-    if (username === 'me' || isOwnProfile.value) {
-      const currentUser = authStore.user
-      if (currentUser) {
-        username = currentUser.userName || currentUser.userEmail?.split('@')[0] || currentUser.username
-        
-        userProfile.value = {
-          id: currentUser.id || Math.random(),
-          name: currentUser.userName || username,
-          username: currentUser.userName || currentUser.userEmail?.split('@')[0] || username,
-          email: currentUser.userEmail,
-          avatar: currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
-          bio: currentUser.bio || 'FanRadar user',
-          coverPhoto: currentUser.coverPhoto || '',
-          followers: authStore.userStats?.followers || 132,
-          following: authStore.userStats?.following || 12,
-          posts: authStore.userStats?.posts || 15,
-          verified: currentUser.verified || false,
-          joinedDate: currentUser.joinedDate || '2023-06-01'
+    // If route is 'me' or this is the current user's page, try API first
+    if (route.params.user === 'me' || isOwnProfile.value) {
+      try {
+        const resp = await AuthService.getProfile()
+        const u = resp?.user || resp?.data || resp
+        if (u) {
+          // Resolve avatar & cover to absolute URLs if backend returned relative paths
+          const resolveImage = (p) => {
+            if (!p) return p
+            if (/^https?:\/\//i.test(p)) return p
+            const base = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+            return base ? `${base}/${String(p).replace(/^\/+/, '')}` : p
+          }
+          userProfile.value = {
+            id: u.id,
+            name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || u.email?.split('@')[0],
+            username: u.username || (u.email ? u.email.split('@')[0] : undefined),
+            email: u.email,
+            avatar: resolveImage(u.profile_image || u.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+            coverPhoto: resolveImage(u.background_image || u.coverPhoto || ''),
+            followers: u.stats?.followers || 0,
+            following: u.stats?.following || 0,
+            posts: u.stats?.posts || 0,
+            role: u.role || 'user',
+            date_naissance: u.date_naissance || null,
+            gender: u.gender || null,
+            preferred_categories: u.preferred_categories || []
+          }
         }
-        
-        userPosts.value = usersStore.getPostsByUsername(userProfile.value.username)
-        loading.value = false
-        return
+      } catch (apiErr) {
+        // fallback to store-based logic below
+        console.debug('AuthService.getProfile failed, falling back to store', apiErr)
       }
     }
-    
-    // Look for user in store
-    const foundUser = usersStore.getUserByUsername(username)
-     
-    if (foundUser) {
-      userProfile.value = foundUser
+
+    // If still not set, try to find in users store or derive a minimal profile
+    if (!userProfile.value) {
+      const username = route.params.user || 'unknown'
+      const foundUser = usersStore.getUserByUsername(username)
+      if (foundUser) {
+        userProfile.value = {
+          id: foundUser.id,
+          name: foundUser.name || foundUser.username || username,
+          username: foundUser.username || username,
+          email: foundUser.email || '',
+          avatar: foundUser.avatar || '',
+          coverPhoto: foundUser.coverPhoto || '',
+          followers: foundUser.followers || 0,
+          following: foundUser.following || 0,
+          posts: foundUser.posts || 0,
+          role: foundUser.role || 'user',
+          date_naissance: foundUser.date_naissance || null,
+          gender: foundUser.gender || null,
+          preferred_categories: foundUser.preferred_categories || []
+        }
+      } else {
+        userProfile.value = {
+          id: Math.random(),
+          name: username,
+          username,
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+          followers: 0,
+          following: 0,
+          posts: 0,
+          role: 'user',
+          preferred_categories: []
+        }
+      }
+    }
+
+    // Load user posts and follower lists from API when possible (only when we have numeric user id), otherwise fall back to store
+    const userId = userProfile.value && (typeof userProfile.value.id === 'number' || /^\\d+$/.test(String(userProfile.value.id)))
+
+    if (userId) {
+      const id = Number(userProfile.value.id)
+      // Posts
+      try {
+        const postsResp = await PostsService.userPosts(id)
+        // Possible shapes: {posts: []}, {data: {posts: []}}, {data: []}
+        const rawPosts = postsResp?.posts || postsResp?.data?.posts || postsResp?.data || []
+        userPosts.value = Array.isArray(rawPosts)
+          ? rawPosts.map((p, idx) => normalizePost(p, idx))
+          : []
+      } catch (err) {
+        // fallback to client-side store (already shaped maybe differently)
+        userPosts.value = (usersStore.getPostsByUsername(userProfile.value.username) || [])
+      }
+
+      // Followers
+      try {
+        const fResp = await FollowsService.followers(id)
+        const raw = fResp?.data?.followers || fResp?.followers || fResp?.data || fResp || []
+        followersList.value = Array.isArray(raw) ? raw.map(normalizeUserItem) : []
+      } catch (err) {
+        followersList.value = (usersStore.getFollowers || []).map(normalizeUserItem)
+      }
+
+      // Following
+      try {
+        const fgResp = await FollowsService.following(id)
+        const rawFg = fgResp?.data?.following || fgResp?.following || fgResp?.data || fgResp || []
+        followingList.value = Array.isArray(rawFg) ? rawFg.map(normalizeUserItem) : []
+      } catch (err) {
+        followingList.value = (usersStore.getFollowing || []).map(normalizeUserItem)
+      }
     } else {
-      userProfile.value = {
-        id: Math.random(),
-        name: username,
-        username: username,
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
-        bio: 'FanRadar user',
-        followers: 120,
-        following: 45,
-        posts: 2,
-        verified: false,
-        joinedDate: '2023-06-01'
-      }
+      // No numeric id available — avoid calling username-based user endpoints (API expects numeric IDs).
+      userPosts.value = (usersStore.getPostsByUsername(userProfile.value.username) || []).map((p, i) => normalizePost(p, i))
+      followersList.value = (usersStore.getFollowers || []).map(normalizeUserItem)
+      followingList.value = (usersStore.getFollowing || []).map(normalizeUserItem)
     }
-    
-    // Load user posts from store
-    userPosts.value = usersStore.getPostsByUsername(userProfile.value.username)
-    
-    // Load followers and following from store
-    followersList.value = usersStore.getFollowers
-    followingList.value = usersStore.getFollowing
-    
+
   } catch (error) {
     console.error('Error fetching user profile:', error)
     userProfile.value = null
@@ -556,6 +616,26 @@ const fetchUserProfile = async () => {
   }
 }
 
+// Keep account page in sync with auth store (so header/profile edits reflect immediately)
+watch(() => authStore.user, (u) => {
+  if (!u) return
+  userProfile.value = {
+    id: u.id || userProfile.value?.id,
+    name: u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim(),
+    username: u.userName || (u.userEmail ? u.userEmail.split('@')[0] : ''),
+    email: u.userEmail || userProfile.value?.email,
+    avatar: u.avatar || u.profile_image || userProfile.value?.avatar,
+    coverPhoto: u.coverPhoto || u.background_image || userProfile.value?.coverPhoto,
+    followers: (u.stats && u.stats.followers) || userProfile.value?.followers || 0,
+    following: (u.stats && u.stats.following) || userProfile.value?.following || 0,
+    posts: (u.stats && u.stats.posts) || userProfile.value?.posts || 0,
+    role: u.role || userProfile.value?.role,
+    date_naissance: u.birthDate || u.date_naissance || userProfile.value?.date_naissance,
+    gender: u.gender || userProfile.value?.gender,
+    preferred_categories: u.categories || u.preferred_categories || userProfile.value?.preferred_categories || []
+  }
+}, { immediate: true })
+
 const formatNumber = (num) => {
   if (typeof num === 'string') return num
   if (num < 1000) return num.toString()
@@ -563,12 +643,120 @@ const formatNumber = (num) => {
   return (num / 1000000).toFixed(1).replace('.0', '') + 'M'
 }
 
+// Prefer authenticated user's cover image when available
+const coverSrc = computed(() => {
+  return authStore.user?.coverPhoto || authStore.user?.background_image || userProfile.value?.coverPhoto || ''
+})
+
 const formatJoinDate = (date) => {
   if (!date) return 'Recently'
   return new Date(date).toLocaleDateString('en-US', { 
     month: 'long', 
     year: 'numeric' 
   })
+}
+
+// Normalize user items returned from followers/following endpoints
+const normalizeUserItem = (item) => {
+  if (!item) return item
+  // prefer profile_image then avatar
+  const rawAvatar = item.profile_image || item.avatar || item.profileImage || ''
+  let avatarUrl = rawAvatar
+  if (rawAvatar && !/^https?:\/\//i.test(rawAvatar)) {
+    const base = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+    avatarUrl = base ? `${base}/${String(rawAvatar).replace(/^\/+/, '')}` : rawAvatar
+  }
+
+  const name = (item.first_name || item.firstName || '') || item.name || ''
+  const last = item.last_name || item.lastName || ''
+  const fullName = `${name} ${last}`.trim() || item.name || (item.email ? item.email.split('@')[0] : '')
+
+  return {
+    id: item.id,
+    name: fullName,
+    username: item.username || (item.email ? item.email.split('@')[0] : undefined),
+    email: item.email,
+    avatar: avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+    bio: item.bio || item.description || '',
+    coverPhoto: (item.background_image || item.cover_image || item.coverPhoto) || '',
+    // keep any other useful fields if present
+    raw: item
+  }
+}
+
+// Helper to resolve any media/asset path to absolute URL
+const apiBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+const resolveMediaUrl = (p) => {
+  if (!p) return p
+  // If absolute URL
+  if (/^https?:\/\//i.test(p)) {
+    // If it points to our API base but uses /posts/... (no storage), rewrite to /storage/posts/...
+    if (apiBase) {
+      try {
+        const u = new URL(p)
+        const baseUrl = new URL(apiBase)
+        if (u.host === baseUrl.host) {
+          const path = u.pathname.replace(/^\/+/, '')
+          if (/^posts\/(images|videos)\//i.test(path)) {
+            return `${apiBase}/storage/${path}`
+          }
+        }
+      } catch (e) {
+        // ignore URL parsing errors and fall back to returning p
+      }
+    }
+    return p
+  }
+
+  const cleaned = String(p).replace(/^\/+/, '') // remove leading slashes
+
+  // Some backend responses give post media paths as "posts/images/..." or "posts/videos/..." (missing 'storage/')
+  // Convert those to the public storage path: /storage/posts/images/... or /storage/posts/videos/...
+  if (/^posts\/(images|videos)\//i.test(cleaned)) {
+    return apiBase ? `${apiBase}/storage/${cleaned}` : `storage/${cleaned}`
+  }
+
+  // If already under storage/, or any other relative path, prefix base normally
+  return apiBase ? `${apiBase}/${cleaned}` : cleaned
+}
+
+// Normalize post data returned by API to what <Post /> expects
+const normalizePost = (apiPost, index = 0) => {
+  if (!apiPost) return apiPost
+  // Media array: convert strings/objects to normalized objects with type + full URL
+  const rawMedia = apiPost.media || []
+  const media = rawMedia.map(m => {
+    // Support either string or already-object
+    const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(src)
+    return { type: isVideo ? 'video' : 'image', url: resolveMediaUrl(src) }
+  })
+
+  // Resolve avatar (prefer current profile's avatar, then post-level avatar, then authStore) and absolutize
+  let avatar = apiPost.avatar || userProfile.value.avatar || authStore.user?.avatar
+  avatar = resolveMediaUrl(avatar)
+
+  const rawDate = apiPost.created_at || apiPost.updated_at
+  let dateVal = new Date()
+  if (rawDate) {
+    const d = new Date(rawDate)
+    if (!isNaN(d)) dateVal = d
+  }
+
+  return {
+    id: apiPost.id || `${apiPost.created_at || 'post'}-${index}`,
+    username: userProfile.value.username,
+    avatar,
+    text: apiPost.description || apiPost.content || '',
+    date: dateVal,
+    media,
+    tags: Array.isArray(apiPost.tags) ? apiPost.tags.map(t => String(t).replace(/^"|"$/g, '')) : [],
+    likes: apiPost.likes || 0,
+    comments: apiPost.comments || 0,
+    isLiked: false,
+    fandom: apiPost.fandom || null,
+    trending: apiPost.trending || false
+  }
 }
 
 const toggleFollow = () => {

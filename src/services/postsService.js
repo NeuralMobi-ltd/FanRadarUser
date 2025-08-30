@@ -38,7 +38,7 @@ export const PostsService = {
     const { data } = await http.get(API_CONFIG.feed.trendingPosts, { params })
     return normalizeList(data)
   },
-  async create(payload) {
+  async create(payload, config = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return {
@@ -66,10 +66,11 @@ export const PostsService = {
         body = fd
       }
     }
-    const { data } = await http.post(API_CONFIG.posts.create, body, body instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
+  const axiosConfig = body instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' }, ...config } : { ...config }
+  const { data } = await http.post(API_CONFIG.posts.create, body, axiosConfig)
     return data
   },
-  async update(postId, payload) {
+  async update(postId, payload, config = {}) {
     // Backend expects POST to /api/Y/posts/{id}/update (not PUT)
     let body = payload
     if (payload && !(payload instanceof FormData)) {
@@ -83,7 +84,8 @@ export const PostsService = {
         body = fd
       }
     }
-    const { data } = await http.post(API_CONFIG.posts.update(postId), body, body instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
+  const axiosConfig = body instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' }, ...config } : { ...config }
+  const { data } = await http.post(API_CONFIG.posts.update(postId), body, axiosConfig)
     return data
   },
   async remove(postId) {

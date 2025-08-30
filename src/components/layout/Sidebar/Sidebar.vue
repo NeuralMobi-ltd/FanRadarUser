@@ -133,23 +133,8 @@
         </div>
       </div>
 
-      <!-- Divider -->
-      <div class="border-t border-gray-200 dark:border-gray-700 my-4"></div>
+  
 
-      <!-- Quick Actions -->
-      <div class="space-y-1">
-        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          Quick Actions
-        </h3>
-        
-        <button
-          @click="openCreatePostModal"
-          class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-        >
-          <i class="fas fa-pen w-5 h-5 mr-3"></i>
-          New Post
-        </button>
-      </div>
     </nav>
     <!-- Create Post Modal -->
     <CreatePostModal
@@ -157,6 +142,7 @@
       :user-avatar="userAvatar"
       :user-name="userName"
       @submit="handleCreatePost"
+      @posted="handleCreatePost"
     />
   </aside>
 </template>
@@ -166,6 +152,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { usePostsStore } from '@/store/posts'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -218,6 +205,7 @@ const closeMobileMenu = () => {
 }
 
 const showCreatePostModal = ref(false)
+const postsStore = usePostsStore()
 const userName = computed(() => authStore.userName)
 const userAvatar = computed(() => authStore.userAvatar)
 
@@ -227,8 +215,13 @@ function openCreatePostModal() {
 }
 
 function handleCreatePost(post) {
-  // Use your store or emit event to add the post globally
-  // Example: postsStore.addPost(post)
+  if (!post) return
+  const created = post.post || post.data || post
+  try {
+    postsStore.addPost(created)
+  } catch (e) {
+    console.warn('Failed to add post to store', e)
+  }
 }
 </script>
 
