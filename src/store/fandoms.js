@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia'
+import FandomsService from '@/services/fandomsService'
+import { normalizeAsset } from '@/utils/assets'
 
 export const useFandomsStore = defineStore('fandoms', {
   state: () => ({
@@ -199,7 +201,7 @@ export const useFandomsStore = defineStore('fandoms', {
           name: 'Emma Wilson',
           username: 'emmaw',
           avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-          role: 'moderator',
+          role: 'member', // changed from 'moderator' per updated role restrictions
           posts: 189,
           joinedDate: 'Mar 2020'
         },
@@ -225,14 +227,13 @@ export const useFandomsStore = defineStore('fandoms', {
     },
     // New config to replace constants
     config: {
+      // Allowed roles limited to admin and member (moderator removed per requirement)
       memberRoles: {
         ADMIN: 'admin',
-        MODERATOR: 'moderator',
         MEMBER: 'member'
       },
       roleOptions: [
         { value: 'member', label: 'Member' },
-        { value: 'moderator', label: 'Moderator' },
         { value: 'admin', label: 'Admin' }
       ],
       tabs: [
@@ -244,6 +245,165 @@ export const useFandomsStore = defineStore('fandoms', {
   }),
   
   actions: {
+    // Internal helper to keep userRoles map in sync with backend-provided membership role
+    syncUserRole(handle, role) {
+      if (!handle || !role) return
+      // Always trust latest backend role (admin > member)
+      this.userRoles[handle] = role
+    },
+    // Load fandoms from backend API
+    async loadFromApi(params = {}) {
+      try {
+        const res = await FandomsService.list(params)
+        const list = res?.data?.fandoms || res?.fandoms || []
+        this.allFandoms = list.map(f => ({
+          id: f.id,
+          name: f.name,
+          handle: (f.name || '').toLowerCase().replace(/\s+/g, '-'),
+          description: f.description,
+          membersCount: f.members_count ?? f.membersCount ?? 0,
+          members: f.members_count ?? f.membersCount ?? 0, // alias for components expecting 'members'
+          coverImage: normalizeAsset(f.cover_image) || f.cover_image,
+          logo: normalizeAsset(f.logo_image) || normalizeAsset(f.cover_image) || f.logo_image || f.cover_image, // prefer dedicated logo
+          category: f.subcategory?.name || f.category || '',
+          role: f.member_role || (f.is_member ? 'member' : null),
+          createdAt: f.created_at || f.createdAt,
+          joinedAt: f.joined_at || null,
+          postsCount: f.posts_count || 0
+        }))
+        // Sync roles mapping
+        this.allFandoms.forEach(f => { if (f.role) this.syncUserRole(f.handle, f.role) })
+      } catch (e) {
+        // keep existing mock data on failure
+      }
+    },
+    async fetchFandom(id) {
+      try {
+        const res = await FandomsService.get(id)
+        const f = res?.data?.fandom || res?.fandom
+        if (f) {
+          const existingIdx = this.allFandoms.findIndex(x => x.id === f.id)
+          const record = {
+            id: f.id,
+            name: f.name,
+            handle: (f.name || '').toLowerCase().replace(/\s+/g, '-'),
+            description: f.description,
+            membersCount: f.members_count ?? 0,
+            coverImage: normalizeAsset(f.cover_image) || f.cover_image,
+            logo: normalizeAsset(f.logo_image) || normalizeAsset(f.cover_image) || f.logo_image || f.cover_image,
+            category: f.subcategory?.name || '',
+            role: f.member_role || (f.is_member ? 'member' : null),
+            createdAt: f.created_at,
+            joinedAt: f.is_member ? new Date().toISOString().slice(0,10) : null,
+            postsCount: f.posts_count || 0
+          }
+          if (existingIdx !== -1) this.allFandoms[existingIdx] = { ...this.allFandoms[existingIdx], ...record }
+          else this.allFandoms.push(record)
+          if (record.role) this.syncUserRole(record.handle, record.role)
+          return record
+        }
+      } catch (e) { /* ignore */ }
+      return null
+    },
+    async loadMyFandoms(params = {}) {
+      try {
+        const res = await FandomsService.myFandoms(params)
+        const list = res?.data?.fandoms || res?.fandoms || []
+        // Merge or update existing allFandoms entries with role & joined info
+        list.forEach(item => {
+          const f = item.fandom || item
+          if (!f) return
+          const idx = this.allFandoms.findIndex(x => x.id === f.id)
+          const record = {
+            id: f.id,
+            name: f.name,
+            handle: (f.name || '').toLowerCase().replace(/\s+/g, '-'),
+            description: f.description,
+            membersCount: f.members_count ?? f.membersCount ?? 0,
+            members: f.members_count ?? f.membersCount ?? 0,
+            coverImage: normalizeAsset(f.cover_image) || f.cover_image,
+            logo: normalizeAsset(f.logo_image) || normalizeAsset(f.cover_image) || f.logo_image || f.cover_image,
+            category: f.subcategory?.name || f.category || '',
+            role: item.role || f.member_role || (f.is_member ? 'member' : null),
+            createdAt: f.created_at || f.createdAt,
+            joinedAt: item.joined_at || f.joined_at || null,
+            postsCount: f.posts_count || f.postsCount || 0
+          }
+          if (idx !== -1) {
+            this.allFandoms[idx] = { ...this.allFandoms[idx], ...record }
+          } else {
+            this.allFandoms.push(record)
+          }
+          if (record.role) this.syncUserRole(record.handle, record.role)
+        })
+        return list
+      } catch (e) { return [] }
+    },
+  async fetchFandomPosts(id, params = {}) {
+      try {
+    const res = await FandomsService.getPosts(id, params)
+        const posts = res?.data?.posts || res?.posts || []
+    const handle = this.allFandoms.find(f => f.id === id)?.handle
+        if (!handle) return []
+        this.fandomPosts[handle] = posts.map(p => ({
+          id: p.id,
+          username: p.author?.username || p.user?.username || 'user',
+          userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '/images/me.png',
+          date: p.created_at || p.createdAt,
+          content: p.content || p.description,
+          image: Array.isArray(p.media) ? normalizeAsset(p.media[0]) : normalizeAsset(p.media),
+          tags: p.tags || [],
+          likes: p.likes || 0,
+          comments: p.comments || 0,
+          isLiked: !!p.is_liked,
+          fandom: handle
+        }))
+        return this.fandomPosts[handle]
+      } catch (e) { return [] }
+    },
+  async fetchFandomMembers(id, params = {}) {
+      try {
+    const res = await FandomsService.getMembers(id, params)
+        const members = res?.data?.members || res?.members || []
+    const handle = this.allFandoms.find(f => f.id === id)?.handle
+        if (!handle) return []
+        this.fandomMembers[handle] = members.map(m => ({
+          id: m.user?.id || m.member_id,
+          name: (m.user?.first_name && m.user?.last_name) ? `${m.user.first_name} ${m.user.last_name}` : (m.user?.username || 'User'),
+          username: m.user?.username || m.user?.first_name || 'user',
+          avatar: normalizeAsset(m.user?.profile_image) || '/images/me.png',
+          role: m.member_role || 'member',
+          posts: m.posts_count || 0,
+          joinedDate: m.joined_at || ''
+        }))
+        return this.fandomMembers[handle]
+      } catch (e) { return [] }
+    },
+    async createFandomApi(payload) {
+      try {
+        const form = new FormData()
+  // Map expected backend keys explicitly to avoid sending extraneous data
+  if (payload.name) form.append('name', payload.name)
+  if (payload.description) form.append('description', payload.description)
+  if (payload.subcategory_id) form.append('subcategory_id', payload.subcategory_id)
+  if (payload.cover_image) form.append('cover_image', payload.cover_image)
+  if (payload.logo_image) form.append('logo_image', payload.logo_image)
+        const res = await FandomsService.create(form)
+        const f = res?.data?.fandom || res?.fandom
+        if (f) {
+          await this.fetchFandom(f.id)
+        }
+        return res
+      } catch (e) { return null }
+    },
+  async updateFandomApi(id, payload) {
+      try {
+        const res = await FandomsService.update(id, payload)
+        const f = res?.data?.fandom || res?.fandom
+        if (f) await this.fetchFandom(id)
+        return res
+      } catch (e) { return null }
+    },
     // Create new fandom
     createFandom(fandomData) {
       const newFandom = {
@@ -372,13 +532,88 @@ export const useFandomsStore = defineStore('fandoms', {
       }
     },
 
-    // Leave fandom (desjoin)
-    leaveFandom(fandomHandle, userId) {
-      // Remove user role
-      delete this.userRoles[fandomHandle]
-      // Remove from members
-      if (this.fandomMembers[fandomHandle]) {
-        this.fandomMembers[fandomHandle] = this.fandomMembers[fandomHandle].filter(m => m.id !== userId)
+    // Call backend to change a member role then update local state
+    async updateMemberRoleApi(fandomId, memberId, newRole, fandomHandle) {
+      try {
+        const res = await FandomsService.changeRole(fandomId, memberId, { role: newRole })
+        if (res?.success) {
+          // Update local member list
+          if (fandomHandle) this.changeFandomMemberRole(fandomHandle, memberId, newRole)
+          // If it's the current logged user (id match in members list flagged maybe) we may need to update role mapping
+          if (fandomHandle) {
+            const rec = this.allFandoms.find(f => f.handle === fandomHandle)
+            if (rec && rec.id === memberId) { // unlikely (fandom id vs user id) ignore
+              // noop
+            }
+            // If userRoles contains current handle for authenticated user and memberId matches current user, update mapping externally (auth store not injected here)
+          }
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Role update failed' }
+      }
+    },
+
+    // Leave fandom via API then update local state
+    async leaveFandomApi(id, handle, userId) {
+      try {
+        const res = await FandomsService.leave(id)
+        if (res?.success) {
+          // Clear role mapping
+          if (handle) delete this.userRoles[handle]
+          // Update allFandoms record
+          if (handle) {
+            const rec = this.allFandoms.find(f => f.handle === handle)
+            if (rec) {
+              rec.role = null
+              if (rec.membersCount && /^\d+$/.test(String(rec.membersCount))) {
+                rec.membersCount = String(Math.max(0, parseInt(rec.membersCount,10)-1))
+              }
+            }
+          }
+          // Remove from members list
+          if (handle && this.fandomMembers[handle]) {
+            this.fandomMembers[handle] = this.fandomMembers[handle].filter(m => m.id !== userId)
+          }
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Leave failed' }
+      }
+    },
+
+    // Join fandom via API then update local state
+    async joinFandom(id) {
+      try {
+        const res = await FandomsService.join(id)
+        if (res && res.success) {
+          const fandom = this.allFandoms.find(f => f.id === id)
+          if (fandom) {
+            fandom.role = 'member'
+            if (!fandom.joinedAt) fandom.joinedAt = new Date().toISOString().slice(0, 10)
+            if (typeof fandom.membersCount === 'string' && /^\d+$/.test(fandom.membersCount)) {
+              fandom.membersCount = (parseInt(fandom.membersCount, 10) + 1).toString()
+            }
+            else if (typeof fandom.membersCount === 'number') {
+              fandom.membersCount += 1
+            }
+            // keep alias (members) in sync
+            if (fandom.members != null) {
+              if (typeof fandom.members === 'string' && /^\d+$/.test(fandom.members)) {
+                fandom.members = (parseInt(fandom.members, 10) + 1).toString()
+              } else if (typeof fandom.members === 'number') {
+                fandom.members += 1
+              }
+            } else {
+              fandom.members = fandom.membersCount
+            }
+            this.userRoles[fandom.handle] = 'member'
+          }
+        }
+        return res
+      } catch (e) {
+        // swallow errors for now; could add notification later
+        return null
       }
     }
   },
@@ -386,15 +621,20 @@ export const useFandomsStore = defineStore('fandoms', {
   getters: {
     isAdmin: (state) => (fandomHandle) => {
       if (!fandomHandle) return false
-      return state.userRoles[fandomHandle] === 'admin'
+  const mapRole = state.userRoles[fandomHandle]
+  if (mapRole) return mapRole === 'admin'
+  const rec = state.allFandoms.find(f => f.handle === fandomHandle)
+  return rec?.role === 'admin'
     },
     isMember: (state) => (fandomHandle) => {
       if (!fandomHandle) return false
-      return !!state.userRoles[fandomHandle]
+  if (state.userRoles[fandomHandle]) return true
+  const rec = state.allFandoms.find(f => f.handle === fandomHandle)
+  return !!rec?.role
     },
     getUserRole: (state) => (fandomHandle) => {
       if (!fandomHandle) return null
-      return state.userRoles[fandomHandle] || null
+  return state.userRoles[fandomHandle] || state.allFandoms.find(f => f.handle === fandomHandle)?.role || null
     },
     adminFandoms: (state) => state.allFandoms.filter(fandom => fandom.role === 'admin'),
     memberFandoms: (state) => state.allFandoms.filter(fandom => fandom.role === 'member'),

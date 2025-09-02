@@ -61,14 +61,18 @@
           {{ currentFandom?.members || currentFandom?.memberCount || '0' }} members
         </span>
         <button 
+          :disabled="joining"
           :class="[
-            'px-3 py-1 rounded-full text-sm font-medium transition-colors',
+            'px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1',
+            joining ? 'opacity-80 cursor-not-allowed' : '',
             userRole === 'admin' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
             userRole === 'member' ? 'bg-green-500 hover:bg-green-600 text-white' :
             'bg-primary-600 hover:bg-primary-700 text-white'
           ]"
+          @click.stop="handlePrimaryAction"
         >
-          {{ getButtonText() }}
+          <i v-if="joining" class="fas fa-spinner fa-spin text-xs"></i>
+          <span>{{ joining ? (userRole === 'member' ? 'Joined' : 'Joining...') : getButtonText() }}</span>
         </button>
       </div>
     </div>
@@ -76,8 +80,10 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useFandomsStore } from '@/store/fandoms'
+import { notify } from '@/utils/notify'
 
 const props = defineProps({
   fandom: {
@@ -94,8 +100,9 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['click'])
+const emit = defineEmits(['click','join'])
 const router = useRouter()
+const fandomsStore = useFandomsStore()
 
 // Support both 'fandom' and 'community' props for backward compatibility
 const currentFandom = computed(() => props.fandom || props.community || {})
@@ -111,27 +118,16 @@ const fandomHandle = computed(() => {
     .replace(/[^a-z0-9-]/g, '')
 })
 
-// Mock user role for now (remove useFandomsStore dependency)
+// Real user role using store mapping
 const userRole = computed(() => {
-  // Prefer the actual role from the fandom/community object
-  if (currentFandom.value && currentFandom.value.role) {
-    return currentFandom.value.role
-  }
-  // fallback: try to infer from handle if needed (legacy)
-  const handle = fandomHandle.value
+  if (currentFandom.value?.role) return currentFandom.value.role
+  if (currentFandom.value?.member_role) return currentFandom.value.member_role
+  const handle = currentFandom.value?.handle || fandomHandle.value
   if (!handle) return null
-  
-  // Mock some roles for testing
-  const mockRoles = {
-    'premier-league-fans': 'admin',
-    'anime-manga-hub': 'member',
-    'tech-innovators': 'admin',
-    'marvel-multiverse': 'member',
-    'kpop-central': 'member'
-  }
-  
-  return mockRoles[fandomHandle.value] || null
+  return fandomsStore.userRoles[handle] || null
 })
+
+const joining = ref(false)
 
 // Get appropriate button text based on user role
 const getButtonText = () => {
@@ -145,6 +141,33 @@ const handleClick = () => {
     router.push(`/fandom/${fandomHandle.value}`)
   }
   emit('click', currentFandom.value)
+}
+
+const handlePrimaryAction = async () => {
+  if (userRole.value === 'admin') {
+    // future: manage route
+    handleClick()
+    return
+  }
+  if (userRole.value === 'member') {
+    // already joined - navigate
+    handleClick()
+    return
+  }
+  if (joining.value) return
+  joining.value = true
+  try {
+    const id = currentFandom.value.id
+    if (!id) {
+      console.warn('Fandom id missing; cannot join with handle only now')
+      return
+    }
+    const res = await fandomsStore.joinFandom(id)
+  if (res && res.message) notify.success(res.message)
+    emit('join', currentFandom.value)
+  } finally {
+    joining.value = false
+  }
 }
 </script>
 

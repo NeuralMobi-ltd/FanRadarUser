@@ -17,10 +17,14 @@ export const PostsService = {
   async homeFeed(params = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
-      return { data: [], meta: { page: 1, limit: 0, total: 0, last_page: 1 } }
+      return { posts: [], pagination: { page: 1, limit: 0, total: 0, pages: 1, hasNext: false } }
     }
     const { data } = await http.get(API_CONFIG.feed.home, { params })
-    return normalizeList(data)
+    // Expected shape: { success, data: { posts:[...], pagination:{ page, limit, hasNext, ... } } }
+    const root = data?.data || data
+    const posts = root?.posts || root?.data?.posts || []
+    const pagination = root?.pagination || root?.data?.pagination || null
+    return { posts, pagination }
   },
   async exploreFeed(params = {}) {
     if (API_CONFIG.useMocks) {
@@ -71,6 +75,11 @@ export const PostsService = {
     return data
   },
   async update(postId, payload, config = {}) {
+    // Accept composite IDs like '2025-09-01T...-123' from UI; extract trailing numeric part
+    if (typeof postId === 'string') {
+      const tail = postId.split('-').pop()
+      if (/^\d+$/.test(tail)) postId = tail
+    }
     // Backend expects POST to /api/Y/posts/{id}/update (not PUT)
     let body = payload
     if (payload && !(payload instanceof FormData)) {
@@ -89,8 +98,29 @@ export const PostsService = {
     return data
   },
   async remove(postId) {
-    const { data } = await http.delete(API_CONFIG.posts.delete(postId))
-    return data
+    // Accept composite or synthetic IDs; extract numeric tail if present
+    if (typeof postId === 'string') {
+      const tail = postId.split('-').pop()
+      if (/^\d+$/.test(tail)) postId = tail
+    }
+    if (typeof postId === 'string' && /^\d+$/.test(postId)) postId = Number(postId)
+    // Perform DELETE; if backend uses POST fallback
+    try {
+      const { data } = await http.delete(API_CONFIG.posts.delete(postId))
+      return data || { success: true }
+    } catch (err) {
+      const status = err?.response?.status
+      // Some backends implement deletion as POST /{id}/delete
+      if (status === 405 || status === 404) {
+        try {
+          const { data } = await http.post(API_CONFIG.posts.delete(postId))
+          return data || { success: true }
+        } catch (err2) {
+          throw err2
+        }
+      }
+      throw err
+    }
   },
   async userPosts(userId, params = {}) {
     const { data } = await http.get(API_CONFIG.users.posts(userId), { params })
@@ -99,14 +129,34 @@ export const PostsService = {
     const posts = Array.isArray(raw) ? raw : []
     return { posts, pagination: data?.data?.pagination || data?.pagination }
   },
-  async like(postId) {
+  async favorite(postId) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
-      return { liked: true, likes: 1 }
+      return { success: true, favorited: true }
     }
-    const { data } = await http.post(API_CONFIG.posts.like(postId))
+    const { data } = await http.post(API_CONFIG.posts.favorite(postId))
     return data
   },
+  async save(postId) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'Post saved (mock)' }
+    }
+    const payload = { post_id: postId }
+    const { data } = await http.post(API_CONFIG.posts.save, payload)
+    return data
+  },
+  async unsave(postId) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'Post unsaved (mock)' }
+    }
+    const payload = { post_id: postId }
+    const { data } = await http.post(API_CONFIG.posts.unsave, payload)
+    return data
+  },
+  // Backward compatibility for any old calls
+  async like(postId) { return this.favorite(postId) },
   async addComment(postId, payload) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
@@ -122,6 +172,17 @@ export const PostsService = {
     }
     const { data } = await http.get(API_CONFIG.posts.saved, { params })
     return normalizeList(data)
+  },
+  async savedPosts(params = {}) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { posts: [], pagination: { page: 1, limit: 0, total: 0, pages: 1, hasNext: false } }
+    }
+    const { data } = await http.get(API_CONFIG.posts.savedPosts, { params })
+    // Expected shape { success, data:{ posts:[], pagination:{} } }
+    const posts = data?.data?.posts || data?.posts || []
+    const pagination = data?.data?.pagination || data?.pagination || null
+    return { posts, pagination }
   }
 }
 

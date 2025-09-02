@@ -151,7 +151,7 @@
 import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
-import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { CreatePostModal } from '@/components/feed'
 import { usePostsStore } from '@/store/posts'
 
 const route = useRoute()

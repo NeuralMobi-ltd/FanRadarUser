@@ -158,7 +158,16 @@ router.beforeEach(async (to, from, next) => {
 
   // Initialize auth store if needed
   if (!authStore.user) {
-    authStore.initialize()
+    try {
+      await authStore.initialize()
+    } catch (e) {
+      // swallow init errors; authStore will be unauthenticated if something failed
+    }
+  }
+
+  // Ensure hydration finished (initialize sets hydrated flag)
+  if (!authStore.isHydrated) {
+    try { await authStore.initialize() } catch (_) { /* ignore */ }
   }
 
   // Handle root path based on authentication status
@@ -182,9 +191,12 @@ router.beforeEach(async (to, from, next) => {
 
   // Check if route requires authentication
   if (to.meta.requiresAuth !== false) {
+    // While token exists and profile still loading, allow navigation (avoid premature redirect)
+    if (authStore.hasToken && authStore.pendingProfile) {
+      return next()
+    }
     if (!authStore.isAuthenticated) {
-      next('/login')
-      return
+      return next('/login')
     }
   }
 

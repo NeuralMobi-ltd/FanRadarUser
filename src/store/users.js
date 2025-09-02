@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import UsersService from '@/services/usersService'
 
 export const useUsersStore = defineStore('users', {
   state: () => ({
@@ -175,6 +176,26 @@ export const useUsersStore = defineStore('users', {
     // Remove from following
     removeFromFollowing(userId) {
       this.following = this.following.filter(f => f.id !== userId)
+    },
+    async followUserApi(userId) {
+      try {
+        const res = await UsersService.follow(userId)
+        if (res?.success !== false) {
+          if (!this.following.find(u => u.id === userId)) {
+            this.following.push({ id: userId, username: `user_${userId}` })
+          }
+        }
+        return res
+      } catch (e) { return null }
+    },
+    async unfollowUserApi(userId) {
+      try {
+        const res = await UsersService.unfollow(userId)
+        if (res?.success !== false) {
+          this.following = this.following.filter(u => u.id !== userId)
+        }
+        return res
+      } catch (e) { return null }
     }
   }
 })

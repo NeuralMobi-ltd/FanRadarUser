@@ -7,51 +7,57 @@ export const API_CONFIG = {
 
   // Base URL of your backend API (adjust for prod/staging via env if needed)
   // Updated default base URL to Laravel backend
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000',
+  // If VITE_API_BASE_URL not provided, default includes /api so endpoints can use /Y/...
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
 
   // Auth
   auth: {
-    // Primary (current backend) endpoints
-    login: '/api/Y/auth/login',
-    register: '/api/Y/auth/register',
-  logout: '/api/Y/auth/logout',
-  // Profile endpoints (backend uses same path for GET (show) & POST (update))
-  profile: '/api/Y/users/profile',
-  updateProfile: '/api/Y/users/profile', // also used for image updates via form-data
-  updateAvatar: '/api/Y/users/profile',
-  updateCover: '/api/Y/users/profile',
-    // Legacy / fallback endpoints (optional) can be added here if needed
+    // Y namespace (baseURL already ends with /api)
+    login: '/Y/auth/login',
+    register: '/Y/auth/register',
+    logout: '/Y/auth/logout',
+    // Profile endpoints (GET + POST)
+    profile: '/Y/users/profile',
+    updateProfile: '/Y/users/profile',
+    updateAvatar: '/Y/users/profile',
+    updateCover: '/Y/users/profile'
   },
 
   // Users
   users: {
-  // Backend namespaced under /api/Y for user-specific resources
-  posts: (userId) => `/api/Y/users/${userId}/posts`,
-  followers: (userId) => `/api/Y/users/${userId}/followers`,
-  following: (userId) => `/api/Y/users/${userId}/following`,
-  follow: (userId) => `/api/Y/users/${userId}/follow`,
+    posts: (userId) => `/Y/users/${userId}/posts`,
+    followers: (userId) => `/Y/users/${userId}/followers`,
+    following: (userId) => `/Y/users/${userId}/following`,
+  follow: (userId) => `/Y/users/${userId}/follow`,
+  unfollow: (userId) => `/Y/users/${userId}/unfollow`,
+  myFandoms: '/Y/users/my-fandoms'
   },
 
   // Feed / Posts
   feed: {
-    home: '/api/feed/home',
-    explore: '/api/feed/explore',
-    trendingPosts: '/api/trending/posts',
+    home: '/Y/feed/home',
+    // Provide placeholders if explore/trending exist (adjust if backend differs)
+    explore: '/Y/feed/explore',
+    trendingPosts: '/Y/feed/trending'
   },
   posts: {
-  // NOTE: Backend currently uses /api/Y/... for mutable post routes (create/update/delete)
-  create: '/api/Y/posts/create', // backend route observed in Postman screenshot
-  update: (postId) => `/api/Y/posts/${postId}/update`,
-  delete: (postId) => `/api/Y/posts/${postId}/delete`,
-  like: (postId) => `/api/posts/${postId}/like`, // keep non-Y like (adjust if backend also namespaces)
-  comments: (postId) => `/api/posts/${postId}/comments`,
-  saved: '/api/posts/saved',
+    create: '/Y/posts/create',
+    update: (postId) => `/Y/posts/${postId}/update`,
+    delete: (postId) => `/Y/posts/${postId}/delete`,
+    favorite: (postId) => `/Y/posts/${postId}/favorite`,
+  comments: (postId) => `/Y/posts/${postId}/comments`,
+  save: '/Y/posts/save',
+  unsave: '/Y/posts/unsave',
+  saved: '/Y/posts/saved', // legacy / placeholder
+  savedPosts: '/Y/posts/savedPosts'
   },
 
   // Categories & Hashtags
   categories: {
-    all: '/api/categories',
-    contentByCategory: (category) => `/api/categories/${encodeURIComponent(category)}/content`,
+    list: '/Y/categories/list',
+    // Keep legacy endpoints if still used somewhere else
+    all: '/Y/categories/list',
+    contentByCategory: (category) => `/Y/categories/${encodeURIComponent(category)}/content`
   },
   hashtags: {
     posts: (hashtag) => `/api/hashtags/${encodeURIComponent(hashtag)}/posts`,
@@ -59,19 +65,21 @@ export const API_CONFIG = {
 
   // Fandoms
   fandoms: {
-    all: '/api/fandoms',
-    trending: '/api/fandoms/trending',
-    categories: '/api/fandoms/categories',
-    search: (query) => `/api/fandoms/search?q=${encodeURIComponent(query)}`,
-    byId: (idOrHandle) => `/api/fandoms/${idOrHandle}`,
-    posts: (idOrHandle) => `/api/fandoms/${idOrHandle}/posts`,
-    members: (idOrHandle) => `/api/fandoms/${idOrHandle}/members`,
-    join: (idOrHandle) => `/api/fandoms/${idOrHandle}/join`,
-    create: '/api/fandoms',
-    uploadImage: '/api/upload/image',
-    update: (idOrHandle) => `/api/fandoms/${idOrHandle}`,
-    changeRole: (idOrHandle, userId) => `/api/fandoms/${idOrHandle}/role/${userId}`,
-    hashtags: (idOrHandle) => `/api/fandoms/${idOrHandle}/hashtags`,
+    // These endpoints now expect a numeric fandom id (NOT a slug/handle)
+    all: '/Y/fandoms',
+    trending: '/Y/fandoms/trending',
+    search: (query) => `/Y/fandoms/search?q=${encodeURIComponent(query)}`,
+    byId: (id) => `/Y/fandoms/${id}`,
+    posts: (id) => `/Y/fandoms/${id}/posts`,
+    members: (id) => `/Y/fandoms/${id}/members`,
+    join: (id) => `/Y/fandoms/${id}/join`,
+  leave: (id) => `/Y/fandoms/${id}/leave`,
+    create: '/Y/fandoms',
+    update: (id) => `/Y/fandoms/${id}`,
+    uploadImage: '/Y/fandoms/upload-image',
+    changeRole: (id, userId) => `/Y/fandoms/${id}/members/${userId}/role`,
+    hashtags: (id) => `/Y/fandoms/${id}/hashtags`,
+    categories: '/Y/fandoms/categories'
   },
 
   // Search

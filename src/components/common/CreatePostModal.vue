@@ -83,6 +83,18 @@
             </span>
           </div>
         </div>
+
+        <!-- Scheduling Section -->
+        <div v-if="scheduleEnabled" class="pl-16">
+          <div class="mt-4 space-y-2">
+            <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
+            <div class="flex items-center gap-3">
+              <input type="datetime-local" v-model="scheduleAt" class="px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full" />
+              <button type="button" @click="clearSchedule" class="px-3 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition" v-if="scheduleAt">Clear</button>
+            </div>
+            <p class="text-[11px] text-gray-500 dark:text-gray-400">If set, the post will be created as draft and can be published automatically at the scheduled time (backend dependent).</p>
+          </div>
+        </div>
         <!-- Media Preview -->
         <div v-if="postMedia.length > 0" class="pl-16">
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -175,6 +187,12 @@
                 </div>
               </div>
             </div>
+
+            <!-- Schedule Toggle -->
+            <button @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
+              :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
+              <i class="fas fa-clock text-xl group-hover:scale-110 transition-transform duration-200"></i>
+            </button>
           </div>
 
           <!-- Post Button -->
@@ -197,6 +215,7 @@ import { computed, nextTick, ref, watch } from 'vue'
 import PostsService from '@/services/postsService'
 import { usePostsStore } from '@/store/posts'
 import { useCategoriesStore } from '@/store/categories'
+import { onMounted } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -205,7 +224,7 @@ const props = defineProps({
   editPost: Object
 })
 
-const emit = defineEmits(['close', 'submit', 'posted', 'update:modelValue'])
+const emit = defineEmits(['close', 'submit', 'posted', 'update:modelValue', 'refresh'])
 
 const postContent = ref('')
 const postMedia = ref([])
@@ -220,6 +239,41 @@ const error = ref('')
 const uploadProgress = ref(0)
 const postsStore = usePostsStore()
 const categoriesStore = useCategoriesStore()
+onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
+
+// ---- Media URL Normalization (remove /api before /storage) ----
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '')
+function normalizeMediaUrl(raw) {
+  if (!raw) return raw
+  if (/^https?:/i.test(raw)) {
+    return raw.replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
+  }
+  if (raw.startsWith('/api/storage')) return BASE_ORIGIN + raw.replace('/api/storage', '/storage')
+  if (raw.startsWith('/storage/')) return BASE_ORIGIN + raw
+  if (raw.startsWith('storage/')) return BASE_ORIGIN + '/' + raw
+  if (/^posts\//.test(raw)) return BASE_ORIGIN + '/storage/' + raw
+  return raw
+}
+
+// Scheduling
+const scheduleEnabled = ref(false)
+const scheduleAt = ref('')
+
+function toMySqlDateTime(value) {
+  try {
+    const d = new Date(value)
+    if (isNaN(d)) return null
+    const pad = (n) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  } catch (e) { return null }
+}
+
+function toggleSchedule() {
+  scheduleEnabled.value = !scheduleEnabled.value
+  if (!scheduleEnabled.value) scheduleAt.value = ''
+}
+function clearSchedule() { scheduleAt.value = '' }
 
 // Category picker state
 const selectedCategory = ref('')
@@ -234,6 +288,10 @@ const subcategoriesMap = {
   // Expanded sports list as requested: football, basket(ball) etc.
   Sports: ['Football', 'Basketball', 'Soccer', 'Tennis', 'Cricket', 'Baseball', 'Rugby', 'Esports']
 }
+// Temporarily omit numeric subcategory IDs until real list is fetched from backend.
+// Backend currently rejects unknown IDs with "The selected subcategory id is invalid." error.
+// We'll send only the textual subcategory for now.
+const subcategoryIdMap = null
 const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
 // True when current category has subcategories and one must be selected before posting
 const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
@@ -250,7 +308,12 @@ watch(() => props.editPost, (newVal) => {
   if (newVal) {
     postContent.value = newVal.content || newVal.text || ''
     tags.value = Array.isArray(newVal.tags) ? [...newVal.tags] : []
-    postMedia.value = Array.isArray(newVal.media) ? [...newVal.media] : []
+    postMedia.value = Array.isArray(newVal.media) ? newVal.media.map(m => {
+      if (typeof m === 'string') {
+        return { type: /(mp4|webm|ogg)$/i.test(m) ? 'video' : 'image', url: normalizeMediaUrl(m) }
+      }
+      return { ...m, url: normalizeMediaUrl(m.url || m.path || m.src) }
+    }) : []
   }
 }, { immediate: true })
 
@@ -353,7 +416,16 @@ async function submit() {
 
   // Attach category info when selected. Only subcategory is essential to user; still include both if available.
   if (selectedCategory.value) payload.category = selectedCategory.value
+  if (selectedCategory.value) {
+    const categoryId = categoriesStore.categoryIdByName(selectedCategory.value)
+    if (categoryId) payload.category_id = categoryId
+  }
   if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
+  // subcategory_id intentionally omitted until validated IDs provided by backend
+  if (scheduleEnabled.value && scheduleAt.value) {
+    const mysql = toMySqlDateTime(scheduleAt.value)
+    if (mysql) payload.schedule_at = mysql
+  }
 
   // Collect file objects (for upload) and existing URLs (if any)
   const files = postMedia.value.filter(m => m.file).map(m => m.file)
@@ -394,33 +466,67 @@ async function submit() {
     }
 
     if (props.editPost && props.editPost.id) {
-      resp = await PostsService.update(props.editPost.id, payload, config)
+      // Prefer originalId if provided, else extract trailing numeric segment.
+      let editId = props.editPost.originalId || props.editPost.id
+      if (typeof editId === 'string') {
+        const tail = editId.split('-').pop()
+        if (/^\d+$/.test(tail)) editId = Number(tail)
+      }
+      if (typeof editId !== 'number' || editId <= 0) {
+        error.value = 'Cannot update: invalid post id.'
+        loading.value = false
+        return
+      }
+      resp = await PostsService.update(editId, payload, config)
     } else {
       resp = await PostsService.create(payload, config)
     }
 
-    const created = resp.post || resp.data || resp
-
-    // Replace optimistic post with real one
-    try {
-      postsStore.updatePost(optimistic.id, {
-        id: created.id || optimistic.id,
-        text: created.content || created.text || optimistic.content,
-        media: (created.media || optimistic.media).map(m => (typeof m === 'string' ? { type: 'image', url: m } : { type: m.type || 'image', url: m.url })),
-        username: created.author?.name || props.userName || 'You',
-        avatar: created.author?.avatar || props.userAvatar || '/images/me.png',
-        date: new Date(created.created_at || created.createdAt || Date.now()),
-        uploading: false,
-        uploadProgress: 100
-      })
-    } catch (e) {
-      // Fallback: add the created post and remove optimistic
-      postsStore.deletePost(optimistic.id)
-      postsStore.addPost(created)
+    const created = resp.post || resp.data?.post || resp.data || resp
+    // Replace optimistic with normalized API post preserving username/avatar
+    if (created) {
+      const enriched = { ...created }
+      // Keep existing author fields if backend doesn't send them
+      if (!enriched.author && !enriched.user) {
+        enriched.author = { name: props.userName, avatar: props.userAvatar }
+      }
+      if (typeof postsStore.replaceOptimistic === 'function') {
+        postsStore.replaceOptimistic(optimistic.id, enriched)
+      } else {
+        // Fallback: manual replacement
+        const idx = postsStore.posts.findIndex(p => p.id === optimistic.id)
+        if (idx !== -1) {
+          const media = Array.isArray(enriched.media) ? enriched.media.map(m => {
+            if (typeof m === 'string') {
+              return { type: /(mp4|webm|ogg)$/i.test(m) ? 'video' : 'image', url: m }
+            }
+            return { type: m.type || 'image', url: m.url || m.path || m.src }
+          }) : []
+          postsStore.posts[idx] = {
+            ...postsStore.posts[idx],
+            id: enriched.id || postsStore.posts[idx].id,
+            originalId: enriched.id || postsStore.posts[idx].originalId,
+            text: enriched.description || enriched.content || enriched.body || postsStore.posts[idx].text,
+            media,
+            likes: enriched.likes || enriched.likes_count || 0,
+            comments: enriched.comments || enriched.comments_count || 0,
+            isLiked: !!(enriched.liked || enriched.is_liked),
+            trending: !!enriched.trending,
+            uploading: false,
+            uploadProgress: 100
+          }
+          if (postsStore.lastMutation !== undefined) {
+            postsStore.lastMutation = Date.now()
+          }
+        }
+      }
     }
 
-    emit('submit', resp)
-    emit('posted', resp)
+  emit('submit', resp)
+  emit('posted', resp)
+  emit('refresh') // let parent trigger a manual refresh if desired
+  // Also broadcast a global event for any listener (e.g., Account page) without prop drilling
+  try { window.dispatchEvent(new CustomEvent('posts:created', { detail: { post: created } })) } catch(_) {}
 
     // Reset form and close
     postContent.value = ''
@@ -431,8 +537,8 @@ async function submit() {
     selectedCategory.value = ''
     selectedSubcategory.value = ''
     showCategoryPicker.value = false
-    emit('close')
-    emit('update:modelValue', false)
+  emit('close')
+  emit('update:modelValue', false)
   } catch (err) {
     // Mark optimistic post as failed
     error.value = err?.response?.data?.message || err?.message || 'Failed to create post.'

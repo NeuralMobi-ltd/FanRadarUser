@@ -200,7 +200,7 @@
                   Settings
                 </router-link>
                 <button
-                  @click="logout"
+                  @click="requestLogout"
                   class="flex items-center w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <ArrowRightOnRectangleIcon class="w-4 h-4 mr-2" />
@@ -407,7 +407,7 @@
                     User Settings
                   </router-link>
                   <button
-                    @click="logout"
+                    @click="requestLogout"
                     class="flex items-center w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <ArrowRightOnRectangleIcon class="w-4 h-4 mr-2" />
@@ -493,6 +493,35 @@
     @submit="handleCreatePost"
     @posted="handleCreatePost"
   />
+
+  <!-- Logout Confirmation Modal -->
+  <div v-if="showLogoutConfirm" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-xl w-full max-w-sm shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+      <div class="flex items-start gap-3 mb-4">
+        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800/30 flex items-center justify-center text-red-600 dark:text-red-300">
+          <i class="fas fa-sign-out-alt text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Log out of FanRadar?</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+            You can always log back in. Any unsaved changes in open forms will be lost.
+          </p>
+        </div>
+      </div>
+      <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-400 mb-5 flex gap-2 items-start">
+        <i class="fas fa-info-circle mt-0.5"></i>
+        <span>You'll still appear in fandom member lists where applicable.</span>
+      </div>
+      <div class="flex flex-col sm:flex-row-reverse gap-3">
+        <button @click="confirmLogout" :disabled="loggingOut" class="px-5 py-2.5 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+          <i v-if="!loggingOut" class="fas fa-door-open"></i>
+          <i v-else class="fas fa-spinner fa-spin"></i>
+          <span>{{ loggingOut ? 'Logging out...' : 'Log Out' }}</span>
+        </button>
+        <button @click="cancelLogout" :disabled="loggingOut" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Cancel</button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -502,7 +531,7 @@ import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import { useI18n } from 'vue-i18n'
 import SearchModal from '@/components/layout/SearchModal.vue'
-import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import { CreatePostModal } from '@/components/feed'
 import { usePostsStore } from '@/store/posts'
 import { useNotificationsStore } from '@/store/notifications' // <-- new
 
@@ -524,7 +553,6 @@ const { locale: i18nLocale } = useI18n()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const userName = computed(() => authStore.userName)
-const userEmail = computed(() => authStore.userEmail)
 const userAvatar = computed(() => authStore.userAvatar)
 const isDark = computed(() => themeStore.isDark)
 
@@ -539,7 +567,6 @@ const unreadNotificationsCount = computed(() =>
 const showUserMenu = ref(false)
 const showMobileUserMenu = ref(false)
 const showAppModal = ref(false)
-const showSearchSidebar = ref(false)
 const showSearchModal = ref(false)
 const showCreatePostModal = ref(false)
 const postsStore = usePostsStore()
@@ -553,9 +580,6 @@ function toggleTheme() {
   themeStore.toggleTheme()
 }
 
-function openSearchSidebar() {
-  showSearchSidebar.value = true
-}
 
 function openSearchModal() {
   showSearchModal.value = true
@@ -581,13 +605,25 @@ function handleSearchFromModal(term) {
   performSearch()
 }
 
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    authStore.logout()
+// Logout flow with custom confirmation modal
+const showLogoutConfirm = ref(false)
+const loggingOut = ref(false)
+function requestLogout() {
+  showLogoutConfirm.value = true
+  showUserMenu.value = false
+}
+async function confirmLogout() {
+  if (loggingOut.value) return
+  loggingOut.value = true
+  try {
+    await authStore.logout()
     router.push('/login')
-    showUserMenu.value = false
+  } finally {
+    loggingOut.value = false
+    showLogoutConfirm.value = false
   }
 }
+function cancelLogout() { if (!loggingOut.value) showLogoutConfirm.value = false }
 
 function toggleNotificationsDropdown() {
   showNotificationsDropdown.value = !showNotificationsDropdown.value

@@ -33,7 +33,7 @@
       <!-- Cover Image -->
       <div class="h-32 sm:h-40 md:h-64 w-full rounded-lg sm:rounded-xl overflow-hidden">
         <img 
-          :src="fandom.coverImage" 
+          :src="normalizedCover" 
           :alt="fandom.name" 
           class="w-full h-full object-cover"
         >
@@ -43,7 +43,7 @@
       <!-- Fandom Avatar/Logo -->
       <div class="absolute bottom-0 right-0 m-2 sm:m-3 md:m-6">
         <img 
-          :src="fandom.logo" 
+          :src="normalizedLogo" 
           :alt="fandom.name" 
           class="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg sm:rounded-xl border-2 sm:border-4 border-white shadow-lg" 
         />
@@ -86,12 +86,6 @@
           <button @click="showManageMembers = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors">
             <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Manage </span>Members
           </button>
-          <button @click="showEditRules = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-purple-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-purple-700 transition-colors">
-            <i class="fas fa-gavel mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Rules
-          </button>
-          <button @click="showEditHashtags = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-teal-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-teal-700 transition-colors">
-            <i class="fas fa-hashtag mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Hashtags
-          </button>
         </div>
       </div>
     </div>
@@ -105,10 +99,13 @@
         </div>
         <button 
           @click="joinFandom"
-          class="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+          :disabled="joining"
+          class="w-full sm:w-auto px-6 py-3 bg-blue-600 disabled:bg-blue-400 disabled:cursor-not-allowed text-white rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
         >
-          <i class="fas fa-plus"></i>
-          Join Fandom
+          <i v-if="!joining" class="fas fa-plus"></i>
+          <i v-else class="fas fa-spinner fa-spin"></i>
+          <span v-if="!joining">Join Fandom</span>
+          <span v-else>Joining...</span>
         </button>
       </div>
     </div>
@@ -121,36 +118,10 @@
         </div>
         <span class="font-medium text-green-800 dark:text-green-200 text-sm sm:text-base">You're a member of this fandom!</span>
       </div>
-      <button @click="leaveFandom" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">Leave Fandom</button>
+  <button @click="showLeaveConfirm = true" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">Leave Fandom</button>
     </div>
 
-    <!-- Fandom Hashtags Section -->
-    <div class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
-      <div class="flex items-center justify-between mb-3 sm:mb-4">
-        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white flex items-center">
-          <i class="fas fa-hashtag text-blue-500 mr-2 text-sm sm:text-base"></i>
-          Trending Hashtags
-        </h3>
-        <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ computedHashtags.length }} hashtags</span>
-      </div>
-      <div v-if="computedHashtags.length > 0" class="flex flex-wrap gap-2">
-        <button
-          v-for="hashtag in computedHashtags"
-          :key="hashtag.tag"
-          @click="navigateToHashtag(hashtag.tag)"
-          class="group px-2.5 py-1.5 sm:px-3 sm:py-2 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-lg border border-blue-200 dark:border-blue-700 transition-all duration-200 hover:scale-105"
-        >
-          <div class="flex items-center space-x-1.5 sm:space-x-2">
-            <span class="text-blue-600 dark:text-blue-400 font-medium text-sm">#{{ hashtag.tag }}</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">{{ hashtag.posts }}</span>
-          </div>
-        </button>
-      </div>
-      <div v-else class="text-center py-4">
-        <i class="fas fa-hashtag text-gray-300 dark:text-gray-600 text-xl sm:text-2xl mb-2"></i>
-        <p class="text-gray-500 dark:text-gray-400 text-sm">No hashtags yet</p>
-      </div>
-    </div>
+  <!-- Hashtags section removed per request -->
 
     <!-- Tabs Navigation -->
     <div class="border-b border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
@@ -298,30 +269,13 @@
 
     <!-- Members Tab with Admin Controls -->
     <div v-else-if="activeTab === 'members'" class="space-y-4 sm:space-y-6">
-      <!-- Add Member (Admin Only) -->
-      <div v-if="isAdmin" class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Member</h3>
-        <div class="flex flex-col sm:flex-row sm:items-center gap-3">
-          <input
-            v-model="newMemberEmail"
-            type="email"
-            placeholder="Enter member's email"
-            class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <select v-model="newMemberRole" class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
-            <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
-          </select>
-          <button @click="addMember" class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors">
-            Add Member
-          </button>
-        </div>
-      </div>
+  <!-- Add Member block removed per request -->
 
       <!-- Members Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div v-for="member in members" :key="member.id" class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center mb-4">
-            <img :src="member.avatar" :alt="member.name" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4">
+            <img :src="normalizeAsset(member.avatar, '/images/me.png')" :alt="member.name" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4">
             <div class="flex-1">
               <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{{ member.name }}</h3>
               <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">@{{ member.username }}</p>
@@ -330,9 +284,7 @@
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
                 <i class="fas fa-crown mr-1"></i>Admin
               </span>
-              <span v-else-if="member.role === 'moderator'" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full mr-2">
-                <i class="fas fa-shield mr-1"></i>Mod
-              </span>
+              <!-- Moderator badge removed per requirement (only admin/member roles supported) -->
               <span v-else class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full mr-2">
                 <i class="fas fa-user mr-1"></i>Member
               </span>
@@ -347,7 +299,8 @@
                 @change="changeMemberRole(member.id, $event.target.value)"
                 class="text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option v-for="role in roleOptions" :key="role.value" :value="role.value">{{ role.label }}</option>
+                <option value="member">Member</option>
+                <option value="admin">Admin</option>
               </select>
               <button @click="removeMember(member.id)" class="text-red-500 hover:text-red-700 text-xs">
                 <i class="fas fa-trash mr-1"></i>Remove
@@ -357,7 +310,7 @@
           
           <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-4">
             <span>{{ member.posts }} posts</span>
-            <span>Joined {{ member.joinedDate }}</span>
+            <span>Joined {{ formatJoined(member.joinedDate) }}</span>
           </div>
         </div>
       </div>
@@ -405,7 +358,7 @@
               <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Online</div>
             </div>
             <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-xl sm:text-2xl font-bold text-orange-600">{{ fandom.createdDate }}</div>
+              <div class="text-xl sm:text-2xl font-bold text-orange-600">{{ formattedCreated }}</div>
               <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Created</div>
             </div>
           </div>
@@ -434,34 +387,7 @@
       </div>
     </div>
 
-    <!-- Edit Rules Modal (Admin Only) -->
-    <div v-if="showEditRules && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Fandom Rules</h3>
-        <div class="space-y-3">
-          <div v-for="(rule, index) in editRules" :key="index" class="flex items-center space-x-3">
-            <input 
-              v-model="editRules[index]" 
-              type="text" 
-              class="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-              :placeholder="`Rule ${index + 1}`"
-            />
-            <button @click="removeRule(index)" class="text-red-500 hover:text-red-700">
-              <i class="fas fa-trash"></i>
-            </button>
-          </div>
-          <button @click="addRule" class="text-blue-500 hover:text-blue-700 text-sm">
-            <i class="fas fa-plus mr-1"></i>Add Rule
-          </button>
-        </div>
-        <div class="flex justify-end space-x-3 mt-6">
-          <button @click="showEditRules = false" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">Cancel</button>
-          <button @click="saveRulesChanges" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">Save Rules</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Manage Members Modal (Admin Only) -->
+  <!-- Manage Members Modal (Admin Only) -->
     <div v-if="showManageMembers && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
         <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Manage Members</h3>
@@ -507,102 +433,103 @@
       </div>
     </div>
 
-    <!-- Edit Hashtags Modal (Admin Only) -->
-    <div v-if="showEditHashtags && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Fandom Hashtags</h3>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Add New Hashtag</label>
-            <div class="flex items-center space-x-3">
-              <div class="relative flex-1">
-                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">#</span>
-                <input 
-                  v-model="newHashtagTag" 
-                  type="text" 
-                  placeholder="hashtag"
-                  class="w-full pl-8 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <input 
-                v-model="newHashtagPosts" 
-                type="text" 
-                placeholder="posts count"
-                class="w-24 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-              />
-              <button @click="addHashtag" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                <i class="fas fa-plus"></i>
-              </button>
-            </div>
+  <!-- Edit Hashtags modal removed per request -->
+    <!-- Leave Fandom Confirmation Modal -->
+    <div v-if="showLeaveConfirm" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div class="bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-md p-6">
+        <div class="flex items-start mb-4">
+          <div class="w-10 h-10 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-800/30 text-red-600 dark:text-red-300 mr-3">
+            <i class="fas fa-triangle-exclamation text-lg"></i>
           </div>
-          
-          <div class="space-y-3 max-h-60 overflow-y-auto">
-            <div v-for="(hashtag, index) in editHashtags" :key="index" class="flex items-center space-x-3 p-3 border border-gray-200 dark:border-gray-600 rounded-lg">
-              <div class="flex-1 flex items-center space-x-3">
-                <div class="relative flex-1">
-                  <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">#</span>
-                  <input 
-                    v-model="editHashtags[index].tag" 
-                    type="text" 
-                    class="w-full pl-8 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-                <input 
-                  v-model="editHashtags[index].posts" 
-                  type="text" 
-                  class="w-24 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-              <button @click="removeHashtag(index)" class="text-red-500 hover:text-red-700">
-                <i class="fas fa-trash"></i>
-              </button>
-            </div>
+          <div class="flex-1">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">Leave {{ fandom.name || 'this fandom' }}?</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
+              You'll lose member-only access (posts, future announcements). You can rejoin later unless membership becomes restricted.
+            </p>
           </div>
         </div>
-        <div class="flex justify-end space-x-3 mt-6">
-          <button @click="showEditHashtags = false" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">Cancel</button>
-          <button @click="saveHashtagsChanges" class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors">Save Hashtags</button>
+        <div class="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-400 mb-5 flex items-start gap-2">
+          <i class="fas fa-info-circle mt-0.5"></i>
+          <span>Your existing posts remain unless you delete them individually.</span>
+        </div>
+        <div class="flex flex-col sm:flex-row-reverse gap-3">
+          <button @click="confirmLeaveFandom" :disabled="leaving" class="px-5 py-2.5 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
+            <i v-if="!leaving" class="fas fa-door-open"></i>
+            <i v-else class="fas fa-spinner fa-spin"></i>
+            <span>{{ leaving ? 'Leaving...' : 'Leave Fandom' }}</span>
+          </button>
+          <button @click="showLeaveConfirm = false" :disabled="leaving" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Cancel</button>
         </div>
       </div>
     </div>
   </div>
+
+  <!-- Generic Confirm Modals -->
+  <ConfirmModal
+    v-model="showRemoveMember"
+    tone="danger"
+    title="Remove member?"
+    :message="'This will remove the user from the fandom.'"
+    confirm-text="Remove"
+    loading-text="Removing..."
+    :loading="removingMember"
+    confirm-icon="fas fa-user-minus"
+    icon="fas fa-user-slash"
+    @confirm="confirmRemoveMember"
+    @cancel="cancelRemoveMember"
+  />
+  <ConfirmModal
+    v-model="showDeletePost"
+    tone="danger"
+    title="Delete post?"
+    :message="'This action cannot be undone.'"
+    confirm-text="Delete"
+    loading-text="Deleting..."
+    :loading="deletingPost"
+    confirm-icon="fas fa-trash"
+    icon="fas fa-trash"
+    @confirm="confirmDeletePost"
+    @cancel="cancelDeletePost"
+  />
 </template>
 
 <script setup>
 import Post from '@/components/common/Post.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { notify } from '@/utils/notify'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
 import { computed, onMounted, ref, watch } from 'vue'
+import API_CONFIG from '@/config/api'
+import { normalizeAsset as normAsset } from '@/utils/assets'
 import { useRoute, useRouter } from 'vue-router'
+import { onBeforeUnmount } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const fandomsStore = useFandomsStore()
 const fandomName = computed(() => route.params.name || '')
+// Map handle to stored fandom to retrieve numeric id for backend endpoints
+const fandomRecord = computed(() => fandomsStore.allFandoms.find(f => f.handle === fandomName.value))
+const fandomIdForApi = computed(() => fandomRecord.value?.id || fandomName.value)
 const activeTab = ref('posts')
 const newPostContent = ref('')
 
 // Modal reactive variables
 const showEditFandom = ref(false)
-const showEditRules = ref(false)
 const showManageMembers = ref(false)
-const showEditHashtags = ref(false)
 const postMedia = ref([])
 const isPinned = ref(false)
 const isAnnouncement = ref(false)
-const newMemberEmail = ref('')
-const newMemberRole = ref(fandomsStore.config.memberRoles.MEMBER)
 const memberSearch = ref('')
-const newHashtagTag = ref('')
-const newHashtagPosts = ref('')
 const editFandom = ref({})
-
-// Remove duplicate imports here and add missing state
-const editRules = ref([])
-const editHashtags = ref([])
 const tags = ref([])
 const tagInput = ref('')
+const scheduleEnabled = ref(false)
+const scheduleAt = ref('')
+function toggleSchedule() { scheduleEnabled.value = !scheduleEnabled.value; if (!scheduleEnabled.value) scheduleAt.value = '' }
+function clearSchedule() { scheduleAt.value = '' }
 
 // Mock current user
 const currentUser = computed(() => ({
@@ -628,65 +555,119 @@ const fandom = ref({
   hashtags: []
 })
 
-const isAdmin = computed(() => fandomsStore.isAdmin(fandomName.value))
-const isMember = computed(() => fandomsStore.isMember(fandomName.value))
-
-const leaveFandom = () => {
-  if (confirm('Are you sure you want to leave this fandom?')) {
-    fandomsStore.leaveFandom(fandomName.value, currentUser.value.id)
-    router.push('/')
-  }
-}
-
-onMounted(() => {
-  loadFandomData()
+// Reflect membership/admin status immediately from in-memory record or store getters
+const isAdmin = computed(() => {
+  const local = fandomRecord.value?.role
+  if (local === 'admin') return true
+  return fandomsStore.isAdmin(fandomName.value)
+})
+const isMember = computed(() => {
+  const local = fandomRecord.value?.role
+  if (local) return true
+  return fandomsStore.isMember(fandomName.value)
 })
 
-const loadFandomData = () => {
+// Media normalization
+const baseOrigin = API_CONFIG.baseURL.replace(/\/?api\/?$/, '')
+function normalizeAsset(path, fallback) {
+  const val = normAsset(path)
+  if (!val && fallback) return fallback
+  if (!val) return 'https://via.placeholder.com/1200x400?text=Fandom'
+  return val
+}
+const normalizedCover = computed(() => normalizeAsset(fandom.value.coverImage))
+const normalizedLogo = computed(() => normalizeAsset(fandom.value.logo || fandom.value.coverImage))
+
+// Leave fandom custom modal flow
+const showLeaveConfirm = ref(false)
+const leaving = ref(false)
+async function confirmLeaveFandom() {
+  if (leaving.value || !fandomRecord.value?.id) return
+  leaving.value = true
+  try {
+    const res = await fandomsStore.leaveFandomApi(fandomRecord.value.id, fandomName.value, currentUser.value.id)
+    if (res?.success) {
+      notify.info('You left the fandom')
+      showLeaveConfirm.value = false
+      // Refresh local fandom stats (members count) without navigating away
+      const updated = fandomsStore.allFandoms.find(f=>f.handle===fandomName.value)
+      if (updated) {
+        fandom.value.members = updated.membersCount ?? updated.members ?? fandom.value.members
+      }
+    } else if (res?.message) {
+      notify.error(res.message)
+    }
+  } finally { leaving.value = false }
+}
+
+function loadFandomData() {
   fandom.value = fandomsStore.getFandomDetail(fandomName.value)
 }
 
-const navigateToHashtag = (hashtag) => {
-  router.push(`/hashtag/${hashtag}`)
+// New remote loading logic
+const membersLoading = ref(false)
+const postsLoading = ref(false)
+const fandomLoading = ref(false)
+async function loadRemoteFandomData() {
+  try {
+    fandomLoading.value = true
+  const record = await fandomsStore.fetchFandom(fandomIdForApi.value)
+    if (record) {
+      fandom.value = {
+        ...fandom.value,
+        name: record.name,
+        description: record.description || fandom.value.description,
+        fullDescription: record.fullDescription || record.description || fandom.value.fullDescription,
+        coverImage: record.coverImage || record.cover_image || fandom.value.coverImage,
+        logo: record.logo || record.coverImage || fandom.value.logo,
+        category: record.category || fandom.value.category,
+        members: record.membersCount ?? fandom.value.members,
+        totalPosts: record.postsCount ?? fandom.value.totalPosts,
+        createdDate: record.createdAt || fandom.value.createdDate
+      }
+    }
+  } finally {
+    fandomLoading.value = false
+  }
+  membersLoading.value = true
+  postsLoading.value = true
+  await Promise.all([
+    fandomsStore.fetchFandomMembers(fandomIdForApi.value).finally(() => { membersLoading.value = false }),
+    fandomsStore.fetchFandomPosts(fandomIdForApi.value).finally(() => { postsLoading.value = false })
+  ])
 }
 
-// Tabs from store config
+onMounted(async () => {
+  loadFandomData()
+  await loadRemoteFandomData()
+})
+
 const tabs = computed(() => {
   return fandomsStore.config.tabs.map(tab => {
     let count = ''
-    if (tab.id === 'posts') {
-      count = posts.value.length.toString()
-    } else if (tab.id === 'members') {
-      count = fandom.value.members || '0'
-    }
+    if (tab.id === 'posts') count = posts.value.length.toString()
+    else if (tab.id === 'members') count = fandom.value.members || '0'
     return { ...tab, count }
   })
 })
 
 const posts = computed(() => fandomsStore.getFandomPosts(fandomName.value))
-// Compute trending hashtags from store or fallback to tags in posts
 const computedHashtags = computed(() => {
   const raw = fandom.value?.hashtags ?? []
-  // If store provides hashtags, normalize to { tag, posts }
   if (Array.isArray(raw) && raw.length) {
-    return raw
-      .map((h) => {
-        if (typeof h === 'string') {
-          const tag = h.replace(/^#/, '').trim()
-          return tag ? { tag, posts: '' } : null
-        }
-        if (h && typeof h === 'object') {
-          const tag = String(h.tag ?? h.name ?? h.title ?? '').replace(/^#/, '').trim()
-          const countLike = h.posts ?? h.count ?? h.uses ?? h.frequency
-          const posts = countLike != null && String(countLike).trim() !== '' ? `${countLike}` : ''
-          return tag ? { tag, posts } : null
-        }
-        return null
-      })
-      .filter(Boolean)
+    return raw.map(h => {
+      if (typeof h === 'string') {
+        const tag = h.replace(/^#/, '').trim(); return tag ? { tag, posts: '' } : null
+      }
+      if (h && typeof h === 'object') {
+        const tag = String(h.tag ?? h.name ?? h.title ?? '').replace(/^#/, '').trim()
+        const countLike = h.posts ?? h.count ?? h.uses ?? h.frequency
+        const posts = countLike != null && String(countLike).trim() !== '' ? `${countLike}` : ''
+        return tag ? { tag, posts } : null
+      }
+      return null
+    }).filter(Boolean)
   }
-
-  // Fallback: derive from post tags
   const counts = new Map()
   for (const p of posts.value || []) {
     if (!Array.isArray(p.tags)) continue
@@ -696,16 +677,46 @@ const computedHashtags = computed(() => {
       counts.set(t, (counts.get(t) || 0) + 1)
     }
   }
-  return Array.from(counts.entries())
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
-    .map(([tag, count]) => ({ tag, posts: `${count} posts` }))
+  return Array.from(counts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([tag,count])=>({ tag, posts: `${count} posts` }))
 })
 const members = computed(() => fandomsStore.getFandomMembers(fandomName.value))
 
-const joinFandom = () => {
-  fandomsStore.setUserRole(fandomName.value, fandomsStore.config.memberRoles.MEMBER)
-  console.log(`Joined fandom: ${fandom.value.name}`)
+const formattedCreated = computed(() => {
+  const raw = fandom.value.createdDate || fandom.value.created_at || fandom.value.createdAt
+  if (!raw) return '—'
+  if (/^\d{4}$/.test(raw)) return raw
+  let d
+  try { d = new Date(raw) } catch { d = null }
+  if (d && !isNaN(d.getTime())) {
+    return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  }
+  const cleaned = String(raw).replace(/\.\d+Z$/, 'Z')
+  try {
+    const d2 = new Date(cleaned)
+    if (!isNaN(d2.getTime())) return d2.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+  } catch {}
+  return raw
+})
+
+const joining = ref(false)
+async function joinFandom() {
+  if (joining.value) return
+  joining.value = true
+  try {
+    const res = await fandomsStore.joinFandom(fandomIdForApi.value)
+    if (res && res.success) {
+      await Promise.all([
+        fandomsStore.fetchFandom(fandomIdForApi.value),
+        fandomsStore.fetchFandomMembers(fandomIdForApi.value)
+      ])
+      const updated = fandomsStore.getFandomDetail(fandomName.value)
+      fandom.value.members = updated.members
+      fandom.value.totalPosts = updated.totalPosts
+    }
+  if (res && res.message) notify.success(res.message)
+  } finally {
+    joining.value = false
+  }
 }
 
 // Auto-resize textarea for mobile experience
@@ -717,64 +728,12 @@ const autoResize = (event) => {
 
 // Role options from store config
 const roleOptions = fandomsStore.config.roleOptions
-
-function addTag() {
-  const val = tagInput.value.trim().replace(/^#/, '')
-  if (!val) return
-  if (!tags.value.includes(val)) tags.value.push(val)
-  tagInput.value = ''
-}
-function removeTag(idx) { tags.value.splice(idx, 1) }
-
-// Enhanced media handling
-// Update file change to allow re-selecting same file
-const onFileChange = (type, event) => {
-  const files = Array.from(event.target.files)
-  files.forEach(file => {
-    const reader = new FileReader()
-    reader.onload = e => {
-      postMedia.value.push({ type, url: e.target.result, file })
-    }
-    reader.readAsDataURL(file)
-  })
-  if (event?.target) event.target.value = ''
-}
-
-const removeMedia = (index) => {
-  postMedia.value.splice(index, 1)
-}
-
-// Include tags in created post and reset after
-const createPost = () => {
-  if (newPostContent.value.trim() || postMedia.value.length > 0) {
-    const newPost = {
-      id: Date.now(),
-      username: currentUser.value.name,
-      userAvatar: currentUser.value.avatar,
-      date: 'just now',
-      communityName: fandom.value.name,
-      content: newPostContent.value,
-      media: postMedia.value.map(m => ({ type: m.type, url: m.url })),
-      tags: [...tags.value],
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      isLiked: false,
-      fandom: fandom.value.name,
-      isPinned: false,
-      isAnnouncement: false,
-      authorRole: isAdmin.value ? fandomsStore.config.memberRoles.ADMIN : fandomsStore.config.memberRoles.MEMBER,
-      category: fandom.value.category ? fandom.value.category : 'sports'
-    }
-    fandomsStore.addFandomPost(fandomName.value, newPost)
-    newPostContent.value = ''
-    postMedia.value = []
-    tags.value = []
-    tagInput.value = ''
-  }
-}
-
-const sortedPosts = computed(() => {
+function addTag(){ const val=tagInput.value.trim().replace(/^#/,''); if(!val) return; if(!tags.value.includes(val)) tags.value.push(val); tagInput.value='' }
+function removeTag(idx){ tags.value.splice(idx,1) }
+function onFileChange(type,event){ const files=Array.from(event.target.files); files.forEach(file=>{ const reader=new FileReader(); reader.onload=e=>{ postMedia.value.push({ type, url:e.target.result, file })}; reader.readAsDataURL(file)}); if(event?.target) event.target.value='' }
+function removeMedia(i){ postMedia.value.splice(i,1) }
+function createPost(){ if(newPostContent.value.trim()||postMedia.value.length>0){ const newPost={ id:Date.now(), username:currentUser.value.name, userAvatar:currentUser.value.avatar, date:'just now', communityName:fandom.value.name, content:newPostContent.value, media:postMedia.value.map(m=>({ type:m.type, url:m.url })), tags:[...tags.value], likes:0, comments:0, shares:0, isLiked:false, fandom:fandom.value.name, isPinned:false, isAnnouncement:false, authorRole:isAdmin.value?fandomsStore.config.memberRoles.ADMIN:fandomsStore.config.memberRoles.MEMBER, category: fandom.value.category?fandom.value.category:'sports', schedule_at: scheduleEnabled.value && scheduleAt.value ? (()=>{ try{return new Date(scheduleAt.value).toISOString()}catch{return null}})():null }; fandomsStore.addFandomPost(fandomName.value,newPost); newPostContent.value=''; postMedia.value=[]; tags.value=[]; tagInput.value='' }}
+const postsSorted = computed(() => {
   return [...posts.value].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1
     if (!a.isPinned && b.isPinned) return 1
@@ -783,111 +742,75 @@ const sortedPosts = computed(() => {
     return new Date(b.date) - new Date(a.date)
   })
 })
-
-const addMember = () => {
-  if (newMemberEmail.value.trim()) {
-    const newMember = {
-      id: Date.now(),
-      name: newMemberEmail.value.split('@')[0],
-      username: newMemberEmail.value.split('@')[0],
-      email: newMemberEmail.value,
-      avatar: `https://randomuser.me/api/portraits/men/${Math.floor(Math.random() * 50)}.jpg`,
-      role: newMemberRole.value,
-      posts: 0,
-      joinedDate: 'Today'
-    }
-    fandomsStore.addFandomMember(fandomName.value, newMember)
-    newMemberEmail.value = ''
-    newMemberRole.value = fandomsStore.config.memberRoles.MEMBER
+// addMember removed
+async function changeMemberRole(memberId,newRole){
+  if(!['member','admin'].includes(newRole)) return // enforce only allowed roles
+  const fid = fandomRecord.value?.id || fandomIdForApi.value
+  const res = await fandomsStore.updateMemberRoleApi(fid, memberId, newRole, fandomName.value)
+  if (res?.success) notify.success('Role updated')
+  else if (res?.message) notify.error(res.message)
+}
+const showRemoveMember = ref(false)
+const removingMember = ref(false)
+const pendingRemoveMemberId = ref(null)
+function removeMember(memberId){ pendingRemoveMemberId.value = memberId; showRemoveMember.value = true }
+async function confirmRemoveMember(){
+  if(!pendingRemoveMemberId.value || removingMember.value) return
+  removingMember.value = true
+  try { fandomsStore.removeFandomMember(fandomName.value, pendingRemoveMemberId.value) } finally {
+    removingMember.value = false
+    showRemoveMember.value = false
+    pendingRemoveMemberId.value = null
   }
 }
-
-const changeMemberRole = (memberId, newRole) => {
-  fandomsStore.changeFandomMemberRole(fandomName.value, memberId, newRole)
-}
-
-const removeMember = (memberId) => {
-  if (confirm('Are you sure you want to remove this member?')) {
-    fandomsStore.removeFandomMember(fandomName.value, memberId)
+function cancelRemoveMember(){ pendingRemoveMemberId.value = null }
+const filteredMembers = computed(()=> fandomsStore.searchFandomMembers(fandomName.value, memberSearch.value))
+function likePost(postId){ fandomsStore.likeFandomPost(fandomName.value,postId) }
+function commentPost(postId){ console.log('Comment on post:', postId) }
+const showDeletePost = ref(false)
+const deletingPost = ref(false)
+const pendingDeletePostId = ref(null)
+function deletePost(postId){ pendingDeletePostId.value = postId; showDeletePost.value = true }
+async function confirmDeletePost(){
+  if(!pendingDeletePostId.value || deletingPost.value) return
+  deletingPost.value = true
+  try { fandomsStore.deleteFandomPost(fandomName.value, pendingDeletePostId.value) } finally {
+    deletingPost.value = false
+    showDeletePost.value = false
+    pendingDeletePostId.value = null
   }
 }
+function cancelDeletePost(){ pendingDeletePostId.value = null }
+function saveFandomChanges(){ fandom.value.name=editFandom.value.name; fandom.value.description=editFandom.value.description; showEditFandom.value=false }
+function initializeEditData(){ editFandom.value={...fandom.value} }
+watch(showEditFandom,v=>{ if(v) initializeEditData() })
+watch(()=>fandomName.value, async (n,o)=>{ if(n && n!==o){ loadFandomData(); await loadRemoteFandomData() } })
 
-const filteredMembers = computed(() => {
-  return fandomsStore.searchFandomMembers(fandomName.value, memberSearch.value)
-})
-
-function likePost(postId) {
-  fandomsStore.likeFandomPost(fandomName.value, postId)
-}
-
-function commentPost(postId) {
-  console.log('Comment on post:', postId)
-}
-
-// sharePost removed
-
-const deletePost = (postId) => {
-  if (confirm('Are you sure you want to delete this post?')) {
-    fandomsStore.deleteFandomPost(fandomName.value, postId)
-  }
-}
-
-const saveFandomChanges = () => {
-  fandom.value.name = editFandom.value.name
-  fandom.value.description = editFandom.value.description
-  showEditFandom.value = false
-}
-
-const addRule = () => { editRules.value.push('') }
-const removeRule = (index) => { editRules.value.splice(index, 1) }
-const saveRulesChanges = () => {
-  fandom.value.rules = editRules.value.filter(rule => rule.trim())
-  showEditRules.value = false
-}
-
-const addHashtag = () => {
-  if (newHashtagTag.value.trim() && newHashtagPosts.value.trim()) {
-    editHashtags.value.push({ tag: newHashtagTag.value.trim(), posts: newHashtagPosts.value.trim() })
-    newHashtagTag.value = ''
-    newHashtagPosts.value = ''
-  }
-}
-
-const removeHashtag = (index) => { editHashtags.value.splice(index, 1) }
-const saveHashtagsChanges = () => {
-  fandom.value.hashtags = editHashtags.value.filter(h => h.tag.trim() && h.posts.trim())
-  showEditHashtags.value = false
-}
-
-const initializeEditData = () => {
-  editFandom.value = { ...fandom.value }
-  editRules.value = [...fandom.value.rules]
-  editHashtags.value = [...(fandom.value.hashtags || [])]
-}
-
-watch(showEditFandom, (newVal) => { if (newVal) initializeEditData() })
-watch(showEditRules, (newVal) => { if (newVal) initializeEditData() })
-watch(showEditHashtags, (newVal) => { if (newVal) initializeEditData() })
-
-import { onBeforeUnmount } from 'vue'
-
-// Breakpoint helpers you can use inside the template/logic
 const isMobile = ref(false)
 const isTablet = ref(false)
-const updateBreakpoints = () => {
-  const w = window.innerWidth
-  isMobile.value = w < 640 // < sm
-  isTablet.value = w >= 640 && w < 1024 // sm..md and < lg
+function updateBreakpoints(){ const w=window.innerWidth; isMobile.value = w < 640; isTablet.value = w >=640 && w < 1024 }
+onMounted(()=>{ updateBreakpoints(); window.addEventListener('resize', updateBreakpoints) })
+onBeforeUnmount(()=>{ window.removeEventListener('resize', updateBreakpoints) })
+
+function navigateToHashtag(hashtag){ router.push(`/hashtag/${hashtag}`) }
+
+// Format ISO/DB datetime (e.g., 2025-08-31T22:05:49.000000Z) into "31 Aug 2025" (local)
+function formatJoined(value){
+  if(!value) return '—'
+  // Already friendly? (short forms like 'Today', 'Jan 2024')
+  if(/today|\b\w{3}\s?\d{4}/i.test(value)) return value
+  let date
+  try { date = new Date(value) } catch { date = null }
+  if(!date || isNaN(date.getTime())) {
+    // Try trimming microseconds
+    const trimmed = value.replace(/\.\d+Z$/, 'Z')
+    try { date = new Date(trimmed) } catch { date = null }
+  }
+  if(date && !isNaN(date.getTime())) {
+    return date.toLocaleDateString(undefined,{ day:'2-digit', month:'short', year:'numeric' })
+  }
+  return value
 }
-
-onMounted(() => {
-  updateBreakpoints()
-  window.addEventListener('resize', updateBreakpoints)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', updateBreakpoints)
-})
 </script>
 
 <style scoped>

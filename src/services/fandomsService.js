@@ -36,36 +36,44 @@ export const FandomsService = {
     const { data } = await http.get(API_CONFIG.fandoms.search(query), { params: extra })
     return data
   },
-  async get(idOrHandle) {
+  async get(id) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { fandom: null }
     }
-    const { data } = await http.get(API_CONFIG.fandoms.byId(idOrHandle))
+  const { data } = await http.get(API_CONFIG.fandoms.byId(id))
     return data
   },
-  async getPosts(idOrHandle, params = {}) {
+  async getPosts(id, params = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { posts: [] }
     }
-    const { data } = await http.get(API_CONFIG.fandoms.posts(idOrHandle), { params })
+  const { data } = await http.get(API_CONFIG.fandoms.posts(id), { params })
     return data
   },
-  async getMembers(idOrHandle, params = {}) {
+  async getMembers(id, params = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { members: [] }
     }
-    const { data } = await http.get(API_CONFIG.fandoms.members(idOrHandle), { params })
+  const { data } = await http.get(API_CONFIG.fandoms.members(id), { params })
     return data
   },
-  async join(idOrHandle) {
+  async join(id) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { success: true }
     }
-    const { data } = await http.post(API_CONFIG.fandoms.join(idOrHandle))
+  const { data } = await http.post(API_CONFIG.fandoms.join(id))
+    return data
+  },
+  async leave(id) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true }
+    }
+    const { data } = await http.delete(API_CONFIG.fandoms.leave(id))
     return data
   },
   async create(payload) {
@@ -73,7 +81,8 @@ export const FandomsService = {
       await delay(API_CONFIG.mockLatency)
       return { fandom: { id: Date.now(), ...payload } }
     }
-    const { data } = await http.post(API_CONFIG.fandoms.create, payload)
+  const isForm = typeof FormData !== 'undefined' && payload instanceof FormData
+  const { data } = await http.post(API_CONFIG.fandoms.create, payload, isForm ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
     return data
   },
   async uploadImage(formData) {
@@ -84,28 +93,47 @@ export const FandomsService = {
     const { data } = await http.post(API_CONFIG.fandoms.uploadImage, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
     return data
   },
-  async update(idOrHandle, payload) {
+  async update(id, payload) {
+    // Requirement: POST /api/Y/fandoms/{fandom_id} (admin only) with any subset of: name, description, subcategory_id, cover_image, logo_image
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { success: true }
     }
-    const { data } = await http.put(API_CONFIG.fandoms.update(idOrHandle), payload)
+    const form = new FormData()
+    const allowed = ['name','description','subcategory_id','cover_image','logo_image']
+    // Accept camelCase variants and map
+    const map = { subcategoryId: 'subcategory_id', coverImage: 'cover_image', logoImage: 'logo_image' }
+    Object.entries(payload || {}).forEach(([k,v]) => {
+      if (v == null) return
+      const key = map[k] || k
+      if (allowed.includes(key)) form.append(key, v)
+    })
+    const { data } = await http.post(API_CONFIG.fandoms.update(id), form, { headers: { 'Content-Type': 'multipart/form-data' } })
     return data
   },
-  async changeRole(idOrHandle, userId, payload) {
+  async changeRole(id, userId, payload) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { success: true }
     }
-    const { data } = await http.put(API_CONFIG.fandoms.changeRole(idOrHandle, userId), payload)
+  const { data } = await http.put(API_CONFIG.fandoms.changeRole(id, userId), payload)
     return data
   },
-  async hashtags(idOrHandle) {
+  async hashtags(id) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { hashtags: [] }
     }
-    const { data } = await http.get(API_CONFIG.fandoms.hashtags(idOrHandle))
+  const { data } = await http.get(API_CONFIG.fandoms.hashtags(id))
+    return data
+  },
+  async myFandoms(params = {}) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { fandoms: [] }
+    }
+    // Endpoint lives under users namespace
+    const { data } = await http.get(API_CONFIG.users.myFandoms, { params })
     return data
   }
 }

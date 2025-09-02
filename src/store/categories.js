@@ -1,22 +1,27 @@
 import { defineStore } from 'pinia'
+import { fetchCategories, fetchSubcategories } from '@/services/categoriesApi'
 
 export const useCategoriesStore = defineStore('categories', {
   state: () => ({
     // Inlined categories (previously from constants/communityCategories)
     categories: [
-      { name: 'All', color: '#6366F1', faIcon: 'fas fa-star' },
-      { name: 'News', color: '#F59E42', faIcon: 'fas fa-newspaper' },
-      { name: 'Art', color: '#F472B6', faIcon: 'fas fa-palette' },
-      { name: 'Gaming', color: '#60A5FA', faIcon: 'fas fa-gamepad' },
-      { name: 'Music', color: '#A78BFA', faIcon: 'fas fa-music' },
-      { name: 'Movies', color: '#FBBF24', faIcon: 'fas fa-film' },
-      { name: 'TV Shows', color: '#34D399', faIcon: 'fas fa-tv' },
-      { name: 'Books', color: '#F87171', faIcon: 'fas fa-book' },
-      { name: 'Technology', color: '#38BDF8', faIcon: 'fas fa-laptop' },
-      { name: 'Science', color: '#4ADE80', faIcon: 'fas fa-microscope' },
-      { name: 'Sports', color: '#F472B6', faIcon: 'fas fa-futbol' },
-      { name: 'Fashion', color: '#F59E42', faIcon: 'fas fa-tshirt' }
+      // Static fallback (no ids) – replaced after fetchCategories resolves
+      { id: 0, name: 'All', color: '#6366F1', faIcon: 'fas fa-star' },
+      { id: 0, name: 'News', color: '#F59E42', faIcon: 'fas fa-newspaper' },
+      { id: 0, name: 'Art', color: '#F472B6', faIcon: 'fas fa-palette' },
+      { id: 0, name: 'Gaming', color: '#60A5FA', faIcon: 'fas fa-gamepad' },
+      { id: 0, name: 'Music', color: '#A78BFA', faIcon: 'fas fa-music' },
+      { id: 0, name: 'Movies', color: '#FBBF24', faIcon: 'fas fa-film' },
+      { id: 0, name: 'TV Shows', color: '#34D399', faIcon: 'fas fa-tv' },
+      { id: 0, name: 'Books', color: '#F87171', faIcon: 'fas fa-book' },
+      { id: 0, name: 'Technology', color: '#38BDF8', faIcon: 'fas fa-laptop' },
+      { id: 0, name: 'Science', color: '#4ADE80', faIcon: 'fas fa-microscope' },
+      { id: 0, name: 'Sports', color: '#F472B6', faIcon: 'fas fa-futbol' },
+      { id: 0, name: 'Fashion', color: '#F59E42', faIcon: 'fas fa-tshirt' }
     ],
+    lastFetched: null,
+    loading: false,
+    error: null,
 
     // Inlined descriptions (previously from constants/categoryDescriptions)
     descriptions: {
@@ -64,10 +69,18 @@ export const useCategoriesStore = defineStore('categories', {
       comics: { communities: '430+', members: '2.3M+' },
       fashion: { communities: '290+', members: '1.6M+' },
       photography: { communities: '380+', members: '2.1M+' }
-    }
+  },
+
+  // Subcategories cache: { [categoryId]: [{id, name, category_id}] }
+  subcategories: {},
+  subLoading: {},
+  subError: {}
   }),
   getters: {
     getCategories: (state) => state.categories,
+  categoryIdByName: (state) => (name) => state.categories.find(c => c.name === name)?.id || null,
+  getSubcategories: (state) => (categoryId) => state.subcategories[categoryId] || [],
+  hasSubcategories: (state) => (categoryId) => (state.subcategories[categoryId] || []).length > 0,
     getCategoryDescription: (state) => (categoryName, formattedName) => {
       return state.descriptions[categoryName] || `Join the ${formattedName || categoryName} community and connect with fellow enthusiasts.`
     },
@@ -76,6 +89,53 @@ export const useCategoriesStore = defineStore('categories', {
     },
     getCategoryStats: (state) => (categoryName) => {
       return state.stats[categoryName] || { communities: '250+', members: '1.2M+' }
+    }
+  }
+  , actions: {
+    async fetchCategoriesIfNeeded(force = false) {
+      if (this.loading) return
+      const stale = !this.lastFetched || (Date.now() - this.lastFetched) > 5 * 60 * 1000
+      if (!force && !stale) return
+      try {
+        this.loading = true
+        this.error = null
+        const apiCategories = await fetchCategories()
+        if (Array.isArray(apiCategories) && apiCategories.length) {
+          // Merge colors/icons if names match fallback
+            this.categories = apiCategories.map(c => {
+              const fallback = this.categories.find(f => f.name.toLowerCase() === c.name.toLowerCase()) || {}
+              return {
+                id: c.id,
+                name: c.name,
+                color: fallback.color || '#3B82F6',
+                faIcon: fallback.faIcon || 'fas fa-tag'
+              }
+            })
+          this.lastFetched = Date.now()
+        }
+      } catch (e) {
+        this.error = e?.message || 'Failed to load categories'
+      } finally {
+        this.loading = false
+      }
+    },
+    async fetchSubcategoriesFor(categoryId, force = false) {
+      if (!categoryId) return []
+      if (this.subLoading[categoryId]) return this.subcategories[categoryId] || []
+      const cached = this.subcategories[categoryId]
+      if (cached && !force) return cached
+      try {
+        this.subLoading[categoryId] = true
+        this.subError[categoryId] = null
+        const subs = await fetchSubcategories(categoryId)
+        this.subcategories[categoryId] = subs
+        return subs
+      } catch (e) {
+        this.subError[categoryId] = e?.message || 'Failed to load subcategories'
+        return []
+      } finally {
+        this.subLoading[categoryId] = false
+      }
     }
   }
 })

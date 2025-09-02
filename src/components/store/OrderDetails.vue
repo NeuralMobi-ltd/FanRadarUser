@@ -129,10 +129,25 @@
       </div>
     </div>
   </div>
+  <ConfirmModal
+    v-model="showCancel"
+    tone="danger"
+    title="Cancel order?"
+    :message="'Order '+ order?.id +' will be marked as cancelled.'"
+    hint="This cannot be undone."
+    confirm-text="Cancel Order"
+    loading-text="Cancelling..."
+    confirm-icon="fas fa-ban"
+    icon="fas fa-triangle-exclamation"
+    :loading="cancelling"
+    @confirm="confirmCancel"
+    @cancel="resetCancel"
+  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -215,10 +230,14 @@ const getStepClass = (stepStatus) => {
   return 'bg-gray-200 border-gray-300 dark:bg-gray-700 dark:border-gray-600'
 }
 
-const cancelOrder = () => {
-  if (confirm('Are you sure you want to cancel this order?')) {
-    order.value.status = 'cancelled'
-  }
+const showCancel = ref(false)
+const cancelling = ref(false)
+const cancelOrder = () => { showCancel.value = true }
+function resetCancel(){}
+async function confirmCancel(){
+  if(cancelling.value) return
+  cancelling.value = true
+  try { order.value.status = 'cancelled' } finally { cancelling.value = false; showCancel.value = false }
 }
 
 onMounted(() => {

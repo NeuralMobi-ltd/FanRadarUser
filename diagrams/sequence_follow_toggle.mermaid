@@ -1,22 +1,19 @@
-%% Sequence Diagram: Follow Toggle
+%% Simplified Follow Toggle Sequence
 sequenceDiagram
   autonumber
-  participant U as Utilisateur (auth)
+  participant U as User
   participant FE as Frontend
-  participant API as API Laravel
+  participant API as Laravel API
   participant DB as DB
-  participant NTF as Notifications
-
-  U->>FE: Clic "Suivre"
-  FE->>API: POST /api/users/{id}/follow (token)
-  API->>DB: Vérifie relation follow
-  alt Non existante
+  U->>FE: Click Follow / Unfollow
+  FE->>API: POST /api/Y/users/{id}/follow OR DELETE /api/Y/users/{id}/unfollow
+  API->>DB: Check relation
+  alt Create follow
     DB-->>API: none
-    API->>DB: CREATE follow
-    API-->>FE: { following:true, follower_count: +1 }
-    API->>NTF: Emit follow.created
-  else Existe déjà
+    API->>DB: INSERT follow
+    API-->>FE: { following: true }
+  else Remove follow
     API->>DB: DELETE follow
-    API-->>FE: { following:false, follower_count: -1 }
+    API-->>FE: { following: false }
   end
-  FE->>U: Met à jour bouton + compteur
+  FE->>U: Update button state

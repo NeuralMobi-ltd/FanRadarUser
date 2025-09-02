@@ -1,3 +1,5 @@
+
+
 <template>
   <div class="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
     <!-- Header -->
@@ -70,6 +72,40 @@
                   </div>
                 </div>
               </div>
+              <!-- Category & Subcategory Selection -->
+              <div class="space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Category <span class="text-red-500">*</span></label>
+                  <div class="flex gap-2 mb-2">
+                    <div class="relative flex-1">
+                      <input v-model="categorySearch" type="text" placeholder="Search categories..." class="w-full pl-10 pr-3 py-2 rounded-lg border border-gray-300/80 dark:border-gray-600/80 bg-white/60 dark:bg-gray-700/60 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-400 dark:placeholder-gray-500" />
+                      <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 10a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                    </div>
+                    <button type="button" @click="refreshCategories" class="px-3 py-2 text-xs rounded-lg border border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-400 text-gray-600 dark:text-gray-300">Reload</button>
+                  </div>
+                  <div class="border border-gray-200 dark:border-gray-700 rounded-lg bg-white/60 dark:bg-gray-800/60 max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700 no-scrollbar">
+                    <button v-for="c in filteredApiCategories" :key="c.id" type="button" @click="selectCategoryList(c)" :class="['w-full text-left px-3 py-2 flex items-center gap-3 hover:bg-indigo-50/70 dark:hover:bg-indigo-900/30 transition', selectedCategoryId === c.id ? 'bg-indigo-100/70 dark:bg-indigo-900/40 font-medium text-indigo-700 dark:text-indigo-300' : 'text-gray-700 dark:text-gray-300']">
+                      <span class="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold" :style="{background: c.color + '22', border: '1px solid ' + c.color, color: c.color}">{{ c.name.charAt(0).toUpperCase() }}</span>
+                      <span class="truncate flex-1">{{ c.name }}</span>
+                      <svg v-if="selectedCategoryId === c.id" class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+                    </button>
+                    <div v-if="!filteredApiCategories.length && !categoriesStore.loading" class="p-3 text-xs text-gray-500">No categories match "{{ categorySearch }}"</div>
+                    <div v-if="categoriesStore.loading" class="p-3 text-xs text-indigo-500 animate-pulse">Loading categories...</div>
+                  </div>
+                  <p class="text-xs text-gray-500 mt-1">Showing {{ filteredApiCategories.length }} / {{ apiCategories.length }}</p>
+                </div>
+                <div v-if="showSubcategoryPicker" class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Subcategory <span v-if="subcategories.length" class="text-red-500">*</span></label>
+                  <div class="flex flex-wrap gap-2 min-h-[2.5rem]">
+                    <button v-for="s in subcategories" :key="s.id" type="button" @click="formData.subcategory_id = s.id" :class="['px-3 py-1.5 rounded-full text-xs border transition', formData.subcategory_id == s.id ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'border-gray-300 dark:border-gray-600 hover:border-indigo-400 dark:hover:border-indigo-400 text-gray-700 dark:text-gray-300']">{{ s.name }}</button>
+                    <button v-if="!subcategoriesLoading && selectedCategoryId" type="button" @click="refreshSubcategories" class="px-3 py-1.5 rounded-full text-xs border border-dashed border-indigo-400 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">Reload</button>
+                    <span v-if="subcategoriesLoading" class="text-xs text-indigo-500 animate-pulse">Loading...</span>
+                    <span v-if="!subcategoriesLoading && !subcategories.length" class="text-xs text-gray-500">No subcategories</span>
+                    <span v-if="!subcategoriesLoading && subcategories.length === 1 && formData.subcategory_id" class="text-xs text-gray-400">Auto-selected</span>
+                  </div>
+                  <p v-if="formData.subcategory_id && subcategories.length === 1" class="mt-1 text-[11px] text-gray-500">Using subcategory: <strong>{{ subcategories[0].name }}</strong></p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -86,59 +122,7 @@
             <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fandom Name <span class="text-red-500">*</span></label>
-                <div class="relative">
-                  <input type="text" v-model="formData.title" maxlength="50" class="w-full px-4 py-3 rounded-lg border border-gray-300/80 dark:border-gray-600/80 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all pl-11" placeholder="Give your fandom a great name" @input="generateHandle" />
-                  <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                    </svg>
-                  </div>
-                </div>
-                <div class="flex justify-between mt-2">
-                  <p class="text-xs text-gray-500">Choose a clear, memorable name that reflects what your fandom is about</p>
-                  <p class="text-xs text-gray-500">{{ formData.title.length }}/50</p>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">URL Handle <span class="text-red-500">*</span></label>
-                <div class="flex rounded-lg border border-gray-300/80 dark:border-gray-600/80 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition-all overflow-hidden">
-                  <span class="px-4 py-3 bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400 text-sm border-r border-gray-300/80 dark:border-gray-600/80 flex items-center">
-                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
-                    fanradar.com/fandom/
-                  </span>
-                  <input type="text" v-model="formData.handle" maxlength="30" class="flex-1 px-4 py-3 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white border-0 focus:outline-none" placeholder="your-fandom-name" @input="validateHandle" />
-                </div>
-                <div class="mt-2">
-                  <p v-if="handleError" class="text-xs text-red-500 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    {{ handleError }}
-                  </p>
-                  <p v-else class="text-xs text-gray-500 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    This will be your fandom's unique address – letters, numbers, and hyphens only
-                  </p>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Short Description <span class="text-red-500">*</span></label>
-                <div class="relative">
-                  <input type="text" v-model="formData.tagline" maxlength="100" class="w-full px-4 py-3 rounded-lg border border-gray-300/80 dark:border-gray-600/80 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all pl-11" placeholder="A compelling one-liner that captures your fandom's essence" />
-                  <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
-                    </svg>
-                  </div>
-                </div>
-                <div class="flex justify-between mt-2">
-                  <p class="text-xs text-gray-500">This appears in search results and previews – make it catchy!</p>
-                  <p class="text-xs text-gray-500">{{ formData.tagline.length }}/100</p>
-                </div>
+                <input type="text" v-model="formData.title" maxlength="50" class="w-full px-4 py-3 rounded-lg border border-gray-300/80 dark:border-gray-600/80 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" placeholder="Give your fandom a great name" />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Description</label>
@@ -158,145 +142,7 @@
             </div>
           </div>
 
-          <!-- Category & Tags -->
-          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-sm">
-            <div class="flex items-center mb-6">
-              <div class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                </svg>
-              </div>
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Category & Discovery</h2>
-            </div>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Primary Category <span class="text-red-500">*</span></label>
-                <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  <button v-for="category in categories" :key="category.value" @click="formData.category = category.value" :class="['p-3 text-left rounded-lg border-2 transition-all duration-200 flex flex-col items-start group', formData.category === category.value ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 shadow-sm' : 'border-gray-200/80 dark:border-gray-600/80 hover:border-gray-300 dark:hover:border-gray-500']">
-                    <span 
-                      class="block w-10 h-10 mb-2 rounded-full flex items-center justify-center shadow-sm transition-all duration-200 border-2 group-hover:scale-110 group-active:scale-95"
-                      :style="{
-                        background: category.color + '22', // 13% opacity for pastel bg
-                        borderColor: category.color,
-                        boxShadow: formData.category === category.value ? '0 0 0 4px ' + category.color + '33' : '0 1px 4px 0 rgba(0,0,0,0.04)'
-                      }"
-                    >
-                      <i :class="category.faIcon" class="text-xl" :style="{ color: category.color }"></i>
-                    </span>
-                    <div class="font-medium text-sm truncate">{{ category.name }}</div>
-                    <div class="text-xs opacity-0 group-hover:opacity-100 transition-opacity mt-1" :class="formData.category === category.value ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-500 dark:text-gray-400'">
-                      {{ getCategoryDescription(category.value) }}
-                    </div>
-                  </button>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Tags ({{ formData.tags.length }}/10)</label>
-                <div class="flex items-center space-x-2 mb-4">
-                  <div class="relative flex-1">
-                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400">#</span>
-                    <input v-model="newTag" @keydown.enter.prevent="addTag" @keydown.space.prevent="addTag" placeholder="Add tags that describe your fandom" class="w-full pl-9 pr-4 py-3 rounded-lg border border-gray-300/80 dark:border-gray-600/80 bg-white/50 dark:bg-gray-700/50 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all" />
-                  </div>
-                  <button @click="addTag" :disabled="!newTag.trim() || formData.tags.length >= 10" class="px-4 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors flex items-center">
-                    <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                    </svg>
-                    Add
-                  </button>
-                </div>
-                <div v-if="formData.tags.length > 0" class="flex flex-wrap gap-2 mb-3">
-                  <span v-for="tag in formData.tags" :key="tag" class="inline-flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg border border-indigo-100 dark:border-indigo-800 text-sm font-medium transition-all hover:bg-indigo-100 dark:hover:bg-indigo-900/50">
-                    #{{ tag }}
-                    <button @click="removeTag(tag)" class="text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-200 transition-colors">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </span>
-                </div>
-                <div v-if="suggestedTags.length > 0 && formData.tags.length < 10" class="mt-3">
-                  <p class="text-xs text-gray-500 mb-2 flex items-center">
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Suggested tags for {{ getCategoryName(formData.category) }}:
-                  </p>
-                  <div class="flex flex-wrap gap-2">
-                    <button v-for="tag in suggestedTags.slice(0, 5)" :key="tag" @click="addSuggestedTag(tag)" class="text-xs px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center">
-                      <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                      </svg>
-                      {{ tag }}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Privacy Settings -->
-          <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-6 shadow-sm">
-            <div class="flex items-center mb-6">
-              <div class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h2 class="text-xl font-bold text-gray-900 dark:text-white">Privacy & Settings</h2>
-            </div>
-            <div class="space-y-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-4">Fandom Type</label>
-                <div class="space-y-4">
-                  <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all" :class="formData.privacy === 'public' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200/80 dark:border-gray-600/80 hover:border-gray-300 dark:hover:border-gray-500'">
-                    <input type="radio" value="public" v-model="formData.privacy" class="mt-1 focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" />
-                    <div class="ml-3 flex-1">
-                      <div class="flex items-center">
-                        <div class="p-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-2">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <span class="font-medium text-gray-900 dark:text-white">Public Fandom</span>
-                      </div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Anyone can discover your fandom, see content, and join</p>
-                    </div>
-                  </label>
-                  <label class="flex items-start p-4 border-2 rounded-lg cursor-pointer transition-all" :class="formData.privacy === 'private' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-gray-200/80 dark:border-gray-600/80 hover:border-gray-300 dark:hover:border-gray-500'">
-                    <input type="radio" value="private" v-model="formData.privacy" class="mt-1 focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300" />
-                    <div class="ml-3 flex-1">
-                      <div class="flex items-center">
-                        <div class="p-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-2">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                          </svg>
-                        </div>
-                        <span class="font-medium text-gray-900 dark:text-white">Private Fandom</span>
-                      </div>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Only approved members can see and participate in this fandom</p>
-                    </div>
-                  </label>
-                </div>
-              </div>
-              <div class="space-y-4">
-                <label class="flex items-center justify-between p-3 border border-gray-200/80 dark:border-gray-600/80 rounded-lg hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors">
-                  <div class="flex items-center space-x-3">
-                    <div class="p-1.5 rounded-md bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <div class="font-medium text-gray-900 dark:text-white">Member Invitations</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">Allow all members to invite their friends</div>
-                    </div>
-                  </div>
-                  <input type="checkbox" v-model="formData.allowMemberInvites" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
-                </label>
-                <!-- Add any additional settings here if needed -->
-              </div>
-            </div>
-          </div>
+  <!-- Removed duplicate large Category block for scalability -->
         </div>
         <!-- You may have a sidebar or additional content here for the 3rd column -->
       </div> <!-- end .grid -->
@@ -307,13 +153,14 @@
   <button
     class="flex items-center gap-2 px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
     @click="createFandom"
-    :disabled="!isFormValid"
-    :class="!isFormValid ? 'opacity-60 cursor-not-allowed' : ''"
+    :disabled="!isFormValid || creating"
+    :class="(!isFormValid || creating) ? 'opacity-60 cursor-not-allowed' : ''"
   >
     <svg class="w-6 h-6 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
     </svg>
-    Create
+    <span v-if="!creating">Create</span>
+    <span v-else>Creating...</span>
   </button>
 </div>
 </template>
@@ -321,6 +168,7 @@
 <script setup>
 import { useCategoriesStore } from '@/store/categories'
 import { useFandomsStore } from '@/store/fandoms'
+import { notify } from '@/utils/notify'
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -331,38 +179,43 @@ const categoriesStore = useCategoriesStore()
 // Form state
 const formData = ref({
   title: '',
-  handle: '',
-  tagline: '',
   description: '',
-  avatar: '',
-  coverImage: '',
+  avatar: '', // preview only
+  avatarFile: null, // actual File for API (logo_image)
+  coverImage: '', // preview only
+  coverImageFile: null, // actual File for API
   category: '',
-  tags: [],
-  privacy: 'public',
-  allowMemberInvites: true,
-  requireApproval: false
+  subcategory_id: ''
 })
-const newTag = ref('')
-const handleError = ref('')
-const suggestedTags = ref([])
+// Removed: handle, tagline, tags, privacy, invites settings
+// If backend requires dynamic subcategory selection, adjust subcategory_id above.
+const handleError = ref('') // kept for future if needed
+const creating = ref(false)
 
 // Categories for selection
 const categories = computed(() => categoriesStore.getCategories.map(cat => ({ ...cat, value: cat.name })))
+const apiCategories = computed(() => categoriesStore.getCategories)
+const selectedCategoryId = ref('')
+const subcategories = ref([])
+const subcategoriesLoading = ref(false)
+const showSubcategoryPicker = computed(() => !!selectedCategoryId.value)
+const categorySearch = ref('')
+const filteredApiCategories = computed(() => {
+  if (!categorySearch.value.trim()) return apiCategories.value
+  const q = categorySearch.value.toLowerCase()
+  return apiCategories.value.filter(c => c.name.toLowerCase().includes(q))
+})
 
 // Validation
 const isFormValid = computed(() => {
-  return (
-    formData.value.title.trim().length > 0 &&
-    formData.value.handle.trim().length > 0 &&
-    formData.value.tagline.trim().length > 0 &&
-    formData.value.category &&
-    !handleError.value
-  )
+  const basic = formData.value.title.trim().length > 0 && formData.value.coverImageFile instanceof File && selectedCategoryId.value && formData.value.subcategory_id
+  return basic
 })
 
 function onLogoChange(e) {
   const file = e.target.files[0]
   if (!file) return
+  formData.value.avatarFile = file
   const reader = new FileReader()
   reader.onload = (ev) => {
     formData.value.avatar = ev.target.result
@@ -373,51 +226,12 @@ function onLogoChange(e) {
 function onCoverChange(e) {
   const file = e.target.files[0]
   if (!file) return
+  formData.value.coverImageFile = file
   const reader = new FileReader()
   reader.onload = (ev) => {
     formData.value.coverImage = ev.target.result
   }
   reader.readAsDataURL(file)
-}
-
-function generateHandle() {
-  // Auto-generate handle from title
-  let handle = formData.value.title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  formData.value.handle = handle
-  validateHandle()
-}
-
-function validateHandle() {
-  const handle = formData.value.handle
-  if (!/^[a-z0-9-]+$/.test(handle)) {
-    handleError.value = 'Handle can only contain lowercase letters, numbers, and hyphens.'
-    return
-  }
-  // Check for uniqueness (simulate by checking existing fandoms)
-  const exists = fandomsStore.allFandoms.some(f => f.handle === handle)
-  handleError.value = exists ? 'This handle is already taken.' : ''
-}
-
-function addTag() {
-  const tag = newTag.value.trim().replace(/^#/, '')
-  if (!tag || formData.value.tags.includes(tag) || formData.value.tags.length >= 10) return
-  formData.value.tags.push(tag)
-  newTag.value = ''
-}
-
-function removeTag(tag) {
-  formData.value.tags = formData.value.tags.filter(t => t !== tag)
-}
-
-function addSuggestedTag(tag) {
-  if (!formData.value.tags.includes(tag) && formData.value.tags.length < 10) {
-    formData.value.tags.push(tag)
-  }
 }
 
 function getCategoryName(categoryValue) {
@@ -430,39 +244,91 @@ function getCategoryDescription(value) {
   return categoriesStore.getCategoryDescription(value, getCategoryName(value))
 }
 
-function createFandom() {
-  if (!isFormValid.value) return
-  // Prepare data for store
-  const fandomData = {
-    ...formData.value,
-    categoryName: getCategoryName(formData.value.category)
-  }
-  const newFandom = fandomsStore.createFandom(fandomData)
-  // Try to navigate by name, fallback to path if route name is missing
-  try {
-    if (newFandom && newFandom.handle) {
-      router.push({ name: 'FandomDetail', params: { handle: newFandom.handle } })
-    } else {
-      // fallback: try path-based navigation
-      router.push(`/fandom/${newFandom.handle || formData.value.handle}`)
-    }
-  } catch (e) {
-    // fallback: try path-based navigation
-    router.push(`/fandom/${newFandom && newFandom.handle ? newFandom.handle : formData.value.handle}`)
+async function ensureCategories() {
+  await categoriesStore.fetchCategoriesIfNeeded()
+}
+ensureCategories()
+
+async function loadSubcategories(id) {
+  if (!id) return
+  subcategoriesLoading.value = true
+  subcategories.value = await categoriesStore.fetchSubcategoriesFor(id)
+  subcategoriesLoading.value = false
+  if (subcategories.value.length === 1) {
+    formData.value.subcategory_id = subcategories.value[0].id
+  } else {
+    formData.value.subcategory_id = ''
   }
 }
 
-// Watch category to update suggested tags
-watch(() => formData.value.category, (cat) => {
-  // Example: set suggested tags based on category
-  if (cat === 'Sports') suggestedTags.value = ['Football', 'Basketball', 'Tennis', 'Cricket', 'Olympics']
-  else if (cat === 'Music') suggestedTags.value = ['Pop', 'Rock', 'KPop', 'Jazz', 'Indie']
-  else if (cat === 'Gaming') suggestedTags.value = ['PC', 'Console', 'Esports', 'RPG', 'Shooter']
-  else if (cat === 'Art') suggestedTags.value = ['Drawing', 'Painting', 'DigitalArt', 'Sculpture', 'Photography']
-  else suggestedTags.value = []
-})
+function onCategoryChange() {
+  formData.value.subcategory_id = ''
+  loadSubcategories(selectedCategoryId.value)
+}
+
+function selectCategoryCard(category) { // kept for any template references
+  selectCategoryList({ id: category.id, name: category.name, color: category.color, value: category.value })
+}
+
+function selectCategoryList(category) {
+  if (selectedCategoryId.value === category.id) return
+  selectedCategoryId.value = category.id
+  formData.value.category = category.name || category.value
+}
+
+function refreshSubcategories() {
+  loadSubcategories(selectedCategoryId.value)
+}
+
+function refreshCategories() {
+  categoriesStore.fetchCategoriesIfNeeded(true)
+}
+
+watch(selectedCategoryId, (id) => { if (id) onCategoryChange() })
+
+async function createFandom() {
+  if (!isFormValid.value || creating.value) return
+  creating.value = true
+  try {
+    // Backend expects: name (text), description (text), subcategory_id (text), cover_image (file)
+    const payload = {
+      name: formData.value.title.trim(),
+      description: (formData.value.description || '').trim() || undefined,
+      subcategory_id: typeof formData.value.subcategory_id === 'string'
+        ? formData.value.subcategory_id.trim()
+        : formData.value.subcategory_id, // allow numeric id directly
+      cover_image: formData.value.coverImageFile,
+      logo_image: formData.value.avatarFile || undefined
+    }
+  const res = await fandomsStore.createFandomApi(payload)
+    const f = res?.data?.fandom || res?.fandom
+    if (f) {
+  notify.success('Fandom created successfully!')
+      const handle = (f.name || '').toLowerCase().replace(/\s+/g, '-')
+      router.push(`/fandom/${handle}`)
+    } else {
+  notify.error('Failed to create fandom')
+    }
+  } catch (e) {
+    console.error('Create fandom error', e)
+    const resp = e?.response?.data
+    if (resp?.errors) {
+  notify.error(Object.values(resp.errors).flat().join('\n'), { autoClose: false })
+    } else if (resp?.message) {
+  notify.error(resp.message)
+    } else {
+  notify.error('Error creating fandom')
+    }
+  } finally {
+    creating.value = false
+  }
+}
+
+// Removed tag suggestion watcher
 </script>
 
 <style>
 /* ...existing styles... */
+.no-scrollbar::-webkit-scrollbar { width:0px; height:0px; }
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
 </style>

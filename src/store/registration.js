@@ -4,7 +4,6 @@ import { defineStore } from 'pinia'
 export const useRegistrationStore = defineStore('registration', {
   state: () => ({
     // Support either username or first/last naming schemes
-    username: '',
     first_name: '',
     last_name: '',
     email: '',
@@ -15,8 +14,7 @@ export const useRegistrationStore = defineStore('registration', {
     categories: []
   }),
   actions: {
-    setBasicInfo({ username, first_name, last_name, email, password, profile_image, gender, birth_date }) {
-      this.username = username || ''
+  setBasicInfo({ first_name, last_name, email, password, profile_image, gender, birth_date }) {
       this.first_name = first_name || ''
       this.last_name = last_name || ''
       this.email = email
@@ -30,7 +28,6 @@ export const useRegistrationStore = defineStore('registration', {
     },
     toFormData() {
       const fd = new FormData()
-      if (this.username) fd.append('username', this.username)
       if (this.first_name) fd.append('first_name', this.first_name)
       if (this.last_name) fd.append('last_name', this.last_name)
       fd.append('email', this.email)
@@ -43,7 +40,6 @@ export const useRegistrationStore = defineStore('registration', {
       return fd
     },
     clear() {
-      this.username = ''
       this.first_name = ''
       this.last_name = ''
       this.email = ''

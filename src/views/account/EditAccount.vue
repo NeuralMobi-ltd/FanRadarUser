@@ -145,10 +145,14 @@
           </div>
           
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Bio</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
+              <span>Bio</span>
+              <span class="text-xs text-gray-400">{{ profileForm.bio.length }}/300</span>
+            </label>
             <textarea 
               v-model="profileForm.bio"
               rows="4" 
+              maxlength="300"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
               placeholder="Tell us about yourself..."
             ></textarea>
@@ -164,6 +168,7 @@
                   <input 
                     v-model="profileForm.password"
                     :type="showPassword ? 'text' : 'password'" 
+                    autocomplete="new-password"
                     class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Enter new password"
                   />
@@ -183,6 +188,7 @@
                   <input 
                     v-model="profileForm.confirmPassword"
                     :type="showConfirmPassword ? 'text' : 'password'" 
+                    autocomplete="new-password"
                     class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Confirm new password"
                   />
@@ -210,9 +216,12 @@
             <button 
               type="submit"
               :disabled="saving"
-              class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 w-full sm:w-auto"
+              class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 w-full sm:w-auto flex items-center gap-2"
             >
-              {{ saving ? 'Saving...' : 'Save Changes' }}
+              <svg v-if="saving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v2m0 12v2m8-8h-2M6 12H4m13.657-6.343l-1.414 1.414M8.757 16.243l-1.414 1.414m0-12.728l1.414 1.414M16.243 16.243l1.414 1.414" />
+              </svg>
+              <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
             </button>
           </div>
         </form>
@@ -222,7 +231,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, getCurrentInstance } from 'vue'
 import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { CameraIcon } from '@heroicons/vue/24/outline'
@@ -234,6 +243,23 @@ const coverInput = ref(null)
 const saving = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+
+// Toast access (global plugin previously used in fandom creation)
+let toast
+try {
+  const inst = getCurrentInstance()
+  toast = inst?.appContext?.config?.globalProperties?.$toast || window.$toast
+} catch (_) { /* ignore */ }
+
+function notify(type, message) {
+  if (toast && typeof toast[type] === 'function') {
+    toast[type](message)
+  } else {
+    if (type === 'error') console.error(message)
+    else if (type === 'warn') console.warn(message)
+    else console.log(message)
+  }
+}
 
 // UI form state + preview sources
 const profileForm = ref({
@@ -289,7 +315,7 @@ function handleProfilePhotoChange(event) {
   const file = event.target.files[0]
   if (!file) return
   if (file.size > 2 * 1024 * 1024) {
-    alert('Profile photo must be less than 2MB')
+    notify('error', 'Profile photo must be less than 2MB')
     return
   }
   avatarFile.value = file
@@ -313,7 +339,7 @@ function handleCoverChange(event) {
   const file = event.target.files[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
-    alert('Cover photo must be less than 5MB')
+    notify('error', 'Cover photo must be less than 5MB')
     return
   }
   coverFile.value = file
@@ -336,11 +362,11 @@ async function saveProfile() {
   // Validate passwords if provided
   if (profileForm.value.password || profileForm.value.confirmPassword) {
     if (profileForm.value.password !== profileForm.value.confirmPassword) {
-      alert('Passwords do not match')
+      notify('error', 'Passwords do not match')
       return
     }
     if (profileForm.value.password.length < 6) {
-      alert('Password must be at least 6 characters long')
+      notify('error', 'Password must be at least 6 characters long')
       return
     }
   }
@@ -367,7 +393,7 @@ async function saveProfile() {
 
     const { success, error } = await authStore.updateProfileRemote(fd)
     if (!success) {
-      alert(error || 'Failed to update profile on server')
+      notify('error', error || 'Failed to update profile on server')
       return
     }
 
@@ -375,12 +401,12 @@ async function saveProfile() {
     const u = authStore.user
     profileForm.value.first_name = u.firstName || profileForm.value.first_name
     profileForm.value.last_name = u.lastName || profileForm.value.last_name
-  profileForm.value.email = u.userEmail || profileForm.value.email
-  clearPasswordFields()
-    profileForm.value.avatar = u.avatar || profileForm.value.avatar
-    profileForm.value.coverPhoto = u.coverPhoto || profileForm.value.coverPhoto
+    profileForm.value.email = u.userEmail || profileForm.value.email
+  profileForm.value.avatar = u.avatar || profileForm.value.avatar
+  profileForm.value.coverPhoto = u.coverPhoto || profileForm.value.coverPhoto
+  profileForm.value.bio = u.bio || profileForm.value.bio
 
-    alert('Profile updated successfully!')
+  notify('success', 'Profile updated successfully!')
     setTimeout(() => {
       const idOrName = authStore.user?.userName || authStore.user?.userEmail?.split('@')[0] || authStore.user?.id
       router.push(`/account/${idOrName}`)
@@ -393,17 +419,19 @@ async function saveProfile() {
       // If errors object exists, join messages
       if (resp.errors) {
         const messages = Object.values(resp.errors).flat().join('\n')
-        alert(messages)
+        notify('error', messages)
       } else if (resp.message) {
-        alert(resp.message)
+        notify('error', resp.message)
       } else {
-        alert(JSON.stringify(resp))
+        notify('error', JSON.stringify(resp))
       }
     } else {
-      alert('Error saving profile. Please try again.')
+      notify('error', 'Error saving profile. Please try again.')
     }
   } finally {
     saving.value = false
+  // Always clear password fields so they don't persist (success or error)
+  clearPasswordFields()
   }
 }
 

@@ -1,11 +1,18 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 h-auto">
+  <article class="bg-white dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-7 mb-5 sm:mb-7 shadow-md hover:shadow-xl border border-gray-100/50 dark:border-gray-700/50 transition-all duration-500 hover:scale-[1.01] hover:border-blue-200 dark:hover:border-blue-800/50 group">
     <!-- Post Header -->
-    <div class="flex items-start justify-between mb-3 sm:mb-4">
-      <div class="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-        <router-link :to="`/account/${post.username}`" class="relative flex-shrink-0">
-          <img :src="post.avatar || post.userAvatar" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-gray-100 dark:ring-gray-700 hover:ring-blue-500 transition-all duration-200" :alt="post.username">
-          <div class="absolute -bottom-0.5 -right-0.5 sm:-bottom-1 sm:-right-1 w-3 h-3 sm:w-4 sm:h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+    <header class="flex items-start justify-between mb-4 sm:mb-5">
+      <div class="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+        <router-link :to="`/account/${post.username}`" class="relative flex-shrink-0 group-avatar">
+          <div class="relative">
+            <AvatarFallback
+              :src="post.avatar || post.userAvatar"
+              :alt="post.username"
+              :firstName="post.firstName || post.first_name || post.username?.split(' ')[0] || post.username"
+              :lastName="post.lastName || post.last_name || post.username?.split(' ')[1] || ''"
+              customClass="w-11 h-11 sm:w-14 sm:h-14 ring-3 ring-gray-100 dark:ring-gray-700 hover:ring-blue-400 transition-all duration-300 shadow-sm group-hover/avatar:shadow-md"
+            />
+          </div>
         </router-link>
         
         <div class="flex-1 min-w-0">
@@ -44,47 +51,58 @@
       </div>
       <!-- Post actions menu for owner -->
       <div v-if="canEdit || canDelete" class="relative flex-shrink-0">
-        <button @click="showMenu = !showMenu" class="p-1.5 sm:p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+  <button @click="showMenu = !showMenu" class="p-2 sm:p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 group-menu">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 group-hover/menu:text-gray-600 dark:group-hover/menu:text-gray-300" fill="currentColor" viewBox="0 0 20 20">
             <circle cx="4" cy="10" r="2"/>
             <circle cx="10" cy="10" r="2"/>
             <circle cx="16" cy="10" r="2"/>
           </svg>
         </button>
-        <div v-if="showMenu" class="absolute right-0 mt-2 w-32 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+        <div v-if="showMenu" class="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden">
           <button
             v-if="canEdit"
-            @click="openEditModal"
-            class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+            type="button"
+            @click.prevent.stop="openEditModal"
+            class="w-full text-left px-4 py-3 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center"
           >
-            <i class="fas fa-edit mr-2"></i>Edit
+            <svg class="w-4 h-4 mr-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Edit Post
           </button>
           <button
             v-if="canDelete"
-            @click="deletePost"
-            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+            type="button"
+            @click.prevent.stop="deletePost"
+            class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center"
           >
-            <i class="fas fa-trash mr-2"></i>Delete
+            <svg class="w-4 h-4 mr-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+            Delete Post
           </button>
         </div>
       </div>
-    </div>
+    </header>
 
     <!-- Post Content -->
-    <div class="mb-3 sm:mb-4">
-      <p class="text-gray-900 dark:text-white text-sm sm:text-[15px] leading-relaxed whitespace-pre-wrap">{{ post.text || post.content }}</p>
+    <main class="mb-4 sm:mb-5">
+      <div class="prose dark:prose-invert max-w-none">
+        <p class="text-gray-900 dark:text-white text-sm sm:text-base leading-relaxed whitespace-pre-wrap mb-0">{{ post.text || post.content }}</p>
+      </div>
       
       <!-- Legacy Single Image Support -->
-      <div v-if="post.image && !post.media" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
+      <div v-if="displayImage && !displayMedia" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
         <img 
-          :src="post.image" 
+          :src="displayImage" 
           :alt="'Image from ' + post.username"
+          loading="lazy"
           class="w-full h-auto object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
         >
       </div>
 
       <!-- Instagram-style Media Carousel -->
-      <div v-if="post.media && post.media.length > 0" class="mt-4 relative">
+      <div v-if="displayMedia && displayMedia.length > 0" class="mt-4 relative">
         <div class="rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 aspect-square relative">
           <!-- Media Container -->
           <div class="relative w-full h-full overflow-hidden">
@@ -93,7 +111,7 @@
               :style="{ transform: `translateX(-${currentSlide * 100}%)` }"
             >
               <div 
-                v-for="(media, index) in post.media" 
+                v-for="(media, index) in displayMedia" 
                 :key="index"
                 class="w-full h-full flex-shrink-0"
               >
@@ -102,7 +120,9 @@
                   v-if="media.type === 'image'"
                   :src="media.url" 
                   :alt="'Media ' + (index + 1) + ' from ' + post.username"
-                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  class="w-full h-full object-cover select-none"
+                  draggable="false"
                 >
                 <!-- Video -->
                 <div 
@@ -121,7 +141,7 @@
           </div>
 
           <!-- Navigation Arrows (only show if multiple media items) -->
-          <div v-if="post.media.length > 1">
+          <div v-if="displayMedia.length > 1">
             <!-- Previous Arrow -->
             <button 
               v-if="currentSlide > 0"
@@ -135,7 +155,7 @@
 
             <!-- Next Arrow -->
             <button 
-              v-if="currentSlide < post.media.length - 1"
+              v-if="currentSlide < displayMedia.length - 1"
               @click="nextSlide"
               class="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 w-8 h-8 bg-black/50 hover:bg-black/70 text-white rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
             >
@@ -147,9 +167,9 @@
         </div>
 
         <!-- Dots Indicator (only show if multiple media items) -->
-        <div v-if="post.media.length > 1" class="flex justify-center mt-3 space-x-1">
+        <div v-if="displayMedia.length > 1" class="flex justify-center mt-3 space-x-1">
           <button
-            v-for="(media, index) in post.media"
+            v-for="(media, index) in displayMedia"
             :key="index"
             @click="goToSlide(index)"
             class="dot-btn p-0 m-0 border-0 outline-none focus:outline-none focus:ring-0 inline-block w-1.5 h-1.5 md:w-2 md:h-2 rounded-full shrink-0 transition-all duration-200"
@@ -164,49 +184,50 @@
         </div>
 
         <!-- Media Counter -->
-        <div v-if="post.media.length > 1" class="absolute top-3 right-3 bg-black/50 text-white text-sm px-2 py-1 rounded-full backdrop-blur-sm">
-          {{ currentSlide + 1 }} / {{ post.media.length }}
+        <div v-if="displayMedia.length > 1" class="absolute top-3 right-3 bg-black/50 text-white text-sm px-2 py-1 rounded-full backdrop-blur-sm">
+          {{ currentSlide + 1 }} / {{ displayMedia.length }}
         </div>
       </div>
       
       <!-- Post Tags -->
-      <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mt-4">
-        <span 
+      <div v-if="post.tags && post.tags.length > 0" class="flex flex-wrap gap-2 mt-5">
+        <button 
           v-for="tag in post.tags"
           :key="tag"
-          class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 cursor-pointer hover:bg-blue-100 hover:text-blue-700 dark:hover:bg-blue-900/30 dark:hover:text-blue-300 transition-all duration-200"
+          class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 dark:from-blue-900/30 dark:to-indigo-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 cursor-pointer hover:from-blue-100 hover:to-indigo-100 dark:hover:from-blue-900/50 dark:hover:to-indigo-900/50 transition-all duration-200 transform hover:scale-105"
           @click="searchByTag(tag)"
         >
           #{{ tag }}
-        </span>
+        </button>
       </div>
-    </div>
+    </main>
 
-    <!-- Post Actions (share removed) -->
-    <div class="flex items-center justify-between pt-3 sm:pt-4 border-t border-gray-100 dark:border-gray-700">
-      <div class="flex items-center space-x-0.5 sm:space-x-1">
+    <!-- Post Actions -->
+    <footer class="flex items-center justify-between pt-4 sm:pt-5 border-t border-gray-100 dark:border-gray-700">
+      <div class="flex items-center space-x-1 sm:space-x-2">
         <!-- Like Button -->
         <button 
-          @click="$emit('like', post.id)"
-          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group"
+          @click="favorite"
+          class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group-like"
           :class="{ 'bg-red-50 dark:bg-red-900/20': post.isLiked }"
+          :aria-label="post.isLiked ? 'Unlike post' : 'Like post'"
         >
           <div class="relative">
             <svg 
-              :class="post.isLiked ? 'text-red-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-hover:text-red-500'"
-              class="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200"
+              :class="post.isLiked ? 'text-red-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-like:hover:text-red-500'"
+              class="w-5 h-5 sm:w-6 sm:h-6 transition-all duration-200"
               fill="currentColor" 
               viewBox="0 0 20 20"
             >
               <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
             </svg>
             <div v-if="post.isLiked" class="absolute inset-0 animate-ping">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5 text-red-500 opacity-75" fill="currentColor" viewBox="0 0 20 20">
+              <svg class="w-5 h-5 sm:w-6 sm:h-6 text-red-500 opacity-75" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
               </svg>
             </div>
           </div>
-          <span class="text-xs sm:text-sm font-semibold" :class="post.isLiked ? 'text-red-500' : 'text-gray-700 dark:text-gray-300 group-hover:text-red-500'">
+          <span class="text-sm sm:text-base font-semibold" :class="post.isLiked ? 'text-red-500' : 'text-gray-700 dark:text-gray-300 group-like:hover:text-red-500'">
             {{ formatNumber(post.likes) }}
           </span>
         </button>
@@ -214,56 +235,80 @@
         <!-- Comment Button -->
         <button 
           @click="toggleComments"
-          class="flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group"
+          class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group-comment"
           :class="{ 'bg-blue-50 dark:bg-blue-900/20': showComments }"
+          :aria-label="showComments ? 'Hide comments' : 'Show comments'"
         >
-          <svg class="w-4 h-4 sm:w-5 sm:h-5 text-gray-500 dark:text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 dark:text-gray-400 group-comment:hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span class="text-xs sm:text-sm font-semibold text-gray-700 dark:text-gray-300 group-hover:text-blue-500 transition-colors">{{ formatNumber(post.comments) }}</span>
+          <span class="text-sm sm:text-base font-semibold text-gray-700 dark:text-gray-300 group-comment:hover:text-blue-500 transition-colors">{{ formatNumber(post.comments) }}</span>
         </button>
       </div>
 
       <!-- Save Button -->
       <button 
         @click="toggleSave"
-        class="p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 group"
+  class="p-2 sm:p-2.5 rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 group-save"
         :class="{ 'bg-yellow-50 dark:bg-yellow-900/20': isSaved }"
+        :aria-label="isSaved ? 'Unsave post' : 'Save post'"
       >
         <svg 
-          :class="isSaved ? 'text-yellow-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-hover:text-yellow-500'"
-          class="w-4 h-4 sm:w-5 sm:h-5 transition-all duration-200"
+          :class="isSaved ? 'text-yellow-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-save:hover:text-yellow-500'"
+          class="w-5 h-5 sm:w-6 sm:h-6 transition-all duration-200"
           fill="currentColor" 
           viewBox="0 0 20 20"
         >
           <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
         </svg>
       </button>
-    </div>
+    </footer>
 
     <!-- Comments Section -->
-    <div v-if="showComments" class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 space-y-4">
+    <section v-if="showComments" class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 space-y-5">
       <!-- Add Comment Input -->
-      <div class="flex items-start space-x-3">
-        <img :src="currentUserAvatar" class="w-9 h-9 rounded-full ring-2 ring-gray-100 dark:ring-gray-700" alt="Your avatar">
-        <div class="flex-1">
-          <div class="relative">
+      <div class="flex items-start space-x-4">
+        <AvatarFallback
+          :src="currentUserAvatar"
+          alt="Your avatar"
+          :firstName="authStore.user?.first_name || authStore.user?.name || authStore.user?.username?.split(' ')[0] || 'U'"
+          :lastName="authStore.user?.last_name || authStore.user?.username?.split(' ')[1] || ''"
+          customClass="w-10 h-10 ring-3 ring-gray-100 dark:ring-gray-700 shadow-sm flex-shrink-0"
+        />
+        <div class="flex-1 comment-group">
+          <div class="relative bg-gradient-to-br from-gray-50 to-gray-100/50 dark:from-gray-700/50 dark:to-gray-800/50 border border-gray-200 dark:border-gray-600 rounded-2xl px-4 py-3 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-300 transition-all duration-300 shadow-sm hover:shadow-md">
             <textarea
+              ref="commentTextarea"
               v-model="newComment"
-              placeholder="Write a comment..."
-              class="w-full resize-none border border-gray-200 dark:border-gray-600 rounded-xl px-4 py-3 text-sm bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              placeholder="Write a thoughtful comment..."
+              :maxlength="commentMax"
+              @input="autoResize"
+              class="w-full resize-none bg-transparent border-0 outline-none text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 leading-relaxed scrollbar-thin"
               rows="2"
-              @keydown.meta.enter="addComment"
-              @keydown.ctrl.enter="addComment"
+              @keydown.meta.enter.prevent="addComment"
+              @keydown.ctrl.enter.prevent="addComment"
+              aria-label="Add a comment"
             ></textarea>
-            <div class="flex justify-between items-center mt-2">
-              <span class="text-xs text-gray-400">Press Cmd+Enter to post</span>
+            <div class="flex items-center justify-between mt-2 select-none">
+              <div class="flex items-center gap-3">
+                <span v-if="newComment.length" class="text-[11px] font-medium tracking-wide" :class="charRemaining < 0 ? 'text-red-500' : 'text-gray-400 dark:text-gray-500'">
+                  {{ charRemaining }}
+                </span>
+                <transition name="fade">
+                  <span v-if="commentError" class="text-[11px] text-red-500 font-medium bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">{{ commentError }}</span>
+                </transition>
+              </div>
               <button
                 @click="addComment"
-                :disabled="!newComment.trim()"
-                class="px-4 py-1.5 bg-blue-500 text-white rounded-full text-sm font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105 disabled:hover:scale-100"
+                :disabled="!newComment.trim() || adding || charRemaining < 0"
+                class="px-4 h-8 rounded-full bg-blue-600 text-white text-xs font-semibold shadow flex items-center gap-2 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                :aria-busy="adding ? 'true' : 'false'"
               >
-                Post
+                <svg v-if="adding" class="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
+                </svg>
+                <span>{{ adding ? 'Posting' : 'Post' }}</span>
               </button>
             </div>
           </div>
@@ -271,23 +316,37 @@
       </div>
 
       <!-- Comments List -->
-      <div class="space-y-4">
-        <div v-for="comment in postComments" :key="comment.id" class="group">
-          <div class="flex items-start space-x-3">
-            <img :src="comment.userAvatar" class="w-8 h-8 rounded-full ring-1 ring-gray-200 dark:ring-gray-600" :alt="comment.username">
-            <div class="flex-1 min-w-0">
-              <div class="bg-gray-50 dark:bg-gray-700 rounded-xl px-4 py-3">
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ comment.username }}</span>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(comment.date) }}</span>
+      <div class="space-y-1">
+        <transition-group name="fade-list" tag="div" class="space-y-4">
+            <article v-for="comment in postComments" :key="comment.id" class="group/item">
+              <div class="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
+                <!-- Avatar -->
+                <AvatarFallback
+                  :src="getCommentAvatar(comment)"
+                  :alt="comment.username || 'comment user'"
+                  :firstName="comment.firstName || comment.user?.first_name || comment.username?.split(' ')[0] || comment.username"
+                  :lastName="comment.lastName || comment.user?.last_name || comment.username?.split(' ')[1] || ''"
+                  customClass="w-9 h-9 ring-2 ring-gray-100 dark:ring-gray-700 object-cover flex-shrink-0"
+                />
+                <!-- Body -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 text-xs sm:text-sm mb-0.5">
+                    <span class="font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[140px] sm:max-w-[200px]" :class="isOwnComment(comment) ? 'text-blue-600 dark:text-blue-400' : ''">
+                      {{ comment.username || 'User' }}
+                    </span>
+                    <span class="text-gray-400 dark:text-gray-500">•</span>
+                    <span class="text-gray-500 dark:text-gray-400">{{ formatDate(comment.date || comment.created_at) }}</span>
+                    <span v-if="comment._optimistic" class="animate-pulse text-[10px] px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium tracking-wide">
+                      sending...
+                    </span>
+                  </div>
+                  <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">{{ comment.content || comment.text }}</p>
                 </div>
-                <p class="text-sm text-gray-800 dark:text-gray-200 leading-relaxed">{{ comment.content }}</p>
               </div>
-            </div>
-          </div>
-        </div>
+            </article>
+        </transition-group>
       </div>
-    </div>
+    </section>
 
     <!-- Edit Post Modal -->
     <CreatePostModal
@@ -299,12 +358,16 @@
       @close="showEdit = false"
       @submit="submitEdit"
     ></CreatePostModal>
-  </div>
+  </article>
 </template>
 
 <script setup>
-import CreatePostModal from '@/components/common/CreatePostModal.vue'
-import { ref } from 'vue'
+import { CreatePostModal } from '@/components/feed'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import { ref, watch, computed, nextTick } from 'vue'
+import { usePostsStore } from '@/store/posts'
+import { useAuthStore } from '@/store/auth'
+import notify from '@/utils/notify'
 
 const props = defineProps({
   post: {
@@ -331,26 +394,83 @@ const newComment = ref('')
 const showMenu = ref(false)
 const showEdit = ref(false)
 
-// Mock current user avatar
-const currentUserAvatar = ref('/public/images/me.png')
-
-// Mock comments data
-const postComments = ref([
-  {
-    id: 1,
-    username: 'John Doe',
-    userAvatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-    content: 'Great post! Really enjoyed reading this.',
-    date: '2h ago'
-  },
-  {
-    id: 2,
-    username: 'Alice Johnson',
-    userAvatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-    content: 'Thanks for sharing this insight.',
-    date: '3h ago'
+// Current authenticated user's avatar (fallback to default)
+const authStore = useAuthStore()
+const currentUserAvatar = computed(() => {
+  const u = authStore.user
+  const raw = u?.avatar || u?.profile_image || u?.profileImage || u?.profile_image_url || u?.avatarUrl
+  if (raw) {
+    try { return resolveAsset(raw) } catch (_) { return raw }
   }
-])
+  return '/images/me.png'
+})
+
+// Comments local reactive list (initialized from post.commentsList if present)
+const postComments = ref(props.post.commentsList ? [...props.post.commentsList] : [])
+const commentError = ref('')
+const commentTextarea = ref(null)
+const commentMax = 500
+const charRemaining = computed(() => commentMax - newComment.value.length)
+
+// Keep in sync if parent updates post.commentsList
+watch(() => props.post.commentsList, (val) => {
+  if (Array.isArray(val)) {
+    postComments.value = [...val]
+  }
+})
+
+const postsStore = usePostsStore()
+
+// ---- Asset URL Normalization ----
+// Ensure storage assets don't contain /api and have full base URL.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '') // strip trailing /api
+const WINDOW_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
+
+function resolveAsset(raw) {
+  if (!raw) return raw
+  // If already absolute (http/https), just strip any trailing /api segment before /storage
+  if (/^https?:/i.test(raw)) {
+    return raw.replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
+  }
+  // If it starts with /api/storage or storage paths
+  if (raw.startsWith('/api/storage')) {
+    return BASE_ORIGIN + raw.replace('/api/storage', '/storage')
+  }
+  if (raw.startsWith('/storage/')) {
+    return BASE_ORIGIN + raw
+  }
+  // Backend might return relative like storage/profile/xxx.jpg
+  if (raw.startsWith('storage/')) {
+    return BASE_ORIGIN + '/' + raw
+  }
+  // posts/images or posts/videos relative paths
+  if (raw.startsWith('posts/')) {
+    return BASE_ORIGIN + '/storage/' + raw
+  }
+  // Generic relative path without leading storage (e.g. profile_images/.. or avatars/..)
+  if (!raw.startsWith('/')) {
+    return BASE_ORIGIN + '/storage/' + raw.replace(/^\/*/, '')
+  }
+  // If we get here and it's a root-relative path not handled above
+  if (raw.startsWith('/')) {
+    // Prefer base origin else window origin
+    return (BASE_ORIGIN || WINDOW_ORIGIN) + raw
+  }
+  return raw
+}
+
+const displayMedia = computed(() => {
+  if (!props.post.media || !Array.isArray(props.post.media)) return null
+  return props.post.media.map(m => ({
+    ...m,
+    url: resolveAsset(m.url || m.path || m.src)
+  }))
+})
+
+const displayImage = computed(() => {
+  return resolveAsset(props.post.image)
+})
 
 // Instagram-style carousel methods
 const nextSlide = () => {
@@ -371,26 +491,21 @@ const goToSlide = (index) => {
 
 // Methods
 const formatDate = (date) => {
-  if (typeof date === 'string') {
-    return date;
-  }
-  
-  if (date instanceof Date && !isNaN(date)) {
-    const now = new Date();
-    const diff = now - date;
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return 'just now';
-    if (minutes < 60) return `${minutes}m ago`;
-    if (hours < 24) return `${hours}h ago`;
-    if (days < 7) return `${days}d ago`;
-    
-    return date.toLocaleDateString();
-  }
-  
-  return 'recently';
+  // Accept ISO string or Date
+  const d = typeof date === 'string' ? new Date(date) : date instanceof Date ? date : null
+  if (!d || isNaN(d)) return 'recently'
+  const now = Date.now()
+  const diff = now - d.getTime()
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 5) return 'just now'
+  if (seconds < 60) return seconds + 's'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return minutes + 'm'
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return hours + 'h'
+  const days = Math.floor(hours / 24)
+  if (days < 7) return days + 'd'
+  return d.toLocaleDateString()
 }
 
 const formatNumber = (num) => {
@@ -405,25 +520,111 @@ const toggleComments = () => {
 }
 
 const toggleSave = () => {
-  isSaved.value = !isSaved.value
-  // Emit save event or handle save logic
+  // Optimistic toggle with API call
+  if (adding.value) return
+  const target = props.post.id
+  const currentlySaved = isSaved.value || props.post.isSaved
+  isSaved.value = !currentlySaved
+  props.post.isSaved = isSaved.value
+  if (!currentlySaved) {
+    postsStore.savePostApi(target).then(res => {
+      if (res?.success === false) {
+        isSaved.value = currentlySaved
+        props.post.isSaved = currentlySaved
+        notify.error(res.error || 'Failed to save')
+      } else {
+        notify.success(res?.message || 'Saved')
+      }
+    }).catch(err => {
+      isSaved.value = currentlySaved
+      props.post.isSaved = currentlySaved
+      notify.error(err?.message || 'Failed to save')
+    })
+  } else {
+    postsStore.unsavePostApi(target).then(res => {
+      if (res?.success === false) {
+        isSaved.value = currentlySaved
+        props.post.isSaved = currentlySaved
+        notify.error(res.error || 'Failed to unsave')
+      } else {
+        notify.info(res?.message || 'Removed from saved')
+      }
+    }).catch(err => {
+      isSaved.value = currentlySaved
+      props.post.isSaved = currentlySaved
+      notify.error(err?.message || 'Failed to unsave')
+    })
+  }
 }
 
 
-const addComment = () => {
-  if (newComment.value.trim()) {
-    const comment = {
-      id: Date.now(),
-      username: 'Current User',
-      userAvatar: currentUserAvatar.value,
-      content: newComment.value,
-      date: 'just now'
-    }
-    postComments.value.unshift(comment)
-    newComment.value = ''
-    // Update post comments count
-    props.post.comments = (props.post.comments || 0) + 1
+const adding = ref(false)
+function autoResize(e) {
+  const el = e?.target || commentTextarea.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 280) + 'px'
+}
+const addComment = async () => {
+  commentError.value = ''
+  if (!newComment.value.trim() || adding.value) return
+  const content = newComment.value.trim()
+  adding.value = true
+  const optimistic = {
+    id: Date.now(),
+    username: authStore.userName || 'You',
+    userAvatar: currentUserAvatar.value,
+    content,
+    date: new Date().toISOString(),
+    _optimistic: true
   }
+  postComments.value.unshift(optimistic)
+  newComment.value = ''
+  await nextTick(() => autoResize())
+  try {
+    const res = await postsStore.addCommentApi(props.post.id, { content })
+    const saved = res?.comment || res?.data?.comment
+    if (saved) {
+      const idx = postComments.value.findIndex(c => c.id === optimistic.id)
+      if (idx !== -1) {
+        postComments.value[idx] = {
+          id: saved.id || optimistic.id,
+          username: saved.user?.username || saved.user?.name || optimistic.username,
+          userAvatar: saved.user?.avatar || saved.user?.profile_image_url || optimistic.userAvatar,
+          content: saved.content || saved.text || content,
+          date: saved.created_at || saved.createdAt || new Date().toISOString()
+        }
+      }
+    } else if (res?.success === false) {
+      throw new Error(res.error || 'Failed to save comment')
+    }
+  } catch (e) {
+    postComments.value = postComments.value.filter(c => c.id !== optimistic.id)
+    commentError.value = e?.message || 'Failed to post comment'
+  } finally {
+    adding.value = false
+  }
+}
+
+// Helpers for comment avatars / ownership
+function isOwnComment(comment) {
+  if (!comment) return false
+  // Prefer numeric ID comparison when available
+  const currentId = authStore.user?.id
+  const commentUserId = comment.user_id || comment.userId || comment.user?.id || comment.user?.user_id
+  if (currentId && commentUserId && Number(currentId) === Number(commentUserId)) return true
+  // Fallback to username comparison (case-insensitive)
+  const current = authStore.userName || authStore.user?.userName || authStore.user?.username
+  const cName = comment.username || comment.userName || comment.user?.username || comment.user?.userName
+  return current && cName && current.toLowerCase() === cName.toLowerCase()
+}
+
+function getCommentAvatar(comment) {
+  if (!comment) return currentUserAvatar.value
+  if (isOwnComment(comment)) return currentUserAvatar.value
+  const raw = comment.userAvatar || comment.avatar || comment.user?.avatar || comment.user?.profile_image_url || comment.user?.profile_image
+  if (raw) return resolveAsset(raw)
+  return currentUserAvatar.value
 }
 
 const searchByTag = (tag) => {
@@ -435,10 +636,36 @@ function openEditModal() {
   showEdit.value = true
 }
 
+
+function extractBackendId(p) {
+  if (!p) return null
+  if (p.originalId && /^\d+$/.test(String(p.originalId))) return Number(p.originalId)
+  if (typeof p.id === 'number') return p.id
+  if (typeof p.id === 'string') {
+    const tail = p.id.split('-').pop()
+    if (/^\d+$/.test(tail)) return Number(tail)
+  }
+  return null
+}
+
 function deletePost() {
   showMenu.value = false
-  emit('delete', props.post.id)
+  const backendId = extractBackendId(props.post)
+  const idToEmit = backendId || props.post.id
+  if (backendId) {
+    postsStore.deletePostApi(backendId)
+      .then(() => emit('delete', idToEmit))
+      .catch(() => emit('delete', idToEmit))
+  } else emit('delete', idToEmit)
 }
+
+function favorite() {
+  const backendId = extractBackendId(props.post)
+  postsStore.favoritePostApi(backendId || props.post.id)
+  emit('like', props.post.id)
+}
+
+
 
 function submitEdit(edited) {
   showEdit.value = false
@@ -461,6 +688,11 @@ function submitEdit(edited) {
   100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
 .group:hover .fa-heart,
 .group:hover svg[data-heart] {
   animation: heartbeat 0.6s ease-in-out;
@@ -472,11 +704,12 @@ function submitEdit(edited) {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Custom focus styles */
+/* Enhanced focus styles */
 button:focus-visible {
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+  transform: scale(1.02);
 }
 
 /* Better text rendering */
@@ -487,28 +720,30 @@ p, span, div {
 
 /* Enhanced scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: transparent;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d1d5db;
-  border-radius: 3px;
+  background: linear-gradient(45deg, #d1d5db, #9ca3af);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
+  background: linear-gradient(45deg, #9ca3af, #6b7280);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: linear-gradient(45deg, #4b5563, #374151);
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: linear-gradient(45deg, #6b7280, #4b5563);
 }
 
 /* Instagram-style carousel transitions */
@@ -527,10 +762,10 @@ p, span, div {
   transform: translateX(-100%);
 }
 
-/* Dot indicator animations */
+/* Enhanced dot indicator animations */
 @keyframes dotPulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
+  50% { transform: scale(1.3); }
   100% { transform: scale(1); }
 }
 
@@ -541,27 +776,134 @@ p, span, div {
 .dot-btn { 
   appearance: none; 
   -webkit-appearance: none; 
-  /* Remove mobile tap highlight and any default outlines that make the dot look bigger on phones */
   -webkit-tap-highlight-color: transparent;
   outline: none;
-  /* Ensure tiny size regardless of global mobile button min-size rules */
   min-width: 0 !important;
   min-height: 0 !important;
   line-height: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
 .dot-btn:focus,
 .dot-btn:active {
-  /* Cancel the component-wide button:focus shadow for tiny dots */
   outline: none !important;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
 }
 
 /* No scrollbar style for overflow-x-auto */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
+/* Enhanced fade transitions */
+.fade-enter-active, .fade-leave-active { 
+  transition: opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.fade-enter-from, .fade-leave-to { 
+  opacity: 0; 
+}
+
+/* Enhanced list transitions with stagger */
+.fade-list-enter-active { 
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.fade-list-leave-active { 
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+  position: absolute; 
+}
+.fade-list-enter-from { 
+  opacity: 0; 
+  transform: translateY(12px) scale(0.95); 
+}
+.fade-list-leave-to { 
+  opacity: 0; 
+  transform: translateY(-8px) scale(0.95); 
+}
+
+/* Thin scrollbar for comment textarea */
+.scrollbar-thin::-webkit-scrollbar { 
+  height: 6px; 
+  width: 6px; 
+}
+.scrollbar-thin::-webkit-scrollbar-track { 
+  background: transparent; 
+  border-radius: 3px;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb { 
+  background: linear-gradient(45deg, #cbd5e1, #94a3b8); 
+  border-radius: 3px; 
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #94a3b8, #64748b);
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb { 
+  background: linear-gradient(45deg, #475569, #334155); 
+}
+.dark .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #64748b, #475569);
+}
+
+/* Prose styling for content */
+.prose {
+  color: inherit;
+}
+
+.prose p {
+  margin: 0;
+}
+
+/* Enhanced hover effects */
+.group-like:hover svg {
+  animation: heartbeat 0.6s ease-in-out;
+}
+
+.group-comment:hover svg {
+  animation: bounce-in 0.4s ease-out;
+}
+
+.group-save:hover svg {
+  animation: pulse-ring 0.6s ease-out;
+}
+
+/* Mobile responsive adjustments */
 @media (max-width: 640px) {
-  /* Explicitly override global mobile target sizes for these dots */
-  .dot-btn { min-width: 0 !important; min-height: 0 !important; }
+  .dot-btn { 
+    min-width: 0 !important; 
+    min-height: 0 !important; 
+  }
+  
+  /* Adjust spacing for mobile */
+  article {
+    margin-bottom: 1rem;
+  }
+  
+  /* Optimize touch targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  .dot-btn {
+    min-height: 24px;
+    min-width: 24px;
+  }
+}
+
+/* Dark mode enhancements */
+.dark article {
+  backdrop-filter: blur(10px);
+  background: rgba(31, 41, 55, 0.95);
+}
+
+/* Loading state improvements */
+@keyframes shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.loading-shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
 }
 </style>

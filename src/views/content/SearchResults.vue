@@ -258,8 +258,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSearchStore } from '@/store/search'
 import Post from '@/components/common/Post.vue'
-import NewsPost from '@/components/common/NewsPost.vue'
-import CommunityCard from '@/components/community/CommunityCard.vue'
+import { NewsPost } from '@/components/feed'
+import { CommunityCard } from '@/components/fandom'
 
 const route = useRoute()
 const router = useRouter()

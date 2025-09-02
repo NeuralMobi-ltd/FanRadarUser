@@ -132,7 +132,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useNewsStore } from '@/store/news'
-import NewsPost from '@/components/common/NewsPost.vue'
+import { NewsPost } from '@/components/feed'
 
 const newsStore = useNewsStore()
 

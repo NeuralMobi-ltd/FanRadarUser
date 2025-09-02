@@ -1,90 +1,77 @@
-%% FanRadars Core Domain Class Diagram
+%% FanRadar Simplified Core
 classDiagram
   class User {
-    +int id
-    +string username
-    +string email
-    +string role
-    +string first_name
-    +string last_name
-    +date date_naissance
-    +string profile_image
-    +login()
-    +follow(User)
+    +id:int
+    +first_name:string
+    +last_name:string
+    +email:string
+    +profile_image:string?
+    +follow(userId)
+    +unfollow(userId)
   }
 
   class Fandom {
-    +int id
-    +string name
-    +string handle
-    +string description
-    +int members_count
-    +join(User)
-    +leave(User)
+    +id:int
+    +name:string
+    +description:string?
+    +members_count:int
+    +join()
   }
 
   class Post {
-    +int id
-    +string content
-    +datetime createdAt
-    +int likes
-    +int comments
-    +create()
-    +like(User)
-    +addComment(Comment)
+    +id:int
+    +description:string?
+    +media:string[]  // URLs
+    +tags:string[]
+    +created_at:datetime
+    +addComment()
+    +favorite()
   }
 
   class Comment {
-    +int id
-    +string content
-    +datetime createdAt
-  }
-
-  class Product {
-    +int id
-    +string name
-    +float price
-    +string currency
-    +int stock
-  }
-
-  class Order {
-    +int id
-    +string status
-    +float total
-    +place()
-    +cancel()
-  }
-
-  class CartItem {
-    +int id
-    +int quantity
-    +float unit_price
-  }
-
-  class Notification {
-    +int id
-    +string type
-    +json data
-    +datetime created_at
-    +boolean read
-    +markRead()
+    +id:int
+    +content:string
+    +created_at:datetime
   }
 
   class Hashtag {
-    +int id
-    +string tag
-    +int uses
+    +id:int
+    +tag:string
   }
 
-  User "1" -- "*" Post : author
-  User "1" -- "*" Comment : author
-  Post "1" -- "*" Comment : comments
-  Fandom "1" -- "*" Post : posts
+  class Product {
+    +id:int
+    +name:string
+    +price:number
+    +stock:int
+  }
+
+  class Order {
+    +id:int
+    +status:string
+    +total:number
+  }
+
+  class CartItem {
+    +id:int
+    +quantity:int
+    +unit_price:number
+  }
+
+  class Notification {
+    +id:int
+    +type:string
+    +read:boolean
+  }
+
+  User "1" -- "*" Post : creates
+  User "1" -- "*" Comment : writes
+  Post "1" -- "*" Comment : has
+  Fandom "1" -- "*" Post : hosts
   Fandom "*" -- "*" User : members
   User "*" -- "*" User : follows
-  User "1" -- "*" Notification : notifications
-  User "1" -- "*" Order : orders
-  Order "1" -- "*" CartItem : items
-  Product "1" -- "*" CartItem : in
   Post "*" -- "*" Hashtag : tags
+  User "1" -- "*" Notification : receives
+  User "1" -- "*" Order : places
+  Order "1" -- "*" CartItem : items
+  Product "1" -- "*" CartItem : referenced

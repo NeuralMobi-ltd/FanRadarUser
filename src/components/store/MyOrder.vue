@@ -114,10 +114,25 @@
       </div>
     </div>
   </div>
+  <ConfirmModal
+    v-model="showCancel"
+    tone="danger"
+    title="Cancel order?"
+    :message="'Order '+ pendingCancelId +' will be marked as cancelled.'"
+    hint="This action cannot be undone."
+    confirm-text="Cancel Order"
+    loading-text="Cancelling..."
+    confirm-icon="fas fa-ban"
+    icon="fas fa-triangle-exclamation"
+    :loading="cancelling"
+    @confirm="confirmCancel"
+    @cancel="resetCancel"
+  />
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 
 const activeStatus = ref('all')
 const orderStatuses = ref(['all', 'processing', 'shipped', 'delivered', 'cancelled'])
@@ -209,12 +224,21 @@ const getStatusColor = (status) => {
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-const cancelOrder = (orderId) => {
-  if (confirm('Are you sure you want to cancel this order?')) {
-    const order = orders.value.find(o => o.id === orderId)
-    if (order) {
-      order.status = 'cancelled'
-    }
+const showCancel = ref(false)
+const pendingCancelId = ref(null)
+const cancelling = ref(false)
+const cancelOrder = (orderId) => { pendingCancelId.value = orderId; showCancel.value = true }
+function resetCancel(){ pendingCancelId.value = null }
+async function confirmCancel(){
+  if(!pendingCancelId.value) return
+  cancelling.value = true
+  try {
+    const order = orders.value.find(o => o.id === pendingCancelId.value)
+    if (order) order.status = 'cancelled'
+  } finally {
+    cancelling.value = false
+    showCancel.value = false
+    pendingCancelId.value = null
   }
 }
 </script>

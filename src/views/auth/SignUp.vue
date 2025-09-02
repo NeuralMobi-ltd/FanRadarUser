@@ -1,20 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-100 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <!-- Logo/Brand Section -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full mb-4">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-          </svg>
+  <div class="min-h-screen relative flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-sky-100 dark:from-gray-900 dark:via-slate-900 dark:to-blue-950">
+    <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_25%_25%,rgba(59,130,246,0.18),transparent_60%),radial-gradient(circle_at_75%_75%,rgba(14,165,233,0.25),transparent_65%)]"></div>
+    <div class="w-full max-w-md relative group">
+      <div class="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-blue-500/40 via-blue-400/40 to-sky-400/40 opacity-40 blur transition group-hover:opacity-70 dark:opacity-60 dark:group-hover:opacity-90"></div>
+      <div class="relative rounded-3xl overflow-hidden shadow-xl dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.55)] border border-blue-100/60 dark:border-white/5 bg-white/95 supports-[backdrop-filter]:bg-white/90 dark:bg-gray-800/70 backdrop-blur-xl">
+        <!-- Logo/Brand Section -->
+        <div class="pt-10 px-10 text-center flex flex-col items-center">
+          <div class="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-sky-400 p-[2px] shadow-[0_10px_28px_-6px_rgba(37,99,235,0.5)] animate-[fadeIn_0.55s_ease] relative after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:pointer-events-none after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.9),0_0_0_1px_rgba(255,255,255,0.4)] dark:after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.25),0_0_0_1px_rgba(255,255,255,0.08)] after:opacity-90">
+            <div class="w-full h-full rounded-2xl bg-white/70 dark:bg-gray-900/40 backdrop-blur-md flex items-center justify-center ring-1 ring-white/60 dark:ring-white/10">
+              <img src="/images/F.png" alt="FanRadar Logo" class="w-16 h-16 object-contain" />
+            </div>
+          </div>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Create Account</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Join the community today</p>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Create Account</h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">Join us today</p>
-      </div>
-
-      <!-- Main Card -->
-      <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-        <div class="p-8">
+        <div class="px-8 pb-10 pt-6">
           <form @submit.prevent="onSignUp">
             <div class="grid grid-cols-1 gap-6">
               <div class="grid grid-cols-2 gap-4">
@@ -33,7 +33,7 @@
                       id="first_name" 
                       type="text" 
                       required 
-                      class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                      class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                       placeholder="First name"
                     />
                   </div>
@@ -54,34 +54,15 @@
                       id="last_name" 
                       type="text" 
                       required 
-                      class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                      class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                       placeholder="Last name"
                     />
                   </div>
                 </div>
               </div>
               
-              <div class="space-y-2">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="username">
-                  Username
-                </label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                    </svg>
-                  </div>
-                  <input 
-                    v-model="username" 
-                    id="username" 
-                    type="text" 
-                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
-                    placeholder="Choose a username (optional)"
-                  />
-                </div>
-              </div>
               
-              <div class="space-y-2">
+              <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
                   Email Address
                 </label>
@@ -96,13 +77,13 @@
                     id="email" 
                     type="email" 
                     required 
-                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                     placeholder="Enter your email"
                   />
                 </div>
               </div>
               
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-2 gap-4 animate-[fadeIn_0.6s_ease]">
                 <div class="space-y-2">
                   <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="birth_date">
                     Birth Date
@@ -112,7 +93,7 @@
                     id="birth_date"
                     type="date"
                     required
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white transition-all duration-200"
+                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white transition-all duration-200"
                   />
                 </div>
                 
@@ -121,19 +102,29 @@
                     Gender
                   </label>
                   <div class="flex gap-3 pt-2">
-                    <label class="inline-flex items-center">
-                      <input type="radio" v-model="gender" value="male" required class="form-radio text-indigo-600 focus:ring-indigo-500" />
-                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Male</span>
+                    <label class="relative flex-1 cursor-pointer">
+                      <input type="radio" v-model="gender" value="male" required class="sr-only peer" />
+                      <div class="h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200
+                                   hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700/60
+                                   peer-checked:text-blue-700 dark:peer-checked:text-sky-300 peer-checked:border-blue-500
+                                   peer-checked:shadow-[0_0_0_2px_rgba(59,130,246,0.25)] dark:peer-checked:shadow-[0_0_0_2px_rgba(59,130,246,0.35)] peer-checked:bg-gradient-to-r peer-checked:from-blue-50 peer-checked:to-sky-50 dark:peer-checked:from-blue-900/40 dark:peer-checked:to-sky-900/40">
+                        Male
+                      </div>
                     </label>
-                    <label class="inline-flex items-center">
-                      <input type="radio" v-model="gender" value="female" required class="form-radio text-indigo-600 focus:ring-indigo-500" />
-                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Female</span>
+                    <label class="relative flex-1 cursor-pointer">
+                      <input type="radio" v-model="gender" value="female" required class="sr-only peer" />
+                      <div class="h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200
+                                   hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700/60
+                                   peer-checked:text-blue-700 dark:peer-checked:text-sky-300 peer-checked:border-blue-500
+                                   peer-checked:shadow-[0_0_0_2px_rgba(59,130,246,0.25)] dark:peer-checked:shadow-[0_0_0_2px_rgba(59,130,246,0.35)] peer-checked:bg-gradient-to-r peer-checked:from-blue-50 peer-checked:to-sky-50 dark:peer-checked:from-blue-900/40 dark:peer-checked:to-sky-900/40">
+                        Female
+                      </div>
                     </label>
                   </div>
                 </div>
               </div>
               
-              <div class="space-y-2">
+              <div class="space-y-2 animate-[fadeIn_0.65s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
                   Password
                 </label>
@@ -148,7 +139,7 @@
                     :type="showPassword ? 'text' : 'password'"
                     id="password" 
                     required 
-                    class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                    class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                     placeholder="Create a password"
                   />
                   <button type="button"
@@ -156,13 +147,8 @@
                     @click="showPassword = !showPassword"
                     tabindex="-1"
                   >
-                    <svg v-if="showPassword" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464M14.12 14.12l1.415 1.415M14.12 14.12L18.75 18.75m-4.63-4.63A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 013.95-5.593" />
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
+                    <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
+                    <span class="sr-only">{{ showPassword ? 'Hide password' : 'Show password' }}</span>
                   </button>
                 </div>
               </div>
@@ -170,16 +156,16 @@
             
             <button 
               type="submit" 
-              class="w-full mt-8 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              class="w-full mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
             >
               Create Account
             </button>
           </form>
           
-          <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-center text-gray-600 dark:text-gray-400">
+          <div class="mt-10 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
+            <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
               Already have an account?
-              <router-link to="/login" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 font-semibold ml-1 transition-colors">
+              <router-link to="/login" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">
                 Sign in
               </router-link>
             </p>
@@ -200,7 +186,6 @@ const registrationStore = useRegistrationStore()
 const router = useRouter()
 const first_name = ref('')
 const last_name = ref('')
-const username = ref('')
 const email = ref('')
 const password = ref('')
 const birth_date = ref('')
@@ -212,7 +197,6 @@ function onSignUp() {
   registrationStore.setBasicInfo({
     first_name: first_name.value,
     last_name: last_name.value,
-    username: username.value,
     email: email.value,
     password: password.value,
     birth_date: birth_date.value,
@@ -222,3 +206,7 @@ function onSignUp() {
 }
 
 </script>
+
+<style scoped>
+/* (Optional space for component-specific styles) */
+</style>

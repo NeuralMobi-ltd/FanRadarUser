@@ -78,8 +78,13 @@
         </div>
       </div>
 
+      <!-- Loading -->
+      <div v-if="loading" class="flex justify-center items-center py-24">
+        <div class="animate-spin h-10 w-10 rounded-full border-4 border-blue-500 border-t-transparent"></div>
+      </div>
+
       <!-- Fandoms Grid -->
-      <div v-if="filteredCommunities.length > 0">
+      <div v-else-if="filteredCommunities.length > 0">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           <FandomCard
             v-for="community in filteredCommunities"
@@ -99,7 +104,7 @@
       </div>
 
       <!-- Empty state -->
-      <div v-else class="flex flex-col items-center justify-center py-20 text-center">
+  <div v-else class="flex flex-col items-center justify-center py-20 text-center">
         <div class="w-32 h-32 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30 rounded-3xl flex items-center justify-center mb-6">
           <i class="fas fa-search text-4xl text-primary-500"></i>
         </div>
@@ -127,8 +132,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import FandomCard from '@/components/fandom/FandomCard.vue'
+import { ref, computed, onMounted } from 'vue'
+import { FandomCard } from '@/components/fandom'
 import { useFandomsStore } from '@/store/fandoms'
 import { useCategoriesStore } from '@/store/categories'
 
@@ -138,6 +143,7 @@ const categoriesStore = useCategoriesStore()
 
 const search = ref('')
 const activeCategory = ref('All')
+const loading = ref(false)
 
 // Get categories from store
 const categories = computed(() => categoriesStore.getCategories)
@@ -155,6 +161,18 @@ const filteredCommunities = computed(() => {
     fandoms = fandoms.filter(f => f.name.toLowerCase().includes(q) || (f.description && f.description.toLowerCase().includes(q)))
   }
   return fandoms
+})
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    await Promise.all([
+      fandomsStore.loadFromApi(),
+      fandomsStore.loadMyFandoms().catch(()=>{})
+    ])
+  } finally {
+    loading.value = false
+  }
 })
 
 </script>

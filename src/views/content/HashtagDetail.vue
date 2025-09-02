@@ -118,7 +118,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
-import NewsPost from '@/components/common/NewsPost.vue'
+import { NewsPost } from '@/components/feed'
 import { getHashtagImage } from '@/config/media'
 import { useHashtagsStore } from '@/store/hashtags'
 

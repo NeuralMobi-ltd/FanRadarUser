@@ -3,162 +3,171 @@
     <div class="flex flex-col lg:flex-row min-h-screen gap-4 lg:gap-6 overflow-hidden">
       <!-- Main Content -->
       <div class="flex-1 max-w-full lg:max-w-2xl xl:max-w-none flex flex-col overflow-hidden">
-        <!-- Create Post Section -->
-        <div class="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
+        <!-- Create Post Section (updated to mirror CreatePostModal design) -->
+        <div class="bg-white dark:bg-gray-900 rounded-3xl p-5 lg:p-6 mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
           <!-- User Avatar and Text Input -->
-          <div class="flex items-start space-x-3 sm:space-x-4">
+          <div class="flex items-start space-x-4">
             <img
               :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar || '/public/images/me.png'"
-              class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0"
+              class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
               :alt="authStore.user?.username || currentUser.username"
             >
             <div class="flex-1 min-w-0">
               <textarea
                 v-model="newPostContent"
                 :placeholder="$t('common.whatsOnYourMind')"
-                class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base font-medium min-h-[3rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-colors"
+                class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium min-h-[4rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                 rows="1"
                 @input="autoResize"
-                @focus="$event.target.style.minHeight = '5rem'"
-                @blur="$event.target.style.minHeight = '3rem'"
+                @focus="$event.target.style.minHeight = '6rem'"
+                @blur="$event.target.style.minHeight = '4rem'"
               ></textarea>
             </div>
           </div>
 
           <!-- Tags Section -->
-          <div v-if="tags.length || tagInput || showTagInput" class="mt-4 pl-13 sm:pl-16">
-            <div class="flex flex-wrap gap-2 mb-3" v-if="Array.isArray(tags) && tags.length">
+          <div v-if="showTagInput || tags.length" class="mt-5 pl-16">
+            <div class="flex flex-wrap gap-3 mb-4" v-if="Array.isArray(tags) && tags.length">
               <span
                 v-for="(tag, idx) in tags"
                 :key="idx"
-                class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700"
+                class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               >
                 #{{ tag }}
-                <button 
-                  type="button" 
-                  class="ml-2 text-blue-600 dark:text-blue-400 hover:text-red-500 transition-colors w-4 h-4 flex items-center justify-center" 
-                  @click="removeTag(idx)"
-                >
+                <button type="button" class="ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
                   <i class="fas fa-times text-xs"></i>
                 </button>
               </span>
             </div>
             <input
+              ref="tagInputEl"
               v-model="tagInput"
               @keydown.enter.prevent="addTag"
               @keydown.tab.prevent="addTag"
               type="text"
-              ref="tagInputEl"
-              class="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              class="w-full px-6 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               :placeholder="$t('common.addTagsPlaceholder')"
             />
           </div>
 
-          <!-- Selected Subcategory Badge (only show subcategory per requirement) -->
-          <div v-if="selectedSubcategory" class="mt-2 pl-13 sm:pl-16">
-            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-700">
-              <i class="fas fa-tag mr-1.5 text-xs"></i>{{ selectedSubcategory }}
+          <!-- Selected Subcategory Badge -->
+          <div v-if="selectedSubcategory" class="mt-2 pl-16">
+            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
+              <i class="fas fa-tag mr-2 text-sm"></i>
+              {{ selectedSubcategory }}
             </span>
           </div>
 
+          <!-- Scheduling Section -->
+          <div v-if="scheduleEnabled" class="pl-16 mt-4">
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
+              <div class="flex items-center gap-3">
+                <input type="datetime-local" v-model="scheduleAt" class="px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full" />
+                <button type="button" @click="clearSchedule" class="px-3 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition" v-if="scheduleAt">Clear</button>
+              </div>
+              <p class="text-[11px] text-gray-500 dark:text-gray-400">If set, the post may be auto-published at the chosen time (backend dependent).</p>
+            </div>
+          </div>
+
           <!-- Media Preview -->
-          <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-4 pl-13 sm:pl-16">
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-5 pl-16">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div 
                 v-for="(media, index) in postMedia" 
                 :key="index" 
-                class="relative bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden aspect-square"
+                class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden aspect-square group hover:shadow-lg transition-all duration-200"
               >
                 <img 
                   v-if="media.type === 'image'" 
                   :src="media.url" 
-                  class="w-full h-full object-cover" 
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" 
                 />
                 <video 
                   v-else-if="media.type === 'video'" 
                   :src="media.url" 
-                  class="w-full h-full object-cover"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                   muted
                 ></video>
                 <button 
                   @click="removeMedia(index)" 
-                  class="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                  class="absolute top-3 right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
                 >
-                  <i class="fas fa-times text-xs"></i>
+                  <i class="fas fa-times text-sm"></i>
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Action Bar -->
-          <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center space-x-1">
+          <div class="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
               <!-- Image Upload -->
-              <label class="flex items-center justify-center w-10 h-10 rounded-xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all touch-target">
-                <i class="fas fa-image text-lg"></i>
+              <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
+                <i class="fas fa-image text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
               </label>
-              
               <!-- Video Upload -->
-              <label class="flex items-center justify-center w-10 h-10 rounded-xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all touch-target">
-                <i class="fas fa-video text-lg"></i>
+              <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
+                <i class="fas fa-video text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
               </label>
-              
-              <!-- Add Tags Button -->
+              <!-- Tag Input Toggle -->
               <button 
-                @click="toggleTagInput"
-                class="flex items-center justify-center w-10 h-10 rounded-xl transition-all touch-target"
-                :class="(showTagInput || tags.length) ? 'text-green-600 bg-green-50 dark:bg-green-900/30' : 'text-green-600 hover:text-green-700 hover:bg-green-50 dark:hover:bg-green-900/20'"
-                title="Add tags"
-              >
-                <i class="fas fa-hashtag text-lg"></i>
+                @click="toggleTagInput" 
+                class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group"
+                :class="{ 'text-blue-600 bg-blue-50 dark:bg-blue-900/20': showTagInput || tags.length }"
+                title="Add tags">
+                <i class="fas fa-hashtag text-xl group-hover:scale-110 transition-transform duration-200"></i>
               </button>
-
               <!-- Category Picker -->
               <div class="relative">
-                <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-10 h-10 rounded-xl text-gray-600 hover:text-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900/20 transition-all touch-target" title="Choose category">
-                  <i class="fas fa-list text-lg"></i>
+                <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group" 
+                  :class="{ 'text-green-600 bg-green-50 dark:bg-green-900/20': selectedCategory }"
+                  title="Choose category">
+                  <i class="fas fa-list text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 </button>
-                <div v-if="showCategoryPicker" class="absolute left-0 mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-3 w-48 z-50">
-                  <div class="mb-2 text-xs text-gray-500">Category</div>
-                  <ul class="max-h-40 overflow-auto">
-                      <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
-                        <button @click.prevent="selectCategory(c.name)" 
-                          class="w-full text-left px-2 py-1 rounded text-sm text-gray-900 dark:text-white transition-colors"
-                          :class="selectedCategory === c.name ? 'bg-green-50 dark:bg-green-900/30 text-green-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700'">
-                          {{ c.name }}
-                        </button>
-                      </li>
+                <div v-if="showCategoryPicker" class="absolute left-0 bottom-full mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-bottom-2 duration-200">
+                  <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">Choose Category</div>
+                  <ul class="max-h-48 overflow-auto space-y-1">
+                    <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
+                      <button @click.prevent="selectCategory(c.name)" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-sm transition-colors duration-200 text-gray-900 dark:text-white"
+                        :class="{ 'bg-green-50 dark:bg-green-900/20 text-green-600': selectedCategory === c.name }">
+                        {{ c.name }}
+                      </button>
+                    </li>
                   </ul>
-                  <div v-if="availableSubcategories().length" class="mt-3">
-                    <div class="mb-1 text-xs text-gray-500 flex items-center gap-1">Subcategory <span class="text-red-500" v-if="needSubcategory">*</span></div>
-                    <select v-model="selectedSubcategory" @change="onSubcategorySelect" ref="subcategorySelectEl" class="w-full px-2 py-1 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500">
-                      <option value="">— select —</option>
+                  <div v-if="availableSubcategories().length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                    <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">Choose Subcategory <span class="text-red-500" v-if="needSubcategory">*</span></div>
+                    <select ref="subcategorySelectEl" v-model="selectedSubcategory" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                      <option value="">— select subcategory —</option>
                       <option v-for="(s, i) in availableSubcategories()" :key="i" :value="s">{{ s }}</option>
                     </select>
-                    <p v-if="needSubcategory && !selectedSubcategory" class="mt-1 text-[10px] text-red-500">Subcategory required.</p>
+                    <p v-if="needSubcategory && !selectedSubcategory" class="mt-2 text-xs text-red-500">Subcategory required.</p>
                   </div>
                 </div>
               </div>
+              <!-- Schedule Toggle -->
+              <button @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
+                :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
+                <i class="fas fa-clock text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              </button>
             </div>
-
             <!-- Post Button -->
             <div class="flex items-center space-x-3">
               <div v-if="creating" class="w-40 mr-2">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
-                  <div :style="{ width: `${uploadProgress}%` }" class="h-2 bg-blue-500 dark:bg-blue-400 transition-all"></div>
+                  <div :style="{ width: `${uploadProgress}%` }" class="h-2 bg-gradient-to-r from-blue-500 to-purple-500 transition-all"></div>
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ uploadProgress }}%</div>
               </div>
-
               <button
                 @click="createPost"
                 :disabled="creating || (!newPostContent.trim() && postMedia.length === 0) || (needSubcategory && !selectedSubcategory)"
-                class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-gray-600 text-white px-6 py-2.5 rounded-xl font-semibold shadow-sm disabled:cursor-not-allowed transition-all text-sm touch-target min-w-[5rem]"
+                class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
               >
-                <i v-if="creating" class="fas fa-spinner fa-spin mr-2"></i>
-                {{ $t('common.post') }}
+                <i v-if="creating" class="fas fa-spinner fa-spin text-lg"></i>
+                <span>{{ $t('common.post') }}</span>
               </button>
             </div>
           </div>
@@ -339,7 +348,7 @@
 </template>
 
 <script setup>
-import NewsPost from '@/components/common/NewsPost.vue'
+import { NewsPost } from '@/components/feed'
 import Post from '@/components/common/Post.vue'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
@@ -374,6 +383,10 @@ import AuthService from '@/services/authService'
 const fetchedProfile = ref(null)
 
 onMounted(async () => {
+  // Load home feed from backend
+  if (!postsStore.posts.length) {
+    await postsStore.fetchHomeFeed()
+  }
   try {
     const profileResp = await AuthService.getProfile()
     // AuthService.getProfile returns either the user object (mock) or API response data
@@ -405,6 +418,7 @@ const uploadProgress = ref(0)
 const createError = ref('')
 // Category picker
 const categoriesStore = useCategoriesStore()
+onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
 const selectedCategory = ref('')
 const selectedSubcategory = ref('')
 const showCategoryPicker = ref(false)
@@ -415,8 +429,11 @@ const subcategoriesMap = {
   Movies: ['Action', 'Drama', 'Comedy', 'Documentary'],
   'TV Shows': ['Drama', 'Sitcom', 'Reality', 'Anime'],
   Art: ['Painting', 'Digital', 'Illustration', 'Sculpture'],
-  Sports: ['Football', 'Basketball', 'Esports', 'Tennis']
+  // Expanded sports list to match modal
+  Sports: ['Football', 'Basketball', 'Soccer', 'Tennis', 'Cricket', 'Baseball', 'Rugby', 'Esports']
 }
+// Temporarily skip numeric subcategory IDs; backend rejecting unknown IDs.
+const subcategoryIdMap = null
 const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
 const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
 
@@ -458,6 +475,23 @@ function onSubcategorySelect() {
   if (selectedSubcategory.value) showCategoryPicker.value = false
 }
 
+// Scheduling state
+const scheduleEnabled = ref(false)
+const scheduleAt = ref('')
+function toMySqlDateTime(value) {
+  try {
+    const d = new Date(value)
+    if (isNaN(d)) return null
+    const pad = (n) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  } catch (e) { return null }
+}
+function toggleSchedule() {
+  scheduleEnabled.value = !scheduleEnabled.value
+  if (!scheduleEnabled.value) scheduleAt.value = ''
+}
+function clearSchedule() { scheduleAt.value = '' }
+
 function removeTag(idx) {
   tags.value.splice(idx, 1)
 }
@@ -493,6 +527,17 @@ async function createPost() {
   // attach category info when selected
   if (selectedCategory.value) payload.category = selectedCategory.value
   if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
+  if (selectedCategory.value) {
+    const categoryId = categoriesStore.categoryIdByName(selectedCategory.value)
+    if (categoryId) payload.category_id = categoryId
+  }
+  // subcategory_id omitted until real IDs fetched from backend
+
+  // schedule_at (ISO) if enabled
+  if (scheduleEnabled.value && scheduleAt.value) {
+    const mysql = toMySqlDateTime(scheduleAt.value)
+    if (mysql) payload.schedule_at = mysql
+  }
 
   // Attach files if present (server expects medias[] for file uploads)
   const files = postMedia.value.map(m => m.file).filter(Boolean)
@@ -516,6 +561,12 @@ async function createPost() {
         }
       }
     })
+
+    // Refresh home feed (page 1) so the new post appears with canonical backend data
+    // Ignore errors silently to preserve optimistic UX
+    try {
+      await postsStore.fetchHomeFeed()
+    } catch (_) { /* ignore */ }
 
   // success: clear inputs
   newPostContent.value = ''

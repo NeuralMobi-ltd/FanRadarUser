@@ -1,13 +1,16 @@
 import { defineStore } from 'pinia'
 import AuthService from '@/services/authService'
 import API_CONFIG from '@/config/api'
+import { setCookie, getCookie, deleteCookie } from '@/utils/cookies'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     user: null,
     loading: false,
     error: null,
-    token: localStorage.getItem('token') || null,
+  token: localStorage.getItem('token') || getCookie('auth_token') || null,
+  hydrated: false,          // indicates initialization finished
+  pendingProfile: false,    // network profile fetch in flight
     userStats: {
       followers: 132,
       following: 12,
@@ -17,7 +20,10 @@ export const useAuthStore = defineStore('auth', {
   }),
 
   getters: {
-    isAuthenticated: (state) => !!state.user && !!state.token,
+  // Authenticated when we have both a token and a user object (user is loaded from cache immediately on init)
+  isAuthenticated: (state) => !!state.token && !!state.user,
+  hasToken: (state) => !!state.token,
+  isHydrated: (state) => state.hydrated,
     userName: (state) => state.user?.userName,
     userEmail: (state) => state.user?.userEmail,
     userAvatar: (state) => state.user?.avatar,
@@ -31,23 +37,45 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     // Initialize auth store - called on app startup
     async initialize() {
-      // Prefer API profile when token exists
+      if (this.hydrated) return
+      // Always attempt to load cached user first for instant state
+      if (!this.user) {
+        this.initializeUser()
+      }
       if (this.token) {
+        this.pendingProfile = true
         try {
           await this.fetchProfile()
-          return
         } catch (e) {
-          // token might be invalid; clear and fall back to local
-          this.clearSession()
+          const status = e?.response?.status
+            || e?.status
+            || e?.response?.data?.status
+          if (status === 401) {
+            // Only clear on definite invalid token
+            this.clearSession()
+          } else {
+            // Keep cached user; soft error logged
+            console.warn('[auth] profile fetch failed, using cached user')
+          }
+        } finally {
+          this.pendingProfile = false
+          this.hydrated = true
         }
+      } else {
+        // No token; consider hydrated even if user exists (guest or stale cache)
+        this.hydrated = true
       }
-      this.initializeUser()
     },
 
-    setToken(token) {
+    setToken(token, rememberDays = 30) {
       this.token = token
-      if (token) localStorage.setItem('token', token)
-      else localStorage.removeItem('token')
+      if (token) {
+        localStorage.setItem('token', token)
+        setCookie('auth_token', token, rememberDays)
+      } else {
+        localStorage.removeItem('token')
+        deleteCookie('auth_token')
+      }
     },
 
     mapApiUserToState(apiUser) {
@@ -69,12 +97,16 @@ export const useAuthStore = defineStore('auth', {
       }
       const resolveImage = (p, fallback) => {
         if (!p) return fallback
-        // If it's already an absolute URL, return as-is
         if (/^https?:/i.test(p)) return p
-        // Otherwise prefix with API base URL (handles 'storage/..', 'default_background.png', etc.)
-        const base = import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || ''
-        const cleaned = String(p).replace(/^\/*/, '') // remove leading slashes
-        return `${base.replace(/\/$/, '')}/${cleaned}`
+        const rawBase = import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || ''
+        // If base ends with /api strip it when referencing storage assets
+        const assetBase = /\/api\/?$/.test(rawBase) ? rawBase.replace(/\/api\/?$/, '') : rawBase
+        const cleaned = String(p).replace(/^\/*/, '')
+        // Some backends return path starting with 'storage/' already; ensure single 'storage/'
+        if (/^storage\//i.test(cleaned)) {
+          return `${assetBase.replace(/\/$/, '')}/${cleaned}`
+        }
+        return `${assetBase.replace(/\/$/, '')}/${cleaned}`
       }
       return {
         id: apiUser.id,
@@ -85,7 +117,7 @@ export const useAuthStore = defineStore('auth', {
   lastName: apiUser.last_name || null,
   avatar: resolveImage(apiUser.profile_image || apiUser.avatar || apiUser.avatarUrl, '/images/me.png'),
   coverPhoto: resolveImage(apiUser.background_image || apiUser.cover_photo || apiUser.coverPhoto, ''),
-  bio: apiUser.bio || '',
+  bio: apiUser.bio || apiUser.description || '',
   birthDate: apiUser.date_naissance || apiUser.birth_date || null,
   gender: apiUser.gender || null,
         categories: categoryNames,
@@ -106,7 +138,12 @@ export const useAuthStore = defineStore('auth', {
         const payload = res?.data || res // support wrapped or direct
         const user = payload.user || payload
         this.user = this.mapApiUserToState(user)
-        // Optionally initialize posts from profile endpoint if exists
+        // Persist refreshed user immediately
+        if (this.user) {
+          const serialized = JSON.stringify(this.user)
+          localStorage.setItem('user', serialized)
+          setCookie('auth_user', serialized, 30)
+        }
         return this.user
       } catch (error) {
         this.setError(error?.response?.data?.error?.message || 'Failed to load profile')
@@ -303,7 +340,11 @@ export const useAuthStore = defineStore('auth', {
     // Initialize user from localStorage (fallback when no token)
     initializeUser() {
       try {
-        const savedUser = localStorage.getItem('user')
+        let savedUser = localStorage.getItem('user')
+        if (!savedUser) {
+          const cookieUser = getCookie('auth_user')
+          if (cookieUser) savedUser = cookieUser
+        }
         if (savedUser) {
           this.user = JSON.parse(savedUser)
           this.initializeMockPosts() // Initialize posts when user is loaded
@@ -311,11 +352,12 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error('Error loading user from localStorage:', error)
         localStorage.removeItem('user')
+        deleteCookie('auth_user')
       }
     },
     
     // Login action - call backend API
-    async login(credentials) {
+  async login(credentials) {
       this.setLoading(true)
       this.clearError()
       
@@ -325,13 +367,17 @@ export const useAuthStore = defineStore('auth', {
         const token = payload.token || payload?.data?.token
         const apiUser = payload.user || payload?.data?.user
 
-        if (token) this.setToken(token)
+  if (token) this.setToken(token)
         this.user = this.mapApiUserToState(apiUser)
         // Update stats store if backend provided
         if (apiUser?.stats) {
           this.userStats = { ...this.userStats, ...apiUser.stats }
         }
-        if (this.user) localStorage.setItem('user', JSON.stringify(this.user))
+        if (this.user) {
+          const serialized = JSON.stringify(this.user)
+          localStorage.setItem('user', serialized)
+          setCookie('auth_user', serialized, 30)
+        }
   // Remove mock posts when real feed is integrated; comment out for production
   // this.initializeMockPosts()
         return { success: true, user: this.user }
@@ -357,13 +403,39 @@ export const useAuthStore = defineStore('auth', {
               joinedDate: new Date().toISOString(),
             }
             this.user = userData
-            localStorage.setItem('user', JSON.stringify(userData))
+            const serialized = JSON.stringify(userData)
+            localStorage.setItem('user', serialized)
+            setCookie('auth_user', serialized, 7)
             this.initializeMockPosts()
             this.setError('Backend unreachable. Using mock session.')
             return { success: true, user: userData, mock: true }
           }
         } catch (_) { /* ignore */ }
         this.setError(error?.response?.data?.message || 'Login failed')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+    // Register new user (flow step 1/2)
+  async register(form) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.register(form)
+        const payload = res?.data || res
+        const token = payload.token || payload?.data?.token
+        const apiUser = payload.user || payload?.data?.user
+        if (token) this.setToken(token)
+        if (apiUser) {
+          this.user = this.mapApiUserToState(apiUser)
+          const serialized = JSON.stringify(this.user)
+          localStorage.setItem('user', serialized)
+          setCookie('auth_user', serialized, 30)
+        }
+        return { success: true, user: this.user, token }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'Registration failed')
         return { success: false, error: this.error }
       } finally {
         this.setLoading(false)
@@ -391,6 +463,9 @@ export const useAuthStore = defineStore('auth', {
       }
       this.posts = [] // Clear posts on logout
       localStorage.removeItem('user')
+      deleteCookie('auth_user')
+      this.hydrated = true
+      this.pendingProfile = false
     },
 
     // Set loading state

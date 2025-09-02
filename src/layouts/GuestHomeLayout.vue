@@ -20,7 +20,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import AuthModal from '@/components/AuthModal.vue'
+import AuthModal from '@/components/auth/AuthModal.vue'
 import GuestSidebar from '@/components/layout/Sidebar/GuestSidebar.vue'
 
 // Auth modal state

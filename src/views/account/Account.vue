@@ -54,9 +54,10 @@
               <p class="text-gray-600 dark:text-gray-300 mb-3">@{{ userProfile?.username || 'username' }}</p>
               
               <!-- Bio -->
-              <p v-if="userProfile?.bio" class="text-gray-700 dark:text-gray-300 max-w-2xl mb-4">
+              <p v-if="userProfile?.bio" class="text-gray-700 dark:text-gray-300 max-w-2xl mb-4 whitespace-pre-line">
                 {{ userProfile.bio }}
               </p>
+              <p v-else-if="isOwnProfile" class="text-gray-400 italic mb-4">Add a short bio to tell people about you.</p>
 
               <!-- Action Buttons moved here -->
               <div class="flex flex-wrap gap-2 sm:space-x-3 mb-4">
@@ -449,8 +450,9 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useUsersStore } from '@/store/users'
 import { useFandomsStore } from '@/store/fandoms'
+import { usePostsStore } from '@/store/posts'
 import Post from '@/components/common/Post.vue'
-import CommunityCard from '@/components/community/CommunityCard.vue'
+import { CommunityCard } from '@/components/fandom'
 import AuthService from '@/services/authService'
 import PostsService from '@/services/postsService'
 import FollowsService from '@/services/followsService'
@@ -460,6 +462,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const fandomsStore = useFandomsStore()
+const postsStore = usePostsStore()
 
 const loading = ref(true)
 const userProfile = ref({})
@@ -483,14 +486,8 @@ const isOwnProfile = computed(() => {
          profileUsername === 'me'
 })
 
-const myFandoms = computed(() => {
-  const user = authStore.user
-  if (!user) return []
-  // Find fandoms where user is admin or member (by username or email)
-  return fandomsStore.allFandoms.filter(f =>
-    f.role === 'admin'
-  )
-})
+// All fandoms the user belongs to (admin or member) loaded from backend
+const myFandoms = computed(() => fandomsStore.allFandoms.filter(f => f.role === 'admin' || f.role === 'member'))
 
 
 const fetchUserProfile = async () => {
@@ -506,8 +503,11 @@ const fetchUserProfile = async () => {
           const resolveImage = (p) => {
             if (!p) return p
             if (/^https?:\/\//i.test(p)) return p
-            const base = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
-            return base ? `${base}/${String(p).replace(/^\/+/, '')}` : p
+            let rawBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+            // Remove trailing /api for storage assets
+            const assetBase = /\/api$/i.test(rawBase) ? rawBase.replace(/\/api$/i, '') : rawBase
+            const cleaned = String(p).replace(/^\/+/, '')
+            return assetBase ? `${assetBase}/${cleaned}` : cleaned
           }
           userProfile.value = {
             id: u.id,
@@ -522,7 +522,8 @@ const fetchUserProfile = async () => {
             role: u.role || 'user',
             date_naissance: u.date_naissance || null,
             gender: u.gender || null,
-            preferred_categories: u.preferred_categories || []
+            preferred_categories: u.preferred_categories || [],
+            bio: u.bio || u.description || ''
           }
         }
       } catch (apiErr) {
@@ -547,6 +548,7 @@ const fetchUserProfile = async () => {
           following: foundUser.following || 0,
           posts: foundUser.posts || 0,
           role: foundUser.role || 'user',
+          bio: foundUser.bio || foundUser.description || '',
           date_naissance: foundUser.date_naissance || null,
           gender: foundUser.gender || null,
           preferred_categories: foundUser.preferred_categories || []
@@ -561,6 +563,7 @@ const fetchUserProfile = async () => {
           following: 0,
           posts: 0,
           role: 'user',
+          bio: '',
           preferred_categories: []
         }
       }
@@ -632,7 +635,8 @@ watch(() => authStore.user, (u) => {
     role: u.role || userProfile.value?.role,
     date_naissance: u.birthDate || u.date_naissance || userProfile.value?.date_naissance,
     gender: u.gender || userProfile.value?.gender,
-    preferred_categories: u.categories || u.preferred_categories || userProfile.value?.preferred_categories || []
+  preferred_categories: u.categories || u.preferred_categories || userProfile.value?.preferred_categories || [],
+  bio: u.bio || u.description || userProfile.value?.bio || ''
   }
 }, { immediate: true })
 
@@ -743,8 +747,10 @@ const normalizePost = (apiPost, index = 0) => {
     if (!isNaN(d)) dateVal = d
   }
 
+  const originalId = apiPost.id && /^\d+$/.test(String(apiPost.id)) ? Number(apiPost.id) : null
   return {
-    id: apiPost.id || `${apiPost.created_at || 'post'}-${index}`,
+    id: apiPost.id && /^\d+$/.test(String(apiPost.id)) ? apiPost.id : `${apiPost.created_at || 'post'}-${index}`,
+    originalId,
     username: userProfile.value.username,
     avatar,
     text: apiPost.description || apiPost.content || '',
@@ -772,17 +778,15 @@ const toggleFollow = () => {
 
 // Add methods for editing and deleting posts
 function deleteUserPost(postId) {
-  userPosts.value = userPosts.value.filter(post => post.id !== postId)
-  // Optionally, also remove from store if needed
-  // usersStore.deleteUserPost(userProfile.value.username, postId)
+  userPosts.value = userPosts.value.filter(post => post.id !== postId && post.originalId !== postId)
 }
 
 function editUserPost(postId) {
   // Implement your edit logic here (open modal, etc.)
   const post = userPosts.value.find(p => p.id === postId)
   if (post) {
-    // Example: open an edit modal (not implemented here)
-    alert('Edit post: ' + postId)
+  // Placeholder: integrate modal editing later
+  console.debug('Edit post requested', postId)
   }
 }
 
@@ -813,16 +817,59 @@ const onWheelScroll = (e) => {
   }
 }
 
+// Handle global post created event to show new post instantly without full refresh
+function handlePostCreated(e) {
+  try {
+    const created = e?.detail?.post
+    if (!created) return
+    if (!isOwnProfile.value) return
+    if (activeTab.value !== 'posts') return
+    // Avoid duplicates
+    const exists = userPosts.value.some(p => p.id === created.id || p.originalId === created.id)
+    if (exists) return
+    // Basic normalization (reuse resolveMediaUrl)
+    const media = Array.isArray(created.media) ? created.media.map(m => {
+      const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
+      const isVideo = /\.(mp4|webm|ogg)$/i.test(src)
+      return { type: isVideo ? 'video' : 'image', url: resolveMediaUrl(src) }
+    }) : []
+    const originalId = created.id && /^\d+$/.test(String(created.id)) ? Number(created.id) : null
+    const newPost = {
+      id: created.id || `temp-${Date.now()}`,
+      originalId,
+      username: userProfile.value.username,
+      avatar: userProfile.value.avatar,
+      text: created.description || created.content || created.body || '',
+      date: new Date(created.created_at || created.createdAt || Date.now()),
+      media,
+      tags: Array.isArray(created.tags) ? created.tags : [],
+      likes: created.likes || created.likes_count || 0,
+      comments: created.comments || created.comments_count || 0,
+      isLiked: false,
+      fandom: created.fandom || null,
+      trending: !!created.trending
+    }
+    userPosts.value.unshift(newPost)
+    if (userProfile.value) {
+      userProfile.value.posts = (userProfile.value.posts || 0) + 1
+    }
+  } catch (_) { /* ignore */ }
+}
+
 onMounted(() => {
   fetchUserProfile()
+  // Load current user's fandom memberships
+  fandomsStore.loadMyFandoms().catch(()=>{})
   requestAnimationFrame(updateTabScrollState)
   if (tabScroll.value) tabScroll.value.addEventListener('scroll', updateTabScrollState, { passive: true })
   window.addEventListener('resize', updateTabScrollState)
+  window.addEventListener('posts:created', handlePostCreated)
 })
 
 onUnmounted(() => {
   if (tabScroll.value) tabScroll.value.removeEventListener('scroll', updateTabScrollState)
   window.removeEventListener('resize', updateTabScrollState)
+  window.removeEventListener('posts:created', handlePostCreated)
 })
 
 watch(() => route.params.user, () => {
@@ -844,6 +891,43 @@ watch(() => activeTab.value, () => {
   if (selected && selected.scrollIntoView) {
     selected.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
   }
+  // Lazy load saved posts when switching to 'saved' tab (only for own profile)
+  if (activeTab.value === 'saved' && isOwnProfile.value) {
+    if (!postsStore.savedPosts || postsStore.savedPosts.length === 0) {
+      postsStore.loadSavedPosts({ page: 1, limit: 20 }).then(res => {
+        if (res.success) {
+          savedPosts.value = postsStore.savedPosts.map(p => ({
+            ...p,
+            username: userProfile.value.username,
+            avatar: userProfile.value.avatar
+          }))
+        }
+      })
+    } else {
+      savedPosts.value = postsStore.savedPosts.map(p => ({
+        ...p,
+        username: userProfile.value.username,
+        avatar: userProfile.value.avatar
+      }))
+    }
+  }
+})
+
+// Refresh posts list when global posts store mutates (create/update/delete)
+watch(() => postsStore.lastMutation, (val, old) => {
+  if (!val || val === old) return
+  if (!isOwnProfile.value || activeTab.value !== 'posts') return
+  const username = userProfile.value?.username
+  if (!username) return
+  const storeUserPosts = postsStore.posts.filter(p => p.username === username)
+  if (storeUserPosts.length === 0) {
+    // Don't wipe existing list if store has none (prevents clearing UI on unrelated mutations)
+    return
+  }
+  const mergedMap = new Map()
+  userPosts.value.forEach(p => mergedMap.set(p.id, p))
+  storeUserPosts.forEach(p => mergedMap.set(p.id, { ...p }))
+  userPosts.value = Array.from(mergedMap.values()).sort((a,b)=> new Date(b.date) - new Date(a.date))
 })
 </script>
 

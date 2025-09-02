@@ -1,157 +1,36 @@
 import { defineStore } from 'pinia'
 import PostsService from '@/services/postsService'
+import API_CONFIG from '@/config/api'
+
+// Helper to resolve media/storage paths to absolute URLs
+function resolveMediaUrl(p) {
+  if (!p) return p
+  const apiBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+  const root = apiBase.replace(/\/api$/i, '')
+  if (/^https?:/i.test(p)) {
+    // Remove /api before /storage if present
+    return p.replace('/api/storage/', '/storage/')
+  }
+  const cleaned = String(p).replace(/^\/+/, '')
+  // posts/images|videos without storage prefix
+  if (/^posts\/(images|videos)\//i.test(cleaned)) {
+    return `${root}/storage/${cleaned}`
+  }
+  if (cleaned.startsWith('storage/')) return `${root}/${cleaned}`
+  if (cleaned.startsWith('api/storage/')) return `${root}/${cleaned.replace(/^api\//,'')}`
+  return `${root}/${cleaned}`
+}
 
 export const usePostsStore = defineStore('posts', {
   state: () => ({
-    posts: [
-      {
-        id: 1,
-        username: 'Alice Martin',
-        avatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-        date: new Date(Date.now() - 3600000 * 2),
-        text: "Just finished watching the latest Attack on Titan episode and I'm speechless! 😭 The animation quality keeps getting better! #AttackOnTitan #Anime",
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'Attack on Titan scene'
-          },
-          {
-            type: 'video',
-            url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            caption: 'Anime reaction video'
-          }
-        ],
-  likes: 124,
-  comments: 23,
-        isLiked: false,
-        fandom: 'Anime',
-        trending: true,
-        likedBy: []
-      },
-{
-        id: 2,
-        username: 'Jean Dubois',
-        avatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-        date: new Date(Date.now() - 3600000 * 5),
-        text: "T1 vs G2 was absolutely insane! That Baron steal in game 3 will go down in Worlds history 🔥 #LoLWorlds #Esports",
-        tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
-            caption: 'Baron steal moment'
-          },
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
-            caption: 'Team celebration'
-          }
-        ],
-  likes: 89,
-  comments: 15,
-        isLiked: true,
-        fandom: 'League of Legends',
-        trending: true,
-        likedBy: ['currentUser']
-      },
-      {
-        id: 3,
-        username: 'Sarah Kim',
-        avatar: 'https://randomuser.me/api/portraits/women/25.jpg',
-        date: new Date(Date.now() - 3600000 * 8),
-        text: "NewJeans' new music video is a masterpiece! The choreography, the visuals, everything is perfect 💕 #NewJeans #Kpop",
-        media: [
-          {
-            type: 'video',
-            url: 'https://www.w3schools.com/html/movie.mp4',
-            caption: 'NewJeans MV highlight'
-          },      
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=600&h=400',
-            caption: 'Choreography snapshot'
-          }
-        ],
-  likes: 156,
-  comments: 34,
-        isLiked: false,
-        fandom: 'K-Pop',
-        trending: true,
-        likedBy: []
-      },
-      {
-        id: 4,
-        username: 'GameMaster99',
-        avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-        date: new Date(Date.now() - 3600000 * 12),
-        text: "Spider-Man 2 on PS5 is incredible! The web-swinging feels so smooth and the graphics are mind-blowing 🕷️ #SpiderMan2 #PS5 #Gaming",
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&h=400',
-            caption: 'Spider-Man gameplay'
-          },
-          {
-            type: 'video',
-            url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-            caption: 'Web-swinging demo'
-          },
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'PS5 graphics showcase'
-          }
-        ],
-  likes: 78,
-  comments: 19,
-        isLiked: true,
-        fandom: 'Gaming',
-        trending: false,
-        likedBy: ['currentUser']
-      },
-      {
-        id: 5,
-        username: 'Marvel_Fan_2024',
-        avatar: 'https://randomuser.me/api/portraits/women/12.jpg',
-        date: new Date(Date.now() - 3600000 * 16),
-        text: "Theory: What if the TVA from Loki will play a major role in the upcoming Avengers movie? The multiverse implications are huge! 🤔 #Marvel #MCU",
-  likes: 203,
-  comments: 67,
-        isLiked: false,
-        fandom: 'Marvel',
-        trending: true,
-        likedBy: []
-      },
-      {
-        id: 6,
-        username: 'AnimeLover_JP',
-        avatar: 'https://randomuser.me/api/portraits/men/18.jpg',
-        date: new Date(Date.now() - 3600000 * 20),
-        text: "Demon Slayer movie was absolutely phenomenal! The fight scenes were beautifully animated 🗾 ⚔️ #DemonSlayer #Anime",
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'Demon Slayer movie poster'
-          },
-          {
-            type: 'video',
-            url: 'https://www.w3schools.com/html/movie.mp4',
-            caption: 'Fight scene highlight'
-          }
-        ],
-  likes: 145,
-  comments: 28,
-        isLiked: true,
-        fandom: 'Anime',
-        trending: false,
-        likedBy: ['currentUser']
-      }
-    ],
+  posts: [],
     activeFeed: 'timeline',
     loadingMore: false,
     hasMorePosts: true,
+  pagination: { page: 1, limit: 20, hasNext: true },
+  lastMutation: 0,
+  savedPosts: [],
+  savedPagination: null,
 
     // Category-specific posts for CategoryDetail pages
     categoryPosts: {
@@ -336,7 +215,7 @@ export const usePostsStore = defineStore('posts', {
         default:
           break
       }
-      return filtered.sort((a, b) => b.date - a.date)
+  return filtered.slice().sort((a, b) => (new Date(b.date).getTime()) - (new Date(a.date).getTime()))
     },
     
     trendingPosts: (state) => state.posts.filter(post => post.trending),
@@ -350,26 +229,76 @@ export const usePostsStore = defineStore('posts', {
   },
   
   actions: {
+    mapBackendPost(apiPost) {
+      if (!apiPost) return null
+      const user = apiPost.user || apiPost.author || {}
+      const mediaArr = Array.isArray(apiPost.media) ? apiPost.media.map(m => {
+        const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
+        return { type: /\.(mp4|webm|ogg)$/i.test(src) ? 'video' : 'image', url: resolveMediaUrl(src) }
+      }) : []
+      const displayName = [user.first_name || user.firstName, user.last_name || user.lastName].filter(Boolean).join(' ').trim() || user.username || (user.email ? user.email.split('@')[0] : '') || 'User'
+      let avatar = user.profile_image || user.avatar || user.profileImage
+      if (avatar) avatar = resolveMediaUrl(avatar)
+      return {
+        id: apiPost.id,
+        originalId: apiPost.id,
+        username: displayName,
+        avatar,
+        date: new Date(apiPost.created_at || apiPost.createdAt || Date.now()),
+        text: apiPost.description || apiPost.content || apiPost.body || '',
+        media: mediaArr,
+        tags: Array.isArray(apiPost.tags) ? apiPost.tags : [],
+        likes: apiPost.likes || apiPost.likes_count || 0,
+        comments: apiPost.comments || apiPost.comments_count || 0,
+        isLiked: !!apiPost.liked || !!apiPost.is_liked,
+        isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
+        fandom: apiPost.fandom || null,
+        trending: !!apiPost.trending,
+        likedBy: []
+      }
+    },
+    normalizeApiPost(apiPost) {
+      if (!apiPost) return null
+      const media = Array.isArray(apiPost.media) ? apiPost.media.map(m => ({
+        type: /\.(mp4|webm|ogg)$/i.test(m) ? 'video' : 'image',
+        url: resolveMediaUrl(m)
+      })) : []
+      return {
+        id: apiPost.id,
+        originalId: apiPost.id,
+        text: apiPost.description || apiPost.content || apiPost.body || '',
+        media,
+        likes: apiPost.likes || apiPost.likes_count || 0,
+        comments: apiPost.comments || apiPost.comments_count || 0,
+        isLiked: !!apiPost.liked || !!apiPost.is_liked,
+  isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
+        fandom: apiPost.fandom || null,
+        trending: !!apiPost.trending,
+        date: new Date(apiPost.created_at || apiPost.createdAt || Date.now()),
+        tags: Array.isArray(apiPost.tags) ? apiPost.tags : []
+      }
+    },
+    replaceOptimistic(tempId, apiPost) {
+      const normalized = this.normalizeApiPost(apiPost)
+      if (!normalized) return
+      const idx = this.posts.findIndex(p => p.id === tempId)
+      if (idx !== -1) {
+        this.posts[idx] = { ...this.posts[idx], ...normalized }
+        this.lastMutation = Date.now()
+      } else {
+        this.posts.unshift(normalized)
+        this.lastMutation = Date.now()
+      }
+    },
     async fetchHomeFeed() {
       try {
-        const res = await PostsService.homeFeed()
-        const payload = res?.data || res
-        this.posts = (payload.posts || payload.data?.posts || []).map(p => ({
-          id: p.id,
-          username: p.author?.name,
-          avatar: p.author?.avatar,
-          date: new Date(p.createdAt),
-          text: p.content,
-          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
-          likes: p.likes || 0,
-          comments: p.comments || 0,
-          // shares removed
-          isLiked: !!p.isLiked,
-          fandom: p.fandom?.name || null,
-          trending: !!p.trending
-        }))
+  const { posts, pagination } = await PostsService.homeFeed({ page: 1, limit: this.pagination.limit })
+  this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
+  this.posts = Array.isArray(posts) ? posts.map(p => this.mapBackendPost(p)).filter(Boolean) : []
+        this.hasMorePosts = !!(pagination && pagination.hasNext)
+        this.lastMutation = Date.now()
       } catch (e) {
-        // keep mock data if API not ready
+        // On failure remain with existing posts
       }
     },
     async fetchExploreFeed() {
@@ -410,27 +339,55 @@ export const usePostsStore = defineStore('posts', {
       return res
     },
     async updatePostApi(postId, payload) {
-      const res = await PostsService.update(postId, payload)
+      // Extract numeric ID; accept composite keys like '2025-09-01T...-123'
+      let apiId = postId
+      if (typeof apiId === 'string') {
+        const tail = apiId.split('-').pop()
+        if (/^\d+$/.test(tail)) apiId = tail
+      }
+      if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+      // Guard against invalid or zero id (backend expects positive int)
+      if (!apiId || typeof apiId !== 'number' || apiId <= 0) {
+        return { success: false, error: 'Invalid post id for update', id: postId }
+      }
+      const res = await PostsService.update(apiId, payload)
       const p = res?.post || res?.data?.post || res
       if (p?.id) {
-        const idx = this.posts.findIndex(x => x.id === p.id)
+        const idx = this.posts.findIndex(x => x.id === p.id || x.originalId === p.id || x.id === postId)
         if (idx !== -1) {
           this.posts[idx] = {
             ...this.posts[idx],
             text: p.description || p.content || this.posts[idx].text,
             media: (p.media || []).map(m => ({ type: m.type || 'image', url: typeof m === 'string' ? m : m.url })),
-            trending: !!p.trending
+            trending: !!p.trending,
+            originalId: p.id
           }
+          this.lastMutation = Date.now()
         }
       }
       return res
     },
     async deletePostApi(postId) {
-      const res = await PostsService.remove(postId)
-      if (res?.success || res?.message) {
-        this.deletePost(postId)
+      // Resolve to numeric backend id if we stored originalId
+      const record = this.posts.find(p => p.id === postId || p.originalId === postId)
+      let apiId = record?.originalId || postId
+      if (typeof apiId === 'string') {
+        const tail = apiId.split('-').pop()
+        if (/^\d+$/.test(tail)) apiId = tail
       }
-      return res
+      if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+      if (typeof apiId !== 'number' || apiId <= 0) {
+        return { success: false, error: 'Invalid post id for delete', id: postId }
+      }
+      try {
+        const res = await PostsService.remove(apiId)
+        if (res?.success !== false) {
+          this.deletePost(postId)
+        }
+        return res
+      } catch (e) {
+        return { success: false, error: e?.message || 'Delete failed', id: postId }
+      }
     },
     async fetchUserPosts(userId, params = {}) {
       try {
@@ -454,18 +411,109 @@ export const usePostsStore = defineStore('posts', {
         // ignore keep existing
       }
     },
-    async likePostApi(postId) {
+    async favoritePostApi(postId) {
       try {
-        await PostsService.like(postId)
-        this.toggleLike(postId, 'currentUser')
+        const record = this.posts.find(p => p.id === postId || p.originalId === postId)
+        let apiId = record?.originalId || postId
+        if (typeof apiId === 'string') {
+          const tail = apiId.split('-').pop()
+          if (/^\d+$/.test(tail)) apiId = tail
+        }
+        if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+        if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for favorite', id: postId }
+        await PostsService.favorite(apiId)
+        if (record) this.toggleLike(record.id, 'currentUser')
+        return { success: true }
       } catch (e) {
-        // ignore
+        return { success: false, error: e?.message || 'Favorite failed', id: postId }
+      }
+    },
+    async savePostApi(postId) {
+      try {
+        const record = this.posts.find(p => p.id === postId || p.originalId === postId)
+        let apiId = record?.originalId || postId
+        if (typeof apiId === 'string') {
+          const tail = apiId.split('-').pop()
+          if (/^\d+$/.test(tail)) apiId = tail
+        }
+        if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+        if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for save', id: postId }
+        const res = await PostsService.save(apiId)
+        if (record) record.isSaved = true
+        this.lastMutation = Date.now()
+        return res
+      } catch (e) {
+        return { success: false, error: e?.message || 'Save failed', id: postId }
+      }
+    },
+    async unsavePostApi(postId) {
+      try {
+        const record = this.posts.find(p => p.id === postId || p.originalId === postId)
+        let apiId = record?.originalId || postId
+        if (typeof apiId === 'string') {
+          const tail = apiId.split('-').pop()
+          if (/^\d+$/.test(tail)) apiId = tail
+        }
+        if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+        if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for unsave', id: postId }
+        const res = await PostsService.unsave(apiId)
+        if (record) record.isSaved = false
+        this.lastMutation = Date.now()
+        return res
+      } catch (e) {
+        return { success: false, error: e?.message || 'Unsave failed', id: postId }
+      }
+    },
+    async addCommentApi(postId, content) {
+      try {
+        const payload = typeof content === 'string' ? { content } : content
+        const record = this.posts.find(p => p.id === postId || p.originalId === postId)
+        let apiId = record?.originalId || postId
+        if (typeof apiId === 'string') {
+          const tail = apiId.split('-').pop()
+          if (/^\d+$/.test(tail)) apiId = tail
+        }
+        if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
+        const res = await PostsService.addComment(apiId, payload)
+        if (record) {
+          record.comments = (record.comments || 0) + 1
+          if (!record.commentsList) record.commentsList = []
+          const commentData = res?.comment || res?.data?.comment || { id: Date.now(), content: payload.content, created_at: new Date().toISOString() }
+          record.commentsList.unshift({
+            id: commentData.id,
+            content: commentData.content || commentData.text,
+            date: commentData.created_at || commentData.createdAt || new Date().toISOString(),
+            username: commentData.user?.username || commentData.user?.name || 'You',
+            userAvatar: commentData.user?.avatar || commentData.user?.profile_image_url || '/images/me.png'
+          })
+        }
+        return res
+      } catch (e) {
+        return { success: false, error: e?.message || 'Add comment failed', id: postId }
+      }
+    },
+    async loadSavedPosts(params = {}) {
+      try {
+        const { posts, pagination } = await PostsService.savedPosts(params)
+        if (Array.isArray(posts)) {
+          this.savedPosts = posts.map(p => this.normalizeApiPost({
+            ...p,
+            likes: p.likes_count,
+            comments: p.comments_count
+          }))
+          this.savedPagination = pagination
+          this.lastMutation = Date.now()
+        }
+        return { success: true }
+      } catch (e) {
+        return { success: false, error: e?.message || 'Failed to load saved posts' }
       }
     },
 
     addPost(post) {
       const newPost = {
         id: Date.now(),
+  originalId: post.originalId || (Number.isInteger(post.id) ? post.id : null),
   likes: 0,
   comments: 0,
         isLiked: false,
@@ -476,10 +524,12 @@ export const usePostsStore = defineStore('posts', {
         ...post
       }
       this.posts.unshift(newPost)
+  this.lastMutation = Date.now()
     },
     
     deletePost(postId) {
-      this.posts = this.posts.filter(post => post.id !== postId)
+  this.posts = this.posts.filter(post => post.id !== postId && post.originalId !== postId)
+  this.lastMutation = Date.now()
     },
     
     likePost(postId) {
@@ -487,6 +537,7 @@ export const usePostsStore = defineStore('posts', {
       if (post) {
         post.isLiked = !post.isLiked
         post.likes += post.isLiked ? 1 : -1
+  this.lastMutation = Date.now()
       }
     },
     
@@ -497,50 +548,22 @@ export const usePostsStore = defineStore('posts', {
     },
     
     async loadMorePosts() {
+      if (!this.pagination?.hasNext || this.loadingMore) return
       this.loadingMore = true
       try {
-        const res = await PostsService.trending({ page: 1 })
-        const payload = res?.data || res
-        const morePosts = (payload.posts || payload.data?.posts || []).map(p => ({
-          id: p.id,
-          username: p.author?.name,
-          avatar: p.author?.avatar,
-          date: new Date(p.createdAt),
-          text: p.content,
-          likes: p.likes || 0,
-          comments: p.comments || 0,
-          isLiked: !!p.isLiked,
-          fandom: p.fandom?.name || null,
-          trending: !!p.trending
-        }))
-        if (morePosts.length) this.posts.push(...morePosts)
+        const nextPage = (this.pagination.page || 1) + 1
+        const { posts, pagination } = await PostsService.homeFeed({ page: nextPage, limit: this.pagination.limit })
+        if (Array.isArray(posts) && posts.length) {
+          const mapped = posts.map(p => this.mapBackendPost(p)).filter(Boolean)
+          this.posts.push(...mapped)
+        }
+        this.pagination = pagination || { ...this.pagination, page: nextPage, hasNext: false }
+        this.hasMorePosts = !!(this.pagination && this.pagination.hasNext)
+        this.lastMutation = Date.now()
       } catch (e) {
-        // fallback to mock below
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        
-        const morePosts = [
-          {
-            id: Date.now() + Math.random(),
-            username: 'TechReviewer',
-            avatar: 'https://randomuser.me/api/portraits/women/15.jpg',
-            date: new Date(Date.now() - 3600000 * 18),
-            text: 'The new iPhone is amazing! Camera quality is incredible 📱 #tech #iPhone',
-            likes: 23,
-            comments: 5,
-            isLiked: false,
-            fandom: 'Technology',
-            trending: false,
-            likedBy: []
-          }
-        ]
-        
-        this.posts.push(...morePosts)
-      }
-      this.loadingMore = false
-      
-      if (this.posts.length > 10) {
-        this.hasMorePosts = false
+        // ignore
+      } finally {
+        this.loadingMore = false
       }
     },
     toggleLike(postId, username) {
@@ -558,12 +581,14 @@ export const usePostsStore = defineStore('posts', {
           post.likedBy.splice(index, 1)
           post.likes -= 1
         }
+  this.lastMutation = Date.now()
       }
     },
     updatePost(postId, updatedPost) {
       const index = this.posts.findIndex(post => post.id === postId)
       if (index !== -1) {
         this.posts[index] = updatedPost
+  this.lastMutation = Date.now()
       }
     }
   },

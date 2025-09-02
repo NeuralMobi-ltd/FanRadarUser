@@ -1,20 +1,20 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-100 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 flex items-center justify-center p-4">
-    <div class="w-full max-w-md">
-      <!-- Logo/Brand Section -->
-      <div class="text-center mb-8">
-        <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full mb-4">
-          <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-          </svg>
+  <div class="min-h-screen relative flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-sky-100 dark:from-gray-900 dark:via-slate-900 dark:to-blue-950">
+    <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.18),transparent_60%),radial-gradient(circle_at_70%_80%,rgba(14,165,233,0.25),transparent_65%)]"></div>
+    <div class="w-full max-w-md relative group">
+      <div class="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-blue-500/40 via-blue-400/40 to-sky-400/40 opacity-40 blur transition group-hover:opacity-70 dark:opacity-60 dark:group-hover:opacity-90"></div>
+      <div class="relative rounded-3xl overflow-hidden shadow-xl dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.55)] border border-blue-100/60 dark:border-white/5 bg-white/95 supports-[backdrop-filter]:bg-white/90 dark:bg-gray-800/70 backdrop-blur-xl">
+        <!-- Logo/Brand Section -->
+        <div class="pt-10 px-10 text-center flex flex-col items-center">
+          <div class="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-sky-400 p-[2px] shadow-[0_10px_28px_-6px_rgba(37,99,235,0.5)] animate-[fadeIn_0.55s_ease] relative after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:pointer-events-none after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.9),0_0_0_1px_rgba(255,255,255,0.4)] dark:after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.25),0_0_0_1px_rgba(255,255,255,0.08)] after:opacity-90">
+            <div class="w-full h-full rounded-2xl bg-white/70 dark:bg-gray-900/40 backdrop-blur-md flex items-center justify-center ring-1 ring-white/60 dark:ring-white/10">
+              <img src="/images/F.png" alt="FanRadar Logo" class="w-16 h-16 object-contain" />
+            </div>
+          </div>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Welcome Back</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Sign in to continue your journey</p>
         </div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Welcome Back</h1>
-        <p class="text-gray-600 dark:text-gray-300 mt-1">Sign in to your account</p>
-      </div>
-
-      <!-- Main Card -->
-      <div class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-lg rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-        <div class="p-8">
+        <div class="px-8 pb-10 pt-6">
           <form @submit.prevent="onSignIn">
             <!-- Show error message if any -->
             <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
@@ -27,7 +27,7 @@
             </div>
             
             <div class="space-y-6">
-              <div class="space-y-2">
+              <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
                   Email Address
                 </label>
@@ -48,7 +48,7 @@
                 </div>
               </div>
               
-              <div class="space-y-2">
+              <div class="space-y-2 animate-[fadeIn_0.65s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
                   Password
                 </label>
@@ -61,11 +61,20 @@
                   <input 
                     v-model="password" 
                     id="password" 
-                    type="password" 
+                    :type="showPassword ? 'text' : 'password'" 
                     required 
-                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
+                    class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                     placeholder="Enter your password"
                   />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    @click="showPassword = !showPassword"
+                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    tabindex="-1"
+                  >
+                    <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
+                  </button>
                 </div>
                 <div class="flex justify-end">
                   <router-link to="/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-medium transition-colors">
@@ -77,7 +86,7 @@
             
             <button 
               type="submit" 
-              class="w-full mt-8 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none"
+              class="w-full mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
               :disabled="loading"
             >
               <span v-if="loading" class="mr-3">
@@ -90,10 +99,10 @@
             </button>
           </form>
           
-          <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-center text-gray-600 dark:text-gray-400">
+          <div class="mt-10 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
+            <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
               Don't have an account?
-              <router-link to="/signup" class="text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 font-semibold ml-1 transition-colors">
+              <router-link to="/signup" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">
                 Sign up
               </router-link>
             </p>
@@ -114,6 +123,7 @@ const { t } = useI18n()
 
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
 const router = useRouter()
 const authStore = useAuthStore()
 const loading = ref(false)

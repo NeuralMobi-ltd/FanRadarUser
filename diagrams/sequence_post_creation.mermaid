@@ -1,18 +1,12 @@
-%% Sequence Diagram: Post Creation Flow
 sequenceDiagram
   autonumber
-  participant U as Utilisateur
-  participant FE as Frontend (Vue.js)
-  participant API as API Laravel
-  participant DB as Base de Données
-  participant NTF as Service Notifications
-
-  U->>FE: Rédiger contenu + joindre médias
-  FE->>API: POST /api/posts (multipart)
-  API->>DB: Insert Post + Media refs
-  DB-->>API: Post ID
-  API->>API: Calcul initial (compteurs=0)
+  participant U as User
+  participant FE as Frontend
+  participant API as Laravel
+  participant DB as DB
+  U->>FE: Compose post
+  FE->>API: POST /api/Y/posts/create (multipart/json)
+  API->>DB: Insert post + media
+  DB-->>API: Post row
   API-->>FE: 201 { post }
-  FE-->>U: Affiche le post créé
-  API->>NTF: Publie événement (post.created)
-  NTF->>Followers: Notification push (async)
+  FE->>U: Render new post (optimistic add)
