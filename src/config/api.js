@@ -71,6 +71,9 @@ export const API_CONFIG = {
     search: (query) => `/Y/fandoms/search?q=${encodeURIComponent(query)}`,
     byId: (id) => `/Y/fandoms/${id}`,
     posts: (id) => `/Y/fandoms/${id}/posts`,
+  createPost: (id) => `/Y/fandoms/${id}/posts`, // POST
+  updatePost: (fid, pid) => `/Y/fandoms/${fid}/posts/${pid}`, // PUT
+  deletePost: (fid, pid) => `/Y/fandoms/${fid}/posts/${pid}`, // DELETE
     members: (id) => `/Y/fandoms/${id}/members`,
     join: (id) => `/Y/fandoms/${id}/join`,
   leave: (id) => `/Y/fandoms/${id}/leave`,

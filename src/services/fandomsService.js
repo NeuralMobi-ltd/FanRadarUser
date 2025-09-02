@@ -52,6 +52,36 @@ export const FandomsService = {
   const { data } = await http.get(API_CONFIG.fandoms.posts(id), { params })
     return data
   },
+  async createPost(id, payload) {
+    // multipart form required
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, post: { id: Date.now(), ...payload } }
+    }
+    const isForm = payload instanceof FormData
+    const { data } = await http.post(API_CONFIG.fandoms.createPost(id), payload, isForm ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
+    return data
+  },
+  async updatePost(fid, pid, body) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, post: { id: pid, ...body } }
+    }
+    // Support both JSON and multipart (FormData) bodies
+    const isForm = typeof FormData !== 'undefined' && body instanceof FormData
+    const method = isForm ? 'post' : 'put' // some servers accept POST for multipart updates
+    const url = API_CONFIG.fandoms.updatePost(fid, pid)
+    const { data } = await http[method](url, body, isForm ? { headers: { 'Content-Type': 'multipart/form-data' } } : undefined)
+    return data
+  },
+  async deletePost(fid, pid) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true }
+    }
+    const { data } = await http.delete(API_CONFIG.fandoms.deletePost(fid, pid))
+    return data
+  },
   async getMembers(id, params = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)

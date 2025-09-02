@@ -8,7 +8,7 @@
             <i class="fas fa-plus text-white text-lg"></i>
           </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ editPost ? 'Edit Post' : 'Create Post' }}
+            {{ mode === 'fandom-edit' ? (editPost ? 'Edit Fandom Post' : 'New Fandom Post') : (editPost ? 'Edit Post' : 'Create Post') }}
           </h3>
         </div>
         <button
@@ -74,8 +74,8 @@
           />
         </div>
 
-        <!-- Category / Subcategory Selection Display: only show subcategory to user per requirement -->
-        <div v-if="selectedSubcategory" class="pl-16">
+  <!-- Category / Subcategory Selection Display (hidden if disableCategory) -->
+  <div v-if="!disableCategory && selectedSubcategory" class="pl-16">
           <div class="flex flex-wrap gap-3">
             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <i class="fas fa-tag mr-2 text-sm"></i>
@@ -84,8 +84,8 @@
           </div>
         </div>
 
-        <!-- Scheduling Section -->
-        <div v-if="scheduleEnabled" class="pl-16">
+  <!-- Scheduling Section (hidden if disableSchedule) -->
+  <div v-if="!disableSchedule && scheduleEnabled" class="pl-16">
           <div class="mt-4 space-y-2">
             <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
             <div class="flex items-center gap-3">
@@ -160,8 +160,8 @@
               <i class="fas fa-hashtag text-xl group-hover:scale-110 transition-transform duration-200"></i>
             </button>
 
-            <!-- Category Picker -->
-            <div class="relative">
+            <!-- Category Picker (hidden if disableCategory) -->
+            <div class="relative" v-if="!disableCategory">
               <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group" 
                 :class="{ 'text-green-600 bg-green-50 dark:bg-green-900/20': selectedCategory }"
                 title="Choose category">
@@ -188,8 +188,8 @@
               </div>
             </div>
 
-            <!-- Schedule Toggle -->
-            <button @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
+            <!-- Schedule Toggle (hidden if disableSchedule) -->
+            <button v-if="!disableSchedule" @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
               :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
               <i class="fas fa-clock text-xl group-hover:scale-110 transition-transform duration-200"></i>
             </button>
@@ -221,7 +221,10 @@ const props = defineProps({
   modelValue: Boolean,
   userAvatar: String,
   userName: String,
-  editPost: Object
+  editPost: Object,
+  mode: { type: String, default: 'default' }, // 'default' | 'fandom-edit'
+  disableSchedule: { type: Boolean, default: false },
+  disableCategory: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['close', 'submit', 'posted', 'update:modelValue', 'refresh'])
@@ -372,11 +375,7 @@ function onFileChange(type, event) {
   files.forEach(file => {
     const reader = new FileReader()
     reader.onload = e => {
-      postMedia.value.push({
-        type,
-        url: e.target.result,
-        file
-      })
+  postMedia.value.push({ type, url: e.target.result, file })
     }
     reader.readAsDataURL(file)
   })
@@ -434,6 +433,28 @@ async function submit() {
   if (existingUrls.length) payload.media_urls = existingUrls
 
   try {
+    if (props.mode === 'fandom-edit') {
+      // In fandom edit mode we only emit the limited payload (description, tags, new medias)
+      const fandomPayload = {
+        description: postContent.value.trim(),
+        tags: [...tags.value],
+        medias: postMedia.value.filter(m => m.file instanceof File).map(m => m.file)
+      }
+      emit('submit', fandomPayload)
+      emit('close')
+      emit('update:modelValue', false)
+      // reset
+      postContent.value = ''
+      postMedia.value = []
+      tags.value = []
+      tagInput.value = ''
+      showTagInput.value = false
+      selectedCategory.value = ''
+      selectedSubcategory.value = ''
+      showCategoryPicker.value = false
+      loading.value = false
+      return
+    }
     let resp
     // Prepare optimistic post to show immediately
     const optimistic = {

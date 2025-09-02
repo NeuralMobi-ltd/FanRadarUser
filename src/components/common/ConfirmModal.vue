@@ -28,6 +28,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
   title: { type: String, default: 'Are you sure?' },
@@ -57,6 +58,8 @@ const confirmBtnClass = computed(() => toneConfig[props.tone]?.btn)
 
 function onConfirm() {
   emit('confirm')
+  // Parent may choose to keep it open while processing (loading state). Close here if not loading.
+  if (!props.loading) emit('update:modelValue', false)
 }
 function onCancel() {
   emit('cancel')

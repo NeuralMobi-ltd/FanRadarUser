@@ -57,8 +57,6 @@
           </div>
           <div class="flex items-center text-xs sm:text-sm">
             <span>{{ fandom.members }} members</span>
-            <span class="mx-1 sm:mx-2">•</span>
-            <span>{{ fandom.onlineMembers }} online</span>
           </div>
         </div>
         <h1 class="text-xl sm:text-2xl md:text-4xl font-bold mb-1 leading-tight">{{ fandom.name }}</h1>
@@ -138,7 +136,7 @@
           ]"
         >
           {{ tab.label }}
-          <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
+          <span v-if="tab.id !== 'about' && tab.count" class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
         </button>
       </div>
       <!-- Mobile chip tabs -->
@@ -258,10 +256,12 @@
           v-for="post in sortedPosts"
           :key="post.id"
           :post="post"
+          :can-edit="canModifyPost(post)"
           @like="likePost"
           @comment="commentPost"
           @delete="deletePost"
-          :can-delete="isAdmin || post.username === currentUser.name"
+          :can-delete="canModifyPost(post)"
+          @edit="openEditPost"
           class="w-full mb-0"
         />
       </div>
@@ -316,50 +316,104 @@
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'about'" class="bg-white dark:bg-gray-800 rounded-xl p-6 sm:p-8 border border-gray-200 dark:border-gray-700">
-      <div class="space-y-6 sm:space-y-8">
-        <div>
-          <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">About {{ fandom.name }}</h3>
-          <p class="text-gray-600 dark:text-gray-300 leading-relaxed text-sm sm:text-base">{{ fandom.fullDescription }}</p>
+    <div v-else-if="activeTab === 'about'" class="space-y-8">
+      <!-- Hero Section -->
+      <div class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm">
+        <div class="absolute top-0 right-0 w-64 h-64 opacity-5">
+          <div class="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 rounded-full transform translate-x-32 -translate-y-32"></div>
         </div>
-        
-        <div>
-          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Fandom Rules</h4>
-          <ul class="space-y-2">
-            <li v-for="rule in fandom.rules" :key="rule" class="flex items-start">
-              <i class="fas fa-check-circle text-green-500 mt-1 mr-3 text-sm"></i>
-              <span class="text-gray-600 dark:text-gray-300 text-sm sm:text-base">{{ rule }}</span>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Tags</h4>
-          <div class="flex flex-wrap gap-2">
-            <span v-for="tag in fandom.tags" :key="tag" class="px-2.5 py-1 sm:px-3 sm:py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-xs sm:text-sm">
-              #{{ tag }}
-            </span>
+        <div class="relative p-8 sm:p-10">
+          <div class="flex items-start gap-4 mb-6">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <i class="fas fa-circle-info text-white text-xl"></i>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                About {{ fandom.name }}
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 text-sm">Discover what makes this community special</p>
+            </div>
+          </div>
+          <div class="prose prose-gray dark:prose-invert max-w-none">
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg whitespace-pre-line">
+              {{ fandom.fullDescription || 'Welcome to our amazing fandom community! Connect with fellow fans and share your passion.' }}
+            </p>
+          </div>
+          
+          <!-- Category Badge -->
+          <div class="mt-6" v-if="fandom.category">
+            <div class="inline-flex items-center gap-3 px-4 py-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+              <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+                <i class="fas fa-folder-tree text-white"></i>
+              </div>
+              <div>
+                <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold mb-0.5">Category</p>
+                <p class="text-sm font-bold text-gray-900 dark:text-white">{{ fandom.category }}</p>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div>
-          <h4 class="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">Statistics</h4>
-          <div class="grid grid-cols-2 gap-3 sm:gap-4">
-            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-xl sm:text-2xl font-bold text-blue-600">{{ fandom.members }}</div>
-              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Members</div>
+      <!-- Statistics Section -->
+      <div class="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <i class="fas fa-chart-line text-white"></i>
             </div>
-            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-xl sm:text-2xl font-bold text-green-600">{{ fandom.totalPosts }}</div>
-              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Posts</div>
+            <div>
+              <h4 class="text-xl font-bold text-gray-900 dark:text-white">Community Statistics</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Key metrics and insights</p>
             </div>
-            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-xl sm:text-2xl font-bold text-purple-600">{{ fandom.onlineMembers }}</div>
-              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Online</div>
+          </div>
+        </div>
+        
+        <div class="p-8">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+            <!-- Members Stat -->
+            <div class="group relative overflow-hidden bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-700/50 hover:shadow-lg hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer">
+              <div class="absolute top-0 right-0 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                <div class="w-full h-full bg-blue-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+              </div>
+              <div class="relative">
+                <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-users text-white text-lg"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">Members</p>
+                <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ fandom.members }}</p>
+                <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">Active community</p>
+              </div>
             </div>
-            <div class="text-center p-3 sm:p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-              <div class="text-xl sm:text-2xl font-bold text-orange-600">{{ formattedCreated }}</div>
-              <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Created</div>
+
+            <!-- Posts Stat -->
+            <div class="group relative overflow-hidden bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-900/20 dark:to-emerald-800/20 rounded-2xl p-6 border border-green-200 dark:border-green-700/50 hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300 cursor-pointer">
+              <div class="absolute top-0 right-0 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                <div class="w-full h-full bg-green-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+              </div>
+              <div class="relative">
+                <div class="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-file-lines text-white text-lg"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-green-600 dark:text-green-400 font-bold mb-1">Posts</p>
+                <p class="text-2xl font-bold text-green-700 dark:text-green-300">{{ fandom.totalPosts }}</p>
+                <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">Shared content</p>
+              </div>
+            </div>
+
+            <!-- Created Stat -->
+            <div class="group relative overflow-hidden bg-gradient-to-br from-orange-50 to-amber-100 dark:from-orange-900/20 dark:to-amber-800/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-700/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 cursor-pointer">
+              <div class="absolute top-0 right-0 w-16 h-16 opacity-10 group-hover:opacity-20 transition-opacity">
+                <div class="w-full h-full bg-orange-400 rounded-full transform translate-x-8 -translate-y-8"></div>
+              </div>
+              <div class="relative">
+                <div class="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <i class="fas fa-calendar-plus text-white text-lg"></i>
+                </div>
+                <p class="text-xs uppercase tracking-wider text-orange-600 dark:text-orange-400 font-bold mb-1">Created</p>
+                <p class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ formattedCreated }}</p>
+                <p class="text-xs text-orange-600/70 dark:text-orange-400/70 mt-1">Community birth</p>
+              </div>
             </div>
           </div>
         </div>
@@ -369,20 +423,98 @@
     <!-- Edit Fandom Modal (Admin Only) -->
     <div v-if="showEditFandom && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-2xl">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Edit Fandom</h3>
-        <div class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Fandom Name</label>
-            <input v-model="editFandom.name" type="text" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+            <i class="fas fa-edit text-white text-lg"></i>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-            <textarea v-model="editFandom.description" rows="3" class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"></textarea>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Edit Fandom</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Customize your fandom's appearance and details</p>
           </div>
         </div>
-        <div class="flex justify-end space-x-3 mt-6">
-          <button @click="showEditFandom = false" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">Cancel</button>
-          <button @click="saveFandomChanges" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Save Changes</button>
+        
+        <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-1">
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <i class="fas fa-tag mr-2 text-blue-500"></i>Fandom Name
+            </label>
+            <input v-model="editFandom.name" type="text" placeholder="Enter fandom name..." 
+              class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
+          </div>
+          
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+              <i class="fas fa-file-alt mr-2 text-green-500"></i>Description
+            </label>
+            <textarea v-model="editFandom.description" rows="4" placeholder="Describe your fandom community..." 
+              class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm resize-none"></textarea>
+          </div>
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Cover Image Section -->
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <i class="fas fa-image mr-2 text-purple-500"></i>Cover Image
+              </label>
+              <div class="relative">
+                <div class="w-full h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 transition-all group cursor-pointer">
+                  <img v-if="coverPreview || editFandom.coverImage" :src="coverPreview || editFandom.coverImage" class="object-cover w-full h-full" alt="Cover preview">
+                  <div v-else class="text-center group-hover:scale-105 transition-transform">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload cover</p>
+                  </div>
+                  <input @change="onCoverFileChange" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Recommended: 1200x300px or larger</p>
+              </div>
+            </div>
+
+            <!-- Logo Image Section -->
+            <div class="space-y-3">
+              <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <i class="fas fa-shield-alt mr-2 text-orange-500"></i>Logo Image
+              </label>
+              <div class="relative">
+                <div class="w-full h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 transition-all group cursor-pointer">
+                  <img v-if="logoPreview || editFandom.logo" :src="logoPreview || editFandom.logo" class="object-cover w-full h-full" alt="Logo preview">
+                  <div v-else class="text-center group-hover:scale-105 transition-transform">
+                    <i class="fas fa-plus-circle text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload logo</p>
+                  </div>
+                  <input @change="onLogoFileChange" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Recommended: Square format, 512x512px</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Status Messages -->
+          <div v-if="updateError" class="flex items-center gap-3 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-xl">
+            <div class="w-8 h-8 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center">
+              <i class="fas fa-exclamation-triangle text-red-600 dark:text-red-400 text-sm"></i>
+            </div>
+            <p class="text-sm text-red-700 dark:text-red-300">{{ updateError }}</p>
+          </div>
+          
+          <div v-if="updateSuccess" class="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-xl">
+            <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+              <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-sm"></i>
+            </div>
+            <p class="text-sm text-green-700 dark:text-green-300">Fandom updated successfully!</p>
+          </div>
+        </div>
+        
+        <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <button @click="showEditFandom = false" :disabled="updatingFandom" 
+            class="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium rounded-xl transition-all disabled:opacity-60 hover:bg-gray-50 dark:hover:bg-gray-800">
+            Cancel
+          </button>
+          <button @click="saveFandomChanges" :disabled="updatingFandom" 
+            class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all disabled:opacity-60 shadow-lg hover:shadow-xl flex items-center gap-2 min-w-[140px] justify-center">
+            <i v-if="!updatingFandom" class="fas fa-save"></i>
+            <i v-else class="fas fa-spinner fa-spin"></i>
+            <span>{{ updatingFandom ? 'Saving...' : 'Save Changes' }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -491,11 +623,24 @@
     @confirm="confirmDeletePost"
     @cancel="cancelDeletePost"
   />
+  <!-- Fandom Post Edit Modal -->
+  <CreatePostModal
+    v-if="showEditPostModal"
+    v-model="showEditPostModal"
+    :edit-post="editingPost"
+    :user-avatar="currentUser.avatar"
+    :user-name="currentUser.username || currentUser.name"
+    mode="fandom-edit"
+    :disable-schedule="true"
+    :disable-category="true"
+    @submit="submitFandomEdit"
+  />
 </template>
 
 <script setup>
 import Post from '@/components/common/Post.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import { notify } from '@/utils/notify'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
@@ -511,8 +656,15 @@ const authStore = useAuthStore()
 const fandomsStore = useFandomsStore()
 const fandomName = computed(() => route.params.name || '')
 // Map handle to stored fandom to retrieve numeric id for backend endpoints
-const fandomRecord = computed(() => fandomsStore.allFandoms.find(f => f.handle === fandomName.value))
-const fandomIdForApi = computed(() => fandomRecord.value?.id || fandomName.value)
+const fandomRecord = computed(() => fandomsStore.allFandoms.find(f => f.handle === fandomName.value || f.id === Number(fandomName.value)))
+// Stable key to index store dictionaries (prefer real handle, fallback to original param)
+const fandomKey = computed(() => fandomRecord.value?.handle || fandomName.value)
+// If no local record yet, we'll keep a ref for numeric id once resolved
+const resolvedFandomId = ref(null)
+const fandomIdForApi = computed(() => {
+  if (resolvedFandomId.value) return resolvedFandomId.value
+  return fandomRecord.value?.id || fandomName.value // may still be handle; store will now guard against sending slug
+})
 const activeTab = ref('posts')
 const newPostContent = ref('')
 
@@ -559,12 +711,12 @@ const fandom = ref({
 const isAdmin = computed(() => {
   const local = fandomRecord.value?.role
   if (local === 'admin') return true
-  return fandomsStore.isAdmin(fandomName.value)
+  return fandomsStore.isAdmin(fandomKey.value)
 })
 const isMember = computed(() => {
   const local = fandomRecord.value?.role
   if (local) return true
-  return fandomsStore.isMember(fandomName.value)
+  return fandomsStore.isMember(fandomKey.value)
 })
 
 // Media normalization
@@ -572,7 +724,8 @@ const baseOrigin = API_CONFIG.baseURL.replace(/\/?api\/?$/, '')
 function normalizeAsset(path, fallback) {
   const val = normAsset(path)
   if (!val && fallback) return fallback
-  if (!val) return 'https://via.placeholder.com/1200x400?text=Fandom'
+  // Use local fallback instead of external placeholder to avoid network/DNS issues
+  if (!val) return '/images/FanRadar.png'
   return val
 }
 const normalizedCover = computed(() => normalizeAsset(fandom.value.coverImage))
@@ -599,9 +752,9 @@ async function confirmLeaveFandom() {
     }
   } finally { leaving.value = false }
 }
-
+// Load fandom data from local store snapshot (handle based)
 function loadFandomData() {
-  fandom.value = fandomsStore.getFandomDetail(fandomName.value)
+  fandom.value = fandomsStore.getFandomDetail(fandomKey.value)
 }
 
 // New remote loading logic
@@ -611,8 +764,14 @@ const fandomLoading = ref(false)
 async function loadRemoteFandomData() {
   try {
     fandomLoading.value = true
-  const record = await fandomsStore.fetchFandom(fandomIdForApi.value)
+  let record = await fandomsStore.fetchFandom(fandomIdForApi.value)
+    // If we passed a handle and got null, try loading list then resolve id
+    if (!record && !/^[0-9]+$/.test(String(fandomIdForApi.value))) {
+      await fandomsStore.loadFromApi().catch(()=>{})
+      record = await fandomsStore.fetchFandom(fandomIdForApi.value)
+    }
     if (record) {
+      resolvedFandomId.value = record.id
       fandom.value = {
         ...fandom.value,
         name: record.name,
@@ -632,8 +791,8 @@ async function loadRemoteFandomData() {
   membersLoading.value = true
   postsLoading.value = true
   await Promise.all([
-    fandomsStore.fetchFandomMembers(fandomIdForApi.value).finally(() => { membersLoading.value = false }),
-    fandomsStore.fetchFandomPosts(fandomIdForApi.value).finally(() => { postsLoading.value = false })
+  fandomsStore.fetchFandomMembers(fandomIdForApi.value).finally(() => { membersLoading.value = false }),
+  fandomsStore.fetchFandomPosts(fandomIdForApi.value).finally(() => { postsLoading.value = false })
   ])
 }
 
@@ -651,7 +810,7 @@ const tabs = computed(() => {
   })
 })
 
-const posts = computed(() => fandomsStore.getFandomPosts(fandomName.value))
+const posts = computed(() => fandomsStore.getFandomPosts(fandomKey.value))
 const computedHashtags = computed(() => {
   const raw = fandom.value?.hashtags ?? []
   if (Array.isArray(raw) && raw.length) {
@@ -679,7 +838,7 @@ const computedHashtags = computed(() => {
   }
   return Array.from(counts.entries()).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([tag,count])=>({ tag, posts: `${count} posts` }))
 })
-const members = computed(() => fandomsStore.getFandomMembers(fandomName.value))
+const members = computed(() => fandomsStore.getFandomMembers(fandomKey.value))
 
 const formattedCreated = computed(() => {
   const raw = fandom.value.createdDate || fandom.value.created_at || fandom.value.createdAt
@@ -732,8 +891,41 @@ function addTag(){ const val=tagInput.value.trim().replace(/^#/,''); if(!val) re
 function removeTag(idx){ tags.value.splice(idx,1) }
 function onFileChange(type,event){ const files=Array.from(event.target.files); files.forEach(file=>{ const reader=new FileReader(); reader.onload=e=>{ postMedia.value.push({ type, url:e.target.result, file })}; reader.readAsDataURL(file)}); if(event?.target) event.target.value='' }
 function removeMedia(i){ postMedia.value.splice(i,1) }
-function createPost(){ if(newPostContent.value.trim()||postMedia.value.length>0){ const newPost={ id:Date.now(), username:currentUser.value.name, userAvatar:currentUser.value.avatar, date:'just now', communityName:fandom.value.name, content:newPostContent.value, media:postMedia.value.map(m=>({ type:m.type, url:m.url })), tags:[...tags.value], likes:0, comments:0, shares:0, isLiked:false, fandom:fandom.value.name, isPinned:false, isAnnouncement:false, authorRole:isAdmin.value?fandomsStore.config.memberRoles.ADMIN:fandomsStore.config.memberRoles.MEMBER, category: fandom.value.category?fandom.value.category:'sports', schedule_at: scheduleEnabled.value && scheduleAt.value ? (()=>{ try{return new Date(scheduleAt.value).toISOString()}catch{return null}})():null }; fandomsStore.addFandomPost(fandomName.value,newPost); newPostContent.value=''; postMedia.value=[]; tags.value=[]; tagInput.value='' }}
-const postsSorted = computed(() => {
+async function createPost(){
+  const text = newPostContent.value.trim()
+  if(!text && postMedia.value.length===0) return
+  const fid = fandomRecord.value?.id || resolvedFandomId.value
+  if(!fid){ notify.error('Fandom not loaded'); return }
+  // Convert schedule to backend format YYYY-MM-DD HH:MM:SS
+  let schedule_at_value = ''
+  if (scheduleEnabled.value && scheduleAt.value) {
+    try {
+      const d = new Date(scheduleAt.value)
+      if(!isNaN(d.getTime())) {
+        const pad = n=> String(n).padStart(2,'0')
+        schedule_at_value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:00`
+      }
+    } catch {}
+  }
+  const mediasFiles = postMedia.value.map(m=> m.file).filter(Boolean)
+  const res = await fandomsStore.createFandomPostApi(fid, fandomKey.value, {
+    description: text,
+    content_status: 'published',
+    schedule_at: schedule_at_value || undefined,
+    tags: [...tags.value],
+    medias: mediasFiles
+  })
+  if(res?.success){
+    notify.success(res.message || 'Post created')
+  } else if(res?.message){
+    notify.error(res.message)
+  }
+  newPostContent.value=''
+  postMedia.value=[]
+  tags.value=[]
+  tagInput.value=''
+}
+const sortedPosts = computed(() => {
   return [...posts.value].sort((a, b) => {
     if (a.isPinned && !b.isPinned) return -1
     if (!a.isPinned && b.isPinned) return 1
@@ -746,7 +938,7 @@ const postsSorted = computed(() => {
 async function changeMemberRole(memberId,newRole){
   if(!['member','admin'].includes(newRole)) return // enforce only allowed roles
   const fid = fandomRecord.value?.id || fandomIdForApi.value
-  const res = await fandomsStore.updateMemberRoleApi(fid, memberId, newRole, fandomName.value)
+  const res = await fandomsStore.updateMemberRoleApi(fid, memberId, newRole, fandomKey.value)
   if (res?.success) notify.success('Role updated')
   else if (res?.message) notify.error(res.message)
 }
@@ -764,8 +956,8 @@ async function confirmRemoveMember(){
   }
 }
 function cancelRemoveMember(){ pendingRemoveMemberId.value = null }
-const filteredMembers = computed(()=> fandomsStore.searchFandomMembers(fandomName.value, memberSearch.value))
-function likePost(postId){ fandomsStore.likeFandomPost(fandomName.value,postId) }
+const filteredMembers = computed(()=> fandomsStore.searchFandomMembers(fandomKey.value, memberSearch.value))
+function likePost(postId){ fandomsStore.likeFandomPost(fandomKey.value,postId) }
 function commentPost(postId){ console.log('Comment on post:', postId) }
 const showDeletePost = ref(false)
 const deletingPost = ref(false)
@@ -774,17 +966,133 @@ function deletePost(postId){ pendingDeletePostId.value = postId; showDeletePost.
 async function confirmDeletePost(){
   if(!pendingDeletePostId.value || deletingPost.value) return
   deletingPost.value = true
-  try { fandomsStore.deleteFandomPost(fandomName.value, pendingDeletePostId.value) } finally {
+  try {
+    const fid = fandomRecord.value?.id || resolvedFandomId.value
+    // Optimistic remove
+    const handle = fandomKey.value
+    const previous = [...(fandomsStore.fandomPosts[handle] || [])]
+    fandomsStore.deleteFandomPost(handle, pendingDeletePostId.value)
+    const res = await fandomsStore.deleteFandomPostApi(fid, handle, pendingDeletePostId.value)
+    if(res?.success) {
+      notify.info('Post deleted')
+    } else if(res?.message) {
+      // Revert on failure
+      fandomsStore.fandomPosts[handle] = previous
+      notify.error(res.message)
+    } else if(res?.success === false) {
+      fandomsStore.fandomPosts[handle] = previous
+      notify.error('Delete failed')
+    }
+  } finally {
     deletingPost.value = false
     showDeletePost.value = false
     pendingDeletePostId.value = null
   }
 }
 function cancelDeletePost(){ pendingDeletePostId.value = null }
-function saveFandomChanges(){ fandom.value.name=editFandom.value.name; fandom.value.description=editFandom.value.description; showEditFandom.value=false }
-function initializeEditData(){ editFandom.value={...fandom.value} }
+// --- Fandom Post Edit (limited to media + tags + description) ---
+const showEditPostModal = ref(false)
+const editingPost = ref(null)
+// Determine if current user can edit/delete a post
+function canModifyPost(post){
+  if(!post) return false
+  if(isAdmin.value) return true
+  const userNames = [currentUser.value.username, currentUser.value.name].filter(Boolean).map(s=>s.toLowerCase())
+  const postUser = (post.username||'').toLowerCase()
+  return userNames.includes(postUser)
+}
+function openEditPost(postId){
+  const collection = fandomsStore.fandomPosts[fandomKey.value] || []
+  const target = collection.find(p => p.id === postId)
+  if(!target || !canModifyPost(target)) return
+  editingPost.value = { ...target }
+  showEditPostModal.value = true
+}
+async function submitFandomEdit(payload){
+  if(!editingPost.value) return
+  const fid = fandomRecord.value?.id || resolvedFandomId.value
+  if(!fid){ notify.error('Fandom not loaded'); return }
+  const postId = editingPost.value.id
+  // First update text + tags
+  const res = await fandomsStore.updateFandomPostApi(fid, fandomKey.value, postId, { description: payload.description, content_status: 'published', tags: payload.tags })
+  if(res?.success === false){ if(res?.message) notify.error(res.message); return }
+  // If new media files added, attempt multipart update (backend must support). We'll try PUT with FormData.
+  if(Array.isArray(payload.medias) && payload.medias.length){
+    try {
+      const form = new FormData()
+      form.append('content_status','published')
+      if(payload.description) form.append('description', payload.description)
+      ;(payload.tags||[]).forEach(t=> form.append('tags[]', t))
+      payload.medias.forEach(f=> form.append('medias[]', f))
+      // Use fetch directly to avoid axios config duplication; API_CONFIG.baseURL already includes /api
+      await fetch(API_CONFIG.baseURL + API_CONFIG.fandoms.updatePost(fid, postId), {
+        method: 'POST', // fallback if PUT multipart not accepted
+        body: form
+      }).catch(()=>{})
+      fandomsStore.fetchFandomPosts(fid)
+    } catch(e){ console.error('Fandom media update failed', e) }
+  }
+  notify.success('Post updated')
+  showEditPostModal.value = false
+  editingPost.value = null
+}
+// (Removed earlier simple saveFandomChanges & initializeEditData; advanced versions defined later with API update logic)
+// Admin update logic additions
+const updatingFandom = ref(false)
+const updateError = ref('')
+const updateSuccess = ref(false)
+const coverFile = ref(null)
+const logoFile = ref(null)
+const coverPreview = ref('')
+const logoPreview = ref('')
+function onCoverFileChange(e){
+  const file = e.target.files && e.target.files[0]
+  coverFile.value = file || null
+  coverPreview.value = file ? URL.createObjectURL(file) : ''
+}
+function onLogoFileChange(e){
+  const file = e.target.files && e.target.files[0]
+  logoFile.value = file || null
+  logoPreview.value = file ? URL.createObjectURL(file) : ''
+}
+async function saveFandomChanges(){
+  if(!isAdmin.value) { showEditFandom.value=false; return }
+  updateError.value=''
+  updateSuccess.value=false
+  const id = fandomRecord.value?.id || resolvedFandomId.value
+  if(!id){ updateError.value='Fandom id not resolved yet.'; return }
+  const payload = {}
+  if(editFandom.value.name && editFandom.value.name !== fandom.value.name) payload.name = editFandom.value.name
+  if(editFandom.value.description && editFandom.value.description !== fandom.value.description) payload.description = editFandom.value.description
+  if(coverFile.value) payload.cover_image = coverFile.value
+  if(logoFile.value) payload.logo_image = logoFile.value
+  if(Object.keys(payload).length===0){ updateError.value='No changes to save.'; return }
+  try {
+    updatingFandom.value = true
+    const res = await fandomsStore.updateFandomApi(id, payload)
+    if(res?.success || res?.fandom || res?.data?.fandom){
+      updateSuccess.value = true
+      // Refresh local view
+      await fandomsStore.fetchFandom(id)
+      loadFandomData()
+      fandom.value.coverImage = fandomsStore.allFandoms.find(f=>f.id===id)?.coverImage || fandom.value.coverImage
+      fandom.value.logo = fandomsStore.allFandoms.find(f=>f.id===id)?.logo || fandom.value.logo
+      setTimeout(()=>{ showEditFandom.value=false; updateSuccess.value=false }, 1200)
+    } else {
+      updateError.value = res?.message || 'Update failed.'
+    }
+  } catch(e){
+    updateError.value = e?.message || 'Update error.'
+  } finally {
+    updatingFandom.value = false
+  }
+}
+function initializeEditData(){
+  editFandom.value = { name: fandom.value.name, description: fandom.value.description, coverImage: fandom.value.coverImage, logo: fandom.value.logo }
+  coverFile.value=null; logoFile.value=null; coverPreview.value=''; logoPreview.value=''; updateError.value=''; updateSuccess.value=false
+}
 watch(showEditFandom,v=>{ if(v) initializeEditData() })
-watch(()=>fandomName.value, async (n,o)=>{ if(n && n!==o){ loadFandomData(); await loadRemoteFandomData() } })
+watch(()=>fandomKey.value, async (n,o)=>{ if(n && n!==o){ loadFandomData(); await loadRemoteFandomData() } })
 
 const isMobile = ref(false)
 const isTablet = ref(false)

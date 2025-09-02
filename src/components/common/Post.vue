@@ -348,21 +348,11 @@
       </div>
     </section>
 
-    <!-- Edit Post Modal -->
-    <CreatePostModal
-      v-if="showEdit"
-      :model-value="showEdit"
-      :user-avatar="post.avatar || post.userAvatar"
-      :user-name="post.username"
-      :edit-post="post"
-      @close="showEdit = false"
-      @submit="submitEdit"
-    ></CreatePostModal>
+  <!-- Internal edit modal removed; parent (e.g., fandom detail) handles editing -->
   </article>
 </template>
 
 <script setup>
-import { CreatePostModal } from '@/components/feed'
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import { ref, watch, computed, nextTick } from 'vue'
 import { usePostsStore } from '@/store/posts'
@@ -392,7 +382,7 @@ const showComments = ref(false)
 const isSaved = ref(false)
 const newComment = ref('')
 const showMenu = ref(false)
-const showEdit = ref(false)
+// Removed local edit modal state; editing delegated to parent component
 
 // Current authenticated user's avatar (fallback to default)
 const authStore = useAuthStore()
@@ -633,7 +623,8 @@ const searchByTag = (tag) => {
 
 function openEditModal() {
   showMenu.value = false
-  showEdit.value = true
+  const backendId = extractBackendId(props.post) || props.post.id
+  emit('edit', backendId)
 }
 
 
@@ -649,14 +640,10 @@ function extractBackendId(p) {
 }
 
 function deletePost() {
+  // Only emit; parent handles confirmation + API.
   showMenu.value = false
   const backendId = extractBackendId(props.post)
-  const idToEmit = backendId || props.post.id
-  if (backendId) {
-    postsStore.deletePostApi(backendId)
-      .then(() => emit('delete', idToEmit))
-      .catch(() => emit('delete', idToEmit))
-  } else emit('delete', idToEmit)
+  emit('delete', backendId || props.post.id)
 }
 
 function favorite() {
@@ -667,10 +654,7 @@ function favorite() {
 
 
 
-function submitEdit(edited) {
-  showEdit.value = false
-  emit('edit', props.post.id, edited)
-}
+// submitEdit removed (handled in parent modal)
 </script>
 
 <style scoped>

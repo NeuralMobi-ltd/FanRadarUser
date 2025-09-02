@@ -278,6 +278,15 @@ export const useFandomsStore = defineStore('fandoms', {
       }
     },
     async fetchFandom(id) {
+      // Allow passing a handle (slug) instead of numeric id. If a non-numeric string is provided,
+      // attempt to resolve it locally without hitting the backend with an invalid path.
+      if (typeof id === 'string' && !/^[0-9]+$/.test(id)) {
+        const existing = this.allFandoms.find(f => f.handle === id)
+        if (existing) return existing
+        // Optionally we could attempt to load list from API here, but avoid infinite recursion.
+        // Return null so caller can decide to trigger a full list load (loadFromApi) if desired.
+        return null
+      }
       try {
         const res = await FandomsService.get(id)
         const f = res?.data?.fandom || res?.fandom
@@ -340,28 +349,50 @@ export const useFandomsStore = defineStore('fandoms', {
       } catch (e) { return [] }
     },
   async fetchFandomPosts(id, params = {}) {
+      // Support passing handle; map to numeric id if necessary
+      if (typeof id === 'string' && !/^[0-9]+$/.test(id)) {
+        const rec = this.allFandoms.find(f => f.handle === id)
+        if (!rec) return []
+        id = rec.id
+      }
       try {
     const res = await FandomsService.getPosts(id, params)
         const posts = res?.data?.posts || res?.posts || []
     const handle = this.allFandoms.find(f => f.id === id)?.handle
         if (!handle) return []
-        this.fandomPosts[handle] = posts.map(p => ({
-          id: p.id,
-          username: p.author?.username || p.user?.username || 'user',
-          userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '/images/me.png',
-          date: p.created_at || p.createdAt,
-          content: p.content || p.description,
-          image: Array.isArray(p.media) ? normalizeAsset(p.media[0]) : normalizeAsset(p.media),
-          tags: p.tags || [],
-          likes: p.likes || 0,
-          comments: p.comments || 0,
-          isLiked: !!p.is_liked,
-          fandom: handle
-        }))
+        this.fandomPosts[handle] = posts.map(p => {
+          const mediaArr = Array.isArray(p.media) ? p.media : (p.media ? [p.media] : [])
+          const mediaObjects = mediaArr.map(m => {
+            const raw = typeof m === 'string' ? m : (m.url || m.path || m.src || m.file || '')
+            const ext = raw.split('?')[0].split('.').pop()?.toLowerCase()
+            const isVideo = ['mp4','mov','webm','ogg'].includes(ext)
+            return { type: isVideo ? 'video' : 'image', url: normalizeAsset(raw) }
+          })
+          return {
+            id: p.id,
+            username: p.author?.username || p.user?.username || p.user?.first_name || 'user',
+            userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '/images/me.png',
+            date: p.created_at || p.createdAt,
+            content: p.content || p.description,
+            image: mediaObjects.length === 1 ? mediaObjects[0].url : null,
+            media: mediaObjects.length > 1 ? mediaObjects : (mediaObjects.length === 1 ? mediaObjects : null),
+            tags: p.tags || [],
+            likes: p.likes_count || p.likes || 0,
+            comments: p.comments_count || p.comments || 0,
+            isLiked: !!p.is_liked,
+            fandom: handle
+          }
+        })
         return this.fandomPosts[handle]
       } catch (e) { return [] }
     },
   async fetchFandomMembers(id, params = {}) {
+      // Support passing handle; map to numeric id if necessary
+      if (typeof id === 'string' && !/^[0-9]+$/.test(id)) {
+        const rec = this.allFandoms.find(f => f.handle === id)
+        if (!rec) return []
+        id = rec.id
+      }
       try {
     const res = await FandomsService.getMembers(id, params)
         const members = res?.data?.members || res?.members || []
@@ -496,6 +527,92 @@ export const useFandomsStore = defineStore('fandoms', {
     deleteFandomPost(fandomHandle, postId) {
       if (this.fandomPosts[fandomHandle]) {
         this.fandomPosts[fandomHandle] = this.fandomPosts[fandomHandle].filter(p => p.id !== postId)
+      }
+    },
+    async createFandomPostApi(fandomId, fandomHandle, { description, content_status, schedule_at, tags = [], medias = [] }) {
+      try {
+        const form = new FormData()
+        form.append('content_status', content_status)
+        if (description) form.append('description', description)
+        if (schedule_at) form.append('schedule_at', schedule_at)
+        tags.forEach(t => form.append('tags[]', t))
+        medias.forEach(f => form.append('medias[]', f))
+        const res = await FandomsService.createPost(fandomId, form)
+        const raw = res?.post || res?.data?.post
+        if (raw && fandomHandle) {
+          const post = {
+            id: raw.id,
+            username: raw.author?.username || raw.user?.username || 'you',
+            userAvatar: normalizeAsset(raw.author?.avatar || raw.user?.profile_image) || '/images/me.png',
+            date: raw.createdAt || raw.created_at,
+            content: raw.description,
+            media: Array.isArray(raw.media) ? raw.media.map(m => normalizeAsset(m)) : null,
+            tags: raw.tags || [],
+            likes: 0,
+            comments: 0,
+            isLiked: false,
+            fandom: fandomHandle
+          }
+          this.addFandomPost(fandomHandle, post)
+          // Immediate optimistic insert; then refresh full list to sync counts/media structure
+          this.fetchFandomPosts(fandomId)
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Create post failed' }
+      }
+    },
+    async updateFandomPostApi(fandomId, fandomHandle, postId, { description, content_status, tags }) {
+      try {
+        const body = {}
+        if (description != null) body.description = description
+        if (content_status) body.content_status = content_status
+        if (Array.isArray(tags)) body.tags = tags
+        const res = await FandomsService.updatePost(fandomId, postId, body)
+        const raw = res?.post || res?.data?.post
+        if (raw && fandomHandle && this.fandomPosts[fandomHandle]) {
+          const idx = this.fandomPosts[fandomHandle].findIndex(p => p.id === postId)
+          if (idx !== -1) {
+            this.fandomPosts[fandomHandle][idx] = {
+              ...this.fandomPosts[fandomHandle][idx],
+              content: raw.description ?? this.fandomPosts[fandomHandle][idx].content,
+              tags: raw.tags || this.fandomPosts[fandomHandle][idx].tags
+            }
+          }
+          // Re-fetch to ensure we have backend authoritative data
+          this.fetchFandomPosts(fandomId)
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Update post failed' }
+      }
+    },
+    async updateFandomPostMediaApi(fandomId, fandomHandle, postId, { description, content_status, tags = [], medias = [] }) {
+      try {
+        const form = new FormData()
+        if (content_status) form.append('content_status', content_status)
+        if (description) form.append('description', description)
+        tags.forEach(t => form.append('tags[]', t))
+        medias.forEach(f => form.append('medias[]', f))
+        const res = await FandomsService.updatePost(fandomId, postId, form)
+        // Force refresh after media update
+        this.fetchFandomPosts(fandomId)
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Media update failed' }
+      }
+    },
+    async deleteFandomPostApi(fandomId, fandomHandle, postId) {
+      try {
+        const res = await FandomsService.deletePost(fandomId, postId)
+        if (res?.success && fandomHandle) {
+          this.deleteFandomPost(fandomHandle, postId)
+          // Refresh remaining posts
+          this.fetchFandomPosts(fandomId)
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Delete post failed' }
       }
     },
 
