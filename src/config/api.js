@@ -25,6 +25,8 @@ export const API_CONFIG = {
 
   // Users
   users: {
+  // Fetch another user's profile by numeric id
+  profileById: (userId) => `/Y/users/${userId}/profile`,
     posts: (userId) => `/Y/users/${userId}/posts`,
     followers: (userId) => `/Y/users/${userId}/followers`,
     following: (userId) => `/Y/users/${userId}/following`,

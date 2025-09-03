@@ -7,11 +7,13 @@
         <div class="bg-white dark:bg-gray-900 rounded-3xl p-5 lg:p-6 mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
           <!-- User Avatar and Text Input -->
           <div class="flex items-start space-x-4">
-            <img
-              :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar || '/public/images/me.png'"
-              class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
+            <AvatarFallback
+              :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar"
+              :username="authStore.user?.username || currentUser.username"
               :alt="authStore.user?.username || currentUser.username"
-            >
+              :size="48"
+              class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
+            />
             <div class="flex-1 min-w-0">
               <textarea
                 v-model="newPostContent"
@@ -349,6 +351,7 @@
 
 <script setup>
 import { NewsPost } from '@/components/feed'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import Post from '@/components/common/Post.vue'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
@@ -401,7 +404,7 @@ const currentUser = computed(() => {
   const u = fetchedProfile.value || authStore.user || {}
   return {
     username: u.userName || u.username || 'You',
-    avatar: u.avatar || u.profile_image || '/public/images/me.png',
+    avatar: u.avatar || u.profile_image || '',
     ...u
   }
 })

@@ -50,7 +50,7 @@ export const PostsService = {
           id: Date.now(),
           content: payload?.content || '',
           media: payload?.media || [],
-          user: { id: 1, username: 'you', first_name: 'You', profile_image_url: '/images/me.png' },
+          user: { id: 1, username: 'you', first_name: 'You', profile_image_url: '' },
           created_at: new Date().toISOString(),
     stats: { likes: 0, comments: 0 },
           liked: false

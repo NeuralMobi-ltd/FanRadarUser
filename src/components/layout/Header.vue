@@ -169,10 +169,11 @@
               @click="showMobileUserMenu = !showMobileUserMenu"
               class="flex items-center space-x-1 p-1.5 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
             >
-              <img 
-                :src="userAvatar || '/images/me.png'" 
-                :alt="userName || 'User'"
-                class="w-7 h-7 rounded-full object-cover"
+              <AvatarFallback
+                :src="userAvatar"
+                :first-name="authStore.user?.firstName || authStore.user?.first_name || userName"
+                :last-name="authStore.user?.lastName || authStore.user?.last_name"
+                custom-class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] font-semibold text-white"
               />
               <ChevronDownIcon class="w-3 h-3" />
             </button>
@@ -375,10 +376,11 @@
                 @click="showUserMenu = !showUserMenu"
                 class="flex items-center space-x-1 sm:space-x-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white p-1.5 sm:p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
               >
-                <img 
-                  :src="userAvatar || '/images/me.png'" 
-                  :alt="userName || 'User'"
-                  class="w-6 sm:w-8 h-6 sm:h-8 rounded-full object-cover"
+                <AvatarFallback
+                  :src="userAvatar"
+                  :first-name="authStore.user?.firstName || authStore.user?.first_name || userName"
+                  :last-name="authStore.user?.lastName || authStore.user?.last_name"
+                  custom-class="w-6 sm:w-8 h-6 sm:h-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-[10px] sm:text-xs font-semibold text-white"
                 />
                 <span class="font-medium text-sm sm:text-base hidden sm:inline">{{ userName || 'User' }}</span>
                 <ChevronDownIcon class="w-3 sm:w-4 h-3 sm:h-4" />
@@ -534,6 +536,7 @@ import SearchModal from '@/components/layout/SearchModal.vue'
 import { CreatePostModal } from '@/components/feed'
 import { usePostsStore } from '@/store/posts'
 import { useNotificationsStore } from '@/store/notifications' // <-- new
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 
 import {
   MagnifyingGlassIcon,

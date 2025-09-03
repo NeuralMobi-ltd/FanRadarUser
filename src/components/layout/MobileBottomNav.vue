@@ -90,7 +90,7 @@ const userAvatar = computed(() => authStore.userAvatar)
 
 // Route to the authenticated user's account page
 const accountPath = computed(() => {
-  return userName.value ? `/account/${encodeURIComponent(userName.value)}` : '/dashboard'
+  return userName.value ? `/account/${userName.value}` : '/dashboard'
 })
 
 const isActiveRoute = (path) => {

@@ -24,7 +24,7 @@
         <div class="p-6 space-y-6">
         <!-- User Info for editing -->
         <div v-if="editPost" class="flex items-center space-x-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-          <img :src="userAvatar || '/images/me.png'" class="w-8 h-8 rounded-full object-cover" :alt="userName">
+          <AvatarFallback :src="userAvatar" :username="userName" :alt="userName" :size="32" class="w-8 h-8" />
           <div>
             <p class="text-sm font-medium text-gray-900 dark:text-white">{{ userName }}</p>
             <p class="text-xs text-gray-500 dark:text-gray-400" v-if="editPostDate">{{ editPostDate }}</p>
@@ -33,11 +33,13 @@
 
         <!-- Main Text Input -->
         <div class="flex items-start space-x-4">
-          <img 
-            :src="userAvatar || '/images/me.png'" 
-            class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0" 
+          <AvatarFallback
+            :src="userAvatar"
+            :username="userName"
             :alt="userName"
-          >
+            :size="48"
+            class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
+          />
           <div class="flex-1 min-w-0">
             <textarea
               v-model="postContent"
@@ -216,6 +218,7 @@ import PostsService from '@/services/postsService'
 import { usePostsStore } from '@/store/posts'
 import { useCategoriesStore } from '@/store/categories'
 import { onMounted } from 'vue'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -462,7 +465,7 @@ async function submit() {
       content: postContent.value,
       media: postMedia.value.map(m => ({ type: m.type, url: m.url })),
       username: props.userName || 'You',
-      avatar: props.userAvatar || '/images/me.png',
+  avatar: props.userAvatar || '',
       date: new Date(),
       likes: 0,
       comments: 0,

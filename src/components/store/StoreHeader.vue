@@ -262,10 +262,12 @@
                 @click="showUserMenu = !showUserMenu"
                 class="flex items-center space-x-1 sm:space-x-2 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <img 
-                  :src="user?.avatar || '/public/images/me.png'" 
-                  class="w-6 sm:w-8 h-6 sm:h-8 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                <AvatarFallback
+                  :src="user?.avatar"
+                  :username="user?.name || 'User'"
                   :alt="user?.name || 'User'"
+                  :size="32"
+                  class="w-6 sm:w-8 h-6 sm:h-8 border-2 border-gray-200 dark:border-gray-600"
                 />
                 <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ user?.name || 'yassineelaouni581' }}</span>
                 <svg class="w-3 sm:w-4 h-3 sm:h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -281,7 +283,7 @@
                 <!-- User Info Header -->
                 <div class="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-600">
                   <div class="flex items-center space-x-3">
-                    <img :src="user?.avatar || '/public/images/me.png'" class="w-8 sm:w-10 h-8 sm:h-10 rounded-full object-cover" />
+                    <AvatarFallback :src="user?.avatar" :username="user?.name" :alt="user?.name" :size="40" class="w-8 sm:w-10 h-8 sm:h-10" />
                     <div>
                       <p class="font-medium text-gray-900 dark:text-white text-sm sm:text-base">{{ user?.name || 'yassineelaouni581' }}</p>
                       <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{{ user?.email || 'yss@fanradars.com' }}</p>
@@ -496,6 +498,7 @@ import { useStoreNotifications } from '@/store/storeNotifications'
 import { BellIcon } from '@heroicons/vue/24/outline'
 import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

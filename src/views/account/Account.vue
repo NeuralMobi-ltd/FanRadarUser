@@ -30,10 +30,13 @@
         <div class="relative -mt-10 sm:-mt-12 px-4 sm:px-6">
           <div class="flex items-end">
             <div class="relative z-30">
-              <img
-                :src="authStore.user?.avatar || userProfile?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&h=160&fit=crop&crop=face'"
-                :alt="authStore.user?.userName || userProfile?.name || 'User'"
-                class="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white dark:border-gray-800 bg-white dark:bg-gray-800 object-cover shadow-lg"
+              <AvatarFallback
+                :src="authStore.user?.avatar || userProfile?.avatar"
+                :first-name="(userProfile?.name || authStore.user?.name || authStore.user?.userName || '').split(' ')[0]"
+                :last-name="(userProfile?.name || authStore.user?.name || '').split(' ').slice(1).join(' ')"
+                :username="userProfile?.username || authStore.user?.userName"
+                :size="96"
+                custom-class="w-20 h-20 sm:w-24 sm:h-24 border-4 border-white dark:border-gray-800 shadow-lg"
               />
               <div v-if="userProfile?.verified" class="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center border-2 border-white dark:border-gray-800 z-10">
                 <i class="fas fa-check text-white text-xs"></i>
@@ -72,14 +75,16 @@
                 <template v-else>
                   <button 
                     @click="toggleFollow"
+                    :disabled="followProcessing"
                     :class=" [
-                      'flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-medium',
+                      'flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed',
                       isFollowing 
                         ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600' 
                         : 'bg-blue-600 text-white hover:bg-blue-700'
                     ]"
                   >
-                    <i :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
+                    <i v-if="!followProcessing" :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
+                    <i v-else class="fas fa-spinner fa-spin"></i>
                     <span>{{ isFollowing ? 'Following' : 'Follow' }}</span>
                   </button>
             
@@ -311,23 +316,27 @@
 
         <!-- Followers Tab -->
         <div v-else-if="activeTab === 'followers'">
-          <div v-if="followersList.length > 0" class="grid md:grid-cols-2 gap-4">
+          <div v-if="followersLoading" class="py-8 flex justify-center"><div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div></div>
+          <div v-else-if="followersList.length > 0" class="grid md:grid-cols-2 gap-4">
             <div
               v-for="follower in followersList"
               :key="follower.id"
               class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center space-x-3">
-                <img 
-                  :src="follower.avatar" 
-                  :alt="follower.name" 
-                  class="w-12 h-12 rounded-full object-cover cursor-pointer" 
-                  @click="$router.push(`/account/${follower.username}`)"
+                <AvatarFallback
+                  :src="follower.avatar"
+                  :first-name="(follower.name || '').split(' ')[0]"
+                  :last-name="(follower.name || '').split(' ').slice(1).join(' ')"
+                  :username="follower.username"
+                  :size="48"
+                  custom-class="w-12 h-12 cursor-pointer"
+                  @click="navigateToProfile(follower)"
                 />
                 <div class="flex-1">
                   <h3 
                     class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
-                    @click="$router.push(`/account/${follower.username}`)"
+                    @click="navigateToProfile(follower)"
                   >
                     {{ follower.name }}
                   </h3>
@@ -349,23 +358,27 @@
 
         <!-- Following Tab -->
         <div v-else-if="activeTab === 'following'">
-          <div v-if="followingList.length > 0" class="grid md:grid-cols-2 gap-4">
+          <div v-if="followingLoading" class="py-8 flex justify-center"><div class="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full"></div></div>
+          <div v-else-if="followingList.length > 0" class="grid md:grid-cols-2 gap-4">
             <div
               v-for="following in followingList"
               :key="following.id"
               class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-center space-x-3">
-                <img 
-                  :src="following.avatar" 
-                  :alt="following.name" 
-                  class="w-12 h-12 rounded-full object-cover cursor-pointer" 
-                  @click="$router.push(`/account/${following.username}`)"
+                <AvatarFallback
+                  :src="following.avatar"
+                  :first-name="(following.name || '').split(' ')[0]"
+                  :last-name="(following.name || '').split(' ').slice(1).join(' ')"
+                  :username="following.username"
+                  :size="48"
+                  custom-class="w-12 h-12 cursor-pointer"
+                  @click="navigateToProfile(following)"
                 />
                 <div class="flex-1">
                   <h3 
                     class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
-                    @click="$router.push(`/account/${following.username}`)"
+                    @click="navigateToProfile(following)"
                   >
                     {{ following.name }}
                   </h3>
@@ -446,44 +459,50 @@
 
 <script setup>
 import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useUsersStore } from '@/store/users'
 import { useFandomsStore } from '@/store/fandoms'
 import { usePostsStore } from '@/store/posts'
 import Post from '@/components/common/Post.vue'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import { CommunityCard } from '@/components/fandom'
 import AuthService from '@/services/authService'
+import UsersService from '@/services/usersService'
 import PostsService from '@/services/postsService'
 import FollowsService from '@/services/followsService'
 import API_CONFIG from '@/config/api'
 
 const route = useRoute()
+const router = useRouter()
 const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const fandomsStore = useFandomsStore()
 const postsStore = usePostsStore()
 
 const loading = ref(true)
-const userProfile = ref({})
+const userProfile = ref(null)
 const userPosts = ref([])
 const isFollowing = ref(false)
+const followProcessing = ref(false)
 const activeTab = ref('posts')
 
 const followersList = ref([])
 const followingList = ref([])
+const followersLoading = ref(false)
+const followingLoading = ref(false)
 const savedPosts = ref([])
 
 const isOwnProfile = computed(() => {
   const currentUser = authStore.user
-  const profileUsername = route.params.user
-  
+  const profileParam = route.params.user
   if (!currentUser) return false
-  
-  return currentUser.userEmail === `${profileUsername}@fanradars.com` || 
-         currentUser.userName === profileUsername ||
-         currentUser.userEmail?.split('@')[0] === profileUsername ||
-         profileUsername === 'me'
+  // Direct numeric id match
+  if (String(currentUser.id) === String(profileParam)) return true
+  return currentUser.userEmail === `${profileParam}@fanradars.com` ||
+    currentUser.userName === profileParam ||
+    currentUser.userEmail?.split('@')[0] === profileParam ||
+    profileParam === 'me'
 })
 
 // All fandoms the user belongs to (admin or member) loaded from backend
@@ -493,18 +512,26 @@ const myFandoms = computed(() => fandomsStore.allFandoms.filter(f => f.role === 
 const fetchUserProfile = async () => {
   loading.value = true
   try {
-    // If route is 'me' or this is the current user's page, try API first
-    if (route.params.user === 'me' || isOwnProfile.value) {
+    const param = route.params.user
+    const isNumericParam = /^\d+$/.test(String(param))
+  // Determine if route param truly targets the authenticated user.
+  // Do NOT use isOwnProfile (it depends on param and can be polluted if profile data was overwritten).
+  const isSelf = param === 'me' || (authStore.user?.id && String(authStore.user.id) === String(param)) || (
+    authStore.user?.userName && authStore.user.userName === param
+  ) || (
+    authStore.user?.userEmail && authStore.user.userEmail.split('@')[0] === param
+  )
+
+    // Fetch self profile
+  if (isSelf) {
       try {
         const resp = await AuthService.getProfile()
         const u = resp?.user || resp?.data || resp
         if (u) {
-          // Resolve avatar & cover to absolute URLs if backend returned relative paths
           const resolveImage = (p) => {
             if (!p) return p
             if (/^https?:\/\//i.test(p)) return p
             let rawBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
-            // Remove trailing /api for storage assets
             const assetBase = /\/api$/i.test(rawBase) ? rawBase.replace(/\/api$/i, '') : rawBase
             const cleaned = String(p).replace(/^\/+/, '')
             return assetBase ? `${assetBase}/${cleaned}` : cleaned
@@ -514,27 +541,68 @@ const fetchUserProfile = async () => {
             name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || u.email?.split('@')[0],
             username: u.username || (u.email ? u.email.split('@')[0] : undefined),
             email: u.email,
-            avatar: resolveImage(u.profile_image || u.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+            avatar: resolveImage(u.profile_image || u.avatar) || '',
             coverPhoto: resolveImage(u.background_image || u.coverPhoto || ''),
-            followers: u.stats?.followers || 0,
-            following: u.stats?.following || 0,
-            posts: u.stats?.posts || 0,
+            followers: u.followers_count || u.stats?.followers || 0,
+            following: u.following_count || u.stats?.following || 0,
+            posts: u.posts_count || u.stats?.posts || 0,
             role: u.role || 'user',
             date_naissance: u.date_naissance || null,
             gender: u.gender || null,
             preferred_categories: u.preferred_categories || [],
             bio: u.bio || u.description || ''
           }
+          isFollowing.value = false // can't follow self
         }
-      } catch (apiErr) {
-        // fallback to store-based logic below
-        console.debug('AuthService.getProfile failed, falling back to store', apiErr)
+      } catch (e) {
+        console.debug('Self profile fetch failed', e)
       }
     }
 
-    // If still not set, try to find in users store or derive a minimal profile
+    // Fetch other user by numeric id
+  if (!userProfile.value && isNumericParam && !isSelf) {
+      try {
+        const resp = await UsersService.profile(param)
+        const u = resp?.data?.user || resp?.user || resp?.data || resp
+        if (u) {
+          const resolveImage = (p) => {
+            if (!p) return p
+            if (/^https?:\/\//i.test(p)) return p
+            let rawBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+            const assetBase = /\/api$/i.test(rawBase) ? rawBase.replace(/\/api$/i, '') : rawBase
+            const cleaned = String(p).replace(/^\/+/, '')
+            return assetBase ? `${assetBase}/${cleaned}` : cleaned
+          }
+          userProfile.value = {
+            id: u.id,
+            name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || u.email?.split('@')[0],
+            username: u.username || (u.email ? u.email.split('@')[0] : undefined),
+            email: u.email,
+            avatar: resolveImage(u.profile_image || u.avatar),
+            coverPhoto: resolveImage(u.background_image || u.coverPhoto || ''),
+            followers: u.followers_count || 0,
+            following: u.following_count || 0,
+            posts: u.posts_count || (Array.isArray(u.posts) ? u.posts.length : 0),
+            role: u.role || 'user',
+            date_naissance: u.date_naissance || null,
+            gender: u.gender || null,
+            preferred_categories: u.preferred_categories || [],
+            bio: u.bio || u.description || ''
+          }
+          isFollowing.value = !!u.is_followed
+          // Provide posts list if included
+          if (Array.isArray(u.posts) && u.posts.length) {
+            userPosts.value = u.posts.map((p, idx) => normalizePost(p, idx))
+          }
+        }
+      } catch (e) {
+        console.debug('Numeric profile fetch failed', e)
+      }
+    }
+
+    // Fallback: username-based (client store)
     if (!userProfile.value) {
-      const username = route.params.user || 'unknown'
+      const username = String(param || '').trim() || 'unknown'
       const foundUser = usersStore.getUserByUsername(username)
       if (foundUser) {
         userProfile.value = {
@@ -558,7 +626,7 @@ const fetchUserProfile = async () => {
           id: Math.random(),
           name: username,
           username,
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+          avatar: '',
           followers: 0,
           following: 0,
           posts: 0,
@@ -569,48 +637,32 @@ const fetchUserProfile = async () => {
       }
     }
 
-    // Load user posts and follower lists from API when possible (only when we have numeric user id), otherwise fall back to store
-    const userId = userProfile.value && (typeof userProfile.value.id === 'number' || /^\\d+$/.test(String(userProfile.value.id)))
-
+    // After we have userProfile, if numeric id and we haven't already filled lists, fetch followers/following/posts (except when already derived from self or embedded posts)
+    const userId = userProfile.value && typeof userProfile.value.id === 'number'
     if (userId) {
-      const id = Number(userProfile.value.id)
-      // Posts
-      try {
-        const postsResp = await PostsService.userPosts(id)
-        // Possible shapes: {posts: []}, {data: {posts: []}}, {data: []}
-        const rawPosts = postsResp?.posts || postsResp?.data?.posts || postsResp?.data || []
-        userPosts.value = Array.isArray(rawPosts)
-          ? rawPosts.map((p, idx) => normalizePost(p, idx))
-          : []
-      } catch (err) {
-        // fallback to client-side store (already shaped maybe differently)
-        userPosts.value = (usersStore.getPostsByUsername(userProfile.value.username) || [])
+      const id = userProfile.value.id
+      if (userPosts.value.length === 0) {
+        try {
+          const postsResp = await PostsService.userPosts(id)
+          const rawPosts = postsResp?.posts || postsResp?.data?.posts || postsResp?.data || []
+          userPosts.value = Array.isArray(rawPosts) ? rawPosts.map((p, idx) => normalizePost(p, idx)) : []
+        } catch {}
       }
-
-      // Followers
       try {
         const fResp = await FollowsService.followers(id)
         const raw = fResp?.data?.followers || fResp?.followers || fResp?.data || fResp || []
         followersList.value = Array.isArray(raw) ? raw.map(normalizeUserItem) : []
-      } catch (err) {
-        followersList.value = (usersStore.getFollowers || []).map(normalizeUserItem)
-      }
-
-      // Following
+        // Derive following state by checking if auth user id exists in followers of viewed profile (only when viewing someone else)
+        if(!isSelf && authStore.user?.id){
+          isFollowing.value = followersList.value.some(f => String(f.id) === String(authStore.user.id))
+        }
+      } catch {}
       try {
         const fgResp = await FollowsService.following(id)
         const rawFg = fgResp?.data?.following || fgResp?.following || fgResp?.data || fgResp || []
         followingList.value = Array.isArray(rawFg) ? rawFg.map(normalizeUserItem) : []
-      } catch (err) {
-        followingList.value = (usersStore.getFollowing || []).map(normalizeUserItem)
-      }
-    } else {
-      // No numeric id available — avoid calling username-based user endpoints (API expects numeric IDs).
-      userPosts.value = (usersStore.getPostsByUsername(userProfile.value.username) || []).map((p, i) => normalizePost(p, i))
-      followersList.value = (usersStore.getFollowers || []).map(normalizeUserItem)
-      followingList.value = (usersStore.getFollowing || []).map(normalizeUserItem)
+      } catch {}
     }
-
   } catch (error) {
     console.error('Error fetching user profile:', error)
     userProfile.value = null
@@ -619,11 +671,34 @@ const fetchUserProfile = async () => {
   }
 }
 
+// Navigate to a profile ensuring we use numeric id for others (so backend /Y/users/{id}/profile is used)
+function navigateToProfile(user){
+  if(!user) return
+  const current = authStore.user
+  const isSelf = current && user.id && String(current.id) === String(user.id)
+  if(isSelf){
+    const uname = current.userName || current.userEmail?.split('@')[0]
+    if(uname) router.push({ name:'Account', params:{ user: uname } })
+    return
+  }
+  if(user.id){
+    router.push({ name:'Account', params:{ user: String(user.id) } })
+    return
+  }
+  if(user.username){
+    router.push({ name:'Account', params:{ user: user.username } })
+  }
+}
+
 // Keep account page in sync with auth store (so header/profile edits reflect immediately)
 watch(() => authStore.user, (u) => {
   if (!u) return
+  // Only sync reactive changes from auth store when viewing OWN profile.
+  // Prevents overwriting another user's profile (e.g. /account/97) with current user (id 99),
+  // which caused follower/following fetch to use the wrong id.
+  if (!isOwnProfile.value) return
   userProfile.value = {
-    id: u.id || userProfile.value?.id,
+    id: u.id, // safe because it's own profile
     name: u.name || u.userName || `${u.firstName || ''} ${u.lastName || ''}`.trim(),
     username: u.userName || (u.userEmail ? u.userEmail.split('@')[0] : ''),
     email: u.userEmail || userProfile.value?.email,
@@ -635,8 +710,8 @@ watch(() => authStore.user, (u) => {
     role: u.role || userProfile.value?.role,
     date_naissance: u.birthDate || u.date_naissance || userProfile.value?.date_naissance,
     gender: u.gender || userProfile.value?.gender,
-  preferred_categories: u.categories || u.preferred_categories || userProfile.value?.preferred_categories || [],
-  bio: u.bio || u.description || userProfile.value?.bio || ''
+    preferred_categories: u.categories || u.preferred_categories || userProfile.value?.preferred_categories || [],
+    bio: u.bio || u.description || userProfile.value?.bio || ''
   }
 }, { immediate: true })
 
@@ -680,7 +755,7 @@ const normalizeUserItem = (item) => {
     name: fullName,
     username: item.username || (item.email ? item.email.split('@')[0] : undefined),
     email: item.email,
-    avatar: avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
+    avatar: avatarUrl || '',
     bio: item.bio || item.description || '',
     coverPhoto: (item.background_image || item.cover_image || item.coverPhoto) || '',
     // keep any other useful fields if present
@@ -765,15 +840,70 @@ const normalizePost = (apiPost, index = 0) => {
   }
 }
 
-const toggleFollow = () => {
-  isFollowing.value = !isFollowing.value
+const toggleFollow = async () => {
+  if(!userProfile.value?.id || followProcessing.value) return
+  const targetId = userProfile.value.id
+  const wasFollowing = isFollowing.value
+  followProcessing.value = true
+  // Optimistic update
+  isFollowing.value = !wasFollowing
   if (userProfile.value) {
-    if (isFollowing.value) {
-      userProfile.value.followers++
-    } else {
-      userProfile.value.followers = Math.max(0, userProfile.value.followers - 1)
-    }
+    userProfile.value.followers = Math.max(0, userProfile.value.followers + (isFollowing.value ? 1 : -1))
   }
+  try {
+    if(!wasFollowing){
+      const resp = await FollowsService.follow(targetId)
+      if(resp){
+        if(resp.success === false && /already/i.test(resp.message||'')){
+          // We were already following; undo extra increment
+            if(userProfile.value) userProfile.value.followers = Math.max(0, userProfile.value.followers - 1)
+          isFollowing.value = true
+        }
+        if(resp.follower_count !== undefined && userProfile.value){
+          userProfile.value.followers = resp.follower_count
+        }
+      }
+    } else {
+      const resp = await FollowsService.unfollow(targetId)
+      if(resp){
+        if(resp.success === false && /not\s+following/i.test(resp.message||'')){
+          // We weren't actually following; undo decrement
+          if(userProfile.value) userProfile.value.followers = userProfile.value.followers + 1
+          isFollowing.value = false
+        }
+        if(resp.follower_count !== undefined && userProfile.value){
+          userProfile.value.followers = resp.follower_count
+        }
+      }
+    }
+    refreshFollowData(targetId)
+  } catch(e){
+    isFollowing.value = wasFollowing
+    if(userProfile.value){
+      userProfile.value.followers = Math.max(0, userProfile.value.followers + (wasFollowing ? 1 : -1))
+    }
+  } finally {
+    followProcessing.value = false
+  }
+}
+
+async function refreshFollowData(userId){
+  if(!userId) return
+  try {
+    followersLoading.value = true
+    const fResp = await FollowsService.followers(userId)
+    const rawFollowers = fResp?.data?.followers || fResp?.followers || fResp?.data || fResp || []
+    followersList.value = Array.isArray(rawFollowers) ? rawFollowers.map(normalizeUserItem) : []
+    if(!isOwnProfile.value && authStore.user?.id){
+      isFollowing.value = followersList.value.some(f => String(f.id) === String(authStore.user.id))
+    }
+  } catch(_) { /* ignore */ } finally { followersLoading.value = false }
+  try {
+    followingLoading.value = true
+    const fgResp = await FollowsService.following(userId)
+    const rawFollowing = fgResp?.data?.following || fgResp?.following || fgResp?.data || fgResp || []
+    followingList.value = Array.isArray(rawFollowing) ? rawFollowing.map(normalizeUserItem) : []
+  } catch(_) { /* ignore */ } finally { followingLoading.value = false }
 }
 
 // Add methods for editing and deleting posts

@@ -4,108 +4,14 @@ import UsersService from '@/services/usersService'
 export const useUsersStore = defineStore('users', {
   state: () => ({
     // Other users data (not the authenticated user)
-    users: [
-      {
-        id: 1,
-        name: 'yassineelaouni',
-        username: 'yassineelaouni581',
-        email: 'yss@fanradars.com',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=128&h=128&fit=crop&crop=face',
-        coverPhoto: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c0d?w=800&h=200&fit=crop',
-        bio: 'Tech enthusiast | Web developer | Coffee lover ☕ Building amazing apps with Vue.js and Node.js',
-        followers: 5670,
-        following: 234,
-        posts: 4,
-        joinedDate: '2023-01-15',
-        verified: true
-      }
-    ], 
+    users: [],
     
     // All posts (from all users)
-    posts: [
-      {
-        id: 1,
-        username: 'yassineelaouni581',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
-        tags: ['LoLWorlds', 'Esports', 'T1', 'G2'],
-        content: 'Beautiful sunset today! my friend',
-        media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'Demon Slayer movie poster'
-          },
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'Demon Slayer movie poster'
-          },
-          {
-            type: 'video',
-            url: 'https://www.w3schools.com/html/movie.mp4',
-            caption: 'Fight scene highlight'
-          }
-        ],
-        commentsList: [
-          {
-            id: 1,
-            username: 'Jane Smith',
-            userAvatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-            content: 'Awesome post! Love the image.',
-            date: '1h ago'
-          },
-          {
-            id: 2,
-            username: 'Bob Lee',
-            userAvatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-            content: 'Great work!',
-            date: '30m ago'
-          }
-        ],
-        likes: 145,
-        comments: 32,
-        date: '2h ago',
-        isLiked: false
-      },
-      {
-        id: 2,
-        username: 'yassineelaouni581',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=48&h=48&fit=crop&crop=face',
-        content: 'Beautiful sunset today! 🌅',
-                media: [
-          {
-            type: 'image',
-            url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400',
-            caption: 'Demon Slayer movie poster'
-          }
-        ],
-        likes: 289,
-        comments: 43,
-        date: '1d ago',
-        isLiked: true
-      }
-    ], 
+    posts: [], 
     
     // Social connections
-    followers: [
-      {
-        id: 1,
-        name: 'John Doe',
-        username: 'john_doe',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face',
-        bio: 'Tech enthusiast and developer'
-      }
-    ],
-    
-    following: [
-      {
-        id: 1,
-        name: 'Sarah Wilson',
-        username: 'sarah_w',
-        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=48&h=48&fit=crop&crop=face',
-        bio: 'Travel blogger and adventurer'
-      }
-    ]
+    followers: [],
+    following: []
   }),
   
   getters: {

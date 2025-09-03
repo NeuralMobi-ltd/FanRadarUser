@@ -275,10 +275,16 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div v-for="member in members" :key="member.id" class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
           <div class="flex items-center mb-4">
-            <img :src="normalizeAsset(member.avatar, '/images/me.png')" :alt="member.name" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4">
-            <div class="flex-1">
-              <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base">{{ member.name }}</h3>
-              <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">@{{ member.username }}</p>
+            <AvatarFallback
+              :src="normalizeAsset(member.avatar)"
+              :first-name="(member.first_name || member.firstName || member.name || '').split(' ')[0]"
+              :last-name="(member.last_name || member.lastName || member.name || '').split(' ').slice(1).join(' ')"
+              custom-class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4 cursor-pointer hover:ring-2 hover:ring-blue-500 transition flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-semibold"
+              @click="goToUser(member)"
+            />
+            <div class="flex-1 cursor-pointer group" @click="goToUser(member)">
+              <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ member.name }}</h3>
+              <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors">@{{ member.username }}</p>
             </div>
             <div class="flex items-center">
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
@@ -309,8 +315,8 @@
           </div>
           
           <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-4">
-            <span>{{ member.posts }} posts</span>
-            <span>Joined {{ formatJoined(member.joinedDate) }}</span>
+            <span>{{ member.posts_count || member.posts || 0 }} posts</span>
+            <span v-if="member.joined_at || member.created_at || member.joinedDate">Joined {{ formatJoined(member.joined_at || member.created_at || member.joinedDate) }}</span>
           </div>
         </div>
       </div>
@@ -639,6 +645,7 @@
 
 <script setup>
 import Post from '@/components/common/Post.vue'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import { notify } from '@/utils/notify'
@@ -688,7 +695,7 @@ const currentUser = computed(() => ({
   id: authStore.user?.id || 1,
   name: authStore.user?.name || 'Current User',
   username: authStore.user?.email?.split('@')[0] || 'user',
-  avatar: authStore.user?.avatar || '/public/images/me.png'
+  avatar: authStore.user?.avatar || ''
 }))
 
 // Fandom data from store
@@ -948,7 +955,8 @@ const pendingRemoveMemberId = ref(null)
 function removeMember(memberId){ pendingRemoveMemberId.value = memberId; showRemoveMember.value = true }
 async function confirmRemoveMember(){
   if(!pendingRemoveMemberId.value || removingMember.value) return
-  removingMember.value = true
+  removin
+  gMember.value = true
   try { fandomsStore.removeFandomMember(fandomName.value, pendingRemoveMemberId.value) } finally {
     removingMember.value = false
     showRemoveMember.value = false
@@ -1118,6 +1126,32 @@ function formatJoined(value){
     return date.toLocaleDateString(undefined,{ day:'2-digit', month:'short', year:'numeric' })
   }
   return value
+}
+
+// Navigate to account page for clicked member
+function goToUser(member){
+  if(!member) return
+  // Normalize username (strip @, lower-case)
+  let uname = member.username || (member.email ? member.email.split('@')[0] : null)
+  if(uname){
+    uname = String(uname).replace(/^@+/, '').trim()
+  }
+  const current = authStore.user
+  const currentUsernames = [current?.userName, current?.userEmail?.split('@')[0]].filter(Boolean).map(s=>s.toLowerCase())
+  if((member.id && current && String(member.id) === String(current.id)) || (uname && currentUsernames.includes(uname.toLowerCase()))){
+    // Navigate to real username for consistency with header links
+    const selfName = (current?.userName || current?.userEmail?.split('@')[0] || uname).trim()
+  router.push({ name: 'Account', params: { user: selfName } })
+    return
+  }
+  // Prefer numeric id for other users so profile page can call /Y/users/{id}/profile directly
+  if(member.id){
+  router.push({ name: 'Account', params: { user: String(member.id) } })
+    return
+  }
+  if(uname){
+    router.push({ name: 'Account', params: { user: uname } })
+  }
 }
 </script>
 

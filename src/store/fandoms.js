@@ -6,142 +6,10 @@ export const useFandomsStore = defineStore('fandoms', {
   state: () => ({
     // Unified fandoms/communities array
     allFandoms: [
-      {
-        id: 1,
-        name: 'Premier League Fans',
-        handle: 'premier-league-fans',
-        description: 'The ultimate community for Premier League football fans',
-        membersCount: '234K',
-        logo: 'https://logo.clearbit.com/premierleague.com',
-        coverImage: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&h=300&fit=crop',
-        category: 'Sports',
-        tags: ['PremierLeague', 'Football', 'Soccer', 'EPL', 'MatchDay', 'Transfer'],
-        role: 'admin',
-        createdAt: '2023-01-15',
-        joinedAt: null
-      },
-      {
-        id: 2,
-        name: 'Anime & Manga',
-        handle: 'anime-manga',
-        description: 'All things anime and manga - discussions, fan art, and more',
-        membersCount: '980K',
-        logo: 'https://logo.clearbit.com/crunchyroll.com',
-        coverImage: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=300&fit=crop',
-        category: 'Entertainment',
-        tags: ['Anime', 'Manga', 'Otaku', 'AnimeReview', 'AnimeFan', 'Shounen'],
-        role: 'admin',
-        createdAt: '2022-08-20',
-        joinedAt: null
-      }, 
-      {
-        id: 3,
-        name: 'NBA Central',
-        handle: 'nba-central',
-        description: 'All things NBA. Game threads, highlights, player discussions and basketball strategies.',
-        membersCount: '189K',
-        logo: 'https://logo.clearbit.com/nba.com',
-        coverImage: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=300&fit=crop',
-        category: 'Sports',
-        tags: ['NBA', 'Basketball', 'GameThreads', 'Highlights', 'Players'],
-        role: null,
-        createdAt: null,
-        joinedAt: null
-      },
-      {
-        id: 4,
-        name: 'Marvel Multiverse',
-        handle: 'marvel-multiverse',
-        description: 'Marvel movies, comics, theories and everything MCU',
-        membersCount: '1.2M',
-        logo: 'https://logo.clearbit.com/marvel.com',
-        coverImage: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=800&h=300&fit=crop',
-        category: 'Entertainment',
-        tags: ['MCU', 'MarvelComics', 'Avengers', 'SpiderMan', 'XMen', 'MarvelTheory'],
-        role: 'member',
-        createdAt: null,
-        joinedAt: '2023-05-12'
-      },
-      {
-        id: 5,
-        name: 'K-Pop Central',
-        handle: 'kpop-central',
-        description: 'Latest K-Pop news, comebacks, and fan discussions',
-        membersCount: '890K',
-        logo: 'https://logo.clearbit.com/soompi.com',
-        coverImage: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=300&fit=crop',
-        category: 'Music',
-        tags: ['KPop', 'BTS', 'BLACKPINK', 'NewJeans', 'Comeback', 'KPopNews'],
-        role: 'member',
-        createdAt: null,
-        joinedAt: '2023-07-08'
-      },
-      {
-        id: 6,
-        name: 'Formula 1',
-        handle: 'formula-1',
-        description: 'The fastest community on FanRadar! Race discussions, team updates, and technical analyses.',
-        membersCount: '156K',
-        logo: 'https://logo.clearbit.com/formula1.com',
-        coverImage: 'https://images.unsplash.com/photo-1518391846015-55a9cc003b25?w=800&h=300&fit=crop',
-        category: 'Sports',
-        tags: ['F1', 'Racing', 'Teams', 'Analysis'],
-        role: null,
-        createdAt: null,
-        joinedAt: null
-      },
-      {
-        id: 7,
-        name: 'Tennis World',
-        handle: 'tennis-world',
-        description: 'Grand Slams, ATP & WTA tours, and everything tennis related. From amateurs to professionals!',
-        membersCount: '98K',
-        logo: 'https://logo.clearbit.com/atptour.com',
-        coverImage: 'https://images.unsplash.com/photo-1542144582-1ba00456b5e3?w=800&h=300&fit=crop',
-        category: 'Sports',
-        tags: ['Tennis', 'GrandSlam', 'ATP', 'WTA'],
-        role: null,
-        createdAt: null,
-        joinedAt: null
-      },
-      {
-        id: 8,
-        name: 'Cricket Fans',
-        handle: 'cricket-fans',
-        description: 'Test matches, ODIs, T20s - all cricket formats discussed by passionate fans worldwide.',
-        membersCount: '145K',
-        logo: 'https://logo.clearbit.com/icc-cricket.com',
-        coverImage: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?w=800&h=300&fit=crop',
-        category: 'Sports',
-        tags: ['Cricket', 'Test', 'ODI', 'T20'],
-        role: null,
-        createdAt: null,
-        joinedAt: null
-      },
-      {
-        id: 9,
-        name: 'Olympic Games',
-        handle: 'olympic-games',
-        description: 'All things Olympics. Sports, athletes, and global competitions.',
-        membersCount: '200K',
-        logo: '',
-        coverImage: '',
-        category: 'Sports',
-        tags: ['Olympics', 'Athletes', 'Competitions'],
-        role: null,
-        createdAt: null,
-        joinedAt: null
-      }
       // Add more fandoms as needed
     ],
     userRoles: {
-      'premier-league-fans': 'admin',
-      'anime-manga': 'admin', 
-      'tech-innovators': 'admin',
-      'marvel-multiverse': 'member',
-      'kpop-central': 'member',
-      'anime': 'member',
-      'digital-art': 'member'
+      
     },
     userJoinRequests: [], // Pending join requests
     userNotifications: [], // Fandom-related notifications
@@ -151,79 +19,12 @@ export const useFandomsStore = defineStore('fandoms', {
     
     // Fandom posts data
     fandomPosts: {
-      'premier-league-fans': [
-        {
-          id: 1,
-          username: 'FootballFanatic',
-          userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-          date: '2h ago',
-          communityName: '',
-          content: 'What a match yesterday! The tactical setup was absolutely brilliant. The way they pressed high and created chances was textbook football.',
-          image: 'https://images.unsplash.com/photo-1459865264687-595d652de67e?w=600&h=400&fit=crop',
-          tags: ['match', 'tactics', 'analysis'],
-          likes: 89,
-          comments: 23,
-          // shares removed
-          isLiked: false,
-          fandom: ''
-        },
-        {
-          id: 2,
-          username: 'TacticalGenius',
-          userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-          date: '5h ago',
-          communityName: '',
-          content: 'Breaking down the formation changes in the second half. The manager\'s substitutions completely changed the game dynamic.',
-          tags: ['tactics', 'formation', 'substitutions'],
-          likes: 156,
-          comments: 34,
-          // shares removed
-          isLiked: true,
-          fandom: ''
-        }
-      ]
+      
     },
     
     // Fandom members data
     fandomMembers: {
-      'premier-league-fans': [
-        {
-          id: 1,
-          name: 'John Smith',
-          username: 'johnsmith',
-          avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
-          role: 'admin',
-          posts: 245,
-          joinedDate: 'Jan 2019'
-        },
-        {
-          id: 2,
-          name: 'Emma Wilson',
-          username: 'emmaw',
-          avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
-          role: 'member', // changed from 'moderator' per updated role restrictions
-          posts: 189,
-          joinedDate: 'Mar 2020'
-        },
-        {
-          id: 3,
-          name: 'Mike Johnson',
-          username: 'mikej',
-          avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
-          role: 'member',
-          posts: 67,
-          joinedDate: 'Aug 2021'
-        },
-        {
-          id: 4,
-          name: 'Sarah Davis',
-          username: 'sarahd',
-          avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
-          role: 'member',
-          posts: 123,
-          joinedDate: 'Feb 2022'
-        }
-      ]
+      
     },
     // New config to replace constants
     config: {
@@ -371,7 +172,7 @@ export const useFandomsStore = defineStore('fandoms', {
           return {
             id: p.id,
             username: p.author?.username || p.user?.username || p.user?.first_name || 'user',
-            userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '/images/me.png',
+            userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '',
             date: p.created_at || p.createdAt,
             content: p.content || p.description,
             image: mediaObjects.length === 1 ? mediaObjects[0].url : null,
@@ -402,7 +203,7 @@ export const useFandomsStore = defineStore('fandoms', {
           id: m.user?.id || m.member_id,
           name: (m.user?.first_name && m.user?.last_name) ? `${m.user.first_name} ${m.user.last_name}` : (m.user?.username || 'User'),
           username: m.user?.username || m.user?.first_name || 'user',
-          avatar: normalizeAsset(m.user?.profile_image) || '/images/me.png',
+          avatar: normalizeAsset(m.user?.profile_image) || '',
           role: m.member_role || 'member',
           posts: m.posts_count || 0,
           joinedDate: m.joined_at || ''
@@ -470,7 +271,7 @@ export const useFandomsStore = defineStore('fandoms', {
         id: Date.now(),
         name: 'You',
         username: 'you',
-        avatar: fandomData.avatar || '/images/me.png',
+  avatar: fandomData.avatar || '',
         role: 'admin',
         posts: 0,
         joinedDate: new Date().toLocaleDateString()
@@ -543,7 +344,7 @@ export const useFandomsStore = defineStore('fandoms', {
           const post = {
             id: raw.id,
             username: raw.author?.username || raw.user?.username || 'you',
-            userAvatar: normalizeAsset(raw.author?.avatar || raw.user?.profile_image) || '/images/me.png',
+            userAvatar: normalizeAsset(raw.author?.avatar || raw.user?.profile_image) || '',
             date: raw.createdAt || raw.created_at,
             content: raw.description,
             media: Array.isArray(raw.media) ? raw.media.map(m => normalizeAsset(m)) : null,

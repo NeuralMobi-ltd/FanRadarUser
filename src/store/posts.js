@@ -484,7 +484,7 @@ export const usePostsStore = defineStore('posts', {
             content: commentData.content || commentData.text,
             date: commentData.created_at || commentData.createdAt || new Date().toISOString(),
             username: commentData.user?.username || commentData.user?.name || 'You',
-            userAvatar: commentData.user?.avatar || commentData.user?.profile_image_url || '/images/me.png'
+            userAvatar: commentData.user?.avatar || commentData.user?.profile_image_url || ''
           })
         }
         return res

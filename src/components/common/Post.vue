@@ -392,7 +392,7 @@ const currentUserAvatar = computed(() => {
   if (raw) {
     try { return resolveAsset(raw) } catch (_) { return raw }
   }
-  return '/images/me.png'
+  return ''
 })
 
 // Comments local reactive list (initialized from post.commentsList if present)

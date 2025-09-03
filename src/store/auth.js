@@ -115,7 +115,7 @@ export const useAuthStore = defineStore('auth', {
   name: [apiUser.first_name, apiUser.last_name].filter(Boolean).join(' ') || apiUser.name || apiUser.username,
   firstName: apiUser.first_name || null,
   lastName: apiUser.last_name || null,
-  avatar: resolveImage(apiUser.profile_image || apiUser.avatar || apiUser.avatarUrl, '/images/me.png'),
+  avatar: resolveImage(apiUser.profile_image || apiUser.avatar || apiUser.avatarUrl, ''),
   coverPhoto: resolveImage(apiUser.background_image || apiUser.cover_photo || apiUser.coverPhoto, ''),
   bio: apiUser.bio || apiUser.description || '',
   birthDate: apiUser.date_naissance || apiUser.birth_date || null,

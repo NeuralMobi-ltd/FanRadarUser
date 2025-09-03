@@ -63,10 +63,6 @@
               <div>
                 <h2 class="text-2xl font-bold mb-2">🔥 Trending Fandoms</h2>
                 <p class="text-blue-100 mb-4">Join the most active fandoms this week</p>
-                <div class="flex -space-x-2">
-                  <img v-for="i in 5" :key="i" :src="`https://randomuser.me/api/portraits/men/${i + 10}.jpg`" class="w-8 h-8 rounded-full border-2 border-white" />
-                  <div class="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center text-xs font-bold">+5K</div>
-                </div>
               </div>
               <div class="hidden md:block">
                 <div class="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center">

@@ -2,6 +2,10 @@ import http from '@/services/http'
 import API_CONFIG from '@/config/api'
 
 export const UsersService = {
+  async profile(userId){
+    const { data } = await http.get(API_CONFIG.users.profileById(userId))
+    return data
+  },
   async follow(userId) {
     const { data } = await http.post(API_CONFIG.users.follow(userId))
     return data

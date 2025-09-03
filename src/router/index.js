@@ -70,7 +70,7 @@ const routes = [
           userName = cached.userName || cached.username || cached.name
         }
         if (userName) {
-          next({ name: 'Account', params: { user: encodeURIComponent(userName) } })
+          next({ name: 'Account', params: { user: userName } })
         } else {
           next('/login')
         }
