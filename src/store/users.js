@@ -4,11 +4,9 @@ import UsersService from '@/services/usersService'
 export const useUsersStore = defineStore('users', {
   state: () => ({
     // Other users data (not the authenticated user)
-    users: [],
-    
+    users: [],    
     // All posts (from all users)
-    posts: [], 
-    
+    posts: [],     
     // Social connections
     followers: [],
     following: []

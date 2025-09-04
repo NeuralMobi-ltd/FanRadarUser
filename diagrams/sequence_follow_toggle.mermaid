@@ -1,19 +1,19 @@
-%% Simplified Follow Toggle Sequence
+%% Séquence : Basculer Suivre / Se désabonner (simplifié - français)
 sequenceDiagram
   autonumber
-  participant U as User
+  participant U as Utilisateur
   participant FE as Frontend
-  participant API as Laravel API
-  participant DB as DB
-  U->>FE: Click Follow / Unfollow
-  FE->>API: POST /api/Y/users/{id}/follow OR DELETE /api/Y/users/{id}/unfollow
-  API->>DB: Check relation
-  alt Create follow
-    DB-->>API: none
-    API->>DB: INSERT follow
-    API-->>FE: { following: true }
-  else Remove follow
-    API->>DB: DELETE follow
-    API-->>FE: { following: false }
+  participant API as API Laravel
+  participant DB as Base
+  U->>FE: Clique sur Suivre / Se désabonner
+  FE->>API: POST /users/{id}/follow ou DELETE /users/{id}/unfollow
+  API->>DB: Vérifier relation
+  alt Aucun lien
+    DB-->>API: Aucun
+    API->>DB: Insérer relation
+    API-->>FE: { suivant: true }
+  else Déjà suivi
+    API->>DB: Supprimer relation
+    API-->>FE: { suivant: false }
   end
-  FE->>U: Update button state
+  FE->>U: Met à jour le bouton

@@ -3,29 +3,12 @@
   <div 
     v-if="isVisible" 
     :class="wrapperClass"
+    :style="styleBinding"
   >
     <!-- Search dropdown -->
-    <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-96">
-      <!-- Top search bar (shown when used as overlay on phones) -->
-      <div v-if="placement === 'overlay'" class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-3 py-2 flex items-center gap-2">
-        <i class="fas fa-search text-gray-400"></i>
-        <input
-          v-model="localQuery"
-          @keydown.enter.prevent="emitSearch"
-          type="text"
-          class="flex-1 bg-gray-50 dark:bg-gray-700/60 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 text-sm"
-          :placeholder="'Search FanRadar'"
-        />
-        <button v-if="localQuery" @click="clearLocalQuery" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Clear">
-          <i class="fas fa-times text-sm"></i>
-        </button>
-        <button @click="closeSearch" class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" aria-label="Close">
-          <i class="fas fa-chevron-up text-sm"></i>
-        </button>
-      </div>
-
-      <!-- Trending searches and results -->
-      <div class="overflow-y-auto max-h-96">
+    <div :class="['bg-white dark:bg-gray-800 shadow-2xl rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden max-h-96', placement === 'overlay' ? 'w-full max-w-md mx-auto flex flex-col' : '']">
+      <!-- Scrollable content (trending / results) -->
+      <div :class="[placement === 'overlay' ? 'flex-1 overflow-y-auto no-scrollbar' : 'overflow-y-auto max-h-96 no-scrollbar']">
         <!-- Show recent searches or search results based on query -->
         <div v-if="!effectiveQuery">
           <!-- Recent searches section -->
@@ -210,6 +193,26 @@
           </div>
         </div>
       </div>
+      <!-- Bottom search bar (phones only, overlay placement) -->
+      <div v-if="placement === 'overlay'" class="md:hidden px-3 py-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2">
+        <button @click="closeSearch" class="p-1 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white" aria-label="Close">
+          <i class="fas fa-chevron-down text-sm"></i>
+        </button>
+        <i class="fas fa-search text-gray-400"></i>
+        <input
+          v-model="localQuery"
+          @keydown.enter.prevent="emitSearch"
+          type="text"
+          class="flex-1 bg-gray-50 dark:bg-gray-700/60 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 px-3 py-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-200 dark:border-gray-600 text-sm"
+          :placeholder="'Search FanRadar'"
+        />
+        <button v-if="localQuery" @click="clearLocalQuery" class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" aria-label="Clear">
+          <i class="fas fa-times text-sm"></i>
+        </button>
+        <button @click="emitSearch" class="p-1.5 px-3 text-xs font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-full" aria-label="Search">
+          Go
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -259,11 +262,31 @@ const hasResults = computed(() =>
   searchResults.value.posts.length > 0
 )
 
-const wrapperClass = computed(() =>
-  props.placement === 'overlay'
-    ? 'fixed top-14 left-0 right-0 z-[60] px-2'
-    : 'absolute top-full left-0 right-0 z-50 mt-2'
-)
+// Dynamic positioning: if inline, match width & position of header input (#global-search-input)
+const wrapperClass = computed(() => {
+  if (props.placement === 'overlay') {
+    return 'fixed top-14 left-0 right-0 z-[60] px-2'
+  }
+  // inline dropdown: flush with bottom of input (no extra margin)
+  return 'absolute z-50'
+})
+
+const styleBinding = ref({})
+
+const computeAnchorMetrics = () => {
+  if (props.placement !== 'inline') return
+  const el = document.getElementById('global-search-input')
+  if (!el) return
+  const rect = el.getBoundingClientRect()
+  styleBinding.value = {
+    width: rect.width + 'px',
+    left: rect.left + 'px',
+    top: rect.bottom + 'px'
+  }
+}
+
+watch(() => props.isVisible, (v) => { if (v) { setTimeout(computeAnchorMetrics, 0) } })
+window.addEventListener('resize', computeAnchorMetrics)
 
 const effectiveQuery = computed(() => (localQuery.value || '').trim())
 
@@ -360,3 +383,8 @@ const goToFandom = (fandom) => {
   closeSearch()
 }
 </script>
+
+<style scoped>
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { width: 0; height: 0; }
+</style>

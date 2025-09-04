@@ -6,7 +6,7 @@
     <!-- Cover Image -->
     <div class="relative h-32">
       <img 
-        :src="currentFandom?.coverImage || currentFandom?.image || 'https://via.placeholder.com/800x300'" 
+        :src="coverSrc" 
         :alt="currentFandom?.name || currentFandom?.title || 'Fandom'" 
         class="w-full h-full object-cover"
       />
@@ -26,7 +26,7 @@
       <!-- Fandom Avatar/Logo positioned at bottom right -->
       <div class="absolute bottom-0 right-0 m-3">
         <img 
-          :src="currentFandom?.logo || currentFandom?.avatar || currentFandom?.image || 'https://via.placeholder.com/64x64'" 
+          :src="logoSrc" 
           :alt="currentFandom?.name || currentFandom?.title || 'Fandom'" 
           class="w-16 h-16 rounded-xl border-4 border-white dark:border-gray-800 shadow-lg" 
         />
@@ -58,7 +58,7 @@
       <!-- Stats -->
       <div class="flex items-center justify-between">
         <span class="text-sm text-gray-500 dark:text-gray-400">
-          {{ currentFandom?.members || currentFandom?.memberCount || '0' }} members
+          {{ membersCount }} members
         </span>
         <button 
           :disabled="joining"
@@ -83,6 +83,7 @@
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useFandomsStore } from '@/store/fandoms'
+import API_CONFIG from '@/config/api'
 import { notify } from '@/utils/notify'
 
 const props = defineProps({
@@ -128,6 +129,48 @@ const userRole = computed(() => {
 })
 
 const joining = ref(false)
+
+// --- Media Helpers -------------------------------------------------------
+const API_ORIGIN = (() => {
+  // Prefer env, fallback to API_CONFIG.baseURL default
+  let base = (import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || '').trim()
+  if (!base) return ''
+  base = base.replace(/\/$/, '')
+  base = base.replace(/\/api$/i, '') // ensure no trailing /api when serving storage
+  return base
+})()
+
+function resolveMedia(path) {
+  if (!path) return ''
+  if (/^(https?:|data:|blob:)/i.test(path)) return path
+  const cleaned = path.replace(/^\//,'')
+  if (!API_ORIGIN) return cleaned // will resolve relative (may 404 if different host)
+  return `${API_ORIGIN}/${cleaned}`
+}
+
+const coverSrc = computed(() => {
+  return resolveMedia(
+    currentFandom.value.cover_image ||
+    currentFandom.value.coverImage ||
+    currentFandom.value.image || ''
+  )
+})
+
+const logoSrc = computed(() => {
+  return resolveMedia(
+    currentFandom.value.logo_image ||
+    currentFandom.value.logoImage ||
+    currentFandom.value.logo ||
+    currentFandom.value.avatar ||
+    currentFandom.value.image || ''
+  )
+})
+
+const membersCount = computed(() => {
+  return currentFandom.value.members_count ||
+    currentFandom.value.members ||
+    currentFandom.value.memberCount || 0
+})
 
 // Get appropriate button text based on user role
 const getButtonText = () => {

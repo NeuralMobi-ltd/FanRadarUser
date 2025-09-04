@@ -308,7 +308,11 @@ const messages = {
       list: {
         title: 'Discover Fandoms',
         subtitle: 'Find your people and explore shared interests',
-        searchPlaceholder: 'Search fandoms...'
+  searchPlaceholder: 'Search fandoms...',
+  trendingTitle: 'Trending Fandoms',
+  trendingSubtitle: 'Join the most active fandoms this week',
+  emptyTitle: 'No fandoms found',
+  emptyDescription: 'We could not find any fandoms matching your search. Try different keywords or create your own fandom to get started.'
       },
       detail: {
         label: 'Fandom',
@@ -342,6 +346,51 @@ const messages = {
         saveChanges: 'Save Changes',
         saveRules: 'Save Rules',
         cancel: 'Cancel'
+      },
+      create: {
+        title: 'Create New Fandom',
+        subtitle: 'Build a thriving fandom around your passion',
+        sections: {
+          media: 'Logo & Cover Image',
+          basic: 'Basic Information'
+        },
+        fields: {
+          logoLabel: 'Logo / Avatar',
+          logoHint: 'Square image, 256x256 recommended',
+          coverLabel: 'Cover Image',
+          coverHint: '16:9 ratio, 1200x675 recommended',
+          category: 'Category',
+          subcategory: 'Subcategory',
+          searchCategories: 'Search categories...',
+          fandomName: 'Fandom Name',
+          fandomNamePlaceholder: 'Give your fandom a great name',
+          description: 'Full Description',
+          descriptionPlaceholder: 'Describe what makes your fandom special, what kind of content to expect, and what brings your fandom together...',
+          descriptionHelp: "Help people understand your fandom's purpose"
+        },
+        states: {
+          loadingCategories: 'Loading categories...',
+          loading: 'Loading...',
+          noCategoriesMatch: 'No categories match "{q}"',
+          showingCount: 'Showing {shown} / {total}',
+          noSubcategories: 'No subcategories',
+          autoSelected: 'Auto-selected',
+          usingSubcategory: 'Using subcategory: {name}'
+        },
+        actions: {
+          reload: 'Reload',
+          create: 'Create',
+          creating: 'Creating...'
+        },
+        messages: {
+          success: 'Fandom created successfully! ',
+          fail: 'Failed to create fandom',
+          error: 'Error creating fandom'
+        },
+        progress: {
+          status: '{done}/{total} required fields completed',
+          ready: 'All required fields completed'
+        }
       }
     },
     account: {
@@ -706,7 +755,11 @@ const messages = {
       list: {
         title: 'Découvrir des fandoms',
         subtitle: 'Trouvez votre communauté et explorez vos centres d’intérêt',
-        searchPlaceholder: 'Rechercher des fandoms...'
+  searchPlaceholder: 'Rechercher des fandoms...',
+  trendingTitle: 'Fandoms populaires',
+  trendingSubtitle: 'Rejoignez les fandoms les plus actifs cette semaine',
+  emptyTitle: 'Aucun fandom trouvé',
+  emptyDescription: 'Nous n\'avons trouvé aucun fandom correspondant à votre recherche. Essayez d\'autres mots‑clés ou créez votre propre fandom.'
       },
       detail: {
         label: 'Fandom',
@@ -740,6 +793,51 @@ const messages = {
         saveChanges: 'Enregistrer',
         saveRules: 'Enregistrer les règles',
         cancel: 'Annuler'
+      },
+      create: {
+        title: 'Créer un nouveau fandom',
+        subtitle: 'Construisez un fandom dynamique autour de votre passion',
+        sections: {
+          media: 'Logo & Image de couverture',
+          basic: 'Informations de base'
+        },
+        fields: {
+          logoLabel: 'Logo / Avatar',
+          logoHint: 'Image carrée, 256x256 recommandé',
+          coverLabel: 'Image de couverture',
+          coverHint: 'Format 16:9, 1200x675 recommandé',
+          category: 'Catégorie',
+          subcategory: 'Sous‑catégorie',
+          searchCategories: 'Rechercher des catégories...',
+          fandomName: 'Nom du fandom',
+          fandomNamePlaceholder: 'Donnez un super nom à votre fandom',
+          description: 'Description complète',
+          descriptionPlaceholder: 'Décrivez ce qui rend votre fandom spécial, le type de contenu attendu et ce qui rassemble la communauté...',
+          descriptionHelp: 'Aidez les gens à comprendre l\'objectif de votre fandom'
+        },
+        states: {
+          loadingCategories: 'Chargement des catégories...',
+            loading: 'Chargement...',
+          noCategoriesMatch: 'Aucune catégorie ne correspond à « {q} »',
+          showingCount: 'Affichage {shown} / {total}',
+          noSubcategories: 'Aucune sous‑catégorie',
+          autoSelected: 'Auto‑sélectionnée',
+          usingSubcategory: 'Sous‑catégorie utilisée : {name}'
+        },
+        actions: {
+          reload: 'Recharger',
+          create: 'Créer',
+          creating: 'Création...'
+        },
+        messages: {
+          success: 'Fandom créé avec succès !',
+          fail: 'Échec de création du fandom',
+          error: 'Erreur lors de la création du fandom'
+        },
+        progress: {
+          status: '{done}/{total} champs requis remplis',
+          ready: 'Tous les champs requis sont remplis'
+        }
       }
     },
     account: {

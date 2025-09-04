@@ -36,9 +36,9 @@ export default {
         { name: 'Settings', path: '/settings' }
       ],
       recommendedCommunities: [
-        { id: 1, name: 'Photography', image: 'https://via.placeholder.com/40' },
-        { id: 2, name: 'Digital Art', image: 'https://via.placeholder.com/40' },
-        { id: 3, name: 'Coding', image: 'https://via.placeholder.com/40' }
+        { id: 1, name: 'Photography', image: '' },
+        { id: 2, name: 'Digital Art', image: '' },
+        { id: 3, name: 'Coding', image: '' }
       ]
     };
   }

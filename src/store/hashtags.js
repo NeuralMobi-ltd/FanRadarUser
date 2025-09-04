@@ -5,68 +5,6 @@ export const useHashtagsStore = defineStore('hashtags', {
   state: () => ({
     // Hashtag-specific posts
     hashtagPosts: {
-      'LoLPhase5': [
-        {
-          id: 1,
-          username: 'GamerPro',
-          userAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
-          date: '2h ago',
-          communityName: 'Gaming Community',
-          content: 'Just saw the latest updates for LoLPhase5 and I\'m absolutely hyped! This is going to change everything.',
-          image: 'https://dims.apnews.com/dims4/default/9a1aa05/2147483647/strip/true/crop/5058x2845+0+263/resize/1440x810!/quality/90/?url=https%3A%2F%2Fassets.apnews.com%2Fe8%2Fc3%2F568b2887ee1325a267b042192e69%2F8021f5b2054d4f93ac59558090f0e304',
-          tags: ['LoLPhase5', 'Gaming', 'Trending'],
-          likes: 234,
-          comments: 56,
-          isLiked: false,
-          fandom: 'Gaming'
-        },
-        {
-          id: 2,
-          username: 'ContentCreator',
-          userAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
-          date: '5h ago',
-          communityName: 'Content Creators',
-          content: 'My detailed analysis of the LoLPhase5 phenomenon. This trend is reshaping the entire landscape and here\'s why you should care.',
-          image: null,
-          tags: ['LoLPhase5', 'Analysis', 'Content'],
-          likes: 189,
-          comments: 43,
-          isLiked: true,
-          fandom: 'Content'
-        }
-      ],
-      'Swifties': [
-        {
-          id: 11,
-          username: 'SwiftFan13',
-          userAvatar: 'https://randomuser.me/api/portraits/women/25.jpg',
-          date: '1h ago',
-          communityName: 'Taylor Swift Fans',
-          content: 'New Taylor Swift album theories are wild! The Easter eggs in her latest posts are giving me life 💕 #Swifties',
-          image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=500&fit=crop',
-          tags: ['Swifties', 'TaylorSwift', 'Music'],
-          likes: 456,
-          comments: 89,
-          isLiked: false,
-          fandom: 'Music'
-        }
-      ],
-      'AnimeSpring2024': [
-        {
-          id: 21,
-          username: 'AnimeWatcher',
-          userAvatar: 'https://randomuser.me/api/portraits/men/18.jpg',
-          date: '3h ago',
-          communityName: 'Anime Community',
-          content: 'Spring 2024 anime lineup is incredible! So many amazing shows to watch this season #AnimeSpring2024',
-          image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=500&fit=crop',
-          tags: ['AnimeSpring2024', 'Anime', 'Season'],
-          likes: 298,
-          comments: 67,
-          isLiked: true,
-          fandom: 'Anime'
-        }
-      ]
     },
 
     // Hashtag-specific news

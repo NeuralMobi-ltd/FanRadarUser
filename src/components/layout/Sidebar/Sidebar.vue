@@ -17,7 +17,7 @@
       'lg:relative lg:translate-x-0',
       showMobileMenu ? 'fixed inset-y-0 left-0 w-64 translate-x-0' : 'fixed inset-y-0 left-0 w-64 -translate-x-full',
       // Desktop: Sticky sidebar below fixed header, no internal scroll
-      'lg:w-64 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:mb-4'
+      'lg:w-64 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] '
     ]"
   >
     <!-- Close button for mobile -->

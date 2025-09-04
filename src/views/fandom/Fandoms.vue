@@ -5,9 +5,9 @@
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Discover Fandoms</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">{{ $t('fandom.list.title') }}</h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1">
-              Find your people and explore shared interests
+              {{ $t('fandom.list.subtitle') }}
             </p>
           </div>
           
@@ -16,7 +16,7 @@
               <input 
                 type="text" 
                 v-model="search"
-                placeholder="Search fandoms..." 
+                :placeholder="$t('fandom.list.searchPlaceholder')" 
                 class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl py-3 px-5 pl-12 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder-gray-500 dark:placeholder-gray-400"
               />
               <i class="fas fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400"></i>
@@ -26,7 +26,7 @@
               @click="$router.push('/create-fandom')"
             >
               <i class="fas fa-plus"></i>
-              <span>Create Fandom</span>
+              <span>{{ $t('common.createFandom') }}</span>
             </button>
           </div>
         </div>
@@ -55,14 +55,14 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Featured Banner -->
-      <div v-if="activeCategory === 'All'" class="mb-12">
+  <div v-if="activeCategory === 'All'" class="mb-12">
         <div class="relative bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-800 rounded-2xl overflow-hidden p-8 text-white">
           <div class="absolute inset-0 bg-black/20"></div>
           <div class="relative z-10">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-2xl font-bold mb-2">🔥 Trending Fandoms</h2>
-                <p class="text-blue-100 mb-4">Join the most active fandoms this week</p>
+    <h2 class="text-2xl font-bold mb-2">🔥 {{ $t('fandom.list.trendingTitle') }}</h2>
+    <p class="text-blue-100 mb-4">{{ $t('fandom.list.trendingSubtitle') }}</p>
               </div>
               <div class="hidden md:block">
                 <div class="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center">
@@ -94,7 +94,7 @@
         <div class="flex justify-center mt-12">
           <button class="bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 px-8 py-3 rounded-xl font-medium transition-colors flex items-center gap-2">
             <i class="fas fa-plus"></i>
-            Load More Fandoms
+            {{ $t('common.loadMoreFandoms') }}
           </button>
         </div>
       </div>
@@ -104,22 +104,22 @@
         <div class="w-32 h-32 bg-gradient-to-br from-primary-50 to-secondary-50 dark:from-primary-900/30 dark:to-secondary-900/30 rounded-3xl flex items-center justify-center mb-6">
           <i class="fas fa-search text-4xl text-primary-500"></i>
         </div>
-        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">No fandoms found</h3>
+        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mb-3">{{ $t('fandom.list.emptyTitle') }}</h3>
         <p class="text-gray-600 dark:text-gray-400 max-w-md mb-8 leading-relaxed">
-          We couldn't find any fandoms matching your search. Try different keywords or create your own fandom to get started.
+          {{ $t('fandom.list.emptyDescription') }}
         </p>
         <div class="flex flex-col sm:flex-row gap-3">
           <button
             class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
             @click="search = ''; activeCategory = 'All'"
           >
-            Clear Filters
+            {{ $t('common.clearFiltersCta') }}
           </button>
           <button
             class="border border-gray-300 dark:border-gray-600 hover:border-primary-500 text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 px-6 py-3 rounded-xl font-medium transition-colors"
             @click="$router.push('/create-fandom')"
           >
-            Create a Fandom
+            {{ $t('common.createAFandom') }}
           </button>
         </div>
       </div>

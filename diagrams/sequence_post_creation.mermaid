@@ -1,12 +1,12 @@
 sequenceDiagram
   autonumber
-  participant U as User
+  participant U as Utilisateur
   participant FE as Frontend
-  participant API as Laravel
-  participant DB as DB
-  U->>FE: Compose post
-  FE->>API: POST /api/Y/posts/create (multipart/json)
-  API->>DB: Insert post + media
-  DB-->>API: Post row
-  API-->>FE: 201 { post }
-  FE->>U: Render new post (optimistic add)
+  participant API as API Laravel
+  participant DB as Base
+  U->>FE: Rédige publication
+  FE->>API: POST /posts (multipart/json)
+  API->>DB: Insère publication + médias
+  DB-->>API: OK (id, champs)
+  API-->>FE: 201 { publication }
+  FE->>U: Affiche la nouvelle publication

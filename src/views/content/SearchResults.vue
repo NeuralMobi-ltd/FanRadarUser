@@ -5,14 +5,14 @@
       <div class="max-w-4xl mx-auto px-3 sm:px-4">
         <div class="flex items-center space-x-3 mb-2 md:mb-4">
           <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
-            <i class="fas fa-hashtag text-blue-600 dark:text-blue-400 text-sm"></i>
           </div>
           <h1 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white truncate">
             Search Results for "{{ searchQuery }}"
           </h1>
         </div>
         <p class="hidden md:block text-gray-600 dark:text-gray-300">
-          Found {{ totalResults }} results across posts, people, news, and fandoms
+          <span v-if="isAnyLoading">Loading...</span>
+          <span v-else>Found {{ aggregateCount }} results</span>
         </p>
 
         <!-- Mobile search input -->
@@ -62,69 +62,37 @@
     <div class="max-w-4xl mx-auto px-3 sm:px-4 py-4 md:py-6">
       <!-- All Results -->
       <div v-if="activeFilter === 'all'" class="space-y-6 md:space-y-8">
-        <!-- Posts Section -->
-        <div v-if="filteredResults.posts.length > 0">
-          <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
-            <i class="fas fa-file-text mr-2 text-blue-500"></i>
-            Posts
-          </h2>
-          <div class="space-y-3 md:space-y-4">
-            <Post 
-              v-for="post in filteredResults.posts.slice(0, 3)"
-              :key="post.id"
-              :post="post"
-              :highlight-term="searchQuery"
-            ></Post>
-          </div>
-        </div>
-
-        <!-- People Section -->
-        <div v-if="filteredResults.people.length > 0">
+        <!-- Users Section -->
+        <div v-if="userResults.length > 0 || usersLoading">
           <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-user mr-2 text-orange-500"></i>
-            People
+            Users
+            <span v-if="usersLoading" class="ml-2 text-xs text-gray-500 animate-pulse">loading...</span>
           </h2>
           <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
             <div
-              v-for="person in filteredResults.people.slice(0, 4)"
+              v-for="person in userResults"
               :key="person.id"
               class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
             >
               <div class="flex items-start space-x-3">
-                <img 
-                  :src="person.avatar" 
-                  :alt="person.name" 
-                  class="w-12 h-12 rounded-full object-cover cursor-pointer" 
+                <AvatarFallback
+                  :src="person.profile_image"
+                  :first-name="person.first_name || person.firstName"
+                  :last-name="person.last_name || person.lastName"
+                  custom-class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-xs font-semibold text-white cursor-pointer"
                   @click="goToProfile(person)"
                 />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-start justify-between">
                     <div class="flex-1 min-w-0">
-                      <h3 
-                        class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
-                        v-html="highlightSearchTerm(person.name)"
+                      <h3
+                        class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
                         @click="goToProfile(person)"
+                        v-html="highlightSearchTerm(displayUserName(person))"
                       ></h3>
-                      <p class="text-sm text-gray-500 dark:text-gray-400">@{{ person.username }}</p>
-                      <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2" v-html="highlightSearchTerm(person.bio)"></p>
+                      <!-- Username removed per request -->
                     </div>
-                    <button
-                      @click="toggleFollow(person)"
-                      :class="[
-                        'ml-3 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 shrink-0',
-                        person.isFollowing 
-                          ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400' 
-                          : 'bg-blue-600 hover:bg-blue-700 text-white'
-                      ]"
-                    >
-                      {{ person.isFollowing ? 'Following' : 'Follow' }}
-                    </button>
-                  </div>
-                  <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                    <span>{{ formatFollowers(person.followers) }} followers</span>
-                    <span v-if="person.verified" class="text-blue-500">
-                      <i class="fas fa-check-circle"></i> Verified
-                    </span>
                   </div>
                 </div>
               </div>
@@ -132,119 +100,124 @@
           </div>
         </div>
 
-        <!-- News Section -->
-        <div v-if="filteredResults.news.length > 0">
+        <!-- Posts Section -->
+        <div v-if="postResults.length > 0 || postsLoading">
           <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
-            <i class="fas fa-newspaper mr-2 text-red-500"></i>
-            News
+            <i class="fas fa-file-text mr-2 text-blue-500"></i>
+            Posts
+            <span v-if="postsLoading" class="ml-2 text-xs text-gray-500 animate-pulse">loading...</span>
           </h2>
-          <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
-            <NewsPost 
-              v-for="article in filteredResults.news.slice(0, 4)"
-              :key="article.id"
-              :article="article"
+          <div class="space-y-3 md:space-y-4">
+            <Post
+              v-for="post in postResults"
+              :key="post.id"
+              :post="normalizePost(post)"
               :highlight-term="searchQuery"
-            ></NewsPost>
+            />
           </div>
         </div>
 
         <!-- Fandoms Section -->
-        <div v-if="filteredResults.fandoms.length > 0">
+        <div v-if="fandomResults.length > 0 || fandomsLoading">
           <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
             <i class="fas fa-users mr-2 text-purple-500"></i>
             Fandoms
+            <span v-if="fandomsLoading" class="ml-2 text-xs text-gray-500 animate-pulse">loading...</span>
           </h2>
           <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
-            <CommunityCard 
-              v-for="fandom in filteredResults.fandoms.slice(0, 4)"
+            <CommunityCard
+              v-for="fandom in mappedFandomResults"
               :key="fandom.id"
               :fandom="fandom"
               :highlight-term="searchQuery"
-            ></CommunityCard>
+            />
           </div>
         </div>
       </div>
 
       <!-- Posts Only -->
       <div v-else-if="activeFilter === 'posts'" class="space-y-3 md:space-y-4">
-        <Post 
-          v-for="post in filteredResults.posts"
+        <div v-if="postsLoading" class="text-sm text-gray-500">Loading posts...</div>
+        <Post
+          v-for="post in postResults"
           :key="post.id"
-          :post="post"
+          :post="normalizePost(post)"
           :highlight-term="searchQuery"
-        ></Post>
+        />
+        <div v-if="!postsLoading && postResults.length === 0" class="text-sm text-gray-500">No posts</div>
+        <div class="mt-4" v-if="hasMorePosts">
+          <button @click="loadMorePosts" :disabled="postsLoading" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60">
+            <span v-if="!postsLoading">Load more</span>
+            <span v-else class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Loading...</span>
+          </button>
+        </div>
       </div>
 
       <!-- People Only -->
-      <div v-else-if="activeFilter === 'people'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
-        <div
-          v-for="person in filteredResults.people"
-          :key="person.id"
-          class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
-        >
-          <div class="flex items-start space-x-3">
-            <img 
-              :src="person.avatar" 
-              :alt="person.name" 
-              class="w-12 h-12 rounded-full object-cover cursor-pointer" 
-              @click="goToProfile(person)"
-            />
-            <div class="flex-1 min-w-0">
-              <div class="flex items-start justify-between">
-                <div class="flex-1 min-w-0">
-                  <h3 
-                    class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors" 
-                    v-html="highlightSearchTerm(person.name)"
-                    @click="goToProfile(person)"
-                  ></h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">@{{ person.username }}</p>
-                  <p class="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2" v-html="highlightSearchTerm(person.bio)"></p>
+      <div v-else-if="activeFilter === 'people'" class="space-y-4">
+        <div v-if="usersLoading" class="text-sm text-gray-500">Loading users...</div>
+        <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
+          <div
+            v-for="person in userResults"
+            :key="person.id"
+            class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
+          >
+            <div class="flex items-start space-x-3">
+              <AvatarFallback
+                :src="person.profile_image"
+                :first-name="person.first_name || person.firstName"
+                :last-name="person.last_name || person.lastName"
+                custom-class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-xs font-semibold text-white cursor-pointer"
+                @click="goToProfile(person)"
+              />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-start justify-between">
+                  <div class="flex-1 min-w-0">
+                    <h3
+                      class="font-semibold text-gray-900 dark:text-white cursor-pointer hover:text-blue-600 transition-colors"
+                      v-html="highlightSearchTerm(displayUserName(person))"
+                      @click="goToProfile(person)"
+                    ></h3>
+                    <!-- Username removed per request -->
+                  </div>
                 </div>
-                <button
-                  @click="toggleFollow(person)"
-                  :class="[
-                    'ml-3 px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200 shrink-0',
-                    person.isFollowing 
-                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400' 
-                      : 'bg-blue-600 hover:bg-blue-700 text-white'
-                  ]"
-                >
-                  {{ person.isFollowing ? 'Following' : 'Follow' }}
-                </button>
-              </div>
-              <div class="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                <span>{{ formatFollowers(person.followers) }} followers</span>
-                <span v-if="person.verified" class="text-blue-500">
-                  <i class="fas fa-check-circle"></i> Verified
-                </span>
               </div>
             </div>
           </div>
         </div>
+        <div v-if="!usersLoading && userResults.length === 0" class="text-sm text-gray-500">No users</div>
+        <div class="mt-4" v-if="hasMoreUsers">
+          <button @click="loadMoreUsers" :disabled="usersLoading" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60">
+            <span v-if="!usersLoading">Load more</span>
+            <span v-else class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Loading...</span>
+          </button>
+        </div>
       </div>
 
-      <!-- News Only -->
-      <div v-else-if="activeFilter === 'news'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
-        <NewsPost 
-          v-for="article in filteredResults.news"
-          :key="article.id"
-          :article="article"
-          :highlight-term="searchQuery"
-        ></NewsPost>
-      </div>
+  <!-- News filter removed (legacy) -->
 
       <!-- Fandoms Only -->
-      <div v-else-if="activeFilter === 'fandoms'" class="grid sm:grid-cols-2 gap-3 md:gap-4">
-        <CommunityCard 
-          v-for="fandom in filteredResults.fandoms"
-          :key="fandom.id"
-          :fandom="fandom"
-          :highlight-term="searchQuery"
-        ></CommunityCard>
+      <div v-else-if="activeFilter === 'fandoms'" class="space-y-4">
+        <div v-if="fandomsLoading" class="text-sm text-gray-500">Loading fandoms...</div>
+        <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
+          <CommunityCard
+            v-for="fandom in mappedFandomResults"
+            :key="fandom.id"
+            :fandom="fandom"
+            :highlight-term="searchQuery"
+          />
+        </div>
+        <div v-if="!fandomsLoading && fandomResults.length === 0" class="text-sm text-gray-500">No fandoms</div>
+        <div class="mt-4" v-if="hasMoreFandoms">
+          <button @click="loadMoreFandoms" :disabled="fandomsLoading" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60">
+            <span v-if="!fandomsLoading">Load more</span>
+            <span v-else class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Loading...</span>
+          </button>
+        </div>
       </div>
 
       <!-- No Results -->
-      <div v-if="totalResults === 0" class="text-center py-12">
+      <div v-if="!isAnyLoading && aggregateCount === 0" class="text-center py-12">
         <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No results found</h3>
         <p class="text-gray-500 dark:text-gray-400">Try searching for something else</p>
@@ -255,50 +228,43 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import API_CONFIG from '@/config/api'
 import { useRoute, useRouter } from 'vue-router'
 import { useSearchStore } from '@/store/search'
 import Post from '@/components/common/Post.vue'
 import { NewsPost } from '@/components/feed'
 import { CommunityCard } from '@/components/fandom'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 
 const route = useRoute()
 const router = useRouter()
 const activeFilter = ref('all')
 const searchQuery = ref('')
-
-const searchResults = ref({
-  posts: [],
-  news: [],
-  fandoms: []
-})
-
 const searchStore = useSearchStore()
 
-// Filter results based on current filter
-const filteredResults = computed(() => {
-  const currentFilter = route.query.filter || 'all'
-  
-  if (currentFilter === 'all') {
-    return searchResults.value
-  } else if (currentFilter === 'posts') {
-    return { posts: searchResults.value.posts, news: [], fandoms: [], people: [] }
-  } else if (currentFilter === 'people') {
-    return { posts: [], news: [], fandoms: [], people: searchResults.value.people }
-  } else if (currentFilter === 'news') {
-    return { posts: [], news: searchResults.value.news, fandoms: [], people: [] }
-  } else if (currentFilter === 'fandoms') {
-    return { posts: [], news: [], fandoms: searchResults.value.fandoms, people: [] }
-  }
-  
-  return searchResults.value
-})
+// Expose reactive pieces from store
+const userResults = computed(() => searchStore.userResults)
+const usersLoading = computed(() => searchStore.usersLoading)
+const postResults = computed(() => searchStore.postResults)
+const postsLoading = computed(() => searchStore.postsLoading)
+const fandomResults = computed(() => searchStore.fandomResults)
+const fandomsLoading = computed(() => searchStore.fandomsLoading)
+const hasMoreUsers = computed(() => searchStore.hasMoreUsers)
+const hasMorePosts = computed(() => searchStore.hasMorePosts)
+const hasMoreFandoms = computed(() => searchStore.hasMoreFandoms)
 
-const totalResults = computed(() => 
-  filteredResults.value.posts.length + 
-  filteredResults.value.news.length + 
-  filteredResults.value.fandoms.length + 
-  filteredResults.value.people.length
-)
+const aggregateCount = computed(() => userResults.value.length + postResults.value.length + fandomResults.value.length)
+const isAnyLoading = computed(() => usersLoading.value || postsLoading.value || fandomsLoading.value)
+
+// Map backend snake_case fields to camelCase ones consumed by FandomCard
+const mappedFandomResults = computed(() => {
+  return fandomResults.value.map(f => ({
+    ...f,
+    coverImage: f.cover_image || f.coverImage || f.image,
+    logo: f.logo_image || f.logo || f.avatar || f.image,
+    members: f.members_count || f.members || f.memberCount
+  }))
+})
 
 const highlightSearchTerm = (text) => {
   if (!searchQuery.value || !text) return text
@@ -306,27 +272,21 @@ const highlightSearchTerm = (text) => {
   return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">$1</mark>')
 }
 
-const performSearch = () => {
-  const query = searchQuery.value
-  
-  if (!query) {
-    searchResults.value = {
-      posts: [],
-      news: [],
-      fandoms: [],
-      people: []
-    }
-    return
-  }
-  
-  const results = searchStore.performGlobalSearch(query)
-  
-  searchResults.value = {
-    posts: results.posts || [],
-    news: results.news || [],
-    fandoms: results.fandoms || results.communities || [],
-    people: results.people || []
-  }
+async function performSearchServer() {
+  const q = searchQuery.value.trim()
+  if (!q) return resetResults()
+  // Fire all three in parallel (users/posts/fandoms) with debounce 300ms for first page
+  await Promise.all([
+    searchStore.fetchUsers({ q, page: 1, limit: 10, debounce: 300 }),
+    searchStore.fetchPosts({ q, page: 1, limit: 10 }, { debounce: 300 }),
+    searchStore.fetchFandoms({ q, page: 1, limit: 10, debounce: 300 })
+  ])
+}
+
+function resetResults() {
+  searchStore.userResults = []
+  searchStore.postResults = []
+  searchStore.fandomResults = []
 }
 
 const goToProfile = (person) => {
@@ -358,8 +318,7 @@ const formatFollowers = (count) => {
 const filters = [
   { key: 'all', label: 'All' },
   { key: 'posts', label: 'Posts' },
-  { key: 'people', label: 'People' },
-  { key: 'news', label: 'News' },
+  { key: 'people', label: 'Users' },
   { key: 'fandoms', label: 'Fandoms' }
 ]
 
@@ -377,17 +336,77 @@ watch(() => route.query.filter, (newFilter) => {
 })
 
 watch(() => route.query.q, (newQuery) => {
-  if (newQuery) {
-    searchQuery.value = newQuery
-    performSearch()
-  }
+  searchQuery.value = newQuery || ''
+  performSearchServer()
 }, { immediate: true })
 
 onMounted(() => {
   searchQuery.value = route.query.q || ''
   activeFilter.value = route.query.filter || 'all'
-  performSearch()
+  performSearchServer()
 })
+
+function loadMoreUsers() {
+  searchStore.fetchMoreUsers()
+}
+function loadMorePosts() {
+  searchStore.fetchMorePosts()
+}
+function loadMoreFandoms() {
+  searchStore.fetchMoreFandoms()
+}
+
+// Normalize backend post shape (raw search) to Post component expectations
+function normalizePost(p) {
+  if (!p) return p
+  const user = p.user || {}
+
+  // Build API origin (strip trailing /api) for relative media
+  let base = (import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || '').trim()
+  if (base.endsWith('/')) base = base.slice(0, -1)
+  base = base.replace(/\/api$/i, '')
+
+  const resolveMedia = (path) => {
+    if (!path) return ''
+    if (/^(https?:|data:|blob:)/i.test(path)) return path
+    const cleaned = String(path).replace(/^\//, '')
+    return base ? `${base}/${cleaned}` : cleaned
+  }
+
+  // Media array -> standardized objects
+  const mediaArr = Array.isArray(p.media) ? p.media : []
+  const media = mediaArr.map(m => {
+    const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
+    const isVideo = /\.(mp4|webm|ogg)$/i.test(src)
+    return { type: isVideo ? 'video' : 'image', url: resolveMedia(src) }
+  })
+
+  // Username fallback chain
+  const username = user.username || user.full_name || [user.first_name, user.last_name].filter(Boolean).join(' ') || 'user'
+
+  // Likes / comments numeric
+  const likes = Number(p.likes ?? p.likes_count ?? 0) || 0
+  const comments = Number(p.comments ?? p.comments_count ?? 0) || 0
+
+  return {
+    id: p.id,
+    username,
+    avatar: resolveMedia(user.profile_image || user.avatar || user.profileImage),
+    text: p.description || p.content || '',
+    date: p.created_at || p.updated_at || new Date().toISOString(),
+    media,
+    tags: Array.isArray(p.tags) ? p.tags : [],
+    likes,
+    comments,
+    isLiked: !!(p.is_liked || p.liked),
+    fandom: p.fandom?.name || p.fandom_name || null,
+    trending: !!p.trending
+  }
+}
+
+function displayUserName(u) {
+  return `${u.first_name || u.firstName || ''} ${u.last_name || u.lastName || ''}`.trim() || u.username || u.userName || 'User'
+}
 </script>
 
 <style scoped>

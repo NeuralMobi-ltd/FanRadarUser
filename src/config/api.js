@@ -91,6 +91,21 @@ export const API_CONFIG = {
   search: {
     global: (q, type) => `/api/search/global?q=${encodeURIComponent(q)}${type ? `&type=${encodeURIComponent(type)}` : ''}`,
     suggestions: (q) => `/api/search/suggestions?q=${encodeURIComponent(q)}`,
+    // New resource‑specific search endpoints (Y namespace)
+    users: (q, page = 1, limit = 20) => `/Y/search/users?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`,
+    // Posts search supports flexible params; accept an object to build query string at call site if preferred
+    posts: (params = {}) => {
+      const { q, tag, tags, subcategory_id, page = 1, limit = 20 } = params
+      const sp = new URLSearchParams()
+      if (q) sp.append('q', q)
+      if (tag) sp.append('tag', tag)
+      if (Array.isArray(tags)) tags.forEach(t => sp.append('tags[]', t))
+      if (subcategory_id) sp.append('subcategory_id', subcategory_id)
+      sp.append('page', page)
+      sp.append('limit', limit)
+      return `/Y/search/posts?${sp.toString()}`
+    },
+    fandoms: (q, page = 1, limit = 20) => `/Y/search/fandom?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`
   },
 
   // Notifications

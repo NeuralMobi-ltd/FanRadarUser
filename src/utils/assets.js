@@ -11,7 +11,7 @@ export function normalizeAsset(path) {
   return path
 }
 
-export function withPlaceholder(path, placeholder = 'https://via.placeholder.com/160x160?text=Avatar') {
+export function withPlaceholder(path, placeholder = '') {
   const p = normalizeAsset(path)
   return p || placeholder
 }

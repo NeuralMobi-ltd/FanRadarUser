@@ -53,7 +53,7 @@
           >
             <div class="relative h-32">
               <img 
-                :src="news.image || news.thumbnail || 'https://via.placeholder.com/300x200'" 
+                :src="news.image || news.thumbnail || ''" 
                 :alt="news.title || 'Breaking news article'" 
                 class="w-full h-full object-cover"
               />
