@@ -161,6 +161,7 @@ const messages = {
       }
     },
     common: {
+  all: 'All',
       posts: 'Posts',
       news: 'News',
       fandoms: 'Fandoms',
@@ -608,6 +609,7 @@ const messages = {
       }
     },
     common: {
+  all: 'Tous',
       posts: 'Publications',
       news: 'Actualités',
       fandoms: 'Fandoms',

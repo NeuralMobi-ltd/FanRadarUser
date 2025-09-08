@@ -9,8 +9,9 @@
           <div class="flex items-start space-x-4">
             <AvatarFallback
               :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar"
-              :username="authStore.user?.username || currentUser.username"
-              :alt="authStore.user?.username || currentUser.username"
+              :firstName="currentUser.firstName || (currentUser.name || 'U').split(' ')[0]"
+              :lastName="currentUser.lastName || (currentUser.name || '').split(' ').slice(1).join(' ')"
+              :alt="currentUser.name"
               :size="48"
               class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
             />
@@ -20,6 +21,10 @@
                 :placeholder="$t('common.whatsOnYourMind')"
                 class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium min-h-[4rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                 rows="1"
+                autocomplete="off"
+                autocorrect="off"
+                autocapitalize="off"
+                spellcheck="false"
                 @input="autoResize"
                 @focus="$event.target.style.minHeight = '6rem'"
                 @blur="$event.target.style.minHeight = '4rem'"
@@ -49,14 +54,18 @@
               type="text"
               class="w-full px-6 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
               :placeholder="$t('common.addTagsPlaceholder')"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
             />
           </div>
 
-          <!-- Selected Subcategory Badge -->
-          <div v-if="selectedSubcategory" class="mt-2 pl-16">
+      <!-- Selected Subcategory Badge -->
+      <div v-if="selectedSubcategoryName" class="mt-2 pl-16">
             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <i class="fas fa-tag mr-2 text-sm"></i>
-              {{ selectedSubcategory }}
+        {{ selectedSubcategoryName }}
             </span>
           </div>
 
@@ -129,9 +138,9 @@
                   title="Choose category">
                   <i class="fas fa-list text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 </button>
-                <div v-if="showCategoryPicker" class="absolute left-0 bottom-full mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-bottom-2 duration-200">
+                <div v-if="showCategoryPicker" class="absolute left-0 top-full mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-top-2 duration-200 max-h-[70vh] overflow-hidden flex flex-col">
                   <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">Choose Category</div>
-                  <ul class="max-h-48 overflow-auto space-y-1">
+                  <ul class="max-h-48 overflow-auto space-y-1 scrollbar-hide flex-1">
                     <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
                       <button @click.prevent="selectCategory(c.name)" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-sm transition-colors duration-200 text-gray-900 dark:text-white"
                         :class="{ 'bg-green-50 dark:bg-green-900/20 text-green-600': selectedCategory === c.name }">
@@ -139,13 +148,13 @@
                       </button>
                     </li>
                   </ul>
-                  <div v-if="availableSubcategories().length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <div v-if="availableSubcategories.length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">Choose Subcategory <span class="text-red-500" v-if="needSubcategory">*</span></div>
-                    <select ref="subcategorySelectEl" v-model="selectedSubcategory" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                      <option value="">— select subcategory —</option>
-                      <option v-for="(s, i) in availableSubcategories()" :key="i" :value="s">{{ s }}</option>
+                    <select ref="subcategorySelectEl" v-model="selectedSubcategoryId" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                      <option :value="null">— select subcategory —</option>
+                      <option v-for="(s, i) in availableSubcategories" :key="i" :value="s.id">{{ s.name }}</option>
                     </select>
-                    <p v-if="needSubcategory && !selectedSubcategory" class="mt-2 text-xs text-red-500">Subcategory required.</p>
+                    <p v-if="needSubcategory && !selectedSubcategoryId" class="mt-2 text-xs text-red-500">Subcategory required.</p>
                   </div>
                 </div>
               </div>
@@ -165,7 +174,7 @@
               </div>
               <button
                 @click="createPost"
-                :disabled="creating || (!newPostContent.trim() && postMedia.length === 0) || (needSubcategory && !selectedSubcategory)"
+                :disabled="creating || (!newPostContent.trim() && postMedia.length === 0) || (needSubcategory && !selectedSubcategoryId)"
                 class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
               >
                 <i v-if="creating" class="fas fa-spinner fa-spin text-lg"></i>
@@ -318,8 +327,16 @@
                     <p class="text-xs text-gray-600 dark:text-gray-400">{{ community.members }} {{ $t('common.members') }}</p>
                   </div>
                 </div>
-                <button @click.stop="joinCommunity(community.id)" class="px-3 py-1.5 text-xs font-medium rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow">
-                  {{ $t('common.join') }}
+                <button 
+                  @click.stop="toggleJoin(community)"
+                  :disabled="!!joining[community.id]"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-full shadow transition-colors"
+                  :class="community.joined 
+                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600' 
+                    : 'bg-blue-600 hover:bg-blue-700 text-white'"
+                >
+                  <i v-if="joining[community.id]" class="fas fa-spinner fa-spin mr-1"></i>
+                  <span>{{ community.joined ? $t('common.leaveFandom') : $t('common.join') }}</span>
                 </button>
               </li>
             </ul>
@@ -329,7 +346,7 @@
           <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-lg border border-gray-200 dark:border-gray-700">
             <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingHashtags') }}</h3>
             <ul class="space-y-3">
-              <li v-for="tag in trendingHashtags" :key="tag.name"
+              <li v-for="tag in trendingHashtags" :key="tag.id || tag.name"
                   @click="goToHashtag(tag.name)"
                   class="flex items-center justify-between cursor-pointer hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-xl p-2 transition">
                 <div>
@@ -337,7 +354,7 @@
                   <p class="text-xs text-gray-600 dark:text-gray-400">{{ $t('common.postsCount', { count: tag.posts }) }}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span :class="tag.growth >= 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-semibold">{{ Math.abs(tag.growth) }}%</span>
+                  <span v-if="tag.growth !== undefined && tag.growth !== null" :class="tag.growth >= 0 ? 'text-green-500' : 'text-red-500'" class="text-sm font-semibold">{{ Math.abs(tag.growth) }}%</span>
                   <i class="fas fa-arrow-up-right-from-square text-xs text-gray-400"></i>
                 </div>
               </li>
@@ -359,7 +376,7 @@ import { useNewsStore } from '@/store/news'
 import { usePostsStore } from '@/store/posts'
 import { useTrendsStore } from '@/store/trends'
 import { storeToRefs } from 'pinia'
-import { computed, ref, onMounted, nextTick } from 'vue'
+import { computed, ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -377,10 +394,10 @@ const loadingMore = computed(() => postsStore.loadingMore)
 const hasMorePosts = computed(() => postsStore.hasMorePosts)
 
 // Sidebar data
-const trendingCommunities = computed(() => trendsStore.trendingCommunities)
+const trendingCommunities = computed(() => (trendsStore.trendingCommunities || []).slice(0, 6))
 const trendingHashtags = computed(() => trendsStore.trendingHashtags)
 
-// Current user for alt text, with username alias
+// Current user for alt text and initials (no username)
 import AuthService from '@/services/authService'
 
 const fetchedProfile = ref(null)
@@ -389,6 +406,21 @@ onMounted(async () => {
   // Load home feed from backend
   if (!postsStore.posts.length) {
     await postsStore.fetchHomeFeed()
+  }
+  // Also fetch sidebar trends (fandoms + hashtags)
+  try {
+    await Promise.allSettled([
+      trendsStore.fetchTrendingFandoms(10),
+      trendsStore.fetchTrendingHashtags(10)
+    ])
+  } catch (_) { /* ignore */ }
+  // Preload trending posts if user lands with trending active
+  if (postsStore.activeFeed === 'trending') {
+    await postsStore.fetchTrendingTop({ page: 1, limit: 20 })
+  }
+  // Preload following feed if user lands with following active
+  if (postsStore.activeFeed === 'following') {
+    await postsStore.fetchFollowingFeed({ page: 1, limit: 20 })
   }
   try {
     const profileResp = await AuthService.getProfile()
@@ -402,8 +434,14 @@ onMounted(async () => {
 
 const currentUser = computed(() => {
   const u = fetchedProfile.value || authStore.user || {}
+  const first = u.first_name || u.firstName || u.given_name || (u.name ? String(u.name).split(' ')[0] : '')
+  const last = u.last_name || u.lastName || u.family_name || (u.name ? String(u.name).split(' ').slice(1).join(' ') : '')
+  const name = u.name || [first, last].filter(Boolean).join(' ') || 'You'
   return {
-    username: u.userName || u.username || 'You',
+    id: u.id,
+    name,
+    firstName: first,
+    lastName: last,
     avatar: u.avatar || u.profile_image || '',
     ...u
   }
@@ -423,22 +461,23 @@ const createError = ref('')
 const categoriesStore = useCategoriesStore()
 onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
 const selectedCategory = ref('')
-const selectedSubcategory = ref('')
+const selectedSubcategoryId = ref(null)
 const showCategoryPicker = ref(false)
 const subcategorySelectEl = ref(null)
-const subcategoriesMap = {
-  Music: ['Pop', 'Rock', 'Hip-Hop', 'Electronic'],
-  Gaming: ['PC', 'Console', 'Mobile', 'Indie'],
-  Movies: ['Action', 'Drama', 'Comedy', 'Documentary'],
-  'TV Shows': ['Drama', 'Sitcom', 'Reality', 'Anime'],
-  Art: ['Painting', 'Digital', 'Illustration', 'Sculpture'],
-  // Expanded sports list to match modal
-  Sports: ['Football', 'Basketball', 'Soccer', 'Tennis', 'Cricket', 'Baseball', 'Rugby', 'Esports']
-}
-// Temporarily skip numeric subcategory IDs; backend rejecting unknown IDs.
-const subcategoryIdMap = null
-const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
-const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
+// Store-backed subcategories
+const availableSubcategories = computed(() => {
+  const catId = categoriesStore.categoryIdByName(selectedCategory.value)
+  return catId ? categoriesStore.getSubcategories(catId) : []
+})
+const selectedSubcategoryName = computed(() => {
+  const list = availableSubcategories.value || []
+  const found = list.find(s => String(s.id) === String(selectedSubcategoryId.value))
+  return found?.name || ''
+})
+const needSubcategory = computed(() => {
+  const catId = categoriesStore.categoryIdByName(selectedCategory.value)
+  return !!(catId && categoriesStore.hasSubcategories(catId))
+})
 
 function autoResize(e) {
   const el = e?.target
@@ -462,11 +501,14 @@ async function toggleTagInput() {
   }
 }
 
-function selectCategory(name) {
+async function selectCategory(name) {
   selectedCategory.value = name
-  selectedSubcategory.value = ''
-  // Keep picker open if subcategories exist so user can immediately choose one
-  if (availableSubcategories().length) {
+  selectedSubcategoryId.value = null
+  const catId = categoriesStore.categoryIdByName(name)
+  if (catId) {
+    try { await categoriesStore.fetchSubcategoriesFor(catId) } catch (_) {}
+  }
+  if ((availableSubcategories.value || []).length) {
     showCategoryPicker.value = true
     nextTick(() => { subcategorySelectEl.value?.focus() })
   } else {
@@ -475,7 +517,7 @@ function selectCategory(name) {
 }
 
 function onSubcategorySelect() {
-  if (selectedSubcategory.value) showCategoryPicker.value = false
+  if (selectedSubcategoryId.value) showCategoryPicker.value = false
 }
 
 // Scheduling state
@@ -529,12 +571,11 @@ async function createPost() {
 
   // attach category info when selected
   if (selectedCategory.value) payload.category = selectedCategory.value
-  if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
   if (selectedCategory.value) {
     const categoryId = categoriesStore.categoryIdByName(selectedCategory.value)
     if (categoryId) payload.category_id = categoryId
   }
-  // subcategory_id omitted until real IDs fetched from backend
+  if (selectedSubcategoryId.value) payload.subcategory_id = Number(selectedSubcategoryId.value)
 
   // schedule_at (ISO) if enabled
   if (scheduleEnabled.value && scheduleAt.value) {
@@ -554,6 +595,7 @@ async function createPost() {
   try {
     // Assume postsStore.createPost forwards axios config (onUploadProgress)
     await postsStore.createPost(payload, {
+      __skipAdd: true,
       onUploadProgress: progressEvent => {
         try {
           if (progressEvent.lengthComputable) {
@@ -577,14 +619,12 @@ async function createPost() {
   tagInput.value = ''
   showTagInput.value = false
   selectedCategory.value = ''
-  selectedSubcategory.value = ''
+  selectedSubcategoryId.value = null
     // Revoke blobs
     postMedia.value.forEach(m => { if (m?.url?.startsWith('blob:')) URL.revokeObjectURL(m.url) })
     postMedia.value = []
   } catch (err) {
     createError.value = (err && err.message) ? err.message : 'Failed to create post'
-    // Optionally add a fallback local post so user doesn't lose content
-    postsStore.addPost({ text: payload.description, media: postMedia.value.map(m => ({ type: m.type, url: m.url })) })
   } finally {
     creating.value = false
     // keep progress visible for a short moment then reset
@@ -604,6 +644,17 @@ async function loadMorePosts() {
   await postsStore.loadMorePosts()
 }
 
+// When switching to Trending tab, fetch the backend trending/top list
+watch(() => postsStore.activeFeed, async (val) => {
+  if (val === 'trending') {
+    await postsStore.fetchTrendingTop({ page: 1, limit: 20 })
+  } else if (val === 'timeline') {
+    await postsStore.fetchHomeFeed()
+  } else if (val === 'following') {
+    await postsStore.fetchFollowingFeed({ page: 1, limit: 20 })
+  }
+})
+
 // News list
 const newsItems = computed(() => newsStore.recentNews || newsStore.newsItems)
 function likeNews(news) {
@@ -611,8 +662,19 @@ function likeNews(news) {
 }
 
 // Sidebar handlers
-function joinCommunity(id) {
-  trendsStore.joinCommunity(id)
+const joining = ref({})
+async function toggleJoin(community) {
+  const id = community?.id
+  if (!id || joining.value[id]) return
+  joining.value = { ...joining.value, [id]: true }
+  try {
+    if (community.joined) await trendsStore.leaveFandom(id)
+    else await trendsStore.joinFandom(id)
+  } finally {
+    const copy = { ...joining.value }
+    delete copy[id]
+    joining.value = copy
+  }
 }
 function goToHashtag(name) {
   router.push(`/hashtag/${name}`)

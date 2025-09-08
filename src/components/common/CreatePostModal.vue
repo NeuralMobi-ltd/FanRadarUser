@@ -46,6 +46,10 @@
               :placeholder="postContent ? '' : 'What\'s on your mind?'"
               class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium min-h-[8rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
               rows="4"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
               @input="autoResize"
             ></textarea>
           </div>
@@ -73,15 +77,19 @@
             type="text"
             class="w-full px-6 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             placeholder="Add tags (press Enter or Tab)..."
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
           />
         </div>
 
   <!-- Category / Subcategory Selection Display (hidden if disableCategory) -->
-  <div v-if="!disableCategory && selectedSubcategory" class="pl-16">
+  <div v-if="!disableCategory && selectedSubcategoryName" class="pl-16">
           <div class="flex flex-wrap gap-3">
             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <i class="fas fa-tag mr-2 text-sm"></i>
-              {{ selectedSubcategory }}
+              {{ selectedSubcategoryName }}
             </span>
           </div>
         </div>
@@ -179,13 +187,13 @@
                     </button>
                   </li>
                 </ul>
-                <div v-if="availableSubcategories().length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                <div v-if="availableSubcategories.length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">Choose Subcategory <span class="text-red-500">*</span></div>
-                  <select ref="subcategorySelectEl" v-model="selectedSubcategory" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
-                    <option value="">— select subcategory —</option>
-                    <option v-for="(s, i) in availableSubcategories()" :key="i" :value="s">{{ s }}</option>
+                  <select ref="subcategorySelectEl" v-model="selectedSubcategoryId" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                    <option :value="null">— select subcategory —</option>
+                    <option v-for="(s, i) in availableSubcategories" :key="i" :value="s.id">{{ s.name }}</option>
                   </select>
-                  <p v-if="needSubcategory && !selectedSubcategory" class="mt-2 text-xs text-red-500">Subcategory required.</p>
+                  <p v-if="needSubcategory && !selectedSubcategoryId" class="mt-2 text-xs text-red-500">Subcategory required.</p>
                 </div>
               </div>
             </div>
@@ -200,7 +208,7 @@
           <!-- Post Button -->
           <button
             @click="submit"
-            :disabled="loading || (!postContent.trim() && postMedia.length === 0) || needSubcategory && selectedCategory && !selectedSubcategory"
+            :disabled="loading || (!postContent.trim() && postMedia.length === 0) || (needSubcategory && selectedCategory && !selectedSubcategoryId)"
             class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin text-lg"></i>
@@ -283,24 +291,24 @@ function clearSchedule() { scheduleAt.value = '' }
 
 // Category picker state
 const selectedCategory = ref('')
-const selectedSubcategory = ref('')
+const selectedSubcategoryId = ref(null)
 const showCategoryPicker = ref(false)
-const subcategoriesMap = {
-  Music: ['Pop', 'Rock', 'Hip-Hop', 'Electronic'],
-  Gaming: ['PC', 'Console', 'Mobile', 'Indie'],
-  Movies: ['Action', 'Drama', 'Comedy', 'Documentary'],
-  'TV Shows': ['Drama', 'Sitcom', 'Reality', 'Anime'],
-  Art: ['Painting', 'Digital', 'Illustration', 'Sculpture'],
-  // Expanded sports list as requested: football, basket(ball) etc.
-  Sports: ['Football', 'Basketball', 'Soccer', 'Tennis', 'Cricket', 'Baseball', 'Rugby', 'Esports']
-}
-// Temporarily omit numeric subcategory IDs until real list is fetched from backend.
-// Backend currently rejects unknown IDs with "The selected subcategory id is invalid." error.
-// We'll send only the textual subcategory for now.
-const subcategoryIdMap = null
-const availableSubcategories = () => subcategoriesMap[selectedCategory.value] || []
+
+// Subcategories from store for the selected category
+const availableSubcategories = computed(() => {
+  const catId = categoriesStore.categoryIdByName(selectedCategory.value)
+  return catId ? categoriesStore.getSubcategories(catId) : []
+})
+const selectedSubcategoryName = computed(() => {
+  const list = availableSubcategories.value || []
+  const found = list.find(s => String(s.id) === String(selectedSubcategoryId.value))
+  return found?.name || ''
+})
 // True when current category has subcategories and one must be selected before posting
-const needSubcategory = computed(() => !!selectedCategory.value && availableSubcategories().length > 0)
+const needSubcategory = computed(() => {
+  const catId = categoriesStore.categoryIdByName(selectedCategory.value)
+  return !!(catId && categoriesStore.hasSubcategories(catId))
+})
 
 // Computed property for formatted date
 const editPostDate = computed(() => {
@@ -347,11 +355,15 @@ function addTag() {
   tagInput.value = ''
 }
 
-function selectCategory(name) {
+async function selectCategory(name) {
   selectedCategory.value = name
-  selectedSubcategory.value = ''
+  selectedSubcategoryId.value = null
+  const categoryId = categoriesStore.categoryIdByName(name)
+  if (categoryId) {
+    try { await categoriesStore.fetchSubcategoriesFor(categoryId) } catch (_) {}
+  }
   // Keep picker open if subcategories exist so user can immediately choose one
-  if (availableSubcategories().length) {
+  if ((availableSubcategories.value || []).length) {
     showCategoryPicker.value = true
     nextTick(() => {
       subcategorySelectEl.value?.focus()
@@ -364,7 +376,7 @@ function selectCategory(name) {
 
 function onSubcategorySelect() {
   // Auto-close picker once subcategory is selected
-  if (selectedSubcategory.value) {
+  if (selectedSubcategoryId.value) {
     showCategoryPicker.value = false
   }
 }
@@ -392,7 +404,7 @@ function removeMedia(index) {
 async function submit() {
   if (!postContent.value.trim() && postMedia.value.length === 0) return
   // Enforce subcategory selection when category has subcategories
-  if (needSubcategory.value && !selectedSubcategory.value) {
+  if (needSubcategory.value && !selectedSubcategoryId.value) {
     error.value = 'Please choose a subcategory.'
     return
   }
@@ -422,8 +434,7 @@ async function submit() {
     const categoryId = categoriesStore.categoryIdByName(selectedCategory.value)
     if (categoryId) payload.category_id = categoryId
   }
-  if (selectedSubcategory.value) payload.subcategory = selectedSubcategory.value
-  // subcategory_id intentionally omitted until validated IDs provided by backend
+  if (selectedSubcategoryId.value) payload.subcategory_id = Number(selectedSubcategoryId.value)
   if (scheduleEnabled.value && scheduleAt.value) {
     const mysql = toMySqlDateTime(scheduleAt.value)
     if (mysql) payload.schedule_at = mysql
@@ -452,8 +463,8 @@ async function submit() {
       tags.value = []
       tagInput.value = ''
       showTagInput.value = false
-      selectedCategory.value = ''
-      selectedSubcategory.value = ''
+  selectedCategory.value = ''
+  selectedSubcategoryId.value = null
       showCategoryPicker.value = false
       loading.value = false
       return
@@ -558,8 +569,8 @@ async function submit() {
     tags.value = []
     tagInput.value = ''
     showTagInput.value = false
-    selectedCategory.value = ''
-    selectedSubcategory.value = ''
+  selectedCategory.value = ''
+  selectedSubcategoryId.value = null
     showCategoryPicker.value = false
   emit('close')
   emit('update:modelValue', false)
@@ -583,8 +594,8 @@ watch(() => props.modelValue, (val) => {
     tags.value = []
     tagInput.value = ''
     showTagInput.value = false
-    selectedCategory.value = ''
-    selectedSubcategory.value = ''
+  selectedCategory.value = ''
+  selectedSubcategoryId.value = null
     showCategoryPicker.value = false
     error.value = ''
   } else if (props.editPost) {

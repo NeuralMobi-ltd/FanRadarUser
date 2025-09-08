@@ -12,12 +12,12 @@ export const FandomsService = {
     const { data } = await http.get(API_CONFIG.fandoms.all, { params })
     return data
   },
-  async trending() {
+  async trending(limit = 10) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
       return { fandoms: [] }
     }
-    const { data } = await http.get(API_CONFIG.fandoms.trending)
+    const { data } = await http.get(API_CONFIG.fandoms.trendingTop(limit))
     return data
   },
   async categories() {

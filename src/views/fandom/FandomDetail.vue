@@ -277,14 +277,13 @@
           <div class="flex items-center mb-4">
             <AvatarFallback
               :src="normalizeAsset(member.avatar)"
-              :first-name="(member.first_name || member.firstName || member.name || '').split(' ')[0]"
-              :last-name="(member.last_name || member.lastName || member.name || '').split(' ').slice(1).join(' ')"
+              :first-name="(member.name || '').split(' ')[0]"
+              :last-name="(member.name || '').split(' ').slice(1).join(' ')"
               custom-class="w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-3 sm:mr-4 cursor-pointer hover:ring-2 hover:ring-blue-500 transition flex items-center justify-center bg-gradient-to-br from-blue-600 to-indigo-600 text-white font-semibold"
               @click="goToUser(member)"
             />
             <div class="flex-1 cursor-pointer group" @click="goToUser(member)">
               <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-base group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ member.name }}</h3>
-              <p class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 group-hover:text-blue-500 dark:group-hover:text-blue-300 transition-colors">@{{ member.username }}</p>
             </div>
             <div class="flex items-center">
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
@@ -547,7 +546,8 @@
               <img :src="member.avatar" :alt="member.name" class="w-10 h-10 rounded-full">
               <div>
                 <h4 class="font-medium text-gray-900 dark:text-white">{{ member.name }}</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400">@{{ member.username }}</p>
+                <!-- Username hidden (not used in app model) -->
+                <p class="text-sm text-gray-500 dark:text-gray-400" v-if="false">@</p>
               </div>
             </div>
             <div class="flex items-center space-x-3">
@@ -635,7 +635,7 @@
     v-model="showEditPostModal"
     :edit-post="editingPost"
     :user-avatar="currentUser.avatar"
-    :user-name="currentUser.username || currentUser.name"
+  :user-name="currentUser.name"
     mode="fandom-edit"
     :disable-schedule="true"
     :disable-category="true"
@@ -694,7 +694,7 @@ function clearSchedule() { scheduleAt.value = '' }
 const currentUser = computed(() => ({
   id: authStore.user?.id || 1,
   name: authStore.user?.name || 'Current User',
-  username: authStore.user?.email?.split('@')[0] || 'user',
+  // remove username alias; use name only
   avatar: authStore.user?.avatar || ''
 }))
 
@@ -1005,9 +1005,12 @@ const editingPost = ref(null)
 function canModifyPost(post){
   if(!post) return false
   if(isAdmin.value) return true
-  const userNames = [currentUser.value.username, currentUser.value.name].filter(Boolean).map(s=>s.toLowerCase())
-  const postUser = (post.username||'').toLowerCase()
-  return userNames.includes(postUser)
+  // Prefer userId equality for ownership
+  if (post.userId && authStore.user?.id) return String(post.userId) === String(authStore.user.id)
+  // Fallback: compare displayName to current name (case-insensitive)
+  const currentName = (currentUser.value.name || '').toLowerCase()
+  const postName = (post.displayName || post.username || '').toLowerCase()
+  return currentName && postName && currentName === postName
 }
 function openEditPost(postId){
   const collection = fandomsStore.fandomPosts[fandomKey.value] || []
@@ -1131,26 +1134,17 @@ function formatJoined(value){
 // Navigate to account page for clicked member
 function goToUser(member){
   if(!member) return
-  // Normalize username (strip @, lower-case)
-  let uname = member.username || (member.email ? member.email.split('@')[0] : null)
-  if(uname){
-    uname = String(uname).replace(/^@+/, '').trim()
-  }
   const current = authStore.user
-  const currentUsernames = [current?.userName, current?.userEmail?.split('@')[0]].filter(Boolean).map(s=>s.toLowerCase())
-  if((member.id && current && String(member.id) === String(current.id)) || (uname && currentUsernames.includes(uname.toLowerCase()))){
-    // Navigate to real username for consistency with header links
-    const selfName = (current?.userName || current?.userEmail?.split('@')[0] || uname).trim()
-  router.push({ name: 'Account', params: { user: selfName } })
-    return
+  if (member.id && current && String(member.id) === String(current.id)) {
+    const selfName = (current?.userName || current?.userEmail?.split('@')[0])
+    if (selfName) {
+      router.push({ name: 'Account', params: { user: selfName } })
+      return
+    }
   }
-  // Prefer numeric id for other users so profile page can call /Y/users/{id}/profile directly
   if(member.id){
-  router.push({ name: 'Account', params: { user: String(member.id) } })
+    router.push({ name: 'Account', params: { user: String(member.id) } })
     return
-  }
-  if(uname){
-    router.push({ name: 'Account', params: { user: uname } })
   }
 }
 </script>

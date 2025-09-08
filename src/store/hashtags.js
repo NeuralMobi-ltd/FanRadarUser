@@ -1,115 +1,38 @@
 import { defineStore } from 'pinia'
-import { getHashtagImage } from '@/config/media'
+import { TagsService } from '@/services/tagsService'
+import { usePostsStore } from '@/store/posts'
+// Local helper to resolve a hashtag image
+function getHashtagImage(tag = '') {
+  const key = String(tag || '').toLowerCase()
+  const map = {
+  }
+  return map[key] || '/images/FanRadar.png'
+}
 
 export const useHashtagsStore = defineStore('hashtags', {
   state: () => ({
     // Hashtag-specific posts
     hashtagPosts: {
     },
+    // Backend posts keyed by hashtagId
+    postsById: {
+      // [id]: { items: Post[], pagination: { page, limit, hasNext } }
+    },
 
     // Hashtag-specific news
     hashtagNews: {
-      'LoLPhase5': [
-        {
-          id: 101,
-          source: 'Gaming News',
-          sourceLogo: 'https://logo.clearbit.com/ign.com',
-          title: 'Breaking: LoLPhase5 Update Released',
-          summary: 'Major update brings new features and improvements to LoLPhase5. Community reaction has been overwhelmingly positive.',
-          image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=500&fit=crop',
-          date: '1h ago',
-          views: '25.3K',
-          category: 'Gaming',
-          readingTime: '3',
-          isLiked: false,
-          breaking: true
-        },
-        {
-          id: 102,
-          source: 'Esports Central',
-          sourceLogo: 'https://logo.clearbit.com/lolesports.com',
-          title: 'LoLPhase5 Championship Series Announced',
-          summary: 'New tournament format brings exciting changes to the competitive scene with massive prize pools.',
-          image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=500&fit=crop',
-          date: '4h ago',
-          views: '18.7K',
-          category: 'Esports',
-          readingTime: '5',
-          isLiked: false
-        }
-      ],
-      'Swifties': [
-        {
-          id: 201,
-          source: 'Music News',
-          sourceLogo: 'https://logo.clearbit.com/billboard.com',
-          title: 'Taylor Swift Breaks Another Record',
-          summary: 'Latest album achieves unprecedented streaming numbers in first week, Swifties celebrate worldwide.',
-          image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=500&fit=crop',
-          date: '2h ago',
-          views: '45.2K',
-          category: 'Music',
-          readingTime: '4',
-          isLiked: false,
-          breaking: true
-        }
-      ]
     },
 
     // Related hashtags data
     relatedHashtags: [
-      {
-        name: 'Gaming',
-        posts: '5.7M',
-        description: 'General gaming discussions and news across all platforms and genres.'
-      },
-      {
-        name: 'Esports',
-        posts: '1.2M',
-        description: 'Competitive gaming tournaments, professional players, and esports news.'
-      },
-      {
-        name: 'Trending',
-        posts: '2.8M',
-        description: 'Currently trending topics and viral content across the platform.'
-      },
-      {
-        name: 'Community',
-        posts: '1.5M',
-        description: 'Community discussions, events, and user-generated content.'
-      },
-      {
-        name: 'Music',
-        posts: '3.4M',
-        description: 'Music discussions, artist news, and album reviews from all genres.'
-      },
-      {
-        name: 'Anime',
-        posts: '2.1M',
-        description: 'Anime discussions, reviews, fan art, and seasonal anime content.'
-      }
+     
     ],
 
     // Inlined hashtag descriptions and stats (from constants)
     descriptions: {
-      LoLPhase5: 'Discover the latest updates and discussions about League of Legends Phase 5.',
-      LoLWorlds: 'Follow the excitement of League of Legends World Championship.',
-      Swifties: 'Join Taylor Swift fans sharing their love and latest updates.',
-      AnimeSpring2024: 'Spring anime season discussions and recommendations.',
-      MarvelPhase6: 'Marvel Cinematic Universe Phase 6 theories and news.',
-      KPopComeback: 'Latest K-Pop comebacks and music releases.',
-      GameOfThrones2024: 'House of the Dragon and Game of Thrones universe content.',
-      NintendoDirect: 'Nintendo Direct announcements and gaming news.'
+    
     },
     stats: {
-      LoLPhase5: { posts: '2.3M', growth: '24' },
-      LoLWorlds: { posts: '897K', growth: '18' },
-      Swifties: { posts: '3.1M', growth: '32' },
-      AnimeSpring2024: { posts: '1.8M', growth: '15' },
-      MarvelPhase6: { posts: '2.1M', growth: '28' },
-      KPopComeback: { posts: '1.6M', growth: '22' },
-      GameOfThrones2024: { posts: '945K', growth: '19' },
-      NintendoDirect: { posts: '1.2M', growth: '12' }
     }
   }),
 
@@ -117,6 +40,11 @@ export const useHashtagsStore = defineStore('hashtags', {
     // Get posts by hashtag
     getPostsByHashtag: (state) => (hashtag) => {
       return state.hashtagPosts[hashtag] || []
+    },
+    // Get posts by hashtag numeric id
+    getPostsByHashtagId: (state) => (id) => {
+      const key = String(id)
+      return state.postsById[key]?.items || []
     },
 
     // Get news by hashtag
@@ -127,39 +55,13 @@ export const useHashtagsStore = defineStore('hashtags', {
     // Generate default posts for hashtags without specific data
     getDefaultPostsForHashtag: (state) => (hashtag) => {
       return [
-        {
-          id: 999,
-          username: 'HashtagFan',
-          userAvatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-          date: '2h ago',
-          communityName: 'General Community',
-          content: `Excited to be part of the #${hashtag} conversation! This hashtag is bringing together amazing content and discussions.`,
-          image: null,
-          tags: [hashtag, 'Community', 'Discussion'],
-          likes: 45,
-          comments: 12,
-          isLiked: false,
-          fandom: 'General'
-        }
       ]
     },
 
     // Generate default news for hashtags without specific data
     getDefaultNewsForHashtag: (state) => (hashtag) => {
       return [
-        {
-          id: 998,
-          source: 'Community News',
-          sourceLogo: 'https://logo.clearbit.com/medium.com',
-          title: `#${hashtag} Trending Now`,
-          summary: `The ${hashtag} hashtag is gaining momentum with engaging discussions and trending content from the community.`,
-          image: getHashtagImage(hashtag),
-          date: '3h ago',
-          views: '8.5K',
-          category: 'Community',
-          readingTime: '3',
-          isLiked: false
-        }
+        
       ]
     },
 
@@ -174,6 +76,59 @@ export const useHashtagsStore = defineStore('hashtags', {
   },
 
   actions: {
+    // Fetch posts by backend hashtag id and cache them
+    async fetchPostsById(id, { page = 1, limit = 10 } = {}) {
+      if (!id) return { success: false, error: 'missing id' }
+      try {
+        const payload = await TagsService.postsById(id, { page, limit })
+        const arr = payload?.posts || payload?.data?.posts || payload?.data || payload || []
+        const postsStore = usePostsStore()
+        const mapped = Array.isArray(arr) ? arr.map(p => postsStore.mapBackendPost(p)).filter(Boolean) : []
+        const key = String(id)
+        const rawPag = payload?.pagination || {}
+        const norm = {
+          page: Number(rawPag.page ?? rawPag.current_page ?? page ?? 1),
+          limit: Number(rawPag.per_page ?? rawPag.limit ?? limit ?? 10),
+          total: Number(rawPag.total ?? 0),
+          lastPage: Number(rawPag.last_page ?? rawPag.total_pages ?? 1),
+          hasNext: Boolean(
+            rawPag.hasNext ?? rawPag.has_more ?? ((Number(rawPag.page ?? 1)) < (Number(rawPag.last_page ?? 1)))
+          )
+        }
+        const pagination = norm
+        this.postsById[key] = { items: mapped, pagination }
+        return { success: true, count: mapped.length, pagination }
+      } catch (e) {
+        return { success: false, error: e?.message || 'fetch failed' }
+      }
+    },
+    async loadMoreById(id) {
+      const key = String(id)
+      const slot = this.postsById[key]
+      if (!slot?.pagination?.hasNext) return { success: true, count: 0, done: true }
+      const nextPage = (Number(slot.pagination.page) || 1) + 1
+      try {
+        const payload = await TagsService.postsById(id, { page: nextPage, limit: slot.pagination.limit || 10 })
+        const arr = payload?.posts || payload?.data?.posts || payload?.data || payload || []
+        const postsStore = usePostsStore()
+        const mapped = Array.isArray(arr) ? arr.map(p => postsStore.mapBackendPost(p)).filter(Boolean) : []
+        slot.items.push(...mapped)
+        const rawPag = payload?.pagination || {}
+        slot.pagination = {
+          page: Number(rawPag.page ?? rawPag.current_page ?? nextPage),
+          limit: Number(rawPag.per_page ?? rawPag.limit ?? (slot.pagination.limit || 10)),
+          total: Number(rawPag.total ?? slot.pagination.total ?? 0),
+          lastPage: Number(rawPag.last_page ?? rawPag.total_pages ?? slot.pagination.lastPage ?? nextPage),
+          hasNext: Boolean(
+            rawPag.hasNext ?? rawPag.has_more ?? ((Number(rawPag.page ?? nextPage)) < (Number(rawPag.last_page ?? nextPage)))
+          )
+        }
+        this.postsById[key] = { ...slot }
+        return { success: true, count: mapped.length, pagination: slot.pagination }
+      } catch (e) {
+        return { success: false, error: e?.message || 'fetch failed' }
+      }
+    },
     // Add new hashtag post
     addHashtagPost(hashtag, post) {
       if (!this.hashtagPosts[hashtag]) {

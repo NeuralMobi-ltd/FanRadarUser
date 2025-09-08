@@ -110,28 +110,6 @@
       <!-- Divider -->
       <div class="border-t border-gray-200 dark:border-gray-700"></div>
 
-      <!-- Recent Fandoms -->
-      <div class="space-y-1">
-        <h3 class="px-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-          Recent Fandoms
-        </h3>
-        
-        <div class="space-y-1">
-          <router-link
-            v-for="fandom in recentFandoms"
-            :key="fandom.id"
-            :to="`/fandom/${fandom.name}`"
-            @click="closeMobileMenu"
-            class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <img :src="fandom.avatar" class="w-5 h-5 rounded-full mr-3" :alt="fandom.name">
-            <span class="truncate flex-1">{{ fandom.displayName }}</span>
-            <span class="text-xs text-gray-500 dark:text-gray-400">
-              {{ fandom.memberCount }}
-            </span>
-          </router-link>
-        </div>
-      </div>
 
   
 
@@ -153,6 +131,7 @@ import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { CreatePostModal } from '@/components/feed'
 import { usePostsStore } from '@/store/posts'
+import normalizeAsset from '@/utils/assets'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -222,6 +201,30 @@ function handleCreatePost(post) {
   } catch (e) {
     console.warn('Failed to add post to store', e)
   }
+}
+
+// Avatar helpers: normalize URL, or fallback to gradient + initials
+function safeAvatar(fandom) {
+  const url = normalizeAsset(fandom?.avatar)
+  return url || ''
+}
+
+function hashToHue(str = '') {
+  let h = 0
+  for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) % 360
+  return h
+}
+
+function avatarStyle(name = '') {
+  const n = String(name || 'fandom').toLowerCase()
+  const h = hashToHue(n)
+  const h2 = (h + 35) % 360
+  return { background: `linear-gradient(135deg, hsl(${h},80%,45%), hsl(${h2},80%,45%))` }
+}
+
+function initials(name = '') {
+  const n = String(name).trim()
+  return n ? n[0].toUpperCase() : '?'
 }
 </script>
 

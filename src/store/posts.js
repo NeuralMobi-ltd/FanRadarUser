@@ -72,7 +72,6 @@ export const usePostsStore = defineStore('posts', {
           content: 'Breaking down the new aerodynamic regulations and how they might affect the competitive balance next season. Teams with high downforce philosophy will need to completely rethink their approach.',
           image: 'https://e0.365dm.com/25/02/2048x1152/skysports-pirelli-f1-2025-test_6820918.jpg?20250206074138',
           tags: ['Formula1', 'F1Regulations', 'Aerodynamics', 'Racing'],
-          likes: 312,
           comments: 89,
           isLiked: false,
           fandom: 'Sport'
@@ -210,7 +209,8 @@ export const usePostsStore = defineStore('posts', {
           filtered = filtered.filter(post => post.trending)
           break
         case 'following':
-          filtered = filtered.filter(post => post.isLiked)
+          // Following feed comes pre-filtered from backend; show as-is
+          filtered = filtered
           break
         default:
           break
@@ -233,8 +233,9 @@ export const usePostsStore = defineStore('posts', {
       if (!apiPost) return null
       const user = apiPost.user || apiPost.author || {}
       const mediaArr = Array.isArray(apiPost.media) ? apiPost.media.map(m => {
-        const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
-        return { type: /\.(mp4|webm|ogg)$/i.test(src) ? 'video' : 'image', url: resolveMediaUrl(src) }
+        const srcRaw = typeof m === 'string' ? m : (m.file_path || m.url || m.path || m.src || '')
+        const src = resolveMediaUrl(srcRaw)
+        return { type: /\.(mp4|webm|ogg)$/i.test(srcRaw) ? 'video' : 'image', url: src }
       }) : []
       const displayName = [user.first_name || user.firstName, user.last_name || user.lastName].filter(Boolean).join(' ').trim() || user.username || (user.email ? user.email.split('@')[0] : '') || 'User'
       let avatar = user.profile_image || user.avatar || user.profileImage
@@ -248,7 +249,7 @@ export const usePostsStore = defineStore('posts', {
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media: mediaArr,
         tags: Array.isArray(apiPost.tags) ? apiPost.tags : [],
-        likes: apiPost.likes || apiPost.likes_count || 0,
+        likes: apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0,
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
         isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
@@ -259,16 +260,19 @@ export const usePostsStore = defineStore('posts', {
     },
     normalizeApiPost(apiPost) {
       if (!apiPost) return null
-      const media = Array.isArray(apiPost.media) ? apiPost.media.map(m => ({
-        type: /\.(mp4|webm|ogg)$/i.test(m) ? 'video' : 'image',
-        url: resolveMediaUrl(m)
-      })) : []
+      const media = Array.isArray(apiPost.media) ? apiPost.media.map(m => {
+        const raw = typeof m === 'string' ? m : (m.file_path || m.url || m.path || m.src || '')
+        return {
+          type: /\.(mp4|webm|ogg)$/i.test(raw) ? 'video' : 'image',
+          url: resolveMediaUrl(raw)
+        }
+      }) : []
       return {
         id: apiPost.id,
         originalId: apiPost.id,
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media,
-        likes: apiPost.likes || apiPost.likes_count || 0,
+        likes: apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0,
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
   isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
@@ -301,6 +305,37 @@ export const usePostsStore = defineStore('posts', {
         // On failure remain with existing posts
       }
     },
+    async fetchFollowingFeed(params = {}) {
+      try {
+        const query = { page: 1, limit: this.pagination.limit, ...params }
+        const { posts, pagination } = await PostsService.followingFeed(query)
+        this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
+        this.posts = Array.isArray(posts) ? posts.map(p => this.mapBackendPost(p)).filter(Boolean) : []
+        this.hasMorePosts = !!(this.pagination && this.pagination.hasNext)
+        this.lastMutation = Date.now()
+        return { success: true }
+      } catch (e) {
+        return { success: false, error: e?.message || 'Failed to load following feed' }
+      }
+    },
+    async fetchTrendingTop(params = {}) {
+      try {
+        const { posts, pagination } = await PostsService.trendingTop(params)
+        const mapped = Array.isArray(posts) ? posts.map(p => {
+          const m = this.mapBackendPost(p)
+          return m ? { ...m, trending: true } : null
+        }).filter(Boolean) : []
+        // Replace current posts with trending list to keep filteredPosts in sync when activeFeed==='trending'
+        // If you prefer to merge, consider de-duping by id.
+        this.posts = mapped
+        this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
+        this.hasMorePosts = !!(this.pagination && this.pagination.hasNext)
+        this.lastMutation = Date.now()
+        return { success: true }
+      } catch (e) {
+        return { success: false, error: e?.message || 'Failed to load trending posts' }
+      }
+    },
     async fetchExploreFeed() {
       try {
         const res = await PostsService.exploreFeed()
@@ -325,16 +360,19 @@ export const usePostsStore = defineStore('posts', {
       }
     },
     async createPost(payload, config = {}) {
-      const res = await PostsService.create(payload, config)
+      // Allow callers to skip the immediate local add and rely on a follow-up feed refresh
+      const skipAdd = !!config.__skipAdd
+      const axiosCfg = { ...config }
+      delete axiosCfg.__skipAdd
+      const res = await PostsService.create(payload, axiosCfg)
       const p = res?.data?.post || res?.data || res?.post || res
-      if (p) {
-        this.addPost({
-          id: p.id,
-          text: p.content,
-          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
-          username: p.author?.name,
-          avatar: p.author?.avatar
+      if (!skipAdd && p) {
+        // Map backend shape defensively (prefer description when content is missing)
+        const mapped = this.mapBackendPost({
+          ...p,
+          description: p.description || p.content || payload?.description || payload?.content || ''
         })
+        if (mapped) this.posts.unshift(mapped)
       }
       return res
     },
@@ -552,12 +590,31 @@ export const usePostsStore = defineStore('posts', {
       this.loadingMore = true
       try {
         const nextPage = (this.pagination.page || 1) + 1
-        const { posts, pagination } = await PostsService.homeFeed({ page: nextPage, limit: this.pagination.limit })
-        if (Array.isArray(posts) && posts.length) {
-          const mapped = posts.map(p => this.mapBackendPost(p)).filter(Boolean)
-          this.posts.push(...mapped)
+        if (this.activeFeed === 'trending') {
+          const { posts, pagination } = await PostsService.trendingTop({ page: nextPage, limit: this.pagination.limit })
+          if (Array.isArray(posts) && posts.length) {
+            const mapped = posts.map(p => {
+              const m = this.mapBackendPost(p)
+              return m ? { ...m, trending: true } : null
+            }).filter(Boolean)
+            this.posts.push(...mapped)
+          }
+          this.pagination = pagination || { ...this.pagination, page: nextPage, hasNext: false }
+        } else if (this.activeFeed === 'following') {
+          const { posts, pagination } = await PostsService.followingFeed({ page: nextPage, limit: this.pagination.limit })
+          if (Array.isArray(posts) && posts.length) {
+            const mapped = posts.map(p => this.mapBackendPost(p)).filter(Boolean)
+            this.posts.push(...mapped)
+          }
+          this.pagination = pagination || { ...this.pagination, page: nextPage, hasNext: false }
+        } else {
+          const { posts, pagination } = await PostsService.homeFeed({ page: nextPage, limit: this.pagination.limit })
+          if (Array.isArray(posts) && posts.length) {
+            const mapped = posts.map(p => this.mapBackendPost(p)).filter(Boolean)
+            this.posts.push(...mapped)
+          }
+          this.pagination = pagination || { ...this.pagination, page: nextPage, hasNext: false }
         }
-        this.pagination = pagination || { ...this.pagination, page: nextPage, hasNext: false }
         this.hasMorePosts = !!(this.pagination && this.pagination.hasNext)
         this.lastMutation = Date.now()
       } catch (e) {

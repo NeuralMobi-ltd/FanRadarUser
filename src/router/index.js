@@ -40,6 +40,12 @@ const routes = [
     meta: { requiresAuth: true, titleKey: 'routes.hashtag', showBottomNav: true }
   },
   {
+    path: '/subcategory/:id',
+    name: 'SubcategoryDetail',
+    component: () => import('@/views/content/SubcategoryDetail.vue'),
+    meta: { requiresAuth: true, titleKey: 'routes.subcategory', showBottomNav: true }
+  },
+  {
     path: '/search',
     name: 'SearchResults',
     component: () => import('@/views/content/SearchResults.vue'),

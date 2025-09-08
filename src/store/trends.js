@@ -1,67 +1,21 @@
 import { defineStore } from 'pinia'
+import { TagsService } from '@/services/tagsService'
+import { FandomsService } from '@/services/fandomsService'
 
 export const useTrendsStore = defineStore('trends', {
   state: () => ({
-    trendingCommunities: [
-      {
-        id: 1,
-        name: 'Anime & Manga',
-        avatar: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100',
-        members: '2.5M'
-      },
-      {
-        id: 2,
-        name: 'Marvel Universe',
-        avatar: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=100',
-        members: '1.8M'
-      },
-      {
-        id: 3,
-        name: 'K-Pop',
-        avatar: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=100',
-        members: '3.2M'
-      },
-      {
-        id: 4,
-        name: 'Gaming',
-        avatar: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=100',
-        members: '4.1M'
-      }
-    ],
-    
-    trendingHashtags: [
-      { name: 'LeagueofLegends', posts: '15.2K', growth: 24 },
-      { name: 'Anime2024', posts: '8.7K', growth: 18 },
-      { name: 'MarvelPhase5', posts: '12.3K', growth: 35 },
-      { name: 'KPopNews', posts: '22.1K', growth: 12 },
-      { name: 'GameDev', posts: '6.8K', growth: 45 }
-    ],
-    
-    recommendedUsers: [
-      {
-        id: 1,
-        name: 'Akira Tanaka',
-        username: 'akira_anime',
-        avatar: 'https://randomuser.me/api/portraits/men/1.jpg'
-      },
-      {
-        id: 2,
-        name: 'Sophie Chen',
-        username: 'sophie_kpop',
-        avatar: 'https://randomuser.me/api/portraits/women/2.jpg'
-      },
-      {
-        id: 3,
-        name: 'GameMaster Pro',
-        username: 'gamemaster_pro',
-        avatar: 'https://randomuser.me/api/portraits/men/3.jpg'
-      }
-    ],
+  trendingCommunities: [],
+  trendingHashtags: [],
+  recommendedUsers: [],
+  recentActivity: [],
   }),
   
   getters: {
     topGrowingHashtags: (state) => 
-      state.trendingHashtags.sort((a, b) => b.growth - a.growth).slice(0, 3),
+      state.trendingHashtags
+        .slice()
+        .sort((a, b) => (Number(b.growth || 0) - Number(a.growth || 0)))
+        .slice(0, 3),
     
     popularCommunities: (state) => 
       state.trendingCommunities.sort((a, b) => {
@@ -75,11 +29,90 @@ export const useTrendsStore = defineStore('trends', {
   },
   
   actions: {
+    _formatMembers(n = 0) {
+      const num = Number(n) || 0
+      if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`
+      if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`
+      return String(num)
+    },
+    async fetchTrendingHashtags(limit = 10) {
+      try {
+        const tags = await TagsService.trending(limit)
+        // Map to current shape { name, posts, growth }
+        this.trendingHashtags = (tags || []).map(t => ({
+          id: t.id ?? t.hashtag_id ?? t._id,
+          name: t.name ?? t.tag_name ?? t.tag ?? '',
+          posts: t.uses ?? t.posts ?? t.posts_count ?? 0
+        }))
+      } catch (e) {
+        // keep existing fallback
+      }
+    },
+    async fetchTrendingFandoms(limit = 10) {
+      try {
+        const res = await FandomsService.trending(limit)
+        const list = res?.data?.fandoms || res?.fandoms || []
+        this.trendingCommunities = list.map(f => {
+          const id = f.id ?? f.fandom_id ?? f._id
+          const name = f.name ?? f.title ?? ''
+          const avatar = f.logo_image || f.cover_image || '/images/FanRadar.png'
+          const membersCount = Number(f.members_count ?? f.members ?? 0) || 0
+          const joined = Boolean(f.is_member ?? f.joined ?? false)
+          return {
+            id,
+            name,
+            avatar,
+            membersCount,
+            members: this._formatMembers(membersCount),
+            joined
+          }
+        })
+      } catch (e) {
+        // keep existing fallback
+      }
+    },
     joinCommunity(communityId) {
+      // legacy local increment without backend
       const community = this.trendingCommunities.find(c => c.id === communityId)
       if (community) {
-        const members = parseFloat(community.members.replace('M', '')) * 1000000 + 1
-        community.members = `${(members / 1000000).toFixed(1)}M`
+        community.membersCount = (Number(community.membersCount) || 0) + 1
+        community.members = this._formatMembers(community.membersCount)
+      }
+    },
+
+    async joinFandom(communityId) {
+      const c = this.trendingCommunities.find(x => x.id === communityId)
+      if (!c || c.joined) return
+      // optimistic
+      c.joined = true
+      c.membersCount = (Number(c.membersCount) || 0) + 1
+      c.members = this._formatMembers(c.membersCount)
+      try {
+        await FandomsService.join(communityId)
+      } catch (e) {
+        // revert on failure
+        c.joined = false
+        c.membersCount = Math.max(0, (Number(c.membersCount) || 1) - 1)
+        c.members = this._formatMembers(c.membersCount)
+        throw e
+      }
+    },
+
+    async leaveFandom(communityId) {
+      const c = this.trendingCommunities.find(x => x.id === communityId)
+      if (!c || !c.joined) return
+      // optimistic
+      c.joined = false
+      c.membersCount = Math.max(0, (Number(c.membersCount) || 0) - 1)
+      c.members = this._formatMembers(c.membersCount)
+      try {
+        await FandomsService.leave(communityId)
+      } catch (e) {
+        // revert on failure
+        c.joined = true
+        c.membersCount = (Number(c.membersCount) || 0) + 1
+        c.members = this._formatMembers(c.membersCount)
+        throw e
       }
     },
     

@@ -161,7 +161,7 @@ export const useFandomsStore = defineStore('fandoms', {
         const posts = res?.data?.posts || res?.posts || []
     const handle = this.allFandoms.find(f => f.id === id)?.handle
         if (!handle) return []
-        this.fandomPosts[handle] = posts.map(p => {
+    this.fandomPosts[handle] = posts.map(p => {
           const mediaArr = Array.isArray(p.media) ? p.media : (p.media ? [p.media] : [])
           const mediaObjects = mediaArr.map(m => {
             const raw = typeof m === 'string' ? m : (m.url || m.path || m.src || m.file || '')
@@ -171,7 +171,10 @@ export const useFandomsStore = defineStore('fandoms', {
           })
           return {
             id: p.id,
-            username: p.author?.username || p.user?.username || p.user?.first_name || 'user',
+      // Prefer numeric user id for navigation/ownership checks
+      userId: p.user?.id || p.author?.id,
+      // Keep a display name for UI, do not treat it as a handle/username
+      displayName: ((p.user?.first_name || p.user?.firstName || '') + ' ' + (p.user?.last_name || p.user?.lastName || '')).trim() || p.author?.name || p.user?.name || (p.user?.email ? p.user.email.split('@')[0] : 'User'),
             userAvatar: normalizeAsset(p.author?.avatar || p.user?.profile_image) || '',
             date: p.created_at || p.createdAt,
             content: p.content || p.description,
@@ -199,10 +202,9 @@ export const useFandomsStore = defineStore('fandoms', {
         const members = res?.data?.members || res?.members || []
     const handle = this.allFandoms.find(f => f.id === id)?.handle
         if (!handle) return []
-        this.fandomMembers[handle] = members.map(m => ({
+  this.fandomMembers[handle] = members.map(m => ({
           id: m.user?.id || m.member_id,
           name: (m.user?.first_name && m.user?.last_name) ? `${m.user.first_name} ${m.user.last_name}` : (m.user?.username || 'User'),
-          username: m.user?.username || m.user?.first_name || 'user',
           avatar: normalizeAsset(m.user?.profile_image) || '',
           role: m.member_role || 'member',
           posts: m.posts_count || 0,
@@ -343,7 +345,8 @@ export const useFandomsStore = defineStore('fandoms', {
         if (raw && fandomHandle) {
           const post = {
             id: raw.id,
-            username: raw.author?.username || raw.user?.username || 'you',
+            userId: raw.user?.id || raw.author?.id,
+            displayName: ((raw.user?.first_name || '') + ' ' + (raw.user?.last_name || '')).trim() || raw.author?.name || raw.user?.name || 'You',
             userAvatar: normalizeAsset(raw.author?.avatar || raw.user?.profile_image) || '',
             date: raw.createdAt || raw.created_at,
             content: raw.description,
@@ -601,11 +604,11 @@ export const useFandomsStore = defineStore('fandoms', {
     getFandomDetail: (state) => (handle) => {
       if (!handle) {
         return {
-          name: 'Fandom',
-          description: 'Welcome to this fandom',
-          fullDescription: 'This is a newly created fandom on FanRadar.',
-          coverImage: 'https://source.unsplash.com/1200x675/?community',
-          logo: 'https://source.unsplash.com/160x160/?logo',
+          name: '',
+          description: '',
+          fullDescription: '',
+          coverImage: '',
+          logo: '',
           members: '0',
           onlineMembers: '0',
           totalPosts: '0',
@@ -621,8 +624,8 @@ export const useFandomsStore = defineStore('fandoms', {
           name: found.name,
           description: found.description || '',
           fullDescription: found.fullDescription || (found.description || ''),
-          coverImage: found.coverImage || 'https://source.unsplash.com/1200x675/?community',
-          logo: found.logo || 'https://source.unsplash.com/160x160/?logo',
+          coverImage: found.coverImage || '',
+          logo: found.logo || '',
           members: found.membersCount || '0',
           onlineMembers: found.onlineMembers || '0',
           totalPosts: found.totalPosts || '0',
@@ -636,10 +639,10 @@ export const useFandomsStore = defineStore('fandoms', {
       const displayName = handle.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
       return {
         name: displayName,
-        description: `Welcome to ${displayName}!`,
-        fullDescription: `This is the ${displayName} fandom on FanRadar. Create posts, add members and grow the community.`,
-        coverImage: 'https://source.unsplash.com/1200x675/?community',
-        logo: 'https://source.unsplash.com/160x160/?logo',
+        description: '',
+        fullDescription: '',
+        coverImage: '',
+        logo: '',
         members: '0',
         onlineMembers: '0',
         totalPosts: '0',

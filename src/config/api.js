@@ -40,7 +40,8 @@ export const API_CONFIG = {
     home: '/Y/feed/home',
     // Provide placeholders if explore/trending exist (adjust if backend differs)
     explore: '/Y/feed/explore',
-    trendingPosts: '/Y/feed/trending'
+  trendingPosts: '/Y/feed/trending',
+  following: '/Y/feed/following'
   },
   posts: {
     create: '/Y/posts/create',
@@ -51,7 +52,9 @@ export const API_CONFIG = {
   save: '/Y/posts/save',
   unsave: '/Y/posts/unsave',
   saved: '/Y/posts/saved', // legacy / placeholder
-  savedPosts: '/Y/posts/savedPosts'
+  savedPosts: '/Y/posts/savedPosts',
+  // Trending posts (top)
+  trendingTop: '/Y/posts/trending/top'
   },
 
   // Categories & Hashtags
@@ -62,14 +65,24 @@ export const API_CONFIG = {
     contentByCategory: (category) => `/Y/categories/${encodeURIComponent(category)}/content`
   },
   hashtags: {
+    trending: (limit = 10) => `/Y/hashtags/trending?limit=${encodeURIComponent(limit)}`,
+    postsById: (id, page = 1, limit = 10) => `/Y/hashtags/${id}/posts?page=${page}&limit=${limit}`,
+    // legacy by-name fallback (non-Y)
     posts: (hashtag) => `/api/hashtags/${encodeURIComponent(hashtag)}/posts`,
+  },
+
+  // Subcategories (Y namespace)
+  subcategories: {
+    content: (id, page = 1, limit = 20) => `/Y/subcategories/${id}/content?page=${page}&limit=${limit}`,
+    fandoms: (id, page = 1, limit = 12) => `/Y/subcategories/${id}/fandoms?page=${page}&limit=${limit}`,
   },
 
   // Fandoms
   fandoms: {
     // These endpoints now expect a numeric fandom id (NOT a slug/handle)
     all: '/Y/fandoms',
-    trending: '/Y/fandoms/trending',
+  trending: '/Y/fandoms/trending/top',
+  trendingTop: (limit = 10) => `/Y/fandoms/trending/top?limit=${encodeURIComponent(limit)}`,
     search: (query) => `/Y/fandoms/search?q=${encodeURIComponent(query)}`,
     byId: (id) => `/Y/fandoms/${id}`,
     posts: (id) => `/Y/fandoms/${id}/posts`,

@@ -2,13 +2,14 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
     <!-- Hashtag Header -->
     <div class="relative mb-8">
-      <!-- Cover Image -->
-      <div class="h-64 w-full rounded-xl overflow-hidden">
-        <img 
-          :src="getHashtagImage(hashtagName)" 
-          :alt="hashtagName" 
-          class="w-full h-full object-cover"
-        >
+      <!-- Cover: deterministic gradient (hashtags have no image) -->
+      <div class="h-64 w-full rounded-xl overflow-hidden relative">
+        <div 
+          class="w-full h-full"
+          :style="coverStyle"
+          :aria-label="hashtagName"
+          role="img"
+        />
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
       </div>
       
@@ -19,13 +20,10 @@
             <span>{{ $t('content.hashtag.label') }}</span>
           </div>
           <div class="flex items-center text-sm">
-            <span>{{ $t('common.postsCount', { count: hashtagStats.posts }) }}</span>
-            <span class="mx-2">•</span>
-            <span>{{ hashtagStats.growth }}% {{ $t('content.hashtag.growthThisWeek') }}</span>
+      
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-1">#{{ hashtagName }}</h1>
-        <p class="text-white/90 max-w-xl">{{ hashtagDescription }}</p>
       </div>
     </div>
 
@@ -60,6 +58,15 @@
           @comment="commentPost"
           class="w-full mb-0"
         />
+        <div class="col-span-full flex justify-center mt-2">
+          <button 
+            v-if="canLoadMore"
+            @click="loadMore"
+            class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-sm"
+          >
+            {{ $t('common.loadMore') }}
+          </button>
+        </div>
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
         {{ $t('content.hashtag.empty.posts') }}
@@ -114,18 +121,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
 import { NewsPost } from '@/components/feed'
-import { getHashtagImage } from '@/config/media'
 import { useHashtagsStore } from '@/store/hashtags'
 
 const route = useRoute()
 const router = useRouter()
 const { t } = useI18n()
 const hashtagName = computed(() => route.params.hashtag || '')
+const hashtagId = computed(() => route.query.id || null)
 const activeTab = ref('posts')
 
 // Initialize store
@@ -143,7 +150,17 @@ const tabs = computed(() => [
 ])
 
 // Get data from stores
+const loading = ref(false)
+const canLoadMore = computed(() => {
+  const id = hashtagId.value
+  if (!id) return false
+  const slot = hashtagsStore.postsById?.[String(id)]
+  return !!slot?.pagination?.hasNext
+})
 const posts = computed(() => {
+  // Prefer backend by id when available
+  const byId = hashtagId.value ? hashtagsStore.getPostsByHashtagId(hashtagId.value) : []
+  if (byId && byId.length) return byId
   const hashtagPosts = hashtagsStore.getPostsByHashtag(hashtagName.value)
   return hashtagPosts.length > 0 ? hashtagPosts : hashtagsStore.getDefaultPostsForHashtag(hashtagName.value)
 })
@@ -164,6 +181,42 @@ const navigateToHashtag = (tag) => {
 function likePost(postId) { hashtagsStore.likeHashtagPost(hashtagName.value, postId) }
 function commentPost(postId) { console.log('Comment on post:', postId) }
 // sharePost removed
+
+async function loadById() {
+  if (!hashtagId.value) return
+  loading.value = true
+  try {
+    await hashtagsStore.fetchPostsById(hashtagId.value, { page: 1, limit: 12 })
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadMore() {
+  if (!hashtagId.value) return
+  await hashtagsStore.loadMoreById(hashtagId.value)
+}
+
+onMounted(loadById)
+watch(hashtagId, loadById)
+
+// Deterministic gradient based on hashtag text
+function hashToHue(str = '') {
+  let h = 0
+  for (let i = 0; i < str.length; i++) {
+    h = (h * 31 + str.charCodeAt(i)) % 360
+  }
+  return h
+}
+
+const coverStyle = computed(() => {
+  const name = String(hashtagName.value || 'hashtag').toLowerCase()
+  const h = hashToHue(name)
+  const h2 = (h + 40) % 360
+  return {
+    background: `linear-gradient(135deg, hsl(${h}, 80%, 45%), hsl(${h2}, 80%, 45%))`
+  }
+})
 </script>
 
 <style scoped>

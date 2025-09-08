@@ -290,7 +290,11 @@ function resetResults() {
 }
 
 const goToProfile = (person) => {
-  router.push(`/account/${person.username}`)
+  if (person?.id) {
+    router.push({ name: 'Account', params: { user: String(person.id) } })
+  } else if (person?.username) {
+    router.push({ name: 'Account', params: { user: person.username } })
+  }
 }
 
 const toggleFollow = (person) => {
@@ -382,7 +386,7 @@ function normalizePost(p) {
   })
 
   // Username fallback chain
-  const username = user.username || user.full_name || [user.first_name, user.last_name].filter(Boolean).join(' ') || 'user'
+  const username = [user.first_name, user.last_name].filter(Boolean).join(' ') || user.full_name || user.username || 'User'
 
   // Likes / comments numeric
   const likes = Number(p.likes ?? p.likes_count ?? 0) || 0
@@ -405,7 +409,7 @@ function normalizePost(p) {
 }
 
 function displayUserName(u) {
-  return `${u.first_name || u.firstName || ''} ${u.last_name || u.lastName || ''}`.trim() || u.username || u.userName || 'User'
+  return `${u.first_name || u.firstName || ''} ${u.last_name || u.lastName || ''}`.trim() || u.userName || 'User'
 }
 </script>
 

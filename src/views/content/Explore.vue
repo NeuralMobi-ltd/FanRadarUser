@@ -23,22 +23,22 @@
         <div class="overflow-x-auto pb-3 sm:pb-4 scrollbar-hide -mx-3 sm:-mx-4 px-3 sm:px-4">
           <div class="flex gap-3 sm:gap-4 lg:gap-6 w-max">
             <div v-for="tag in trendingHashtags" :key="tag.name" 
-                 @click="navigateToHashtag(tag.name)"
+                 @click="navigateToHashtag(tag)"
                  class="w-64 sm:w-72 lg:w-80 bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg active:scale-95 transition-all duration-300 cursor-pointer flex-shrink-0 touch-manipulation">
               <div class="flex items-center justify-between mb-3 sm:mb-4">
                 <div>
                   <h3 class="font-bold text-gray-900 dark:text-white text-base sm:text-lg">#{{ tag.name }}</h3>
-                  <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">{{ $t('common.postsCount', { count: tag.posts }) }}</p>
+                  <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm">{{ $t('common.postsCount', { count: tag.posts ?? 0 }) }}</p>
                 </div>
-                <span :class="tag.growth >= 0 ? 'text-green-600 bg-green-100 dark:bg-green-900/30' : 'text-red-600 bg-red-100 dark:bg-red-900/30'" class="px-2 py-1 rounded-full text-xs font-semibold">{{ Math.abs(tag.growth) }}%</span>
+                <span v-if="tag.growth !== undefined && tag.growth !== null" :class="tag.growth >= 0 ? 'text-green-600 bg-green-100 dark:bg-green-900/30' : 'text-red-600 bg-red-100 dark:bg-red-900/30'" class="px-2 py-1 rounded-full text-xs font-semibold">{{ Math.abs(tag.growth) }}%</span>
               </div>
-              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-2">{{ '#'+tag.name }} {{ $t('common.trending') }}</p>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed line-clamp-2">{{ '#'+(tag.name || '') }} {{ $t('common.trending') }}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Popular Categories Section (using popular communities from store) -->
+  <!-- Popular Categories Section (categories have no images → colored tiles) -->
       <div class="mb-6 sm:mb-8 lg:mb-10">
         <div class="flex items-center mb-4 sm:mb-6">
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
@@ -52,14 +52,14 @@
         <!-- Horizontal Scroll Container -->
         <div class="overflow-x-auto pb-3 sm:pb-4 scrollbar-hide -mx-3 sm:-mx-4 px-3 sm:px-4">
           <div class="flex gap-3 sm:gap-4 lg:gap-6 w-max">
-            <div v-for="community in popularCommunities" :key="community.id" 
-                 @click="navigateToCategory(community.name)"
-                 class="relative w-48 h-28 sm:w-56 sm:h-36 lg:w-64 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 active:scale-95 transition-transform flex-shrink-0 touch-manipulation">
-              <img :src="community.avatar" :alt="community.name" class="w-full h-full object-cover">
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4">
-                <h3 class="text-white font-bold text-sm sm:text-lg">{{ community.name }}</h3>
-                <p class="text-white/80 text-xs sm:text-sm">{{ community.members }} {{ $t('common.members') }}</p>
+            <div v-for="category in popularCategories" :key="category.id"
+                 @click="navigateToCategory(category.name)"
+                 class="relative w-48 h-28 sm:w-56 sm:h-36 lg:w-64 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 active:scale-95 transition-transform flex-shrink-0 touch-manipulation text-white"
+                 :style="tileStyle(category.name)">
+              <div class="absolute inset-0 bg-black/10"></div>
+              <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4">
+                <h3 class="font-bold text-sm sm:text-lg truncate drop-shadow">{{ category.name }}</h3>
+                <p class="text-white/80 text-xs sm:text-sm drop-shadow">{{ $t('common.category') }}</p>
               </div>
             </div>
           </div>
@@ -113,26 +113,67 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNewsStore } from '@/store/news'
 import { useTrendsStore } from '@/store/trends'
+import { useCategoriesStore } from '@/store/categories'
 
 const router = useRouter()
 const newsStore = useNewsStore()
 const trendsStore = useTrendsStore()
+const categoriesStore = useCategoriesStore()
 
 // Use store-backed data only
 const fanNews = computed(() => newsStore.newsItems)
 const trendingHashtags = computed(() => trendsStore.trendingHashtags)
-const popularCommunities = computed(() => trendsStore.popularCommunities)
+// categories have no images; just use a subset as "popular"
+const allCategories = computed(() => categoriesStore.getCategories || [])
+const popularCategories = computed(() => (allCategories.value || []).slice(0, 12))
+
+onMounted(() => {
+  // Load from backend when available; falls back to seeded state on error
+  trendsStore.fetchTrendingHashtags?.(10)
+  trendsStore.fetchTrendingFandoms?.(10)
+  categoriesStore.fetchCategoriesIfNeeded?.()
+})
 
 const navigateToCategory = (categoryName) => {
   router.push(`/category/${categoryName.toLowerCase()}`)
 }
 
-const navigateToHashtag = (hashtag) => {
-  router.push(`/hashtag/${hashtag}`)
+
+const navigateToHashtag = (tag) => {
+  const name = tag?.name || tag
+  const id = tag?.id
+  router.push({ path: `/hashtag/${name}`, query: id ? { id } : undefined })
+}
+
+// Deterministic gradient per category name
+const palette = [
+  ['#6366F1', '#8B5CF6'], // indigo → violet
+  ['#10B981', '#34D399'], // emerald → green
+  ['#F59E0B', '#F97316'], // amber → orange
+  ['#EF4444', '#F43F5E'], // red → rose
+  ['#06B6D4', '#3B82F6'], // cyan → blue
+  ['#84CC16', '#22C55E'], // lime → green
+]
+
+function hashString(str = '') {
+  let h = 0
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i)
+    h |= 0
+  }
+  return Math.abs(h)
+}
+
+function tileStyle(name = '') {
+  const idx = hashString(name) % palette.length
+  const [from, to] = palette[idx]
+  return {
+    background: `linear-gradient(135deg, ${from}, ${to})`
+  }
 }
 </script>
 

@@ -3,13 +3,13 @@
     <!-- Post Header -->
     <header class="flex items-start justify-between mb-4 sm:mb-5">
       <div class="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-        <router-link :to="`/account/${post.username}`" class="relative flex-shrink-0 group-avatar">
+  <router-link :to="post.userId ? { name: 'Account', params: { user: String(post.userId) } } : { name: 'Account', params: { user: (post.displayName || '').trim() || 'me' } }" class="relative flex-shrink-0 group-avatar">
           <div class="relative">
             <AvatarFallback
               :src="post.avatar || post.userAvatar"
-              :alt="post.username"
-              :firstName="post.firstName || post.first_name || post.username?.split(' ')[0] || post.username"
-              :lastName="post.lastName || post.last_name || post.username?.split(' ')[1] || ''"
+              :alt="post.displayName || post.username"
+              :firstName="post.firstName || post.first_name || (post.displayName || post.username || '').split(' ')[0] || 'U'"
+              :lastName="post.lastName || post.last_name || (post.displayName || post.username || '').split(' ').slice(1).join(' ') || ''"
               customClass="w-11 h-11 sm:w-14 sm:h-14 ring-3 ring-gray-100 dark:ring-gray-700 hover:ring-blue-400 transition-all duration-300 shadow-sm group-hover/avatar:shadow-md"
             />
           </div>
@@ -19,10 +19,10 @@
           <!-- Top row: name • time -->
           <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 w-full leading-none mb-1 overflow-hidden">
             <router-link 
-              :to="`/account/${post.username}`"
+              :to="post.userId ? { name: 'Account', params: { user: String(post.userId) } } : { name: 'Account', params: { user: (post.displayName || '').trim() || 'me' } }"
               class="block truncate min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
-              {{ post.username }}
+              {{ post.displayName || post.username || 'User' }}
             </router-link>
             <span aria-hidden="true" class="text-gray-400 dark:text-gray-500 text-xs sm:text-sm flex-shrink-0">•</span>
             <span class="text-xs sm:text-sm text-gray-500 dark:text-gray-400 whitespace-nowrap flex-shrink-0">{{ formatDate(post.date) }}</span>
@@ -95,7 +95,7 @@
       <div v-if="displayImage && !displayMedia" class="mt-4 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700">
         <img 
           :src="displayImage" 
-          :alt="'Image from ' + post.username"
+          :alt="'Image from ' + (post.displayName || post.username || 'user')"
           loading="lazy"
           class="w-full h-auto object-cover cursor-pointer hover:scale-[1.02] transition-transform duration-300"
         >
@@ -119,7 +119,7 @@
                 <img 
                   v-if="media.type === 'image'"
                   :src="media.url" 
-                  :alt="'Media ' + (index + 1) + ' from ' + post.username"
+                  :alt="'Media ' + (index + 1) + ' from ' + (post.displayName || post.username || 'user')"
                   loading="lazy"
                   class="w-full h-full object-cover select-none"
                   draggable="false"
@@ -271,8 +271,8 @@
         <AvatarFallback
           :src="currentUserAvatar"
           alt="Your avatar"
-          :firstName="authStore.user?.first_name || authStore.user?.name || authStore.user?.username?.split(' ')[0] || 'U'"
-          :lastName="authStore.user?.last_name || authStore.user?.username?.split(' ')[1] || ''"
+          :firstName="authStore.user?.first_name || (authStore.user?.name || authStore.user?.userName || '').split(' ')[0] || 'U'"
+          :lastName="authStore.user?.last_name || (authStore.user?.name || authStore.user?.userName || '').split(' ').slice(1).join(' ') || ''"
           customClass="w-10 h-10 ring-3 ring-gray-100 dark:ring-gray-700 shadow-sm flex-shrink-0"
         />
         <div class="flex-1 comment-group">
@@ -323,16 +323,16 @@
                 <!-- Avatar -->
                 <AvatarFallback
                   :src="getCommentAvatar(comment)"
-                  :alt="comment.username || 'comment user'"
-                  :firstName="comment.firstName || comment.user?.first_name || comment.username?.split(' ')[0] || comment.username"
-                  :lastName="comment.lastName || comment.user?.last_name || comment.username?.split(' ')[1] || ''"
+                  :alt="(comment.user?.name || comment.username || 'comment user')"
+                  :firstName="comment.firstName || comment.user?.first_name || (comment.user?.name || comment.username || '').split(' ')[0] || 'U'"
+                  :lastName="comment.lastName || comment.user?.last_name || (comment.user?.name || comment.username || '').split(' ').slice(1).join(' ') || ''"
                   customClass="w-9 h-9 ring-2 ring-gray-100 dark:ring-gray-700 object-cover flex-shrink-0"
                 />
                 <!-- Body -->
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 text-xs sm:text-sm mb-0.5">
                     <span class="font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[140px] sm:max-w-[200px]" :class="isOwnComment(comment) ? 'text-blue-600 dark:text-blue-400' : ''">
-                      {{ comment.username || 'User' }}
+                      {{ comment.user?.name || comment.username || 'User' }}
                     </span>
                     <span class="text-gray-400 dark:text-gray-500">•</span>
                     <span class="text-gray-500 dark:text-gray-400">{{ formatDate(comment.date || comment.created_at) }}</span>
@@ -358,6 +358,7 @@ import { ref, watch, computed, nextTick } from 'vue'
 import { usePostsStore } from '@/store/posts'
 import { useAuthStore } from '@/store/auth'
 import notify from '@/utils/notify'
+import PostsService from '@/services/postsService'
 
 const props = defineProps({
   post: {
@@ -397,6 +398,8 @@ const currentUserAvatar = computed(() => {
 
 // Comments local reactive list (initialized from post.commentsList if present)
 const postComments = ref(props.post.commentsList ? [...props.post.commentsList] : [])
+const commentsLoaded = ref(Array.isArray(props.post.commentsList) && props.post.commentsList.length > 0)
+const loadingComments = ref(false)
 const commentError = ref('')
 const commentTextarea = ref(null)
 const commentMax = 500
@@ -454,12 +457,12 @@ const displayMedia = computed(() => {
   if (!props.post.media || !Array.isArray(props.post.media)) return null
   return props.post.media.map(m => ({
     ...m,
-    url: resolveAsset(m.url || m.path || m.src)
+    url: resolveAsset(m.url || m.path || m.src || m.file_path)
   }))
 })
 
 const displayImage = computed(() => {
-  return resolveAsset(props.post.image)
+  return resolveAsset(props.post.image || props.post.cover || props.post.file_path)
 })
 
 // Instagram-style carousel methods
@@ -504,9 +507,33 @@ const formatNumber = (num) => {
   return (num / 1000000).toFixed(1) + 'M'
 }
 
-const toggleComments = () => {
+const toggleComments = async () => {
   showComments.value = !showComments.value
   emit('comment', props.post.id)
+  if (showComments.value && !commentsLoaded.value && !loadingComments.value) {
+    loadingComments.value = true
+    try {
+      const backendId = extractBackendId(props.post) || props.post.id
+      const { comments, count } = await PostsService.getComments(backendId, { page: 1, per_page: 20 })
+      const normalized = (comments || []).map(c => ({
+        id: c.id,
+        content: c.content || c.text,
+        date: c.created_at || c.createdAt,
+        user: {
+          id: c.user?.id,
+          name: c.user?.full_name || [c.user?.first_name, c.user?.last_name].filter(Boolean).join(' ').trim() || c.user?.username,
+          avatar: c.user?.profile_image || c.user?.avatar || c.user?.profile_image_url
+        }
+      }))
+      postComments.value = normalized
+      if (typeof count === 'number') props.post.comments = count
+      commentsLoaded.value = true
+    } catch (e) {
+      notify.error(e?.message || 'Failed to load comments')
+    } finally {
+      loadingComments.value = false
+    }
+  }
 }
 
 const toggleSave = () => {

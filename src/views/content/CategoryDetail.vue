@@ -19,9 +19,6 @@
             <span>{{ $t('content.category.label') }}</span>
           </div>
           <div class="flex items-center text-sm">
-            <span>{{ categoryStats.communities }} {{ $t('content.category.communities') }}</span>
-            <span class="mx-2">•</span>
-            <span>{{ categoryStats.members }} {{ $t('content.category.members') }}</span>
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-1">
@@ -29,6 +26,34 @@
         </h1>
         <p class="text-white/90 max-w-xl">{{ categoryDescription }}</p>
       </div>
+    </div>
+
+    <!-- Subcategories (quick nav) -->
+    <div v-if="subcategories && subcategories.length" class="mb-4 flex flex-wrap gap-2">
+      <!-- All chip -->
+      <button
+        @click="selectAll"
+        :class="[
+          'px-3 py-1.5 rounded-full text-xs border text-gray-700 dark:text-gray-300',
+          selectedSubId === null
+            ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'
+        ]"
+      >
+        {{ $t('common.all') }}
+      </button>
+      <button 
+        v-for="s in subcategories" :key="s.id"
+        @click="selectSubcategory(s)"
+        :class="[
+          'px-3 py-1.5 rounded-full text-xs border text-gray-700 dark:text-gray-300',
+          selectedSubId === s.id
+            ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+            : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'
+        ]"
+      >
+        {{ s.name }}
+      </button>
     </div>
 
     <!-- Tabs Navigation -->
@@ -52,14 +77,17 @@
     </div>
 
     <!-- Dynamic Content Based on Active Tab -->
-    <div v-if="activeTab === 'communities'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <template v-if="communities && communities.length > 0">
+    <div v-if="activeTab === 'fandoms'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <template v-if="fandoms && fandoms.length > 0">
         <CommunityCard
-          v-for="community in communities"
-          :key="community.id"
-          :community="community"
+          v-for="fandom in fandoms"
+          :key="fandom.id"
+          :community="fandom"
           :button-text="$t('common.join')"
         />
+        <div class="col-span-full flex justify-center mt-2">
+          <button v-if="canLoadMoreFandoms" @click="loadMoreFandoms" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">{{ $t('common.loadMore') }}</button>
+        </div>
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
         {{ $t('content.category.empty.fandoms') }}
@@ -76,6 +104,9 @@
           @comment="commentPost"
           class="w-full mb-0"
         />
+        <div class="col-span-full flex justify-center mt-2">
+          <button v-if="canLoadMorePosts" @click="loadMorePosts" class="px-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-sm">{{ $t('common.loadMore') }}</button>
+        </div>
       </template>
       <div v-else class="col-span-full text-center text-gray-500 dark:text-gray-400 py-8">
         {{ $t('content.category.empty.posts') }}
@@ -108,28 +139,31 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
 import { NewsPost } from '@/components/feed'
 import { CommunityCard } from '@/components/fandom'
-import { getCategoryImage } from '@/config/media'
+import { getCategoryImage } from '@/utils/media'
 import { useFandomsStore } from '@/store/fandoms'
 import { usePostsStore } from '@/store/posts'
 import { useNewsStore } from '@/store/news'
 import { useCategoriesStore } from '@/store/categories'
+import { useSubcategoriesStore } from '@/store/subcategories'
 
 const route = useRoute()
+const router = useRouter()
 const { t } = useI18n()
 const categoriesStore = useCategoriesStore()
 const categoryName = computed(() => route.params.category || '')
-const activeTab = ref('communities')
+const activeTab = ref('fandoms')
 
 // Initialize stores
 const communitiesStore = useFandomsStore()
 const postsStore = usePostsStore()
 const newsStore = useNewsStore()
+const subStore = useSubcategoriesStore()
 
 // Format category name (capitalize)
 const formattedCategoryName = computed(() => {
@@ -147,28 +181,57 @@ const categoryDescription = computed(() => {
 // Category statistics using store-backed getter
 const categoryStats = computed(() => categoriesStore.getCategoryStats(categoryName.value))
 
-// Tabs data - update counts from stores
-const tabs = computed(() => [
-  { 
-    id: 'communities', 
-    label: t('content.category.tabs.fandoms'), 
-    count: communitiesStore.getCommunitiesCountByCategory(categoryName.value).toString() 
-  },
-  { 
-    id: 'posts', 
-    label: t('content.category.tabs.posts'), 
-    count: postsStore.getPostsByCategory(categoryName.value).length.toString() 
-  },
-  { 
-    id: 'news', 
-    label: t('content.category.tabs.news'), 
-    count: newsStore.getNewsByCategory(categoryName.value).length.toString() 
-  }
-])
+// Tabs badges should reflect what is actually rendered (aggregated or per-subcategory)
+// We'll define tabs after computing posts/fandoms/newsData.
 
-// Get data from stores
-const communities = computed(() => communitiesStore.getCommunitiesByCategory(categoryName.value))
-const posts = computed(() => postsStore.getPostsByCategory(categoryName.value))
+// Subcategory-driven content
+// Use raw route param to allow slug or case-insensitive name matching
+const selectedCategoryId = computed(() => categoriesStore.categoryIdByName(categoryName.value))
+const subcategories = computed(() => categoriesStore.getSubcategories(selectedCategoryId.value))
+const selectedSubId = ref(null) // null means "All"
+
+// Aggregated lists across all subcategories
+const allPosts = computed(() => {
+  const list = subcategories.value || []
+  const merged = []
+  const seen = new Set()
+  for (const s of list) {
+    const arr = subStore.getContent(s.id) || []
+    for (const p of arr) {
+      if (!seen.has(p.id)) { seen.add(p.id); merged.push(p) }
+    }
+  }
+  // Optional: sort newest first if created_at exists
+  try { merged.sort((a,b) => new Date(b.created_at||0) - new Date(a.created_at||0)) } catch(_) {}
+  return merged
+})
+const allFandoms = computed(() => {
+  const list = subcategories.value || []
+  const merged = []
+  const seen = new Set()
+  for (const s of list) {
+    const arr = subStore.getFandoms(s.id) || []
+    for (const f of arr) {
+      if (!seen.has(f.id)) { seen.add(f.id); merged.push(f) }
+    }
+  }
+  return merged
+})
+
+const posts = computed(() => selectedSubId.value ? subStore.getContent(selectedSubId.value) : allPosts.value)
+const fandoms = computed(() => selectedSubId.value ? subStore.getFandoms(selectedSubId.value) : allFandoms.value)
+
+const anyContentHasNext = computed(() => {
+  const list = subcategories.value || []
+  return list.some(s => subStore.getContentPagination(s.id)?.hasNext)
+})
+const anyFandomsHasNext = computed(() => {
+  const list = subcategories.value || []
+  return list.some(s => subStore.getFandomsPagination(s.id)?.hasNext)
+})
+
+const canLoadMorePosts = computed(() => selectedSubId.value ? !!subStore.getContentPagination(selectedSubId.value)?.hasNext : anyContentHasNext.value)
+const canLoadMoreFandoms = computed(() => selectedSubId.value ? !!subStore.getFandomsPagination(selectedSubId.value)?.hasNext : anyFandomsHasNext.value)
 const newsData = computed(() => {
   const categoryNews = newsStore.getNewsByCategory(categoryName.value)
   if (categoryNews.length > 0) {
@@ -179,6 +242,25 @@ const newsData = computed(() => {
   return defaultNews
 })
 
+// Tabs data - show counts based on actually rendered arrays
+const tabs = computed(() => [
+  {
+    id: 'fandoms',
+    label: t('content.category.tabs.fandoms'),
+    count: (fandoms.value?.length || 0).toString()
+  },
+  {
+    id: 'posts',
+    label: t('content.category.tabs.posts'),
+    count: (posts.value?.length || 0).toString()
+  },
+  {
+    id: 'news',
+    label: t('content.category.tabs.news'),
+    count: (newsData.value?.length || 0).toString()
+  }
+])
+
 // Methods to handle post interactions
 function likePost(postId) {
   postsStore.likePost(postId, 'currentUser')
@@ -186,6 +268,76 @@ function likePost(postId) {
 
 function commentPost(postId) {
   // TODO: Open comment modal or navigate
+}
+
+onMounted(() => {
+  if (selectedCategoryId.value) categoriesStore.fetchSubcategoriesFor(selectedCategoryId.value)
+})
+// Fetch subcategories whenever the resolved id becomes available
+watch(selectedCategoryId, (id) => {
+  if (id) categoriesStore.fetchSubcategoriesFor(id)
+}, { immediate: true })
+// When subcategories load, preload first page for each to build the aggregated view
+watch(subcategories, async (list) => {
+  if (!Array.isArray(list) || !list.length) return
+  // Keep default in All mode (selectedSubId = null)
+  await Promise.allSettled(list.map(s => Promise.all([
+    subStore.fetchContent(s.id, { page: 1, limit: 20 }),
+    subStore.fetchFandoms(s.id, { page: 1, limit: 12 })
+  ])))
+}, { immediate: true })
+
+async function selectSubcategory(s) {
+  if (!s) return
+  selectedSubId.value = s.id
+  await Promise.all([
+    subStore.fetchContent(s.id, { page: 1, limit: 20 }),
+    subStore.fetchFandoms(s.id, { page: 1, limit: 12 })
+  ])
+}
+
+function selectAll() {
+  selectedSubId.value = null
+}
+
+async function loadMorePosts() {
+  const id = selectedSubId.value
+  if (id) {
+    const slot = subStore.contentById[String(id)]
+    const next = (slot?.pagination?.page || 1) + 1
+    await subStore.fetchContent(id, { page: next, limit: slot?.pagination?.limit || 20 })
+    return
+  }
+  // All mode: advance any subcategory with next page
+  const list = subcategories.value || []
+  await Promise.allSettled(list.map(s => {
+    const pag = subStore.getContentPagination(s.id)
+    if (pag?.hasNext) {
+      const next = (pag.page || 1) + 1
+      return subStore.fetchContent(s.id, { page: next, limit: pag.limit || 20 })
+    }
+    return Promise.resolve()
+  }))
+}
+
+async function loadMoreFandoms() {
+  const id = selectedSubId.value
+  if (id) {
+    const slot = subStore.fandomsById[String(id)]
+    const next = (slot?.pagination?.page || 1) + 1
+    await subStore.fetchFandoms(id, { page: next, limit: slot?.pagination?.limit || 12 })
+    return
+  }
+  // All mode: advance any subcategory with next page
+  const list = subcategories.value || []
+  await Promise.allSettled(list.map(s => {
+    const pag = subStore.getFandomsPagination(s.id)
+    if (pag?.hasNext) {
+      const next = (pag.page || 1) + 1
+      return subStore.fetchFandoms(s.id, { page: next, limit: pag.limit || 12 })
+    }
+    return Promise.resolve()
+  }))
 }
 
 </script>

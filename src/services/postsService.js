@@ -42,6 +42,37 @@ export const PostsService = {
     const { data } = await http.get(API_CONFIG.feed.trendingPosts, { params })
     return normalizeList(data)
   },
+  async followingFeed(params = {}) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { posts: [], pagination: { page: 1, limit: 0, hasNext: false } }
+    }
+    const { data } = await http.get(API_CONFIG.feed.following, { params })
+    // Expected shape similar to sample: { success, data: { posts:[...], following_count, pagination:{ current_page, total_pages, total_items, per_page, has_more, from, to } } }
+    const root = data?.data || data
+    const posts = root?.posts || []
+    const p = root?.pagination || {}
+    // Normalize pagination keys to our store's { page, limit, hasNext }
+    const pagination = {
+      page: p.current_page ?? p.page ?? 1,
+      limit: p.per_page ?? p.limit ?? params.limit ?? 20,
+      hasNext: p.has_more ?? p.hasNext ?? (p.current_page && p.total_pages ? p.current_page < p.total_pages : false)
+    }
+    return { posts, pagination }
+  },
+  async trendingTop(params = {}) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { posts: [], pagination: { page: 1, limit: 0, hasNext: false } }
+    }
+    const { data } = await http.get(API_CONFIG.posts.trendingTop, { params })
+    // Expected shape from backend: { success, data: { posts:[...], pagination:{ page, limit, hasNext } } }
+    const root = data?.data || data
+    return {
+      posts: root?.posts || [],
+      pagination: root?.pagination || null
+    }
+  },
   async create(payload, config = {}) {
     if (API_CONFIG.useMocks) {
       await delay(API_CONFIG.mockLatency)
@@ -164,6 +195,19 @@ export const PostsService = {
     }
     const { data } = await http.post(API_CONFIG.posts.comments(postId), payload)
     return data
+  },
+  async getComments(postId, params = {}) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { comments: [], pagination: { current_page: 1, total_pages: 1, has_more: false }, count: 0 }
+    }
+    const { data } = await http.get(API_CONFIG.posts.comments(postId), { params })
+    const root = data?.data || data
+    return {
+      comments: root?.comments || [],
+      pagination: root?.pagination || null,
+      count: root?.comments_count ?? (root?.comments ? root.comments.length : 0)
+    }
   },
   async saved(params = {}) {
     if (API_CONFIG.useMocks) {

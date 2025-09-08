@@ -32,7 +32,18 @@ export const useCategoriesStore = defineStore('categories', {
   }),
   getters: {
     getCategories: (state) => state.categories,
-  categoryIdByName: (state) => (name) => state.categories.find(c => c.name === name)?.id || null,
+  categoryIdByName: (state) => (name) => {
+    if (!name) return null
+    const needle = String(name).toLowerCase()
+    const isSlug = needle.includes('-')
+    for (const c of state.categories) {
+      const cname = String(c.name || '').toLowerCase()
+      const cslug = cname.replace(/\s+/g, '-')
+      if (cname === needle) return c.id
+      if (isSlug && cslug === needle) return c.id
+    }
+    return null
+  },
   getSubcategories: (state) => (categoryId) => state.subcategories[categoryId] || [],
   hasSubcategories: (state) => (categoryId) => (state.subcategories[categoryId] || []).length > 0,
     getCategoryDescription: (state) => (categoryName, formattedName) => {

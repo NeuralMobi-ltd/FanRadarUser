@@ -12,9 +12,9 @@ export const useAuthStore = defineStore('auth', {
   hydrated: false,          // indicates initialization finished
   pendingProfile: false,    // network profile fetch in flight
     userStats: {
-      followers: 132,
-      following: 12,
-      posts: 15
+  followers: 0,
+  following: 0,
+  posts: 0
     },
     posts: []
   }),
@@ -204,98 +204,7 @@ export const useAuthStore = defineStore('auth', {
       }
     },
     
-    // Initialize mock posts
-    initializeMockPosts() {
-      const mockPosts = [
-        {
-          id: 1,
-          content: "Just discovered this amazing new band! Their sound is incredible 🎵",
-          timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-          likes: 24,
-          comments: 5,
-          // shares removed
-          media: [
-            {
-              type: 'image',
-              url: 'https://picsum.photos/600/400?random=10',
-              caption: 'Band photo'
-            },
-            {
-              type: 'video',
-              url: 'https://www.w3schools.com/html/mov_bbb.mp4',
-              caption: 'Live performance'
-            }
-          ],
-          type: 'media'
-        },
-        {
-          id: 2,
-          content: "Concert tonight was absolutely mind-blowing! The energy was unreal ⚡",
-          timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-          likes: 89,
-          comments: 23,
-          // shares removed
-          media: [
-            {
-              type: 'image',
-              url: 'https://picsum.photos/600/400?random=1',
-              caption: 'Concert crowd'
-            },
-            {
-              type: 'image',
-              url: 'https://picsum.photos/600/400?random=11',
-              caption: 'Stage lights'
-            }
-          ],
-          type: 'media'
-        },
-        {
-          id: 3,
-          content: "Working on my latest music review. This album is going to be a game changer! 📝",
-          timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-          likes: 45,
-          comments: 8,
-          // shares removed
-          type: 'text'
-        },
-        {
-          id: 4,
-          content: "Throwback to last week's festival! Missing those vibes already 🎪",
-          timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(), // 1 week ago
-          likes: 156,
-          comments: 34,
-          // shares removed
-          media: [
-            {
-              type: 'image',
-              url: 'https://picsum.photos/600/400?random=2',
-              caption: 'Festival stage'
-            },
-            {
-              type: 'video',
-              url: 'https://www.w3schools.com/html/movie.mp4',
-              caption: 'Festival highlights'
-            },
-            {
-              type: 'image',
-              url: 'https://picsum.photos/600/400?random=12',
-              caption: 'Crowd dancing'
-            }
-          ],
-          type: 'media'
-        },
-        {
-          id: 5,
-          content: "New playlist is live! Perfect mix for your weekend chill sessions 🎧",
-          timestamp: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), // 10 days ago
-          likes: 67,
-          comments: 12,
-          // shares removed
-          type: 'text'
-        }
-      ]
-      this.posts = mockPosts
-    },
+  // No mock posts; posts remain empty unless created by the user
 
     // Add a new post
     addPost(postData) {
@@ -347,7 +256,6 @@ export const useAuthStore = defineStore('auth', {
         }
         if (savedUser) {
           this.user = JSON.parse(savedUser)
-          this.initializeMockPosts() // Initialize posts when user is loaded
         }
       } catch (error) {
         console.error('Error loading user from localStorage:', error)
@@ -387,30 +295,7 @@ export const useAuthStore = defineStore('auth', {
           this.setError('Invalid email or password.')
           return { success: false, error: this.error }
         }
-        // Optional fallback only if mocks enabled
-        try {
-          const { API_CONFIG } = require('@/config/api')
-          if (API_CONFIG?.useMocks) {
-            const { email } = credentials
-            const userData = {
-              id: 1,
-              userName: email.split('@')[0],
-              userEmail: email,
-              avatar: 'https://ui-avatars.com/api/?name=' + email.split('@')[0] + '&background=6366f1&color=fff&size=256',
-              bio: 'FanRadar user (mock)',
-              coverPhoto: '',
-              verified: false,
-              joinedDate: new Date().toISOString(),
-            }
-            this.user = userData
-            const serialized = JSON.stringify(userData)
-            localStorage.setItem('user', serialized)
-            setCookie('auth_user', serialized, 7)
-            this.initializeMockPosts()
-            this.setError('Backend unreachable. Using mock session.')
-            return { success: true, user: userData, mock: true }
-          }
-        } catch (_) { /* ignore */ }
+  // No mock fallback
         this.setError(error?.response?.data?.message || 'Login failed')
         return { success: false, error: this.error }
       } finally {
