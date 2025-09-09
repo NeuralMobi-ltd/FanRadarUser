@@ -193,14 +193,6 @@
                   <UserIcon class="w-4 h-4 mr-2" />
                   Profile
                 </router-link>
-                <router-link 
-                  to="/edit-account"
-                  @click="showMobileUserMenu = false"
-                  class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <Cog6ToothIcon class="w-4 h-4 mr-2" />
-                  Settings
-                </router-link>
                 <button
                   @click="requestLogout"
                   class="flex items-center w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

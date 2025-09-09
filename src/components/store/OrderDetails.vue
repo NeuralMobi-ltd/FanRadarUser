@@ -9,7 +9,7 @@
         <span class="text-sm sm:text-base">Back to Orders</span>
       </button>
 
-      <div v-if="order">
+  <div v-if="order">
         <!-- Order Header -->
         <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700 mb-4 sm:mb-6">
           <div class="flex flex-wrap items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -23,24 +23,8 @@
           </div>
 
           <!-- Order Progress -->
-          <div class="relative">
-            <div class="flex items-center justify-between mb-2">
-              <span v-for="(step, index) in orderSteps" :key="step.status" 
-                    :class="['text-xs sm:text-sm font-medium', getStepStatus(step.status) !== 'inactive' ? 'text-green-600' : 'text-gray-400']">
-                {{ step.label }}
-              </span>
-            </div>
-            <div class="relative">
-              <div class="flex items-center justify-between">
-                <div v-for="(step, index) in orderSteps" :key="step.status" 
-                     :class="['w-3 h-3 sm:w-4 sm:h-4 rounded-full border-2', getStepClass(step.status)]">
-                </div>
-              </div>
-              <div class="absolute top-1.5 sm:top-2 left-1.5 sm:left-2 right-1.5 sm:right-2 h-0.5 bg-gray-200 dark:bg-gray-700 -z-10">
-                <div class="h-full bg-green-600 transition-all duration-500" :style="{ width: progressWidth }"></div>
-              </div>
-            </div>
-          </div>
+          <!-- Progress simplified: backend exposes status only -->
+          <div class="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Status: {{ order.status }}</div>
         </div>
 
         <!-- Order Items -->
@@ -66,61 +50,24 @@
           <!-- Order Summary -->
           <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
             <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Order Summary</h2>
-            <div class="space-y-2.5 sm:space-y-3">
-              <div class="flex justify-between text-sm sm:text-base">
-                <span class="text-gray-600 dark:text-gray-400">Subtotal</span>
-                <span class="text-gray-900 dark:text-white">${{ order.subtotal.toFixed(2) }}</span>
-              </div>
-              <div class="flex justify-between text-sm sm:text-base">
-                <span class="text-gray-600 dark:text-gray-400">Shipping</span>
-                <span class="text-green-600">Free</span>
-              </div>
-              <div class="flex justify-between text-sm sm:text-base">
-                <span class="text-gray-600 dark:text-gray-400">Tax</span>
-                <span class="text-gray-900 dark:text-white">${{ order.tax.toFixed(2) }}</span>
-              </div>
-              <hr class="border-gray-200 dark:border-gray-700">
-              <div class="flex justify-between text-base sm:text-lg font-semibold">
-                <span class="text-gray-900 dark:text-white">Total</span>
-                <span class="text-green-600">${{ order.total.toFixed(2) }}</span>
-              </div>
+            <div class="flex items-center justify-between text-base sm:text-lg font-semibold">
+              <span class="text-gray-900 dark:text-white">Total</span>
+              <span class="text-green-600">${{ order.total.toFixed(2) }}</span>
             </div>
           </div>
 
           <!-- Shipping Information -->
           <div class="bg-white dark:bg-gray-800 rounded-xl p-4 sm:p-6 border border-gray-200 dark:border-gray-700">
-            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Shipping Information</h2>
-            <div class="space-y-2.5 sm:space-y-3 text-sm sm:text-base">
-              <div>
-                <span class="text-gray-600 dark:text-gray-400 block">Shipping Address</span>
-                <p class="text-gray-900 dark:text-white">{{ order.shippingAddress.name }}</p>
-                <p class="text-gray-900 dark:text-white">{{ order.shippingAddress.street }}</p>
-                <p class="text-gray-900 dark:text-white">{{ order.shippingAddress.city }}, {{ order.shippingAddress.state }} {{ order.shippingAddress.zip }}</p>
-              </div>
-              <div v-if="order.trackingNumber">
-                <span class="text-gray-600 dark:text-gray-400 block">Tracking Number</span>
-                <p class="text-green-600 font-mono">{{ order.trackingNumber }}</p>
-              </div>
-              <div v-if="order.estimatedDelivery">
-                <span class="text-gray-600 dark:text-gray-400 block">Estimated Delivery</span>
-                <p class="text-gray-900 dark:text-white">{{ formatDate(order.estimatedDelivery) }}</p>
-              </div>
+            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Customer</h2>
+            <div class="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+              <div>{{ order.user?.first_name }} {{ order.user?.last_name }}</div>
+              <div class="text-gray-500 dark:text-gray-400">{{ order.user?.email }}</div>
             </div>
           </div>
         </div>
 
         <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-4 sm:mt-6">
-          <button v-if="order.status === 'delivered'" class="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm sm:text-base">
-            Leave Review
-          </button>
-          <button v-if="order.status === 'processing'" @click="cancelOrder" class="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors text-sm sm:text-base">
-            Cancel Order
-          </button>
-          <button v-if="order.status === 'delivered'" class="w-full sm:w-auto px-4 py-2.5 sm:px-6 sm:py-3 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors text-sm sm:text-base">
-            Reorder
-          </button>
-        </div>
+  <div class="flex justify-end mt-4 sm:mt-6 text-sm sm:text-base text-gray-500 dark:text-gray-400">Status: {{ order.status }}</div>
       </div>
 
       <div v-else class="text-center py-12 sm:py-16">
@@ -129,85 +76,62 @@
       </div>
     </div>
   </div>
-  <ConfirmModal
-    v-model="showCancel"
-    tone="danger"
-    title="Cancel order?"
-    :message="'Order '+ order?.id +' will be marked as cancelled.'"
-    hint="This cannot be undone."
-    confirm-text="Cancel Order"
-    loading-text="Cancelling..."
-    confirm-icon="fas fa-ban"
-    icon="fas fa-triangle-exclamation"
-    :loading="cancelling"
-    @confirm="confirmCancel"
-    @cancel="resetCancel"
-  />
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import { useRoute } from 'vue-router'
+import OrdersService from '@/services/ordersService'
 
 const route = useRoute()
 const orderId = computed(() => route.params.id)
 
-const orderSteps = ref([
-  { status: 'processing', label: 'Processing' },
-  { status: 'shipped', label: 'Shipped' },
-  { status: 'delivered', label: 'Delivered' }
-])
+const order = ref(null)
 
-const order = ref({
-  id: 'ORD-2024-001',
-  date: new Date('2024-01-15'),
-  status: 'delivered',
-  total: 116.97,
-  subtotal: 108.27,
-  tax: 8.70,
-  trackingNumber: 'TN123456789',
-  estimatedDelivery: new Date('2024-01-20'),
-  shippingAddress: {
-    name: 'John Doe',
-    street: '123 Main St',
-    city: 'New York',
-    state: 'NY',
-    zip: '10001'
-  },
-  items: [
-    {
-      id: 1,
-      name: 'Attack on Titan Survey Corps Hoodie',
-      price: 45.99,
-      quantity: 2,
-      image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
-    },
-    {
-      id: 2,
-      name: 'Marvel Avengers Logo T-Shirt',
-      price: 24.99,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop'
-    }
-  ]
-})
+const toNum = (v) => {
+  const n = typeof v === 'string' ? parseFloat(v) : v
+  return Number.isFinite(n) ? n : 0
+}
 
-const progressWidth = computed(() => {
-  const currentStepIndex = orderSteps.value.findIndex(step => step.status === order.value.status)
-  return `${(currentStepIndex / (orderSteps.value.length - 1)) * 100}%`
-})
+const normalizeOrder = (o) => {
+  const items = Array.isArray(o.products) ? o.products.map(p => ({
+    id: p.id,
+    name: p.product_name || p.name || `Product #${p.id}`,
+    price: toNum(p.price),
+    quantity: p.pivot?.quantity || 1,
+  image: p.image || p.images?.[0] || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+  })) : []
+  return {
+    id: o.id,
+    date: new Date(o.order_date || o.created_at || Date.now()),
+    status: o.status || 'pending',
+    total: toNum(o.total_amount),
+    items,
+    user: o.user || null
+  }
+}
+
+const loadOrder = async () => {
+  try {
+    const res = await OrdersService.getById(orderId.value)
+    const raw = res?.order || res
+    order.value = normalizeOrder(raw)
+  } catch (e) {
+    order.value = null
+  }
+}
 
 const formatDate = (date) => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  try {
+    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return ''
+  }
 }
 
 const getStatusColor = (status) => {
   const colors = {
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     processing: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
     delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -216,36 +140,8 @@ const getStatusColor = (status) => {
   return colors[status] || 'bg-gray-100 text-gray-800'
 }
 
-const getStepStatus = (stepStatus) => {
-  const currentStepIndex = orderSteps.value.findIndex(step => step.status === order.value.status)
-  const stepIndex = orderSteps.value.findIndex(step => step.status === stepStatus)
-  
-  if (stepIndex <= currentStepIndex) return 'completed'
-  return 'inactive'
-}
-
-const getStepClass = (stepStatus) => {
-  const status = getStepStatus(stepStatus)
-  if (status === 'completed') return 'bg-green-600 border-green-600'
-  return 'bg-gray-200 border-gray-300 dark:bg-gray-700 dark:border-gray-600'
-}
-
-const showCancel = ref(false)
-const cancelling = ref(false)
-const cancelOrder = () => { showCancel.value = true }
-function resetCancel(){}
-async function confirmCancel(){
-  if(cancelling.value) return
-  cancelling.value = true
-  try { order.value.status = 'cancelled' } finally { cancelling.value = false; showCancel.value = false }
-}
-
-onMounted(() => {
-  // Load order data based on orderId
-  console.log('Loading order:', orderId.value)
-})
+onMounted(loadOrder)
 </script>
 
 <style scoped>
-/* Add any custom styles here if needed */
 </style>

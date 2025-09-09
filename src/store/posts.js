@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import PostsService from '@/services/postsService'
+import PostsService, { getMyFavorites } from '@/services/postsService'
 import API_CONFIG from '@/config/api'
 
 // Helper to resolve media/storage paths to absolute URLs
@@ -24,6 +24,8 @@ function resolveMediaUrl(p) {
 export const usePostsStore = defineStore('posts', {
   state: () => ({
   posts: [],
+  // Set of post IDs the current user has liked (from GET /Y/myfavorites/posts)
+  favoritesSet: new Set(),
     activeFeed: 'timeline',
     loadingMore: false,
     hasMorePosts: true,
@@ -249,7 +251,7 @@ export const usePostsStore = defineStore('posts', {
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media: mediaArr,
         tags: Array.isArray(apiPost.tags) ? apiPost.tags : [],
-        likes: apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0,
+        likes: Math.max(0, apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0),
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
         isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
@@ -272,7 +274,7 @@ export const usePostsStore = defineStore('posts', {
         originalId: apiPost.id,
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media,
-        likes: apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0,
+        likes: Math.max(0, apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0),
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
   isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
@@ -296,9 +298,20 @@ export const usePostsStore = defineStore('posts', {
     },
     async fetchHomeFeed() {
       try {
-  const { posts, pagination } = await PostsService.homeFeed({ page: 1, limit: this.pagination.limit })
+  // In parallel: fetch home feed and my favorites to mark liked state accurately
+  const [feedRes, favRes] = await Promise.all([
+    PostsService.homeFeed({ page: 1, limit: this.pagination.limit }),
+    getMyFavorites().catch(() => ({ posts: [] }))
+  ])
+  const posts = feedRes.posts
+  const pagination = feedRes.pagination
+  this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
   this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
-  this.posts = Array.isArray(posts) ? posts.map(p => this.mapBackendPost(p)).filter(Boolean) : []
+  this.posts = Array.isArray(posts) ? posts.map(p => {
+    const m = this.mapBackendPost(p)
+    if (m && this.favoritesSet.has(Number(m.id))) m.isLiked = true
+    return m
+  }).filter(Boolean) : []
         this.hasMorePosts = !!(pagination && pagination.hasNext)
         this.lastMutation = Date.now()
       } catch (e) {
@@ -308,9 +321,19 @@ export const usePostsStore = defineStore('posts', {
     async fetchFollowingFeed(params = {}) {
       try {
         const query = { page: 1, limit: this.pagination.limit, ...params }
-        const { posts, pagination } = await PostsService.followingFeed(query)
+        const [feedRes, favRes] = await Promise.all([
+          PostsService.followingFeed(query),
+          getMyFavorites().catch(() => ({ posts: [] }))
+        ])
+        const posts = feedRes.posts
+        const pagination = feedRes.pagination
+        this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
         this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
-        this.posts = Array.isArray(posts) ? posts.map(p => this.mapBackendPost(p)).filter(Boolean) : []
+        this.posts = Array.isArray(posts) ? posts.map(p => {
+          const m = this.mapBackendPost(p)
+          if (m && this.favoritesSet.has(Number(m.id))) m.isLiked = true
+          return m
+        }).filter(Boolean) : []
         this.hasMorePosts = !!(this.pagination && this.pagination.hasNext)
         this.lastMutation = Date.now()
         return { success: true }
@@ -320,10 +343,17 @@ export const usePostsStore = defineStore('posts', {
     },
     async fetchTrendingTop(params = {}) {
       try {
-        const { posts, pagination } = await PostsService.trendingTop(params)
+        const [feedRes, favRes] = await Promise.all([
+          PostsService.trendingTop(params),
+          getMyFavorites().catch(() => ({ posts: [] }))
+        ])
+        const { posts, pagination } = feedRes
+        this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
         const mapped = Array.isArray(posts) ? posts.map(p => {
           const m = this.mapBackendPost(p)
-          return m ? { ...m, trending: true } : null
+          if (!m) return null
+          const liked = this.favoritesSet.has(Number(m.id))
+          return { ...m, trending: true, isLiked: liked || m.isLiked }
         }).filter(Boolean) : []
         // Replace current posts with trending list to keep filteredPosts in sync when activeFeed==='trending'
         // If you prefer to merge, consider de-duping by id.
@@ -338,7 +368,11 @@ export const usePostsStore = defineStore('posts', {
     },
     async fetchExploreFeed() {
       try {
-        const res = await PostsService.exploreFeed()
+        const [res, favRes] = await Promise.all([
+          PostsService.exploreFeed(),
+          getMyFavorites().catch(() => ({ posts: [] }))
+        ])
+        this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
         const payload = res?.data || res
         const list = (payload.posts || payload.data?.posts || []).map(p => ({
           id: p.id,
@@ -350,7 +384,7 @@ export const usePostsStore = defineStore('posts', {
           likes: p.likes || 0,
           comments: p.comments || 0,
           // shares removed
-          isLiked: !!p.isLiked,
+          isLiked: this.favoritesSet.has(Number(p.id)) || !!p.isLiked,
           fandom: p.fandom?.name || null,
           trending: !!p.trending
         }))
@@ -459,9 +493,39 @@ export const usePostsStore = defineStore('posts', {
         }
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for favorite', id: postId }
-        await PostsService.favorite(apiId)
-        if (record) this.toggleLike(record.id, 'currentUser')
-        return { success: true }
+  // Determine current liked state using record OR favoritesSet as source of truth
+  const isLikedNow = (record?.isLiked === true) || this.favoritesSet.has(Number(apiId))
+  // If already liked, call unfavorite
+  if (isLikedNow) {
+          const res = await PostsService.unfavorite(apiId)
+          if (record) {
+            record.isLiked = false
+            record.likes = Math.max(0, (record.likes || 0) - 1)
+          }
+          this.favoritesSet.delete(Number(apiId))
+          this.lastMutation = Date.now()
+          return { ...(res || {}), action: 'unlike' }
+        }
+        const res = await PostsService.favorite(apiId)
+        const msg = (res?.message || '').toLowerCase()
+        // Some backends return success:false when already favorited; treat as unlike
+        if (res?.success === false && (msg.includes('déjà') || msg.includes('already'))) {
+          const un = await PostsService.unfavorite(apiId)
+          if (record) {
+            record.isLiked = false
+            record.likes = Math.max(0, (record.likes || 0) - 1)
+          }
+          this.favoritesSet.delete(Number(apiId))
+          this.lastMutation = Date.now()
+          return { ...(un || {}), action: 'unlike' }
+        }
+        if (record) {
+          record.isLiked = true
+          record.likes = (record.likes || 0) + 1
+        }
+        this.favoritesSet.add(Number(apiId))
+        this.lastMutation = Date.now()
+        return { ...(res || {}), action: 'like' }
       } catch (e) {
         return { success: false, error: e?.message || 'Favorite failed', id: postId }
       }
@@ -476,10 +540,10 @@ export const usePostsStore = defineStore('posts', {
         }
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for save', id: postId }
-        const res = await PostsService.save(apiId)
-        if (record) record.isSaved = true
-        this.lastMutation = Date.now()
-        return res
+  const res = await PostsService.save(apiId)
+  if (record) record.isSaved = true
+  this.lastMutation = Date.now()
+  return { ...(res || {}), action: 'save' }
       } catch (e) {
         return { success: false, error: e?.message || 'Save failed', id: postId }
       }
@@ -497,7 +561,7 @@ export const usePostsStore = defineStore('posts', {
         const res = await PostsService.unsave(apiId)
         if (record) record.isSaved = false
         this.lastMutation = Date.now()
-        return res
+        return { ...(res || {}), action: 'unsave' }
       } catch (e) {
         return { success: false, error: e?.message || 'Unsave failed', id: postId }
       }

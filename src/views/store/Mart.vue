@@ -146,18 +146,11 @@
             </span>
           </div>
           <div class="flex flex-wrap gap-2">
-            <!-- Category Filter -->
+            <!-- Subcategory Filter -->
             <span v-if="storeSidebarStore.appliedFilters.category" class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
               <i class="fas fa-layer-group"></i>
-              <span>Category: {{ storeSidebarStore.appliedFilters.category }}</span>
+              <span>Subcategory: {{ subcategoryName(storeSidebarStore.appliedFilters.category) }}</span>
               <button class="ml-1 hover:text-blue-900 dark:hover:text-blue-200" @click="storeSidebarStore.clearCategoryFilter()">✕</button>
-            </span>
-            
-            <!-- Brand Filters -->
-            <span v-for="brand in storeSidebarStore.appliedFilters.brands" :key="brand" class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm">
-              <i class="fas fa-copyright"></i>
-              <span>{{ brandNameFromSlug(brand) }}</span>
-              <button class="ml-1 hover:text-purple-900 dark:hover:text-purple-200" @click="removeBrandFilter(brand)">✕</button>
             </span>
             
             <!-- Price Filter -->
@@ -170,20 +163,7 @@
               </span>
               <button class="ml-1 hover:text-green-900 dark:hover:text-green-200" @click="storeSidebarStore.clearPriceFilter()">✕</button>
             </span>
-            
-            <!-- Quick Filters -->
-            <span v-for="filter in storeSidebarStore.appliedFilters.quickFilters" :key="filter" class="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full text-sm">
-              <i class="fas fa-bolt"></i>
-              <span>{{ quickFilterLabel(filter) }}</span>
-              <button class="ml-1 hover:text-orange-900 dark:hover:text-orange-200" @click="removeQuickFilter(filter)">✕</button>
-            </span>
-            
-            <!-- Search Filter -->
-            <span v-if="storeSidebarStore.appliedFilters.search" class="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm">
-              <i class="fas fa-search"></i>
-              <span>{{ storeSidebarStore.appliedFilters.search }}</span>
-              <button class="ml-1 hover:text-gray-900 dark:hover:text-white" @click="storeSidebarStore.clearSearchFilter()">✕</button>
-            </span>
+            <!-- No brand/quick/search chips -->
           </div>
         </div>
 
@@ -191,31 +171,7 @@
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-              <!-- Search -->
-              <div class="relative w-full sm:w-auto">
-                <input
-                  :value="storeSidebarStore.appliedFilters.search"
-                  @input="updateSearch($event.target.value)"
-                  type="text"
-                  placeholder="Search in products..."
-                  class="w-full sm:w-64 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 pl-9 pr-3 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
-                />
-                <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-              </div>
-
-              <!-- Category -->
-              <select v-model="selectedCategory" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
-                <option value="">All Categories</option>
-                <option v-for="c in categories" :key="c" :value="c">{{ c }}</option>
-              </select>
-
-              <!-- Brand -->
-              <select v-model="selectedBrand" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
-                <option value="">All Brands</option>
-                <option v-for="b in availableBrands" :key="b" :value="b">{{ b }}</option>
-              </select>
-
-              <!-- Price -->
+              <!-- Search and Brand removed; keep Price only -->
               <select v-model="priceRange" class="w-full sm:w-auto bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white">
                 <option v-for="r in martStore.priceRanges" :key="r.value" :value="r.value">{{ r.label }}</option>
               </select>
@@ -247,13 +203,31 @@
           </div>
         </div>
 
-        <!-- Products Grid/List -->
-        <div v-if="filteredProducts.length === 0" class="text-center py-16">
-          <div class="text-gray-400 text-6xl mb-4">
+        <!-- Loading State -->
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          <div v-for="i in 8" :key="i" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+            <div class="w-full h-48 bg-gray-200 dark:bg-gray-700"></div>
+            <div class="p-4 space-y-3">
+              <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+              <div class="flex justify-between items-center">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                <div class="h-8 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State -->
+        <div v-else-if="filteredProducts.length === 0" class="text-center py-16">
+          <div class="text-gray-400 text-6xl mb-4 animate-bounce">
             <i class="fas fa-shopping-basket"></i>
           </div>
           <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No products found</h3>
-          <p class="text-gray-500 dark:text-gray-400">Try adjusting your filters to see more products</p>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your filters to see more products</p>
+          <button @click="clearAllFilters" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+            <i class="fas fa-refresh mr-2"></i>Clear Filters
+          </button>
         </div>
 
         <!-- Grid View -->
@@ -261,63 +235,127 @@
           <div 
             v-for="product in paginatedProducts" 
             :key="product.id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:scale-105 group"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:scale-105 group cursor-pointer transform"
+            @click="viewProduct(product)"
           >
             <!-- Product Image -->
             <div class="relative overflow-hidden">
-              <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
               <div class="absolute top-3 left-3 flex gap-2">
-                <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full">New</span>
+                <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">New</span>
                 <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
               </div>
+              <!-- Wishlist Button Overlay -->
+              <button 
+                @click.stop="toggleWishlist(product.id)" 
+                :disabled="wishlistProcessing.has(product.id)"
+                class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+              >
+                <i v-if="wishlistProcessing.has(product.id)" class="fas fa-spinner fa-spin text-gray-500"></i>
+                <i v-else :class="['fas fa-heart transition-all duration-200', product.isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500']"></i>
+              </button>
             </div>
 
             <!-- Product Info -->
             <div class="p-4">
-              <h3 class="text-gray-900 dark:text-white font-semibold mb-1 line-clamp-2">{{ product.name }}</h3>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.brand }} • {{ product.category }}</p>
-              <div class="flex items-center justify-between">
+              <h3 class="text-gray-900 dark:text-white font-semibold mb-1 line-clamp-2 group-hover:text-green-600 transition-colors">{{ product.name }}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">{{ product.category }}</p>
+              
+              <!-- Price and Rating Row -->
+              <div class="flex items-center justify-between mb-3">
                 <div class="flex items-baseline gap-2">
                   <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
                   <span v-if="product.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ product.originalPrice }}</span>
                 </div>
-                <button @click="toggleWishlist(product.id)" class="text-gray-400 hover:text-red-500">
-                  <i :class="['fas', product.isWishlisted ? 'fa-heart text-red-500' : 'fa-heart']"></i>
-                </button>
-              </div>
-              <div class="mt-3 flex items-center justify-between">
-                <div class="text-yellow-400">
-                  <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                <div class="flex items-center gap-1">
+                  <div class="text-yellow-400 text-sm">
+                    <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                    <i class="far fa-star" v-for="i in (5 - Math.round(product.rating))" :key="i + 5"></i>
+                  </div>
+                  <span class="text-xs text-gray-500 ml-1">({{ product.reviews || 0 }})</span>
                 </div>
-                <button @click="addToCart(product)" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Add to Cart</button>
+              </div>
+              
+              <!-- Action Buttons -->
+              <div class="flex gap-2">
+                <button 
+                  @click.stop="openRate(product)" 
+                  class="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-yellow-400 group/rate"
+                >
+                  <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> Rate
+                </button>
+                <button 
+                  @click.stop="addToCart(product)" 
+                  class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                >
+                  <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- List View images size for mobile -->
-        <div v-else class="space-y-3 sm:space-y-4">
+        <!-- List View -->
+        <div v-else class="space-y-4">
           <div 
             v-for="product in paginatedProducts" 
             :key="product.id"
-            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 group"
+            class="bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 group cursor-pointer"
+            @click="viewProduct(product)"
           >
             <div class="flex">
-              <img :src="product.image" :alt="product.name" class="w-40 h-40 object-cover" />
-              <div class="p-4 flex-1">
-                <h3 class="text-gray-900 dark:text-white font-semibold mb-1">{{ product.name }}</h3>
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.brand }} • {{ product.category }}</p>
-                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">{{ product.description }}</p>
+              <div class="relative w-40 h-40 flex-shrink-0">
+                <img :src="product.image" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div class="absolute top-2 left-2 flex flex-col gap-1">
+                  <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">New</span>
+                  <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
+                </div>
+                <!-- Wishlist Button -->
+                <button 
+                  @click.stop="toggleWishlist(product.id)" 
+                  :disabled="wishlistProcessing.has(product.id)"
+                  class="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center transition-all duration-200 hover:scale-110 shadow-lg"
+                >
+                  <i v-if="wishlistProcessing.has(product.id)" class="fas fa-spinner fa-spin text-gray-500"></i>
+                  <i v-else :class="['fas fa-heart transition-all duration-200', product.isWishlisted ? 'text-red-500' : 'text-gray-400 hover:text-red-500']"></i>
+                </button>
+              </div>
+              
+              <div class="p-4 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 class="text-gray-900 dark:text-white font-semibold mb-2 group-hover:text-green-600 transition-colors">{{ product.name }}</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ product.brand }} • {{ product.category }}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">{{ product.description }}</p>
+                </div>
+                
                 <div class="flex items-center justify-between">
-                  <div class="flex items-baseline gap-2">
-                    <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
-                    <span v-if="product.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ product.originalPrice }}</span>
-                  </div>
-                  <div class="flex items-center gap-3">
-                    <div class="text-yellow-400">
-                      <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                  <div class="flex flex-col gap-2">
+                    <div class="flex items-baseline gap-2">
+                      <span class="text-lg font-bold text-gray-900 dark:text-white">${{ product.price }}</span>
+                      <span v-if="product.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ product.originalPrice }}</span>
                     </div>
-                    <button @click="addToCart(product)" class="px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Add to Cart</button>
+                    <div class="flex items-center gap-2">
+                      <div class="text-yellow-400 text-sm">
+                        <i class="fas fa-star" v-for="i in Math.round(product.rating)" :key="i"></i>
+                        <i class="far fa-star" v-for="i in (5 - Math.round(product.rating))" :key="i + 5"></i>
+                      </div>
+                      <span class="text-xs text-gray-500">({{ product.reviews || 0 }})</span>
+                    </div>
+                  </div>
+                  
+                  <div class="flex gap-2">
+                    <button 
+                      @click.stop="openRate(product)" 
+                      class="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-yellow-400 group/rate"
+                    >
+                      <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> Rate
+                    </button>
+                    <button 
+                      @click.stop="addToCart(product)" 
+                      class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                    >
+                      <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+                    </button>
                   </div>
                 </div>
               </div>
@@ -327,7 +365,52 @@
 
         <!-- Bottom padding for mobile nav -->
         <div class="h-14 md:h-0"></div>
+
+        <!-- Pagination (if needed) -->
+        <div v-if="totalPages > 1" class="flex justify-center items-center gap-2 mt-8 mb-6">
+          <button 
+            @click="currentPage = Math.max(1, currentPage - 1)"
+            :disabled="currentPage === 1"
+            class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            <i class="fas fa-chevron-left mr-1"></i> Previous
+          </button>
+          
+          <div class="flex gap-1">
+            <button 
+              v-for="page in visiblePages" 
+              :key="page"
+              @click="currentPage = page"
+              :class="[
+                'px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+                page === currentPage 
+                  ? 'bg-green-600 text-white shadow-lg' 
+                  : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700'
+              ]"
+            >
+              {{ page }}
+            </button>
+          </div>
+          
+          <button 
+            @click="currentPage = Math.min(totalPages, currentPage + 1)"
+            :disabled="currentPage === totalPages"
+            class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
+          >
+            Next <i class="fas fa-chevron-right ml-1"></i>
+          </button>
+        </div>
     </div>
+    <!-- Rate modal with backdrop blur -->
+    <Transition name="modal">
+      <RateProductModal 
+        v-if="ratingModalOpen"
+        :open="ratingModalOpen" 
+        :initialValue="ratingTarget?.initialValue || 0" 
+        @close="ratingModalOpen=false" 
+        @submit="submitRating" 
+      />
+    </Transition>
   </div>
 </template>
 
@@ -336,19 +419,30 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
 import { useMartStore } from '@/store/mart'
+import { useCartStore } from '@/store/cart'
+import notify from '@/utils/notify'
+import RateProductModal from '@/components/common/RateProductModal.vue'
+// No category/subcategory prefetching here to avoid extra network calls
 
 // Initialize stores
 const productsStore = useProductsStore()
 const storeSidebarStore = useStoreSidebarStore()
 const martStore = useMartStore()
+const cartStore = useCartStore()
 
-const selectedCategory = ref(martStore.config.DEFAULT_CATEGORY)
+// Subcategory-based selection (id)
+const selectedCategory = ref('')
+// No preloaded categories/subcategories here; sidebar lazily handles those
 const priceRange = ref(martStore.config.DEFAULT_PRICE_RANGE)
 const selectedBrand = ref('')
 const sortBy = ref(martStore.config.DEFAULT_SORT)
 const currentPage = ref(1)
 const viewMode = ref('grid') // 'grid' or 'list'
 const itemsPerPage = martStore.config.DEFAULT_ITEMS_PER_PAGE
+const loading = ref(false)
+const wishlistProcessing = ref(new Set())
+const ratingModalOpen = ref(false)
+const ratingTarget = ref(null) // { id, initialValue }
 
 // Product Drops State
 const currentDropIndex = ref(0)
@@ -356,8 +450,7 @@ const countdownTimer = ref(null)
 const rotationTimer = ref(null)
 const nowTime = ref(Date.now())
 
-// Use store for options
-const categories = computed(() => productsStore.categories)
+// Use locally loaded categories/subcategories for mapping subcategory names
 const heroFeatures = computed(() => martStore.heroFeatures)
 const heroContent = computed(() => martStore.heroContent)
 
@@ -407,7 +500,14 @@ const startCountdownUpdate = () => {
 }
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
+  // Load products from backend and hydrate wishlist state
+  try {
+    loading.value = true
+    await productsStore.loadProducts({ page: 1, limit: 48 })
+  } finally {
+    loading.value = false
+  }
   startDropRotation()
   startCountdownUpdate()
 })
@@ -417,41 +517,21 @@ onUnmounted(() => {
   if (countdownTimer.value) clearInterval(countdownTimer.value)
 })
 
-// Get available brands from store
-const availableBrands = computed(() => {
-  const brands = [...new Set(productsStore.products.map(p => p.brand))]
-  return brands.sort()
-})
+// Brands not used
 
 // Enhanced filtered products that considers sidebar filters
 const filteredProducts = computed(() => {
   let filtered = [...productsStore.products]
   
-  // Apply sidebar filters
+  // Apply sidebar filters (subcategory by id + price range only)
   const sidebarFilters = storeSidebarStore.appliedFilters
   
-  // Category filter from sidebar
+  // Subcategory id filter from sidebar
   if (sidebarFilters.category && sidebarFilters.category !== 'all') {
-    const categoryMap = {
-      'apparel': 'Apparel',
-      'accessories': 'Accessories',
-      'home': 'Home & Living',
-      'tech': 'Tech Gadgets',
-      'collectibles': 'Collectibles',
-      'books': 'Books'
+    const subId = Number(sidebarFilters.category)
+    if (!Number.isNaN(subId)) {
+      filtered = filtered.filter(p => Number(p.subcategoryId) === subId)
     }
-    const mappedCategory = categoryMap[sidebarFilters.category]
-    if (mappedCategory) {
-      filtered = filtered.filter(p => p.category === mappedCategory)
-    }
-  }
-  
-  // Brand filters from sidebar
-  if (sidebarFilters.brands.length > 0) {
-    filtered = filtered.filter(p => {
-      const brandSlug = p.brand.toLowerCase().replace(/\s+/g, '-')
-      return sidebarFilters.brands.includes(brandSlug)
-    })
   }
   
   // Price range from sidebar
@@ -464,43 +544,12 @@ const filteredProducts = computed(() => {
     })
   }
   
-  // Search from sidebar
-  if (sidebarFilters.search) {
-    const searchTerm = sidebarFilters.search.toLowerCase()
-    filtered = filtered.filter(p => 
-      p.name.toLowerCase().includes(searchTerm) ||
-      p.category.toLowerCase().includes(searchTerm) ||
-      p.brand.toLowerCase().includes(searchTerm)
-    )
-  }
-  
-  // Quick filters from sidebar
-  if (sidebarFilters.quickFilters.length > 0) {
-    sidebarFilters.quickFilters.forEach(filter => {
-      switch (filter) {
-        case 'new':
-          filtered = filtered.filter(p => p.isNew)
-          break
-        case 'sale':
-          filtered = filtered.filter(p => p.discount > 0)
-          break
-        case 'popular':
-          filtered = filtered.filter(p => p.rating >= 4.5)
-          break
-        case 'exclusive':
-          filtered = filtered.filter(p => p.category === 'Collectibles')
-          break
-      }
-    })
-  }
+  // No quick filters
   
   // Apply local filters (from the filter bar)
-  if (selectedCategory.value !== '') {
-    filtered = filtered.filter(p => p.category === selectedCategory.value)
-  }
-  
-  if (selectedBrand.value !== '') {
-    filtered = filtered.filter(p => p.brand === selectedBrand.value)
+  if (selectedCategory.value) {
+    const subId = Number(selectedCategory.value)
+    if (!Number.isNaN(subId)) filtered = filtered.filter(p => Number(p.subcategoryId) === subId)
   }
   
   if (priceRange.value !== '') {
@@ -514,17 +563,13 @@ const filteredProducts = computed(() => {
 
 // Check if any filters are active (including sidebar filters)
 const hasActiveFilters = computed(() => {
-  return selectedCategory.value !== '' || 
-         priceRange.value !== '' || 
-         selectedBrand.value !== '' ||
-         storeSidebarStore.hasActiveFilters
+  return Boolean(selectedCategory.value) || priceRange.value !== '' || storeSidebarStore.hasActiveFilters
 })
 
 // Clear all filters (including sidebar)
 const clearAllFilters = () => {
   selectedCategory.value = martStore.config.DEFAULT_CATEGORY
   priceRange.value = martStore.config.DEFAULT_PRICE_RANGE
-  selectedBrand.value = ''
   currentPage.value = 1
   storeSidebarStore.clearAllFilters()
 }
@@ -536,32 +581,88 @@ const paginatedProducts = computed(() => {
   return filteredProducts.value.slice(start, start + itemsPerPage)
 })
 
-const toggleWishlist = (productId) => {
-  productsStore.toggleWishlist(productId)
+const toggleWishlist = async (productId) => {
+  if (wishlistProcessing.value.has(productId)) return
+  wishlistProcessing.value.add(productId)
+  try {
+    await productsStore.toggleWishlist(productId)
+  } finally {
+    wishlistProcessing.value.delete(productId)
+  }
+}
+
+function openRate(product) {
+  ratingTarget.value = { id: product.id, initialValue: Math.round(product.rating || 0) }
+  ratingModalOpen.value = true
+}
+
+async function submitRating({ evaluation, commentaire }) {
+  if (!ratingTarget.value) return
+  const { id } = ratingTarget.value
+  const res = await productsStore.rateProduct(id, evaluation, commentaire)
+  if (res && res.success) {
+    notify.success('Rating saved')
+  } else {
+    notify.error(res?.error || 'Failed to save rating')
+  }
 }
 
 const addToCart = (product) => {
-  console.log('Added to cart:', product.name)
-  // TODO: Use cart store when implemented
+  cartStore.addItem({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    category: product.category
+  })
+  notify.success(`${product.name} added to cart!`, {
+    autoClose: 3000
+  })
 }
 
-const removeQuickFilter = (filter) => {
-  const filters = storeSidebarStore.appliedFilters.quickFilters.filter(f => f !== filter)
-  storeSidebarStore.setQuickFilters(filters)
+const viewProduct = (product) => {
+  // Navigate to product detail page
+  console.log('Viewing product:', product.name)
+  // router.push(`/product/${product.id}`)
 }
 
-const updateSearch = (val) => {
-  storeSidebarStore.setSearchQuery(val)
+// Pagination helpers
+const visiblePages = computed(() => {
+  const total = totalPages.value
+  const current = currentPage.value
+  const delta = 2 // Show 2 pages before and after current
+  
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1)
+  }
+  
+  const range = []
+  const start = Math.max(1, current - delta)
+  const end = Math.min(total, current + delta)
+  
+  if (start > 1) {
+    range.push(1)
+    if (start > 2) range.push('...')
+  }
+  
+  for (let i = start; i <= end; i++) {
+    range.push(i)
+  }
+  
+  if (end < total) {
+    if (end < total - 1) range.push('...')
+    range.push(total)
+  }
+  
+  return range.filter(page => page !== '...' || range.length > 5)
+})
+
+// Resolve subcategory id to name using already-loaded product data (no extra API calls)
+const subcategoryName = (id) => {
+  const subId = Number(id)
+  const match = productsStore.products.find(p => Number(p.subcategoryId) === subId && p.subcategoryName)
+  return match?.subcategoryName || id
 }
-
-const brandNameFromSlug = (slug) => slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-
-const removeBrandFilter = (slug) => {
-  storeSidebarStore.selectedBrands = storeSidebarStore.selectedBrands.filter(b => b !== slug)
-  storeSidebarStore.appliedFilters.brands = storeSidebarStore.appliedFilters.brands.filter(b => b !== slug)
-}
-
-const quickFilterLabel = (q) => ({ new: 'New', sale: 'On Sale', popular: 'Popular', exclusive: 'Exclusive' }[q] || q)
 
 // Watch for changes in filtered products to reset pagination
 watch(filteredProducts, () => {
@@ -576,5 +677,95 @@ watch(filteredProducts, () => {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Modal transitions */
+.modal-enter-active, .modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from, .modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+/* Hover animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Pulse animation for new badges */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Loading skeleton animation */
+@keyframes skeleton {
+  0% { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+
+.animate-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: skeleton 1.5s infinite linear;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-track {
+    background: #374151;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #6b7280;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+}
+
+/* Focus styles for accessibility */
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 2px solid #10b981;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Product card hover effects */
+.group:hover .group-hover\:animate-pulse {
+  animation: pulse 1s infinite;
 }
 </style>

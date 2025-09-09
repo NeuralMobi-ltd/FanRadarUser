@@ -87,7 +87,7 @@ const isLandingPage = computed(() => route.path === '/')
 
 // Check if current route is store-related
 const isStoreRoute = computed(() => 
-  ['/mart', '/cart', '/orders'].some(path => route.path.startsWith(path))
+  ['/mart', '/cart', '/orders', '/favorites'].some(path => route.path.startsWith(path))
 )
 
 // Check if current route is store search

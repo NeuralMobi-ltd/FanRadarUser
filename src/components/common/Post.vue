@@ -208,7 +208,8 @@
         <!-- Like Button -->
         <button 
           @click="favorite"
-          class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group-like"
+          :disabled="likeProcessing"
+          class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group-like disabled:opacity-60 disabled:cursor-not-allowed"
           :class="{ 'bg-red-50 dark:bg-red-900/20': post.isLiked }"
           :aria-label="post.isLiked ? 'Unlike post' : 'Like post'"
         >
@@ -354,7 +355,7 @@
 
 <script setup>
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
-import { ref, watch, computed, nextTick } from 'vue'
+import { ref, watch, computed, nextTick, onMounted } from 'vue'
 import { usePostsStore } from '@/store/posts'
 import { useAuthStore } from '@/store/auth'
 import notify from '@/utils/notify'
@@ -404,6 +405,7 @@ const commentError = ref('')
 const commentTextarea = ref(null)
 const commentMax = 500
 const charRemaining = computed(() => commentMax - newComment.value.length)
+const likeProcessing = ref(false)
 
 // Keep in sync if parent updates post.commentsList
 watch(() => props.post.commentsList, (val) => {
@@ -413,6 +415,10 @@ watch(() => props.post.commentsList, (val) => {
 })
 
 const postsStore = usePostsStore()
+
+// Keep local saved state in sync with the incoming post prop
+watch(() => props.post.isSaved, (val) => { isSaved.value = !!val }, { immediate: true })
+onMounted(() => { isSaved.value = !!props.post.isSaved })
 
 // ---- Asset URL Normalization ----
 // Ensure storage assets don't contain /api and have full base URL.
@@ -502,9 +508,10 @@ const formatDate = (date) => {
 }
 
 const formatNumber = (num) => {
-  if (num < 1000) return num.toString()
-  if (num < 1000000) return (num / 1000).toFixed(1) + 'K'
-  return (num / 1000000).toFixed(1) + 'M'
+  const n = Math.max(0, Number.isFinite(num) ? Number(num) : Number(num || 0))
+  if (n < 1000) return String(n)
+  if (n < 1000000) return (n / 1000).toFixed(1) + 'K'
+  return (n / 1000000).toFixed(1) + 'M'
 }
 
 const toggleComments = async () => {
@@ -549,7 +556,15 @@ const toggleSave = () => {
         isSaved.value = currentlySaved
         props.post.isSaved = currentlySaved
         notify.error(res.error || 'Failed to save')
+      } else if (res?.action === 'unsave') {
+        // Backend reported already saved; we toggled to unsave
+        isSaved.value = false
+        props.post.isSaved = false
+        notify.info(res?.message || 'Removed from saved')
       } else {
+        // Saved as normal
+        isSaved.value = true
+        props.post.isSaved = true
         notify.success(res?.message || 'Saved')
       }
     }).catch(err => {
@@ -564,6 +579,8 @@ const toggleSave = () => {
         props.post.isSaved = currentlySaved
         notify.error(res.error || 'Failed to unsave')
       } else {
+        isSaved.value = false
+        props.post.isSaved = false
         notify.info(res?.message || 'Removed from saved')
       }
     }).catch(err => {
@@ -673,9 +690,42 @@ function deletePost() {
   emit('delete', backendId || props.post.id)
 }
 
-function favorite() {
-  const backendId = extractBackendId(props.post)
-  postsStore.favoritePostApi(backendId || props.post.id)
+async function favorite() {
+  if (likeProcessing.value) return
+  const backendId = extractBackendId(props.post) || props.post.id
+  // Determine current liked state from global favorites Set (source of truth) if available
+  const currentlyLiked = postsStore?.favoritesSet?.has(Number(backendId)) || !!props.post.isLiked
+  // Optimistic UI: toggle heart only (let store be the single source for counts)
+  props.post.isLiked = !currentlyLiked
+  likeProcessing.value = true
+  try {
+    const res = await postsStore.favoritePostApi(backendId)
+    if (res?.success === false) {
+      // Revert on failure
+      props.post.isLiked = currentlyLiked
+      notify.error(res?.error || 'Like action failed')
+    } else {
+      // Sync with backend-declared action just in case
+      const action = res?.action || (props.post.isLiked ? 'like' : 'unlike')
+      props.post.isLiked = action === 'like'
+      const msg = (res?.message || '').toLowerCase()
+      if (action === 'unlike' && (msg.includes('retiré des favoris') || msg.includes('removed'))) {
+        notify.info(res?.message || 'Unliked')
+      }
+      // Re-sync likes from store record to avoid double adjustments
+      const refreshed = postsStore.posts.find(p => p.id === backendId || p.originalId === backendId)
+      if (refreshed) {
+        const safeLikes = Math.max(0, Number(refreshed.likes) || 0)
+        props.post.likes = safeLikes
+        props.post.isLiked = !!refreshed.isLiked
+      }
+    }
+  } catch (e) {
+    props.post.isLiked = currentlyLiked
+    notify.error(e?.message || 'Like action failed')
+  } finally {
+    likeProcessing.value = false
+  }
   emit('like', props.post.id)
 }
 

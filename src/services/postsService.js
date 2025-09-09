@@ -182,9 +182,56 @@ export const PostsService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, message: 'Post unsaved (mock)' }
     }
+    // Use dedicated save/unsave endpoints (favorites here mean bookmarks)
     const payload = { post_id: postId }
     const { data } = await http.post(API_CONFIG.posts.unsave, payload)
     return data
+  },
+  async unfavorite(postId) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, favorited: false }
+    }
+    const primary = API_CONFIG.posts.removeFavorite(postId)
+    const alternatives = [
+      `/Y/posts/${postId}/unfavorite`,
+      `/Y/posts/${postId}/removeFavorite`
+    ]
+    const tryPaths = [primary, ...alternatives]
+    let lastErr
+    for (const url of tryPaths) {
+      try {
+        const { data } = await http.delete(url)
+        return data
+      } catch (errDel) {
+        lastErr = errDel
+        // Retry via method override for environments that block DELETE
+        try {
+          const headers = { 'X-HTTP-Method-Override': 'DELETE' }
+          const { data } = await http.post(url, { _method: 'DELETE' }, { headers })
+          return data
+        } catch (errPost) {
+          lastErr = errPost
+          // Try query param override
+          try {
+            const { data } = await http.post(url + (url.includes('?') ? '&' : '?') + '_method=DELETE')
+            return data
+          } catch (errQuery) {
+            lastErr = errQuery
+          }
+          // Try x-www-form-urlencoded body
+          try {
+            const body = new URLSearchParams({ _method: 'DELETE' })
+            const { data } = await http.post(url, body, { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } })
+            return data
+          } catch (errForm) {
+            lastErr = errForm
+          }
+          continue
+        }
+      }
+    }
+    throw lastErr
   },
   // Backward compatibility for any old calls
   async like(postId) { return this.favorite(postId) },
@@ -227,6 +274,16 @@ export const PostsService = {
     const posts = data?.data?.posts || data?.posts || []
     const pagination = data?.data?.pagination || data?.pagination || null
     return { posts, pagination }
+  }
+}
+
+// Fetch current user's favorites (liked) posts
+export async function getMyFavorites(params = {}) {
+  const { data } = await http.get(API_CONFIG.posts.myFavorites, { params })
+  const root = data?.data || data
+  return {
+    posts: root?.posts || [],
+    pagination: root?.pagination || null
   }
 }
 

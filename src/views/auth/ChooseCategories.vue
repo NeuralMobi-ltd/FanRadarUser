@@ -21,7 +21,13 @@
         </p>
         
         <!-- Category grid with improved visuals -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+        <div v-if="loadingCategories" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-8">
+          <div v-for="n in 6" :key="n" class="h-11 rounded-xl bg-gray-100 dark:bg-gray-700 animate-pulse"></div>
+        </div>
+        <div v-else-if="!categories.length" class="mb-8 text-center text-gray-500 dark:text-gray-400">
+          {{ categoriesError || $t('common.empty') || 'No categories available' }}
+        </div>
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-8">
           <button
             v-for="cat in categories"
             :key="cat"
@@ -110,8 +116,10 @@ const authStore = useAuthStore()
 const categoriesStore = useCategoriesStore()
 const registrationStore = useRegistrationStore()
 
-// Category names list
-const categories = categoriesStore.getCategories.map(c => c.name)
+// Categories (reactive) and loading state
+const loadingCategories = ref(false)
+const categoriesError = ref('')
+const categories = computed(() => (categoriesStore.getCategories || []).map(c => c.name))
 
 // Selection limits
 const maxSelections = 5
@@ -131,9 +139,21 @@ function toggleCategory(cat) {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   if (!registrationStore.email || !registrationStore.password) {
     router.replace('/signup')
+    return
+  }
+  // Fetch categories from API if not already loaded
+  if (!categoriesStore.getCategories || categoriesStore.getCategories.length === 0) {
+    loadingCategories.value = true
+    try {
+      await categoriesStore.fetchCategoriesIfNeeded(true)
+    } catch (e) {
+      categoriesError.value = e?.response?.data?.message || e?.message || 'Failed to load categories'
+    } finally {
+      loadingCategories.value = false
+    }
   }
 })
 
@@ -153,10 +173,9 @@ async function submitCategories() {
       username: registrationStore.username || undefined,
       gender: registrationStore.gender || undefined,
       date_naissance: registrationStore.birth_date || undefined,
-      preferred_categories: selected.value.map(name => {
-        const idx = categories.indexOf(name)
-        return idx >= 0 ? idx + 1 : null
-      }).filter(id => id !== null)
+      preferred_categories: selected.value
+        .map(name => (categoriesStore.getCategories || []).find(c => c.name === name)?.id ?? null)
+        .filter(id => id !== null)
     }
     const res = await AuthService.register(payload)
     const response = res?.data || res

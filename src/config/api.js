@@ -48,6 +48,10 @@ export const API_CONFIG = {
     update: (postId) => `/Y/posts/${postId}/update`,
     delete: (postId) => `/Y/posts/${postId}/delete`,
     favorite: (postId) => `/Y/posts/${postId}/favorite`,
+  // Unsave favorite endpoint (DELETE)
+  removeFavorite: (postId) => `/Y/posts/${postId}/removefavorite`,
+  // Current user's liked posts
+  myFavorites: '/Y/myfavorites/posts',
   comments: (postId) => `/Y/posts/${postId}/comments`,
   save: '/Y/posts/save',
   unsave: '/Y/posts/unsave',
@@ -59,9 +63,9 @@ export const API_CONFIG = {
 
   // Categories & Hashtags
   categories: {
-    list: '/Y/categories/list',
+  list: '/Y/categories',
     // Keep legacy endpoints if still used somewhere else
-    all: '/Y/categories/list',
+  all: '/Y/categories',
     contentByCategory: (category) => `/Y/categories/${encodeURIComponent(category)}/content`
   },
   hashtags: {
@@ -140,6 +144,27 @@ export const API_CONFIG = {
     orderById: (orderId) => `/api/store/orders/${orderId}`,
     cancelOrder: (orderId) => `/api/store/orders/${orderId}/cancel`,
     wishlist: (productId) => `/api/store/wishlist/${productId}`,
+  },
+
+  // Commerce (public products + authenticated orders/favorites)
+  products: {
+    // Public products listing and details (baseURL already includes /api)
+    list: '/products',
+    detail: (id) => `/products/${id}`,
+  },
+  favorites: {
+    // Product wishlist endpoints
+    product: {
+      favorite: (id) => `/Y/favorites/${id}/favorite`,
+      remove: (id) => `/Y/favorites/${id}/removefavorite`,
+    },
+    // Current user's wishlisted products
+    myFavoriteProducts: '/Y/myfavorites/products',
+  },
+  orders: {
+    create: '/orders',
+    myOrders: '/orders/my-orders',
+    byId: (id) => `/orders/${id}`,
   }
 }
 

@@ -3,8 +3,8 @@
     <div class="max-w-6xl mx-auto">
       <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-6 sm:mb-8">My Orders</h1>
 
-      <!-- Filter Tabs -->
-      <div class="flex space-x-2 overflow-x-auto whitespace-nowrap pb-1 -mx-2 px-2 mb-4 sm:mb-6">
+      <!-- Filter Tabs (derived from backend statuses) -->
+      <div class="flex space-x-2 overflow-x-auto whitespace-nowrap pb-1 -mx-2 px-2 mb-4 sm:mb-6" v-if="orderStatuses.length > 1">
         <button 
           v-for="status in orderStatuses" 
           :key="status" 
@@ -84,162 +84,92 @@
               </div>
             </div>
             
-            <!-- Order Total -->
-            <div class="mt-5 sm:mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+            <!-- Order Total (from backend) -->
+            <div class="mt-5 sm:mt-6 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
               <span class="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">Total: ${{ order.total.toFixed(2) }}</span>
-              <div class="flex gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
-                <button 
-                  v-if="order.status === 'delivered'" 
-                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors text-sm"
-                >
-                  Leave Review
-                </button>
-                <button 
-                  v-if="order.status === 'processing'" 
-                  @click="cancelOrder(order.id)" 
-                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 border border-red-600 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg font-medium transition-colors text-sm"
-                >
-                  Cancel Order
-                </button>
-                <button 
-                  v-if="order.status === 'delivered'" 
-                  class="w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-2 border border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg font-medium transition-colors text-sm"
-                >
-                  Reorder
-                </button>
-              </div>
+              <router-link :to="`/orders/${order.id}`" class="text-sm sm:text-base text-green-600 hover:text-green-700 font-medium">Details</router-link>
             </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <ConfirmModal
-    v-model="showCancel"
-    tone="danger"
-    title="Cancel order?"
-    :message="'Order '+ pendingCancelId +' will be marked as cancelled.'"
-    hint="This action cannot be undone."
-    confirm-text="Cancel Order"
-    loading-text="Cancelling..."
-    confirm-icon="fas fa-ban"
-    icon="fas fa-triangle-exclamation"
-    :loading="cancelling"
-    @confirm="confirmCancel"
-    @cancel="resetCancel"
-  />
+  
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import ConfirmModal from '@/components/common/ConfirmModal.vue'
+import { ref, computed, onMounted } from 'vue'
+import OrdersService from '@/services/ordersService'
 
 const activeStatus = ref('all')
-const orderStatuses = ref(['all', 'processing', 'shipped', 'delivered', 'cancelled'])
+const orders = ref([])
+const loading = ref(false)
 
-const orders = ref([
-  {
-    id: 'ORD-2024-001',
-    date: new Date('2024-01-15'),
-    status: 'delivered',
-    total: 116.97,
-    items: [
-      {
-        id: 1,
-        name: 'Attack on Titan Survey Corps Hoodie',
-        price: 45.99,
-        quantity: 2,
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
-      },
-      {
-        id: 2,
-        name: 'Marvel Avengers Logo T-Shirt',
-        price: 24.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop'
-      }
-    ]
-  },
-  {
-    id: 'ORD-2024-002',
-    date: new Date('2024-01-10'),
-    status: 'shipped',
-    total: 89.99,
-    items: [
-      {
-        id: 3,
-        name: 'League of Legends Championship Trophy Replica',
-        price: 89.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop'
-      }
-    ]
-  },
-  {
-    id: 'ORD-2024-003',
-    date: new Date('2024-01-05'),
-    status: 'processing',
-    total: 54.98,
-    items: [
-      {
-        id: 4,
-        name: 'K-Pop BTS Photocard Set',
-        price: 19.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop'
-      },
-      {
-        id: 5,
-        name: 'Studio Ghibli Totoro Plushie',
-        price: 34.99,
-        quantity: 1,
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
-      }
-    ]
+const normalizeOrder = (o) => {
+  const toNum = (v) => {
+    const n = typeof v === 'string' ? parseFloat(v) : v
+    return Number.isFinite(n) ? n : 0
   }
-])
+  const items = Array.isArray(o.products) ? o.products.map(p => ({
+    id: p.id,
+    name: p.product_name || p.name || `Product #${p.id}`,
+    price: toNum(p.price),
+    quantity: p.pivot?.quantity || 1,
+  image: p.image || p.images?.[0] || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+  })) : []
+  return {
+    id: o.id,
+    date: new Date(o.order_date || o.created_at || Date.now()),
+    status: o.status || 'pending',
+    total: toNum(o.total_amount),
+    items
+  }
+}
+
+const loadOrders = async () => {
+  loading.value = true
+  try {
+    const res = await OrdersService.myOrders()
+    const arr = res?.orders || res?.data?.orders || []
+    orders.value = arr.map(normalizeOrder)
+    // Initialize active status if not set
+    if (!orderStatuses.value.includes(activeStatus.value)) activeStatus.value = 'all'
+  } catch (e) {
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(loadOrders)
+
+const orderStatuses = computed(() => {
+  const set = new Set(orders.value.map(o => o.status).filter(Boolean))
+  return ['all', ...Array.from(set)]
+})
 
 const filteredOrders = computed(() => {
-  if (activeStatus.value === 'all') {
-    return orders.value
-  }
+  if (activeStatus.value === 'all') return orders.value
   return orders.value.filter(order => order.status === activeStatus.value)
 })
 
 const formatDate = (date) => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
+  try {
+    return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  } catch {
+    return ''
+  }
 }
 
 const getStatusColor = (status) => {
   const colors = {
+    pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     processing: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
     shipped: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
     delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
     cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
   }
   return colors[status] || 'bg-gray-100 text-gray-800'
-}
-
-const showCancel = ref(false)
-const pendingCancelId = ref(null)
-const cancelling = ref(false)
-const cancelOrder = (orderId) => { pendingCancelId.value = orderId; showCancel.value = true }
-function resetCancel(){ pendingCancelId.value = null }
-async function confirmCancel(){
-  if(!pendingCancelId.value) return
-  cancelling.value = true
-  try {
-    const order = orders.value.find(o => o.id === pendingCancelId.value)
-    if (order) order.status = 'cancelled'
-  } finally {
-    cancelling.value = false
-    showCancel.value = false
-    pendingCancelId.value = null
-  }
 }
 </script>
 

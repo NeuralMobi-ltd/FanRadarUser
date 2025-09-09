@@ -321,7 +321,13 @@
                   class="flex items-center gap-3 cursor-pointer flex-1 hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-lg p-2 -m-2 transition-colors"
                   @click="goToFandom(community)"
                 >
-                  <img :src="community.avatar" :alt="community.name" class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-200 dark:ring-primary-700" />
+                  <AvatarFallback
+                    :src="community.avatar"
+                    :alt="community.name"
+                    :firstName="(community.name || '').split(' ')[0]"
+                    :lastName="(community.name || '').split(' ').slice(1).join(' ')"
+                    class="w-10 h-10 rounded-full object-cover ring-2 ring-primary-200 dark:ring-primary-700"
+                  />
                   <div>
                     <p class="font-medium text-gray-900 dark:text-white">{{ community.name }}</p>
                     <p class="text-xs text-gray-600 dark:text-gray-400">{{ community.members }} {{ $t('common.members') }}</p>

@@ -1,285 +1,22 @@
 import { defineStore } from 'pinia'
-import StoreService from '@/services/storeService'
+import ProductsService from '@/services/productsService'
+import FavoritesService from '@/services/favoritesService'
+import API_CONFIG from '@/config/api'
+import RatingsService from '@/services/ratingsService'
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
-    products: [
-      {
-        id: 1,
-        name: 'Attack on Titan Survey Corps Hoodie',
-        category: 'Apparel',
-        brand: 'Anime Central',
-        price: 45.99,
-        originalPrice: 59.99,
-        discount: 23,
-        rating: 4.8,
-        reviews: 324,
-        stock: 15,
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-        isNew: false,
-        isWishlisted: false
-      },
-      {
-        id: 2,
-        name: 'Marvel Avengers Logo T-Shirt',
-        category: 'Apparel',
-        brand: 'Marvel Official',
-        price: 24.99,
-        rating: 4.6,
-        reviews: 512,
-        stock: 28,
-        image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop',
-        isNew: true,
-        isWishlisted: false
-      },
-      {
-        id: 3,
-        name: 'League of Legends Championship Trophy Replica',
-        category: 'Collectibles',
-        brand: 'Riot Games',
-        price: 89.99,
-        rating: 4.9,
-        reviews: 89,
-        stock: 7,
-        image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop',
-        isNew: false,
-        isWishlisted: true
-      },
-      {
-        id: 4,
-        name: 'K-Pop BTS Photocard Set',
-        category: 'Collectibles',
-        brand: 'Big Hit Music',
-        price: 19.99,
-        rating: 4.7,
-        reviews: 756,
-        stock: 42,
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&h=400&fit=crop',
-        isNew: true,
-        isWishlisted: false
-      },
-      {
-        id: 5,
-        name: 'Gaming Chair Supreme RGB',
-        category: 'Tech Gadgets',
-        brand: 'GamerHub',
-        price: 299.99,
-        originalPrice: 399.99,
-        discount: 25,
-        rating: 4.5,
-        reviews: 128,
-        stock: 12,
-        image: 'https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=400&h=400&fit=crop',
-        isNew: false,
-        isWishlisted: false
-      },
-      {
-        id: 6,
-        name: 'Anime Character Wall Poster Set',
-        category: 'Posters',
-        brand: 'AnimePrint',
-        price: 15.99,
-        rating: 4.4,
-        reviews: 89,
-        stock: 156,
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-        isNew: false,
-        isWishlisted: false
-      },
-      {
-        id: 7,
-        name: 'Marvel Comics Classic Collection',
-        category: 'Books',
-        brand: 'Marvel Comics',
-        price: 39.99,
-        rating: 4.9,
-        reviews: 234,
-        stock: 23,
-        image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop',
-        isNew: true,
-        isWishlisted: true
-      },
-      {
-        id: 8,
-        name: 'Mechanical Gaming Keyboard RGB',
-        category: 'Tech Gadgets',
-        brand: 'TechMaster',
-        price: 129.99,
-        originalPrice: 159.99,
-        discount: 19,
-        rating: 4.7,
-        reviews: 445,
-        stock: 34,
-        image: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?w=400&h=400&fit=crop',
-        isNew: false,
-        isWishlisted: false
-      },
-      // Search Results Products
-      {
-        id: 9,
-        name: 'Gaming Mechanical Keyboard RGB',
-        category: 'Electronics',
-        price: 129.99,
-        rating: 5,
-        reviews: 234,
-        image: 'https://images.unsplash.com/photo-1541140532154-b024d705b90a?w=400&h=400&fit=crop',
-        description: 'High-quality mechanical keyboard with RGB lighting',
-        isWishlisted: false,
-        brand: 'Razer',
-        stock: 25
-      },
-      {
-        id: 10,
-        name: 'Gaming Headset Pro Wireless',
-        category: 'Electronics',
-        price: 149.99,
-        rating: 5,
-        reviews: 567,
-        image: 'https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400&h=400&fit=crop',
-        description: 'Premium wireless gaming headset with 7.1 surround sound',
-        isWishlisted: false,
-        brand: 'SteelSeries',
-        stock: 18
-      },
-      {
-        id: 11,
-        name: 'Gaming Headset RGB Wired',
-        category: 'Electronics',
-        price: 89.99,
-        rating: 4,
-        reviews: 342,
-        image: 'https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400&h=400&fit=crop',
-        description: 'RGB gaming headset with crystal clear microphone',
-        isWishlisted: false,
-        brand: 'Razer',
-        stock: 12
-      },
-      {
-        id: 12,
-        name: 'Professional Gaming Headset',
-        category: 'Electronics',
-        price: 199.99,
-        rating: 5,
-        reviews: 423,
-        image: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400&h=400&fit=crop',
-        description: 'Professional esports gaming headset with noise cancellation',
-        isWishlisted: true,
-        brand: 'HyperX',
-        stock: 8
-      },
-      {
-        id: 13,
-        name: 'Anime Character Figure Collection',
-        category: 'Collectibles',
-        price: 34.99,
-        rating: 4,
-        reviews: 89,
-        image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop',
-        description: 'Premium quality anime figure with detailed craftsmanship',
-        isWishlisted: true,
-        brand: 'Good Smile',
-        stock: 15
-      },
-      {
-        id: 14,
-        name: 'Gaming Ergonomic Chair',
-        category: 'Home & Living',
-        price: 299.99,
-        rating: 5,
-        reviews: 156,
-        image: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=400&fit=crop',
-        description: 'Comfortable gaming chair with lumbar support',
-        isWishlisted: false,
-        brand: 'Secretlab',
-        stock: 5
-      },
-      {
-        id: 15,
-        name: 'Wireless Gaming Mouse',
-        category: 'Electronics',
-        price: 79.99,
-        rating: 4,
-        reviews: 178,
-        image: 'https://images.unsplash.com/photo-1527814050087-3793815479db?w=400&h=400&fit=crop',
-        description: 'High precision wireless gaming mouse',
-        isWishlisted: false,
-        brand: 'Corsair',
-        stock: 22
-      },
-      {
-        id: 16,
-        name: 'Gaming Headset Stand RGB',
-        category: 'Accessories',
-        price: 29.99,
-        rating: 4,
-        reviews: 89,
-        image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop',
-        description: 'RGB headset stand with USB charging ports',
-        isWishlisted: false,
-        brand: 'Corsair',
-        stock: 30
-      },
-      {
-        id: 17,
-        name: 'Band Merchandise T-Shirt',
-        category: 'Clothing',
-        price: 24.99,
-        rating: 4,
-        reviews: 67,
-        image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400&h=400&fit=crop',
-        description: 'Official band merchandise t-shirt',
-        isWishlisted: false,
-        brand: 'Official',
-        stock: 40
-      },
-      {
-        id: 18,
-        name: 'Gaming Monitor 144Hz',
-        category: 'Electronics',
-        price: 349.99,
-        rating: 5,
-        reviews: 234,
-        image: 'https://images.unsplash.com/photo-1593640408182-31c70c8268f5?w=400&h=400&fit=crop',
-        description: '27-inch gaming monitor with 144Hz refresh rate',
-        isWishlisted: false,
-        brand: 'ASUS',
-        stock: 7
-      },
-      {
-        id: 19,
-        name: 'Gaming Desk RGB LED',
-        category: 'Home & Living',
-        price: 189.99,
-        rating: 4,
-        reviews: 78,
-        image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop',
-        description: 'Gaming desk with built-in RGB LED lighting',
-        isWishlisted: false,
-        brand: 'IKEA Gaming',
-        stock: 10
-      },
-      {
-        id: 20,
-        name: 'Collectible Gaming Figurine',
-        category: 'Collectibles',
-        price: 45.99,
-        rating: 5,
-        reviews: 156,
-        image: 'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=400&h=400&fit=crop',
-        description: 'Limited edition gaming character figurine',
-        isWishlisted: false,
-        brand: 'Funko',
-        stock: 12
-      }
-    ],
+  products: [
+  ],
+  // Source of truth for wishlist
+  wishlistSet: new Set(),
     
     categories: [
-      'Apparel', 'Accessories', 'Home & Living', 'Tech Gadgets', 'Collectibles', 'Books', 'Posters', 'Electronics', 'Clothing'
+    
     ],
     
     brands: [
-      'Anime Central', 'Marvel Official', 'Riot Games', 'Big Hit Music', 'GamerHub', 'AnimePrint', 'Marvel Comics', 'TechMaster',
-      'Razer', 'SteelSeries', 'HyperX', 'Good Smile', 'Secretlab', 'Corsair', 'Official', 'ASUS', 'IKEA Gaming', 'Funko'
+      
     ],
     
     priceRanges: [
@@ -291,10 +28,7 @@ export const useProductsStore = defineStore('products', {
     ],
     
     ratings: [
-      { value: 4.5, label: '4.5 & Up' },
-      { value: 4.0, label: '4.0 & Up' },
-      { value: 3.5, label: '3.5 & Up' },
-      { value: 3.0, label: '3.0 & Up' }
+
     ]
   }),
   
@@ -330,60 +64,63 @@ export const useProductsStore = defineStore('products', {
   actions: {
     async loadProducts(params = {}) {
       try {
-        const res = await StoreService.products(params)
-        const payload = res?.data || res
-        this.products = (payload.products || payload.data?.products || []).map(p => ({
-          id: p.id,
-          name: p.name,
-          description: p.description,
-          category: p.category,
-          brand: p.brand,
-          price: p.price,
-          originalPrice: p.originalPrice,
-          discount: p.discount,
-          rating: p.rating,
-          reviews: p.reviews,
-          stock: p.stock,
-          image: p.image || p.images?.[0],
-          isNew: !!p.isNew,
-          isWishlisted: !!p.isWishlisted
+        // Fetch products and my wishlist in parallel when not using mocks
+        const [listRes, favRes] = await Promise.all([
+          ProductsService.list(params),
+          API_CONFIG.useMocks ? Promise.resolve({ products: [] }) : ProductsService.myFavoriteProducts({ page: 1, limit: 1000 })
+        ])
+
+        const favorites = (favRes?.products || []).map(p => p.id)
+        this.wishlistSet = new Set(favorites)
+
+        const backendProducts = (listRes?.products || []).map(p => ({
+          ...p,
+          isWishlisted: this.wishlistSet.has(p.id)
         }))
+
+        // Merge backend products with existing mock products (backend products first)
+        // Remove any mock products that have the same ID as backend products to avoid duplicates
+        const existingProducts = this.products.filter(mockProduct => 
+          !backendProducts.some(backendProduct => backendProduct.id === mockProduct.id)
+        )
+        
+        this.products = [...backendProducts, ...existingProducts]
+
+        await this.loadCategories()
+        await this.loadBrands()
       } catch (e) {
-        // keep mock
+        // keep mock products on error
+        console.warn('Failed to load products from backend, using mock data:', e)
       }
     },
 
     async loadCategories() {
       try {
-        const res = await StoreService.categories()
-        const payload = res?.data || res
-        this.categories = (payload.categories || payload.data?.categories || []).map(c => c.name || c)
+        // If backend has categories endpoint; otherwise derive from products
+        if (API_CONFIG.store?.categories) {
+          // Reuse storeService if desired; otherwise derive categories
+          // Derive categories to avoid extra call when not necessary
+          const set = new Set(this.products.map(p => p.category).filter(Boolean))
+          this.categories = Array.from(set)
+        }
       } catch (e) {
         // keep mock
       }
     },
 
-    async loadBrands() {
+  async loadBrands() {
       try {
-        const res = await StoreService.brands()
-        const payload = res?.data || res
-        this.brands = (payload.brands || payload.data?.brands || []).map(b => b.name || b)
+    const set = new Set(this.products.map(p => p.brand).filter(Boolean))
+    this.brands = Array.from(set)
       } catch (e) {
         // keep mock
       }
     },
 
-    async searchProductsApi(query) {
+  async searchProductsApi(query) {
       try {
-        const res = await StoreService.search(query)
-        const payload = res?.data || res
-        return (payload.products || payload.data?.products || []).map(p => ({
-          id: p.id,
-          name: p.name,
-          price: p.price,
-          image: p.image,
-          rating: p.rating
-        }))
+    const { products } = await ProductsService.list({ q: query })
+    return (products || []).map(p => ({ id: p.id, name: p.name, price: p.price, image: p.image, rating: p.rating }))
       } catch (e) {
         return []
       }
@@ -391,16 +128,50 @@ export const useProductsStore = defineStore('products', {
 
     async addToCartApi(payload) {
       try {
-        return await StoreService.addToCart(payload)
+        // Placeholder: cart not implemented here
+        return { success: true }
       } catch (e) {
         return { success: false }
       }
     },
 
-    toggleWishlist(productId) {
+    // Wishlist toggle with backend
+    async toggleWishlist(productId) {
       const product = this.products.find(p => p.id === productId)
-      if (product) {
-        product.isWishlisted = !product.isWishlisted
+      if (!product) return
+
+      const currentlyWishlisted = this.wishlistSet.has(productId)
+      // Optimistic UI: toggle flag immediately
+      product.isWishlisted = !currentlyWishlisted
+      if (currentlyWishlisted) this.wishlistSet.delete(productId)
+      else this.wishlistSet.add(productId)
+
+      try {
+        if (currentlyWishlisted) await FavoritesService.unfavoriteProduct(productId)
+        else await FavoritesService.favoriteProduct(productId)
+      } catch (e) {
+        // Revert on failure
+        if (currentlyWishlisted) this.wishlistSet.add(productId)
+        else this.wishlistSet.delete(productId)
+        product.isWishlisted = currentlyWishlisted
+      }
+    },
+
+    async rateProduct(productId, evaluation, commentaire) {
+      const product = this.products.find(p => p.id === productId)
+      if (!product) return { success: false }
+      try {
+        const res = await RatingsService.rateProduct({ rateable_id: productId, evaluation, commentaire })
+        const stats = res?.data?.statistics
+        if (stats) {
+          // Normalize into product fields
+          // Use rating (average) and reviews (count) if present
+          product.rating = Number(stats.average_rating ?? product.rating ?? 0)
+          product.reviews = Number(stats.total_ratings ?? product.reviews ?? 0)
+        }
+        return res
+      } catch (e) {
+        return { success: false, error: e?.message || 'Failed to rate product' }
       }
     },
     
@@ -431,12 +202,7 @@ export const useProductsStore = defineStore('products', {
       }
     },
 
-    toggleWishlist(productId) {
-      const product = this.products.find(p => p.id === productId)
-      if (product) {
-        product.isWishlisted = !product.isWishlisted
-      }
-    },
+  // duplicate removed above
     
     deleteProduct(productId) {
       this.products = this.products.filter(p => p.id !== productId)

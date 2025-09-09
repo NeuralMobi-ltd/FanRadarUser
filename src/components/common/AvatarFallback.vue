@@ -1,21 +1,19 @@
 <template>
 	<div :class="wrapperClass" :style="wrapperStyle" :title="alt || fullName">
 		<img
-			v-if="src"
-			:src="src"
+			:src="safeSrc"
 			:alt="alt || fullName"
 			class="w-full h-full object-cover rounded-full"
 			@error="onImgError"
 		/>
-		<div v-else class="w-full h-full rounded-full flex items-center justify-center font-semibold" :class="fallbackBg">
-			<span>{{ initials }}</span>
-		</div>
 	</div>
-  
+
 </template>
 
 <script setup>
 import { computed, ref } from 'vue'
+
+const FALLBACK_URL = 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
 
 const props = defineProps({
 	src: { type: String, default: '' },
@@ -50,9 +48,20 @@ const initials = computed(() => {
 const dimension = computed(() => typeof props.size === 'number' ? `${props.size}px` : props.size)
 const wrapperStyle = computed(() => ({ width: dimension.value, height: dimension.value }))
 const wrapperClass = computed(() => `inline-block rounded-full overflow-hidden bg-gray-200 text-gray-700 ${props.customClass}`)
+// Keep for potential future styling when using text fallback again
 const fallbackBg = computed(() => 'bg-gradient-to-br from-gray-100 to-gray-200 text-gray-600 dark:from-gray-700 dark:to-gray-800 dark:text-gray-200')
 
-function onImgError() {
+const safeSrc = computed(() => {
+	const v = (props.src || '').trim()
+	if (!v) return FALLBACK_URL
+	return v
+})
+
+function onImgError(e) {
+	try {
+		const img = e?.target
+		if (img && img.src !== FALLBACK_URL) img.src = FALLBACK_URL
+	} catch (_) {}
 	hasImage.value = false
 }
 </script>

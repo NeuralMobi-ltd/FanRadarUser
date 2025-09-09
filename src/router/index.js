@@ -123,6 +123,12 @@ const routes = [
     meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.orderDetails', showBottomNav: true }
   },
   {
+    path: '/favorites',
+    name: 'Favorites',
+    component: () => import('@/views/store/Favorites.vue'),
+    meta: { requiresAuth: true, layout: 'store', titleKey: 'routes.favorites', showBottomNav: true }
+  },
+  {
     path: '/create-fandom',
     name: 'CreateFandom',
     component: () => import('@/views/fandom/CreateFandom.vue'),

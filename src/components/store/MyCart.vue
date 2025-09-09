@@ -90,63 +90,47 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCartStore } from '@/store/cart'
+import OrdersService from '@/services/ordersService'
+import notify from '@/utils/notify'
 
 const router = useRouter()
+const cart = useCartStore()
+const placing = ref(false)
 
-const cartItems = ref([
-  {
-    id: 1,
-    name: 'Attack on Titan Survey Corps Hoodie',
-    category: 'Apparel',
-    price: 45.99,
-    originalPrice: 59.99,
-    quantity: 2,
-    image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=400&fit=crop'
-  },
-  {
-    id: 2,
-    name: 'Marvel Avengers Logo T-Shirt',
-    category: 'Apparel',
-    price: 24.99,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1635805737707-575885ab0820?w=400&h=400&fit=crop'
-  },
-  {
-    id: 3,
-    name: 'League of Legends Championship Trophy Replica',
-    category: 'Collectibles',
-    price: 89.99,
-    quantity: 1,
-    image: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=400&fit=crop'
-  }
-])
-
-const subtotal = computed(() => {
-  return cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-})
-
+const cartItems = computed(() => cart.items)
+const subtotal = computed(() => cart.totalPrice)
 const tax = computed(() => subtotal.value * 0.08)
 const total = computed(() => subtotal.value + tax.value)
 
 const updateQuantity = (itemId, newQuantity) => {
-  if (newQuantity < 1) {
-    removeItem(itemId)
-    return
-  }
-  const item = cartItems.value.find(item => item.id === itemId)
-  if (item) {
-    item.quantity = newQuantity
-  }
+  if (newQuantity < 1) return removeItem(itemId)
+  cart.updateQuantity(itemId, newQuantity)
 }
 
 const removeItem = (itemId) => {
-  cartItems.value = cartItems.value.filter(item => item.id !== itemId)
+  cart.removeItem(itemId)
 }
 
-const proceedToCheckout = () => {
-  console.log('Proceeding to checkout...')
-  // Add checkout logic here
+const proceedToCheckout = async () => {
+  if (cartItems.value.length === 0) return
+  placing.value = true
+  try {
+    const payload = {
+      status: 'pending',
+      order_date: new Date().toISOString().slice(0, 10),
+      products: cartItems.value.map(i => ({ product_id: i.id, quantity: i.quantity }))
+    }
+    await OrdersService.create(payload)
+    notify.success('Order placed')
+    cart.clearCart()
+    router.push('/orders')
+  } catch (e) {
+    notify.error('Checkout failed')
+  } finally {
+    placing.value = false
+  }
 }
 </script>
