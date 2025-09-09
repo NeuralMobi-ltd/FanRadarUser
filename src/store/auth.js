@@ -274,6 +274,12 @@ export const useAuthStore = defineStore('auth', {
         const payload = res?.data || res
         const token = payload.token || payload?.data?.token
         const apiUser = payload.user || payload?.data?.user
+        const requiresOtp = payload.requires_otp || payload?.data?.requires_otp
+
+        // If OTP is required, don't set token/user yet
+        if (requiresOtp) {
+          return { success: false, requiresOtp: true, message: 'OTP verification required' }
+        }
 
   if (token) this.setToken(token)
         this.user = this.mapApiUserToState(apiUser)
@@ -321,6 +327,84 @@ export const useAuthStore = defineStore('auth', {
         return { success: true, user: this.user, token }
       } catch (e) {
         this.setError(e?.response?.data?.message || 'Registration failed')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    // Verify OTP for registration, login, or password reset
+    async verifyOtp(payload) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.verifyOtp(payload)
+        const response = res?.data || res
+        
+        // If verification includes authentication (login/signup), set token and user
+        if (response.token) {
+          this.setToken(response.token)
+        }
+        if (response.user) {
+          this.user = this.mapApiUserToState(response.user)
+          const serialized = JSON.stringify(this.user)
+          localStorage.setItem('user', serialized)
+          setCookie('auth_user', serialized, 30)
+        }
+        
+        return { 
+          success: true, 
+          user: this.user, 
+          token: response.token,
+          reset_token: response.reset_token // For password reset flow
+        }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'OTP verification failed')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    // Resend OTP code
+    async resendOtp(payload) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.resendOtp(payload)
+        return { success: true, data: res?.data || res }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'Failed to resend OTP')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    // Send OTP for password reset
+    async sendPasswordResetOtp(email) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.sendPasswordResetOtp(email)
+        return { success: true, data: res?.data || res }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'Failed to send reset code')
+        return { success: false, error: this.error }
+      } finally {
+        this.setLoading(false)
+      }
+    },
+
+    // Reset password with token
+    async resetPassword(payload) {
+      this.setLoading(true)
+      this.clearError()
+      try {
+        const res = await AuthService.resetPassword(payload)
+        return { success: true, data: res?.data || res }
+      } catch (e) {
+        this.setError(e?.response?.data?.message || 'Password reset failed')
         return { success: false, error: this.error }
       } finally {
         this.setLoading(false)

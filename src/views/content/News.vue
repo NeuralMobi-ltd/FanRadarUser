@@ -66,7 +66,7 @@
               <div class="flex items-center mb-2 text-xs">
                 <span class="text-white/80">{{ news.source || $t('common.breakingNews') }}</span>
                 <span class="mx-2 text-white/60">•</span>
-                <span class="text-white/80">{{ news.timeAgo || news.date || 'Just now' }}</span>
+                <span class="text-white/80">{{ formatTimeAgo(news.date || news.timeAgo) }}</span>
               </div>
               
               <h3 class="font-bold text-sm text-white mb-2 line-clamp-2">
@@ -77,19 +77,10 @@
                 {{ news.summary || news.description || 'Breaking news update available.' }}
               </p>
               
-              <div class="flex items-center justify-between text-xs text-white/70">
-                <div class="flex items-center gap-2">
-                  <span>{{ news.views || '5.2K' }} {{ $t('common.views') }}</span>
-                  <span>{{ news.readTime || news.readingTime || '2' }} {{ $t('common.read') }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <button class="hover:text-white transition-colors">
-                    <i class="fas fa-heart"></i>
-                  </button>
-                  <button class="hover:text-white transition-colors">
-                    <i class="fas fa-share"></i>
-                  </button>
-                </div>
+              <div class="flex items-center text-xs text-white/70">
+                <span>{{ news.views || '5.2K' }} {{ $t('common.views') }}</span>
+                <span class="mx-2">•</span>
+                <span>{{ news.readTime || news.readingTime || '2' }} {{ $t('common.read') }}</span>
               </div>
             </div>
           </div>
@@ -130,24 +121,45 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useNewsStore } from '@/store/news'
 import { NewsPost } from '@/components/feed'
 
 const newsStore = useNewsStore()
+const { locale } = useI18n()
 
 const selectedCategory = ref('all')
 const sortBy = ref('recent')
-const loadingMore = ref(false)
-const hasMoreNews = ref(true)
+const loadingMore = computed(() => newsStore.loading)
+const hasMoreNews = computed(() => newsStore.hasMore)
 
 // Get news data from store
-const allNews = computed(() => [
-  ...newsStore.newsItems,
-  ...Object.values(newsStore.categoryNews).flat()
-])
+const allNews = computed(() => newsStore.newsItems)
 
 const breakingNews = computed(() => newsStore.breakingNews)
+
+// Helper function to format date to concise "time ago" (e.g., 2h, 5m, 1d)
+const formatTimeAgo = (date) => {
+  if (!date) return '2h'
+  if (typeof date === 'string') {
+    if (date.includes('ago')) {
+      const match = date.match(/(\d+)([hmd])/)
+      if (match) return `${match[1]}${match[2]}`
+    }
+    if (/[hmd]/.test(date)) return date.replace(' ago', '')
+    return date
+  }
+  const now = new Date()
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '2h'
+  const mins = Math.floor((now - d) / 60000)
+  if (mins < 1) return '1m'
+  if (mins < 60) return `${mins}m`
+  if (mins < 1440) return `${Math.floor(mins / 60)}h`
+  if (mins < 10080) return `${Math.floor(mins / 1440)}d`
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
 
 // Filter news based on selected category and sort
 const filteredNews = computed(() => {
@@ -183,18 +195,28 @@ const filteredNews = computed(() => {
   })
 })
 
-const loadMoreNews = () => {
-  loadingMore.value = true
-  // Simulate loading delay
-  setTimeout(() => {
-    loadingMore.value = false
-    // In a real app, you would fetch more news here
-    console.log('Loading more news...')
-  }, 1000)
+const loadMoreNews = async () => {
+  await newsStore.loadMore()
 }
 
 onMounted(() => {
-  console.log('News page mounted')
+  if (!newsStore.newsItems.length) {
+    // Fetch latest news using current language from i18n
+    newsStore.fetchNews({ language: locale.value }).catch(() => {})
+  }
+})
+
+// Refetch when category selection changes (excluding client-only 'breaking' and 'all')
+watch(selectedCategory, (val) => {
+  if (val === 'all') {
+    newsStore.fetchNews({ language: locale.value }).catch(() => {})
+  } else if (val === 'breaking') {
+    // Keep current list; UI shows breaking subset
+    // Optionally could fetch with category 'top'
+    newsStore.fetchNews({ language: locale.value, category: 'top' }).catch(() => {})
+  } else {
+    newsStore.fetchNews({ language: locale.value, category: val }).catch(() => {})
+  }
 })
 </script>
 

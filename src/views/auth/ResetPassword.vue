@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen relative flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 via-white to-sky-100 dark:from-gray-900 dark:via-slate-900 dark:to-blue-950">
-    <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.18),transparent_60%),radial-gradient(circle_at_70%_80%,rgba(14,165,233,0.25),transparent_65%)]"></div>
+    <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_25%_25%,rgba(59,130,246,0.18),transparent_60%),radial-gradient(circle_at_75%_75%,rgba(14,165,233,0.25),transparent_65%)]"></div>
     <div class="w-full max-w-md relative group">
       <div class="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-blue-500/40 via-blue-400/40 to-sky-400/40 opacity-40 blur transition group-hover:opacity-70 dark:opacity-60 dark:group-hover:opacity-90"></div>
       <div class="relative rounded-3xl overflow-hidden shadow-xl dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.55)] border border-blue-100/60 dark:border-white/5 bg-white/95 supports-[backdrop-filter]:bg-white/90 dark:bg-gray-800/70 backdrop-blur-xl">
@@ -13,8 +13,8 @@
               </svg>
             </div>
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Reset Password</h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter your email to receive a reset code</p>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Create New Password</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter your new password</p>
         </div>
         
         <div class="px-8 pb-10 pt-6">
@@ -38,34 +38,85 @@
             </div>
           </div>
 
-          <form @submit.prevent="onSendResetCode">
+          <form @submit.prevent="onResetPassword">
             <div class="space-y-6">
               <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
-                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
-                  Email Address
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
+                  New Password
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                   </div>
                   <input 
-                    v-model="email" 
-                    id="email" 
-                    type="email" 
+                    v-model="password" 
+                    id="password" 
+                    :type="showPassword ? 'text' : 'password'" 
                     required 
                     :disabled="loading"
-                    class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-                    placeholder="Enter your email address"
+                    class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                    placeholder="Enter new password"
+                    minlength="8"
                   />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    @click="showPassword = !showPassword"
+                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    tabindex="-1"
+                  >
+                    <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
+                  </button>
                 </div>
+              </div>
+
+              <div class="space-y-2 animate-[fadeIn_0.65s_ease]">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="confirmPassword">
+                  Confirm Password
+                </label>
+                <div class="relative">
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input 
+                    v-model="confirmPassword" 
+                    id="confirmPassword" 
+                    :type="showConfirmPassword ? 'text' : 'password'" 
+                    required 
+                    :disabled="loading"
+                    class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
+                    placeholder="Confirm new password"
+                    minlength="8"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    @click="showConfirmPassword = !showConfirmPassword"
+                    :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+                    tabindex="-1"
+                  >
+                    <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Password requirements -->
+              <div class="text-sm text-gray-600 dark:text-gray-400 animate-[fadeIn_0.7s_ease]">
+                <p class="mb-2 font-medium">Password requirements:</p>
+                <ul class="list-disc list-inside space-y-1 text-xs">
+                  <li>At least 8 characters long</li>
+                  <li>Passwords must match</li>
+                </ul>
               </div>
             </div>
             
             <button 
               type="submit" 
-              :disabled="loading || !email"
+              :disabled="loading || !password || !confirmPassword || password !== confirmPassword"
               class="w-full mt-8 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
             >
               <span v-if="loading" class="mr-3">
@@ -74,7 +125,7 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
-              {{ loading ? 'Sending...' : 'Send Reset Code' }}
+              {{ loading ? 'Resetting...' : 'Reset Password' }}
             </button>
           </form>
           
@@ -94,23 +145,46 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 const router = useRouter()
+const route = useRoute()
 const authStore = useAuthStore()
 
 // Reactive data
-const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const showPassword = ref(false)
+const showConfirmPassword = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 
-async function onSendResetCode() {
-  if (!email.value) {
-    errorMessage.value = 'Please enter your email address'
+// Get props from route query
+const email = ref(route.query.email || '')
+const resetToken = ref(route.query.token || '')
+
+async function onResetPassword() {
+  if (!password.value || !confirmPassword.value) {
+    errorMessage.value = 'Please fill in all fields'
+    return
+  }
+
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match'
+    return
+  }
+
+  if (password.value.length < 8) {
+    errorMessage.value = 'Password must be at least 8 characters long'
+    return
+  }
+
+  if (!email.value || !resetToken.value) {
+    errorMessage.value = 'Invalid reset link. Please request a new password reset.'
     return
   }
 
@@ -119,29 +193,33 @@ async function onSendResetCode() {
   successMessage.value = ''
 
   try {
-    const result = await authStore.sendPasswordResetOtp(email.value)
+    const result = await authStore.resetPassword({
+      email: email.value,
+      token: resetToken.value,
+      password: password.value,
+      password_confirmation: confirmPassword.value
+    })
 
     if (result.success) {
-      successMessage.value = 'Reset code sent to your email!'
+      successMessage.value = 'Password reset successfully!'
       
-      // Redirect to OTP verification after a short delay
+      // Redirect to login after a short delay
       setTimeout(() => {
-        router.push({
-          name: 'OtpVerification',
-          query: {
-            email: email.value,
-            type: 'password-reset'
-          }
-        })
+        router.push('/login')
       }, 2000)
     } else {
-      errorMessage.value = result.error || 'Failed to send reset code'
+      errorMessage.value = result.error || 'Failed to reset password'
     }
   } catch (error) {
-    errorMessage.value = error.message || 'Failed to send reset code'
+    errorMessage.value = error.message || 'Failed to reset password'
   } finally {
     loading.value = false
   }
+}
+
+// Redirect if no email or token provided
+if (!email.value || !resetToken.value) {
+  router.push('/forgot-password')
 }
 </script>
 

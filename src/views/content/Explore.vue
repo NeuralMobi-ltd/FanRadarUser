@@ -100,7 +100,7 @@
                 <h3 class="font-bold text-gray-900 dark:text-white text-sm sm:text-lg mb-2 line-clamp-2 leading-tight">{{ news.title }}</h3>
                 <p class="text-gray-600 dark:text-gray-300 text-xs sm:text-sm mb-3 line-clamp-2 leading-relaxed">{{ news.description }}</p>
                 <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                  <span>{{ news.timeAgo || news.date }}</span>
+                  <span>{{ formatTimeAgo(news.date || news.timeAgo) }}</span>
                   <span>{{ news.views }} {{ $t('common.views') }}</span>
                 </div>
               </div>
@@ -115,11 +115,13 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useNewsStore } from '@/store/news'
 import { useTrendsStore } from '@/store/trends'
 import { useCategoriesStore } from '@/store/categories'
 
 const router = useRouter()
+const { locale } = useI18n()
 const newsStore = useNewsStore()
 const trendsStore = useTrendsStore()
 const categoriesStore = useCategoriesStore()
@@ -131,11 +133,37 @@ const trendingHashtags = computed(() => trendsStore.trendingHashtags)
 const allCategories = computed(() => categoriesStore.getCategories || [])
 const popularCategories = computed(() => (allCategories.value || []).slice(0, 12))
 
+// Helper function to format date to concise "time ago" (e.g., 2h, 5m, 1d)
+const formatTimeAgo = (date) => {
+  if (!date) return '2h'
+  if (typeof date === 'string') {
+    if (date.includes('ago')) {
+      const match = date.match(/(\d+)([hmd])/)
+      if (match) return `${match[1]}${match[2]}`
+    }
+    if (/[hmd]/.test(date)) return date.replace(' ago', '')
+    return date
+  }
+  const now = new Date()
+  const d = new Date(date)
+  if (isNaN(d.getTime())) return '2h'
+  const mins = Math.floor((now - d) / 60000)
+  if (mins < 1) return '1m'
+  if (mins < 60) return `${mins}m`
+  if (mins < 1440) return `${Math.floor(mins / 60)}h`
+  if (mins < 10080) return `${Math.floor(mins / 1440)}d`
+  return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
+
 onMounted(() => {
   // Load from backend when available; falls back to seeded state on error
   trendsStore.fetchTrendingHashtags?.(10)
   trendsStore.fetchTrendingFandoms?.(10)
   categoriesStore.fetchCategoriesIfNeeded?.()
+  if (!newsStore.newsItems?.length) {
+    // Fetch latest news using current language from i18n
+    newsStore.fetchNews({ language: locale.value }).catch(() => {})
+  }
 })
 
 const navigateToCategory = (categoryName) => {

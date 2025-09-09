@@ -202,7 +202,15 @@ function onSignUp() {
     birth_date: birth_date.value,
     gender: gender.value
   })
-  router.push('/choose-categories')
+  
+  // Redirect to OTP verification
+  router.push({
+    name: 'OtpVerification',
+    query: {
+      email: email.value,
+      type: 'signup'
+    }
+  })
 }
 
 </script>

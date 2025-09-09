@@ -1,7 +1,8 @@
 <template>
   <div v-if="article" 
        class="group bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md border border-gray-100 dark:border-gray-700 transition-all duration-300 cursor-pointer min-h-36 min-w-64"
-       :style="cardStyle">
+       :style="cardStyle"
+       @click="openLink">
     <!-- Horizontal Layout: Image left, Content right -->
     <div class="flex gap-4 p-4 h-full">
       <!-- Left: Image with overlays -->
@@ -50,36 +51,14 @@
           {{ article.summary || article.description || 'No description available.' }}
         </p>
         
-        <!-- Stats row -->
-        <div class="mt-auto flex items-center justify-between">
-          <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <!-- Views -->
-            <div class="flex items-center gap-1">
-              <svg class="w-4 h-4 opacity-70" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/>
-              </svg>
-              <span class="font-medium">{{ formatNumber(article.views) }}</span>
-            </div>
-            <!-- Comments -->
-            <div class="flex items-center gap-1">
-              <svg class="w-4 h-4 opacity-70" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7z" clip-rule="evenodd" />
-              </svg>
-              <span class="font-medium">{{ formatNumber(article.comments) }}</span>
-            </div>
-          </div>
-
-          <!-- Like -->
-          <button 
-            @click.stop="toggleLike"
-            class="inline-flex items-center gap-1 text-sm transition-colors duration-200"
-            :class="article.isLiked ? 'text-red-500' : 'text-gray-400 hover:text-red-500'"
-          >
-            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+        <!-- Views display -->
+        <div class="mt-auto flex items-center text-sm text-gray-600 dark:text-gray-400">
+          <div class="flex items-center gap-1">
+            <svg class="w-4 h-4 opacity-70" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 3C5 3 1.73 7.11 1 10c.73 2.89 4 7 9 7s8.27-4.11 9-7c-.73-2.89-4-7-9-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/>
             </svg>
-            <span class="font-medium">{{ formatNumber(article.likes) }}</span>
-          </button>
+            <span class="font-medium">{{ formatNumber(article.views) }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -97,17 +76,13 @@
 </template>
 
 <script setup>
-import { defineEmits, computed } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
   article: {
     type: Object,
     required: false,
     default: () => ({})
-  },
-  highlightTerm: {
-    type: String,
-    default: ''
   },
   // Optional sizing overrides (e.g., '18rem', '280px')
   cardWidth: {
@@ -120,7 +95,6 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['click:like', 'click:share'])
 
 const cardStyle = computed(() => {
   const s = {}
@@ -140,6 +114,7 @@ const formatNumber = (num) => {
   if (num >= 1000) return (num / 1000).toFixed(1) + 'K'
   return num.toString()
 }
+
 
 // Helper function to format date to concise "time ago" (e.g., 2h, 5m, 1d)
 const formatTimeAgo = (date) => {
@@ -165,28 +140,14 @@ const formatTimeAgo = (date) => {
 
 const formattedDate = computed(() => formatTimeAgo(props.article.date || props.article.timeAgo))
 
-const toggleLike = () => {
-  if (props.article) {
-    props.article.isLiked = !props.article.isLiked
-    emit('click:like', props.article)
-  }
-}
 
-const shareArticle = () => {
-  emit('click:share', props.article)
-  console.log('Sharing article:', props.article?.title)
+function openLink() {
+  const href = props.article?.link
+  if (href) window.open(href, '_blank', 'noopener')
 }
 </script>
 
 <style scoped>
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;

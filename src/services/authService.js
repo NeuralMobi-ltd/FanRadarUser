@@ -93,6 +93,52 @@ export const AuthService = {
       // Even if backend logout fails, proceed to clear client session
       return { success: false, error: e?.response?.data || e.message }
     }
+  },
+  
+  async verifyOtp(payload) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      // Mock successful verification
+      return {
+        success: true,
+        token: 'mock-token-' + Date.now(),
+        user: {
+          id: 1,
+          username: 'user',
+          email: payload.email,
+          verified: true
+        }
+      }
+    }
+    const { data } = await http.post(API_CONFIG.auth.verifyOtp || '/api/Y/auth/verify-otp', payload)
+    return data
+  },
+  
+  async resendOtp(payload) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'OTP sent successfully' }
+    }
+    const { data } = await http.post(API_CONFIG.auth.resendOtp || '/api/Y/auth/resend-otp', payload)
+    return data
+  },
+  
+  async sendPasswordResetOtp(email) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'Reset code sent to your email' }
+    }
+    const { data } = await http.post(API_CONFIG.auth.sendPasswordResetOtp || '/api/Y/auth/send-reset-otp', { email })
+    return data
+  },
+  
+  async resetPassword(payload) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'Password reset successfully' }
+    }
+    const { data } = await http.post(API_CONFIG.auth.resetPassword || '/api/Y/auth/reset-password', payload)
+    return data
   }
 }
 

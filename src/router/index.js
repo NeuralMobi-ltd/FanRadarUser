@@ -157,6 +157,24 @@ const routes = [
     name: 'ChooseCategories',
     component: () => import('@/views/auth/ChooseCategories.vue'),
     meta: { requiresAuth: false, titleKey: 'routes.chooseCategories', showBottomNav: false }
+  },
+  {
+    path: '/verify-otp',
+    name: 'OtpVerification',
+    component: () => import('@/views/auth/OtpVerification.vue'),
+    meta: { requiresAuth: false, titleKey: 'routes.otpVerification', showBottomNav: false }
+  },
+  {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/auth/ForgotPassword.vue'),
+    meta: { requiresAuth: false, titleKey: 'routes.forgotPassword', showBottomNav: false }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('@/views/auth/ResetPassword.vue'),
+    meta: { requiresAuth: false, titleKey: 'routes.resetPassword', showBottomNav: false }
   }
 ]
 
@@ -196,7 +214,7 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // Allow access to auth pages for non-authenticated users
-  if (['/login', '/signup', '/choose-categories'].includes(to.path)) {
+  if (['/login', '/signup', '/choose-categories', '/verify-otp', '/forgot-password', '/reset-password'].includes(to.path)) {
     next()
     return
   }

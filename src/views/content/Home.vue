@@ -192,9 +192,9 @@
             <router-link to="/news" class="text-blue-500 text-xs sm:text-sm hover:text-blue-600 transition-colors touch-button">{{ $t('common.showMore') }}</router-link>
           </div>
           <!-- Natural height container for news scrolling -->
-          <div class="overflow-hidden ">
-            <div class="overflow-x-auto overflow-y-hidden scrollbar-hide mask-edges-x snap-x snap-mandatory pb-3 sm:pb-4 -mx-3 sm:-mx-4 px-3 sm:px-4">
-              <div class="flex gap-2 sm:gap-3 lg:gap-4" style="width: max-content;">
+          <div class="overflow-hidden">
+            <div class="overflow-x-auto overflow-y-hidden scrollbar-hide snap-x snap-mandatory pb-3 sm:pb-4">
+              <div class="flex gap-2 sm:gap-3 lg:gap-4 pl-4 pr-4" style="width: max-content;">
                 <NewsPost 
                   v-for="news in newsItems" 
                   :key="news.id" 

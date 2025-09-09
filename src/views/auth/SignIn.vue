@@ -139,13 +139,22 @@ async function onSignIn() {
   errorMessage.value = ''
   
   try {
-    const { success, error } = await authStore.login({
+    const { success, error, requiresOtp } = await authStore.login({
       email: email.value,
       password: password.value
     })
     
     if (success) {
       router.push('/')
+    } else if (requiresOtp) {
+      // Redirect to OTP verification
+      router.push({
+        name: 'OtpVerification',
+        query: {
+          email: email.value,
+          type: 'login'
+        }
+      })
     } else {
       errorMessage.value = error || authStore.error || t('auth.signIn.errors.loginFailed')
     }

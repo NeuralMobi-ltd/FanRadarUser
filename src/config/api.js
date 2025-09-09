@@ -20,7 +20,12 @@ export const API_CONFIG = {
     profile: '/Y/users/profile',
     updateProfile: '/Y/users/profile',
     updateAvatar: '/Y/users/profile',
-    updateCover: '/Y/users/profile'
+    updateCover: '/Y/users/profile',
+    // OTP endpoints
+    verifyOtp: '/Y/auth/verify-otp',
+    resendOtp: '/Y/auth/resend-otp',
+    sendPasswordResetOtp: '/Y/auth/send-reset-otp',
+    resetPassword: '/Y/auth/reset-password'
   },
 
   // Users

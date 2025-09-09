@@ -103,11 +103,15 @@ const messages = {
       cart: 'Cart',
       orders: 'Orders',
       orderDetails: 'Order Details',
+      favorites: 'Favorites',
       createFandom: 'Create Fandom',
       fandomDetail: 'Fandom',
       signIn: 'Sign In',
       signUp: 'Sign Up',
-      chooseCategories: 'Choose Categories'
+      chooseCategories: 'Choose Categories',
+      otpVerification: 'Verify Account',
+      forgotPassword: 'Forgot Password',
+      resetPassword: 'Reset Password'
     },
     auth: {
       signIn: {
@@ -158,6 +162,63 @@ const messages = {
         continue: 'Continue',
         selectMore: 'Select {count} more to continue',
         greatChoices: 'Great choices! Ready to go'
+      },
+      otpVerification: {
+        title: 'Verify Your Account',
+        subtitle: 'Enter the verification code sent to',
+        codeLabel: 'Verification Code',
+        resendCode: 'Resend Code',
+        resending: 'Resending...',
+        verifying: 'Verifying...',
+        verifyCode: 'Verify Code',
+        codeExpires: 'Code expires in',
+        didntReceive: "Didn't receive the code?",
+        usesDifferentEmail: 'Want to use a different email?',
+        goBack: 'Go back',
+        errors: {
+          completeCode: 'Please enter the complete verification code',
+          invalidCode: 'Invalid verification code',
+          verificationFailed: 'Verification failed. Please try again.'
+        },
+        success: 'Verification successful!'
+      },
+      forgotPassword: {
+        title: 'Reset Password',
+        subtitle: 'Enter your email to receive a reset code',
+        emailLabel: 'Email Address',
+        emailPlaceholder: 'Enter your email address',
+        sendCode: 'Send Reset Code',
+        sending: 'Sending...',
+        rememberPassword: 'Remember your password?',
+        signInLink: 'Sign in',
+        success: 'Reset code sent to your email!',
+        errors: {
+          enterEmail: 'Please enter your email address',
+          sendFailed: 'Failed to send reset code'
+        }
+      },
+      resetPassword: {
+        title: 'Create New Password',
+        subtitle: 'Enter your new password',
+        passwordLabel: 'New Password',
+        passwordPlaceholder: 'Enter new password',
+        confirmPasswordLabel: 'Confirm Password',
+        confirmPasswordPlaceholder: 'Confirm new password',
+        requirements: 'Password requirements:',
+        requirementLength: 'At least 8 characters long',
+        requirementMatch: 'Passwords must match',
+        resetPassword: 'Reset Password',
+        resetting: 'Resetting...',
+        rememberPassword: 'Remember your password?',
+        signInLink: 'Sign in',
+        success: 'Password reset successfully!',
+        errors: {
+          fillAllFields: 'Please fill in all fields',
+          passwordsNoMatch: 'Passwords do not match',
+          passwordTooShort: 'Password must be at least 8 characters long',
+          invalidResetLink: 'Invalid reset link. Please request a new password reset.',
+          resetFailed: 'Failed to reset password'
+        }
       }
     },
     common: {
