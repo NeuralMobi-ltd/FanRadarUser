@@ -131,7 +131,8 @@ const messages = {
         errors: {
           missingFields: 'Please enter both email and password',
           loginFailed: 'Login failed. Please try again.',
-          unexpected: 'An unexpected error occurred'
+          unexpected: 'An unexpected error occurred',
+          invalidCredentials: 'Invalid email or password.'
         }
       },
       signUp: {
@@ -180,7 +181,8 @@ const messages = {
           invalidCode: 'Invalid verification code',
           verificationFailed: 'Verification failed. Please try again.'
         },
-        success: 'Verification successful!'
+  success: 'Verification successful!',
+  successResend: 'Verification code sent successfully!'
       },
       forgotPassword: {
         title: 'Reset Password',
@@ -194,7 +196,8 @@ const messages = {
         success: 'Reset code sent to your email!',
         errors: {
           enterEmail: 'Please enter your email address',
-          sendFailed: 'Failed to send reset code'
+          sendFailed: 'Failed to send reset code',
+          emailNotFound: 'Email not found'
         }
       },
       resetPassword: {
@@ -205,19 +208,24 @@ const messages = {
         confirmPasswordLabel: 'Confirm Password',
         confirmPasswordPlaceholder: 'Confirm new password',
         requirements: 'Password requirements:',
-        requirementLength: 'At least 8 characters long',
+  requirementLength: 'At least 6 characters long',
         requirementMatch: 'Passwords must match',
         resetPassword: 'Reset Password',
         resetting: 'Resetting...',
+  showPassword: 'Show password',
+  hidePassword: 'Hide password',
         rememberPassword: 'Remember your password?',
         signInLink: 'Sign in',
         success: 'Password reset successfully!',
         errors: {
           fillAllFields: 'Please fill in all fields',
           passwordsNoMatch: 'Passwords do not match',
-          passwordTooShort: 'Password must be at least 8 characters long',
+          passwordTooShort: 'Password must be at least 6 characters long',
           invalidResetLink: 'Invalid reset link. Please request a new password reset.',
-          resetFailed: 'Failed to reset password'
+          resetFailed: 'Failed to reset password',
+          otpExpired: 'OTP expired',
+          invalidEmailOrOtp: 'Invalid email or OTP',
+          validationError: 'Validation error'
         }
       }
     },
@@ -636,7 +644,8 @@ const messages = {
         errors: {
           missingFields: 'Veuillez saisir l’e-mail et le mot de passe',
           loginFailed: 'Échec de la connexion. Veuillez réessayer.',
-          unexpected: 'Une erreur inattendue est survenue'
+          unexpected: 'Une erreur inattendue est survenue',
+          invalidCredentials: 'Email ou mot de passe invalide'
         }
       },
       signUp: {
@@ -667,6 +676,34 @@ const messages = {
         continue: 'Continuer',
         selectMore: 'Sélectionnez encore {count} pour continuer',
         greatChoices: 'Excellents choix ! On y va'
+  },
+      resetPassword: {
+        title: 'Créer un nouveau mot de passe',
+        subtitle: 'Entrez votre nouveau mot de passe',
+        passwordLabel: 'Nouveau mot de passe',
+        passwordPlaceholder: 'Entrez le nouveau mot de passe',
+        confirmPasswordLabel: 'Confirmer le mot de passe',
+        confirmPasswordPlaceholder: 'Confirmez le nouveau mot de passe',
+        requirements: 'Exigences du mot de passe :',
+        requirementLength: 'Au moins 6 caractères',
+        requirementMatch: 'Les mots de passe doivent correspondre',
+        resetPassword: 'Réinitialiser le mot de passe',
+        resetting: 'Réinitialisation...',
+        showPassword: 'Afficher le mot de passe',
+        hidePassword: 'Masquer le mot de passe',
+        rememberPassword: 'Vous souvenez‑vous de votre mot de passe ?',
+        signInLink: 'Se connecter',
+        success: 'Mot de passe réinitialisé avec succès !',
+        errors: {
+          fillAllFields: 'Veuillez remplir tous les champs',
+          passwordsNoMatch: 'Les mots de passe ne correspondent pas',
+          passwordTooShort: 'Le mot de passe doit comporter au moins 6 caractères',
+          invalidResetLink: 'Lien de réinitialisation invalide. Veuillez demander une nouvelle réinitialisation.',
+          resetFailed: 'Échec de la réinitialisation du mot de passe',
+          otpExpired: 'OTP expiré',
+          invalidEmailOrOtp: 'E‑mail ou OTP invalide',
+          validationError: 'Erreur de validation'
+        }
       }
     },
     common: {

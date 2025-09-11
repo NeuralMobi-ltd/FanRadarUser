@@ -13,8 +13,8 @@
               </svg>
             </div>
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Create New Password</h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter your new password</p>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">{{ t('auth.resetPassword.title') }}</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('auth.resetPassword.subtitle') }}</p>
         </div>
         
         <div class="px-8 pb-10 pt-6">
@@ -42,7 +42,7 @@
             <div class="space-y-6">
               <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
-                  New Password
+                  {{ t('auth.resetPassword.passwordLabel') }}
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -57,14 +57,14 @@
                     required 
                     :disabled="loading"
                     class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-                    placeholder="Enter new password"
-                    minlength="8"
+                    :placeholder="t('auth.resetPassword.passwordPlaceholder')"
+                    minlength="6"
                   />
                   <button
                     type="button"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     @click="showPassword = !showPassword"
-                    :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                    :aria-label="showPassword ? t('auth.resetPassword.hidePassword') : t('auth.resetPassword.showPassword')"
                     tabindex="-1"
                   >
                     <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
@@ -74,7 +74,7 @@
 
               <div class="space-y-2 animate-[fadeIn_0.65s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="confirmPassword">
-                  Confirm Password
+                  {{ t('auth.resetPassword.confirmPasswordLabel') }}
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -89,14 +89,14 @@
                     required 
                     :disabled="loading"
                     class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-                    placeholder="Confirm new password"
-                    minlength="8"
+                    :placeholder="t('auth.resetPassword.confirmPasswordPlaceholder')"
+                    minlength="6"
                   />
                   <button
                     type="button"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                     @click="showConfirmPassword = !showConfirmPassword"
-                    :aria-label="showConfirmPassword ? 'Hide password' : 'Show password'"
+                    :aria-label="showConfirmPassword ? t('auth.resetPassword.hidePassword') : t('auth.resetPassword.showPassword')"
                     tabindex="-1"
                   >
                     <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'" class="text-lg" aria-hidden="true"></i>
@@ -105,13 +105,13 @@
               </div>
 
               <!-- Password requirements -->
-              <div class="text-sm text-gray-600 dark:text-gray-400 animate-[fadeIn_0.7s_ease]">
-                <p class="mb-2 font-medium">Password requirements:</p>
-                <ul class="list-disc list-inside space-y-1 text-xs">
-                  <li>At least 8 characters long</li>
-                  <li>Passwords must match</li>
-                </ul>
-              </div>
+  <div class="text-sm text-gray-600 dark:text-gray-400 animate-[fadeIn_0.7s_ease]">
+    <p class="mb-2 font-medium">{{ t('auth.resetPassword.requirements') }}</p>
+    <ul class="list-disc list-inside space-y-1 text-xs">
+    <li>{{ t('auth.resetPassword.requirementLength') }}</li>
+      <li>{{ t('auth.resetPassword.requirementMatch') }}</li>
+    </ul>
+        </div>
             </div>
             
             <button 
@@ -125,15 +125,15 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
-              {{ loading ? 'Resetting...' : 'Reset Password' }}
+              {{ loading ? t('auth.resetPassword.resetting') : t('auth.resetPassword.resetPassword') }}
             </button>
           </form>
           
           <div class="mt-8 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
             <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
-              Remember your password?
+              {{ t('auth.resetPassword.rememberPassword') }}
               <router-link to="/login" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">
-                Sign in
+                {{ t('auth.resetPassword.signInLink') }}
               </router-link>
             </p>
           </div>
@@ -144,10 +144,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -165,26 +165,26 @@ const successMessage = ref('')
 
 // Get props from route query
 const email = ref(route.query.email || '')
-const resetToken = ref(route.query.token || '')
+const otp = ref(route.query.otp || route.query.token || '')
 
 async function onResetPassword() {
   if (!password.value || !confirmPassword.value) {
-    errorMessage.value = 'Please fill in all fields'
+  errorMessage.value = t('auth.resetPassword.errors.fillAllFields')
     return
   }
 
   if (password.value !== confirmPassword.value) {
-    errorMessage.value = 'Passwords do not match'
+  errorMessage.value = t('auth.resetPassword.errors.passwordsNoMatch')
     return
   }
 
-  if (password.value.length < 8) {
-    errorMessage.value = 'Password must be at least 8 characters long'
+  if (password.value.length < 6) {
+  errorMessage.value = t('auth.resetPassword.errors.passwordTooShort')
     return
   }
 
-  if (!email.value || !resetToken.value) {
-    errorMessage.value = 'Invalid reset link. Please request a new password reset.'
+  if (!email.value || !otp.value) {
+  errorMessage.value = t('auth.resetPassword.errors.invalidResetLink')
     return
   }
 
@@ -195,30 +195,30 @@ async function onResetPassword() {
   try {
     const result = await authStore.resetPassword({
       email: email.value,
-      token: resetToken.value,
+      otp: otp.value,
       password: password.value,
       password_confirmation: confirmPassword.value
     })
 
     if (result.success) {
-      successMessage.value = 'Password reset successfully!'
+      successMessage.value = t('auth.resetPassword.success')
       
       // Redirect to login after a short delay
       setTimeout(() => {
         router.push('/login')
       }, 2000)
     } else {
-      errorMessage.value = result.error || 'Failed to reset password'
+      errorMessage.value = result.error || t('auth.resetPassword.errors.resetFailed')
     }
   } catch (error) {
-    errorMessage.value = error.message || 'Failed to reset password'
+    errorMessage.value = error.message || t('auth.resetPassword.errors.resetFailed')
   } finally {
     loading.value = false
   }
 }
 
 // Redirect if no email or token provided
-if (!email.value || !resetToken.value) {
+if (!email.value || !otp.value) {
   router.push('/forgot-password')
 }
 </script>

@@ -38,6 +38,63 @@ const normalizeProduct = (p) => {
 	}
 }
 
+// Normalize drag product for product drops section
+const normalizeDragProduct = (p) => {
+	if (!p) return null
+	const priceNum = typeof p.price === 'string' ? parseFloat(p.price) : (p.price || 0)
+	const originalPriceNum = typeof p.original_price === 'string' ? parseFloat(p.original_price) : (p.original_price || priceNum)
+	const discountPercent = originalPriceNum > priceNum ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100) : 0
+	const image = p.image || p.images?.[0] || pickFirstMediaUrl(p.medias) || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+	
+	// Enhanced status handling
+	const isActive = p.status === 'active'
+	const isUpcoming = p.status === 'upcoming'
+	const isExpired = p.status === 'expired'
+	
+	// Calculate urgency based on stock percentage and time remaining
+	let urgencyLevel = p.urgency_level || 'low'
+	if (p.stock_percentage < 10) urgencyLevel = 'critical'
+	else if (p.stock_percentage < 25) urgencyLevel = 'high'
+	else if (p.stock_percentage < 50) urgencyLevel = 'medium'
+	
+	// Enhanced features based on actual data
+	const features = []
+	if (p.is_limited) features.push('🎯 Limited Edition')
+	if (discountPercent > 0) features.push(`💰 ${discountPercent}% OFF`)
+	if (p.stock_percentage < 25) features.push('⚡ Low Stock Alert')
+	if (p.favorites_count > 0) features.push(`❤️ ${p.favorites_count} Favorites`)
+	if (p.ratings_count > 0) features.push(`⭐ ${p.ratings_count} Reviews`)
+	features.push('📦 Fast Shipping')
+	
+	return {
+		id: p.id,
+		title: p.product_name || p.name || 'Limited Edition Product',
+		subtitle: p.description || 'Exclusive limited time offer',
+		category: p.subcategory?.name || 'Limited Edition',
+		badge: isActive ? 'LIVE NOW' : isUpcoming ? 'UPCOMING' : isExpired ? 'EXPIRED' : 'LIMITED',
+		urgencyLevel,
+		status: p.status,
+		dropPrice: priceNum,
+		originalPrice: originalPriceNum,
+		discount: discountPercent,
+		totalStock: Math.round(p.stock / (p.stock_percentage / 100)) || 100,
+		stockLeft: p.stock || 0,
+		stockPercentage: p.stock_percentage,
+		endTime: p.sale_end_date,
+		startTime: p.sale_start_date,
+		timeRemainingDays: p.time_remaining_days,
+		daysUntilStart: p.days_until_start,
+		image,
+		features,
+		rating: p.average_rating || 0,
+		reviews: p.ratings_count || 0,
+		favorites: p.favorites_count || 0,
+		isActive,
+		isUpcoming,
+		isExpired
+	}
+}
+
 export const ProductsService = {
 	async list(params = {}) {
 		if (API_CONFIG.useMocks) {
@@ -115,6 +172,24 @@ export const ProductsService = {
 			total: payload?.total || products.length,
 		}
 		return { products, pagination }
+	},
+
+	async getDragProducts(params = {}) {
+		if (API_CONFIG.useMocks) {
+			await delay(API_CONFIG.mockLatency)
+			return { products: [], statistics: {}, pagination: { page: 1, total: 0, per_page: 0 } }
+		}
+		const { data } = await http.get(API_CONFIG.products.drag, { params })
+		const payload = data?.data || data
+		const arr = payload?.products || payload?.items || payload || []
+		const products = Array.isArray(arr) ? arr.map(normalizeDragProduct) : []
+		const statistics = payload?.statistics || {}
+		const pagination = payload?.pagination || {
+			page: payload?.current_page || params?.page || 1,
+			per_page: payload?.per_page || params?.limit || products.length,
+			total: payload?.total || products.length,
+		}
+		return { products, statistics, pagination }
 	},
 }
 

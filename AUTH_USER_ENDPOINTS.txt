@@ -1,0 +1,105 @@
+FanRadar Auth & OTP API — Inputs, Outputs, and Call Order
+
+Base
+- Server: http://127.0.0.1:8000
+- Prefix: /api (all routes below are under this)
+- Headers for all requests: Content-Type: application/json, Accept: application/json
+
+Order of operations
+1) New account flow: POST /Y/auth/register -> POST /Y/auth/login -> Use Bearer <token> for protected routes.
+2) Forgot/reset flow: POST /forgetPassword -> POST /verifyOTP (within 10 minutes) -> POST /resetPassword -> POST /Y/auth/login.
+
+1) Register
+- Method: POST
+- URL: /api/Y/auth/register
+- Body (JSON):
+	Required:
+		- first_name: string
+		- last_name: string
+		- email: string (email)
+		- password: string (min 6)
+	Optional:
+		- date_naissance: string (date, e.g., 1995-06-15)
+		- gender: string (male|female|other)
+		- bio: string (<= 2000)
+		- preferred_categories: integer[] (each id must exist in categories.id)
+- Returns (201): includes { message, user, token }
+- Errors:
+	- 422: validation errors { errors: {field:[..]} }
+
+2) Login
+- Method: POST
+- URL: /api/Y/auth/login
+- Body (JSON): { email: string, password: string }
+- Returns (200): includes { message, user, token }
+- Errors:
+	- 422: validation errors
+	- 401: { success:false, error:{ code:"UNAUTHORIZED", message:"Email ou mot de passe invalide" } }
+
+3) Forgot password (request OTP)
+- Method: POST
+- URL: /api/forgetPassword
+- Body (JSON): { email: string }
+- Returns (200): { message: "OTP sent to your email" }
+- Errors:
+	- 404: { error: "Email not found" }
+
+4) Verify OTP
+- Method: POST
+- URL: /api/verifyOTP
+- Body (JSON): { email: string, otp: number }
+- Returns (200): { message: "OTP validé" }
+- Errors:
+	- 400: { error: "OTP invalide" } or { error: "OTP expiré" } (expires after ~10 minutes)
+	- 422: validation errors
+
+5) Reset password
+- Method: POST
+- URL: /api/resetPassword
+- Body (JSON):
+	{
+		"email": string,
+		"otp": number,
+		"password": string (min 6),
+		"password_confirmation": string (must match)
+	}
+- Returns (200): { message: "Mot de passe réinitialisé avec succès" }
+- Errors:
+	- 404: { error: "Email invalide" } or { error: "OTP invalide" }
+	- 400: { error: "OTP expiré" }
+	- 422: validation errors
+
+Using the token
+- After login/register, include the token in Authorization header for protected routes (inside auth:sanctum groups):
+	Authorization: Bearer <token>
+
+Postman quick setup
+- Set method and URL as above.
+- Headers: Content-Type: application/json, Accept: application/json.
+- Body: raw -> JSON; paste the required fields.
+
+Sample bodies
+- Register:
+	{
+		"first_name": "Ali",
+		"last_name": "Ben Salah",
+		"email": "alice@example.com",
+		"password": "secret123",
+		"date_naissance": "1995-06-15",
+		"gender": "male",
+		"preferred_categories": [1,3,5]
+	}
+- Login:
+	{ "email": "alice@example.com", "password": "secret123" }
+- Forgot:
+	{ "email": "alice@example.com" }
+- Verify OTP:
+	{ "email": "alice@example.com", "otp": 123456 }
+- Reset password:
+	{ "email": "alice@example.com", "otp": 123456, "password": "newpass123", "password_confirmation": "newpass123" }
+
+Notes
+- All above shapes and messages are derived from app/Http/Controllers/Api/PersonnaliseController.php.
+- preferred_categories IDs must exist in the categories table.
+- OTP expires after ~10 minutes from issue time.
+- Ensure Sanctum and DB are configured; .env MAIL_* must be valid to actually send OTP emails.

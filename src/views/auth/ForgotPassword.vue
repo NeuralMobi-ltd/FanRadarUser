@@ -5,7 +5,7 @@
       <div class="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-blue-500/40 via-blue-400/40 to-sky-400/40 opacity-40 blur transition group-hover:opacity-70 dark:opacity-60 dark:group-hover:opacity-90"></div>
       <div class="relative rounded-3xl overflow-hidden shadow-xl dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.55)] border border-blue-100/60 dark:border-white/5 bg-white/95 supports-[backdrop-filter]:bg-white/90 dark:bg-gray-800/70 backdrop-blur-xl">
         <!-- Logo/Brand Section -->
-        <div class="pt-10 px-10 text-center flex flex-col items-center">
+  <div class="pt-10 px-10 text-center flex flex-col items-center">
           <div class="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-sky-400 p-[2px] shadow-[0_10px_28px_-6px_rgba(37,99,235,0.5)] animate-[fadeIn_0.55s_ease] relative after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:pointer-events-none after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.9),0_0_0_1px_rgba(255,255,255,0.4)] dark:after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.25),0_0_0_1px_rgba(255,255,255,0.08)] after:opacity-90">
             <div class="w-full h-full rounded-2xl bg-white/70 dark:bg-gray-900/40 backdrop-blur-md flex items-center justify-center ring-1 ring-white/60 dark:ring-white/10">
               <svg class="w-12 h-12 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -13,8 +13,8 @@
               </svg>
             </div>
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Reset Password</h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter your email to receive a reset code</p>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">{{ t('auth.forgotPassword.title') }}</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('auth.forgotPassword.subtitle') }}</p>
         </div>
         
         <div class="px-8 pb-10 pt-6">
@@ -42,7 +42,7 @@
             <div class="space-y-6">
               <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
-                  Email Address
+                    {{ t('auth.forgotPassword.emailLabel') }}
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -57,7 +57,7 @@
                     required 
                     :disabled="loading"
                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed" 
-                    placeholder="Enter your email address"
+                      :placeholder="t('auth.forgotPassword.emailPlaceholder')"
                   />
                 </div>
               </div>
@@ -74,16 +74,14 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
-              {{ loading ? 'Sending...' : 'Send Reset Code' }}
+              {{ loading ? t('auth.forgotPassword.sending') : t('auth.forgotPassword.sendCode') }}
             </button>
           </form>
           
           <div class="mt-8 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
             <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
-              Remember your password?
-              <router-link to="/login" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">
-                Sign in
-              </router-link>
+              {{ t('auth.forgotPassword.rememberPassword') }}
+              <router-link to="/login" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">{{ t('auth.forgotPassword.signInLink') }}</router-link>
             </p>
           </div>
         </div>
@@ -93,10 +91,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -110,7 +108,7 @@ const successMessage = ref('')
 
 async function onSendResetCode() {
   if (!email.value) {
-    errorMessage.value = 'Please enter your email address'
+    errorMessage.value = t('auth.forgotPassword.errors.enterEmail')
     return
   }
 
@@ -122,7 +120,7 @@ async function onSendResetCode() {
     const result = await authStore.sendPasswordResetOtp(email.value)
 
     if (result.success) {
-      successMessage.value = 'Reset code sent to your email!'
+  successMessage.value = t('auth.forgotPassword.success')
       
       // Redirect to OTP verification after a short delay
       setTimeout(() => {
@@ -135,10 +133,10 @@ async function onSendResetCode() {
         })
       }, 2000)
     } else {
-      errorMessage.value = result.error || 'Failed to send reset code'
+      errorMessage.value = result.error || t('auth.forgotPassword.errors.sendFailed')
     }
   } catch (error) {
-    errorMessage.value = error.message || 'Failed to send reset code'
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.sendFailed')
   } finally {
     loading.value = false
   }

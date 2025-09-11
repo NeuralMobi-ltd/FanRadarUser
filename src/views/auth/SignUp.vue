@@ -15,6 +15,16 @@
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Join the community today</p>
         </div>
         <div class="px-8 pb-10 pt-6">
+          <!-- Error message -->
+          <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl animate-[fadeIn_0.3s_ease]">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-red-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-red-700 dark:text-red-400 text-sm font-medium">{{ errorMessage }}</span>
+            </div>
+          </div>
+
           <form @submit.prevent="onSignUp">
             <div class="grid grid-cols-1 gap-6">
               <div class="grid grid-cols-2 gap-4">
@@ -32,7 +42,8 @@
                       v-model="first_name" 
                       id="first_name" 
                       type="text" 
-                      required 
+                      required
+                      :disabled="loading"
                       class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                       placeholder="First name"
                     />
@@ -53,7 +64,8 @@
                       v-model="last_name" 
                       id="last_name" 
                       type="text" 
-                      required 
+                      required
+                      :disabled="loading"
                       class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                       placeholder="Last name"
                     />
@@ -76,7 +88,8 @@
                     v-model="email" 
                     id="email" 
                     type="email" 
-                    required 
+                    required
+                    :disabled="loading"
                     class="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                     placeholder="Enter your email"
                   />
@@ -93,6 +106,7 @@
                     id="birth_date"
                     type="date"
                     required
+                    :disabled="loading"
                     class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white transition-all duration-200"
                   />
                 </div>
@@ -103,7 +117,7 @@
                   </label>
                   <div class="flex gap-3 pt-2">
                     <label class="relative flex-1 cursor-pointer">
-                      <input type="radio" v-model="gender" value="male" required class="sr-only peer" />
+                      <input type="radio" v-model="gender" value="male" required class="sr-only peer" :disabled="loading" />
                       <div class="h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200
                                    hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700/60
                                    peer-checked:text-blue-700 dark:peer-checked:text-sky-300 peer-checked:border-blue-500
@@ -112,7 +126,7 @@
                       </div>
                     </label>
                     <label class="relative flex-1 cursor-pointer">
-                      <input type="radio" v-model="gender" value="female" required class="sr-only peer" />
+                      <input type="radio" v-model="gender" value="female" required class="sr-only peer" :disabled="loading" />
                       <div class="h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200
                                    hover:border-blue-400 dark:hover:border-blue-500 hover:bg-gray-50 dark:hover:bg-gray-700/60
                                    peer-checked:text-blue-700 dark:peer-checked:text-sky-300 peer-checked:border-blue-500
@@ -138,7 +152,8 @@
                     v-model="password" 
                     :type="showPassword ? 'text' : 'password'"
                     id="password" 
-                    required 
+                    required
+                    :disabled="loading"
                     class="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white placeholder-gray-400 transition-all duration-200" 
                     placeholder="Create a password"
                   />
@@ -155,10 +170,17 @@
             </div>
             
             <button 
-              type="submit" 
-              class="w-full mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900"
+              type="submit"
+              :disabled="loading"
+              class="w-full mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
-              Create Account
+              <span v-if="loading" class="mr-3">
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+              {{ loading ? 'Creating...' : 'Create Account' }}
             </button>
           </form>
           
@@ -177,11 +199,13 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '@/store/auth'
+import { useRegistrationStore } from '@/store/registration'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRegistrationStore } from '@/store/registration'
 
 const registrationStore = useRegistrationStore()
+const authStore = useAuthStore()
 
 const router = useRouter()
 const first_name = ref('')
@@ -191,9 +215,12 @@ const password = ref('')
 const birth_date = ref('')
 const gender = ref('')
 const showPassword = ref(false)
+const loading = ref(false)
+const errorMessage = ref('')
 
-function onSignUp() {
-  // Store basic info (no API call yet)
+async function onSignUp() {
+  errorMessage.value = ''
+  // Persist locally (optional for later steps)
   registrationStore.setBasicInfo({
     first_name: first_name.value,
     last_name: last_name.value,
@@ -202,15 +229,16 @@ function onSignUp() {
     birth_date: birth_date.value,
     gender: gender.value
   })
-  
-  // Redirect to OTP verification
-  router.push({
-    name: 'OtpVerification',
-    query: {
-      email: email.value,
-      type: 'signup'
-    }
-  })
+
+  // Move registration call to ChooseCategories step; just navigate now
+  loading.value = true
+  try {
+    await router.push({ name: 'ChooseCategories' })
+  } catch (e) {
+    errorMessage.value = e?.message || 'Navigation failed'
+  } finally {
+    loading.value = false
+  }
 }
 
 </script>

@@ -13,8 +13,8 @@
               </svg>
             </div>
           </div>
-          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Verify Your Account</h1>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Enter the verification code sent to</p>
+          <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">{{ t('auth.otpVerification.title') }}</h1>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ t('auth.otpVerification.subtitle') }}</p>
           <p class="text-sm font-medium text-gray-800 dark:text-gray-200">{{ maskedEmail }}</p>
         </div>
         
@@ -44,7 +44,7 @@
             <div class="space-y-6">
               <div class="space-y-3">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 text-center">
-                  Verification Code
+                  {{ t('auth.otpVerification.codeLabel') }}
                 </label>
                 <div class="flex justify-center gap-3">
                   <input
@@ -66,13 +66,13 @@
               <!-- Timer -->
               <div v-if="timeLeft > 0" class="text-center">
                 <p class="text-sm text-gray-500 dark:text-gray-400">
-                  Code expires in <span class="font-semibold text-blue-600 dark:text-blue-400">{{ formatTime(timeLeft) }}</span>
+                  {{ t('auth.otpVerification.codeExpires') }} <span class="font-semibold text-blue-600 dark:text-blue-400">{{ formatTime(timeLeft) }}</span>
                 </p>
               </div>
 
               <!-- Resend Code -->
               <div v-else class="text-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">Didn't receive the code?</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">{{ t('auth.otpVerification.didntReceive') }}</p>
                 <button
                   type="button"
                   @click="resendOtp"
@@ -84,9 +84,9 @@
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    Resending...
+                    {{ t('auth.otpVerification.resending') }}
                   </span>
-                  <span v-else>Resend Code</span>
+                  <span v-else>{{ t('auth.otpVerification.resendCode') }}</span>
                 </button>
               </div>
             </div>
@@ -103,19 +103,19 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </span>
-              {{ loading ? 'Verifying...' : 'Verify Code' }}
+              {{ loading ? t('auth.otpVerification.verifying') : t('auth.otpVerification.verifyCode') }}
             </button>
           </form>
 
           <!-- Back to Login -->
           <div class="mt-8 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
             <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
-              Want to use a different email?
+              {{ t('auth.otpVerification.usesDifferentEmail') }}
               <button
                 @click="goBack"
                 class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors"
               >
-                Go back
+                {{ t('auth.otpVerification.goBack') }}
               </button>
             </p>
           </div>
@@ -126,15 +126,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { useRegistrationStore } from '@/store/registration'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t } = useI18n()
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
+const registrationStore = useRegistrationStore()
 
 // Reactive data
 const otpDigits = ref(['', '', '', '', '', ''])
@@ -143,7 +145,7 @@ const loading = ref(false)
 const resendLoading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
-const timeLeft = ref(300) // 5 minutes in seconds
+const timeLeft = ref(600) // 10 minutes in seconds
 const timer = ref(null)
 
 // Props from route query
@@ -214,7 +216,7 @@ function handlePaste(event) {
 }
 
 function startTimer() {
-  timeLeft.value = 300 // Reset to 5 minutes
+  timeLeft.value = 600 // Reset to 10 minutes
   timer.value = setInterval(() => {
     if (timeLeft.value > 0) {
       timeLeft.value--
@@ -232,7 +234,7 @@ function formatTime(seconds) {
 
 async function onVerifyOtp() {
   if (!isOtpComplete.value) {
-    errorMessage.value = 'Please enter the complete verification code'
+  errorMessage.value = t('auth.otpVerification.errors.completeCode')
     return
   }
 
@@ -244,41 +246,49 @@ async function onVerifyOtp() {
     // Call the OTP verification API
     const result = await authStore.verifyOtp({
       email: email.value,
-      otp_code: otpCode.value,
+      otp: otpCode.value,
       type: verificationType.value
     })
 
     if (result.success) {
-      successMessage.value = 'Verification successful!'
+  successMessage.value = t('auth.otpVerification.success')
       
       // Handle different verification types
       if (verificationType.value === 'signup') {
-        // Redirect to choose categories or dashboard
+        // Try to auto-login so user can enter the app immediately
+        try {
+          if (!authStore.hasToken && registrationStore.email && registrationStore.password) {
+            await authStore.login({ email: registrationStore.email, password: registrationStore.password })
+          }
+        } catch (_) {
+          // ignore; user can still continue
+        }
+        // Redirect to dashboard
         setTimeout(() => {
-          router.push('/choose-categories')
-        }, 1500)
+          router.push('/dashboard')
+        }, 1200)
       } else if (verificationType.value === 'login') {
         // Redirect to dashboard
         setTimeout(() => {
           router.push('/dashboard')
         }, 1500)
       } else if (verificationType.value === 'password-reset') {
-        // Redirect to reset password form
+        // Redirect to reset password form with email + otp
         setTimeout(() => {
           router.push({ 
             name: 'ResetPassword', 
             query: { 
               email: email.value, 
-              token: result.reset_token 
+              otp: otpCode.value 
             } 
           })
         }, 1500)
       }
     } else {
-      errorMessage.value = result.error || 'Invalid verification code'
+      errorMessage.value = result.error || t('auth.otpVerification.errors.invalidCode')
     }
   } catch (error) {
-    errorMessage.value = error.message || 'Verification failed. Please try again.'
+    errorMessage.value = error.message || t('auth.otpVerification.errors.verificationFailed')
   } finally {
     loading.value = false
   }
@@ -296,16 +306,16 @@ async function resendOtp() {
     })
 
     if (result.success) {
-      successMessage.value = 'Verification code sent successfully!'
+      successMessage.value = t('auth.otpVerification.successResend')
       startTimer()
       // Clear OTP inputs
       otpDigits.value = ['', '', '', '', '', '']
       otpInputs.value[0]?.focus()
     } else {
-      errorMessage.value = result.error || 'Failed to resend code'
+      errorMessage.value = result.error || t('auth.forgotPassword.errors.sendFailed')
     }
   } catch (error) {
-    errorMessage.value = error.message || 'Failed to resend code'
+    errorMessage.value = error.message || t('auth.forgotPassword.errors.sendFailed')
   } finally {
     resendLoading.value = false
   }

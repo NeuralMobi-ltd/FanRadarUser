@@ -35,7 +35,8 @@ export const useRegistrationStore = defineStore('registration', {
       if (this.profile_image) fd.append('profile_image', this.profile_image)
       // Optional fields if backend accepts them
       if (this.gender) fd.append('gender', this.gender)
-  if (this.birth_date) fd.append('birth_date', this.birth_date)
+  // Backend expects date_naissance
+  if (this.birth_date) fd.append('date_naissance', this.birth_date)
       this.categories.forEach(c => fd.append('categories[]', c))
       return fd
     },

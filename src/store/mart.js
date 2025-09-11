@@ -107,6 +107,12 @@ export const useMartStore = defineStore('mart', {
 
     // Urgency styles/messages
     dropUrgencyMessages: {
+      critical: {
+        text: 'ALMOST GONE!',
+        color: 'text-red-800',
+        bgColor: 'bg-red-200',
+        pulse: true
+      },
       high: {
         text: 'Almost Gone!',
         color: 'text-red-600',

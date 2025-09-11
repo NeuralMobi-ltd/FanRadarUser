@@ -1,0 +1,706 @@
+\documentclass[12pt]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+% Look for images in repo root, public/images, and docs relative paths
+\graphicspath{{./}{public/images/}{../public/images/}}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{geometry}
+\usepackage{anyfontsize}
+\usepackage{setspace}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{shadowtext}
+\usepackage{background}
+\usepackage{float}
+\usepackage[outline]{contour}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{hyperref}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{wrapfig}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{geometry}
+\usepackage{xcolor}
+\geometry{a4paper, margin=2.5cm}
+
+% Define a minimal neutral palette (grayscale)
+\definecolor{primary}{RGB}{34,34,34}      % dark charcoal for headings
+\definecolor{secondary}{RGB}{102,102,102} % mid gray for subtle accents
+\definecolor{accent}{RGB}{140,140,140}    % soft gray (used sparingly)
+\definecolor{darkgray}{RGB}{66, 66, 66}
+\definecolor{mediumgray}{RGB}{117, 117, 117}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{bordercolor}{RGB}{100, 100, 100}
+
+\renewcommand{\familydefault}{\rmdefault} % Times New Roman
+\setstretch{1.2} % Interligne 1.2
+
+% Supprimer les cadres rouges autour des éléments
+\pagecolor{white} % Fond de page blanc
+\color{black} % Texte en noir
+
+
+% Page configuration
+\geometry{
+  left=2cm,
+  right=2cm,
+  top=1.5cm,
+  bottom=1.5cm,
+  includeheadfoot
+}
+
+% Background design element
+\backgroundsetup{
+  scale=1,
+  angle=0,
+  opacity=0.05,
+}
+
+
+
+% Nouvelle commande pour afficher image et texte en ligne
+\newcommand{\inlinetech}[3]{
+  \begin{minipage}[t]{0.25\textwidth}
+    \centering
+    \IfFileExists{#1}{\includegraphics[width=0.6\linewidth]{#1}}{\fbox{\rule{0pt}{40pt}\rule{0.8\linewidth}{0pt}}}
+  \end{minipage}%
+  \hfill
+  \begin{minipage}[t]{0.7\textwidth}
+    \textbf{#2} #3
+  \end{minipage}
+}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  
+  % Logo principal (les autres logos retirés car fichiers non présents dans le dépôt)
+   \includegraphics[width=0.32\textwidth]{fste.png}
+  \includegraphics[width=0.35\textwidth]{FanRadar.png}
+\includegraphics[width=0.28\textwidth]{NeuralMobi.jpeg}
+  
+  
+  \vspace{2cm}
+  
+  % Added section: Rapport de projet de fin d'année
+  {\fontsize{14}{16}\selectfont\textbf{Rapport de projet de fin d'année :}\par}
+  
+  \vspace{0.5cm}
+  
+  % Added section: Cycle d'Ingénieur
+  {\fontsize{15}{17}\selectfont\textbf{Cycle d'Ingénieur : Ingénierie Logicielle Intelligence Artificielle}\par}
+  
+  \vspace{2cm}
+  
+  % Added section: Sous le thème
+  {\fontsize{16}{18}\selectfont\textbf{Intitulé  :}\par}
+  
+  \vspace{0.5cm}
+
+  
+  % Main project title with border
+  \fboxrule=1.5pt
+  \fboxsep=12pt
+ {\fbox{\parbox{0.85\textwidth}{\centering
+    \vspace{10pt}
+     {\fontsize{16}{20}\selectfont\bfseries CONCEPTION ET RÉALISATION DE FANRADAR\par}
+    \vspace{5pt}
+  {\fontsize{11}{13}\selectfont (Écosystème social et analytique dédié aux communautés de fans)\par}
+    \vspace{10pt}
+  }}}
+  
+  \vfill % Push remaining content to bottom
+  
+  % Author/Supervisor info
+  \begin{tabular}{@{}p{0.48\textwidth}@{\hspace{0.6cm}}p{0.48\textwidth}@{}}
+    \centering{\parbox{0.96\linewidth}{\centering
+      {\fontsize{18}{16}\selectfont\textbf{Réalisé par:}\par}
+      {\fontsize{12}{16}\selectfont Yassine EL AOUNI}\vspace{2pt}
+    }} &
+    \centering{\parbox{0.96\linewidth}{\centering
+      {\fontsize{18}{16}\selectfont\textbf{Encadré par:}\par}
+      {\fontsize{12}{16}\selectfont M.Othmane DAOUI}\vspace{2pt}
+    }} \\
+  \end{tabular}
+  
+  \vspace{2cm}
+  
+  % Internship period
+  {\fontsize{12}{14}\selectfont\textbf{STAGE EFFECTUÉ DU 1 JUILLET AU 1 SEPTEMBRE 2025}\par}
+  
+  \vspace{0.5cm}
+  
+  % Academic year at the bottom
+  {\fontsize{12}{14}\selectfont\textbf{Année universitaire : 2024/2025}\par}
+  
+  \vspace{0.5cm}
+\end{titlepage}
+
+\chapter*{Remerciements}
+\addcontentsline{toc}{chapter}{Remerciements}
+
+Je tiens à exprimer ma profonde gratitude à toutes les personnes qui ont contribué, de près ou de loin, à la réalisation de ce stage et à l'élaboration de ce rapport de Projet de Fin d'Année (PFA).
+
+Mes premiers et sincères remerciements vont à M. OTHMANE DAOUI, mon maître de stage au sein de NeuralMobi Ltd, pour la confiance qu'il m'a accordée, ses précieux conseils et son accompagnement tout au long de ce projet. Son expertise et sa vision ont été déterminantes pour la réussite de FanRadar.
+
+Je remercie chaleureusement l'ensemble de l'équipe de NeuralMobi pour leur accueil, leur esprit d'équipe et leur soutien technique tout au long de ces deux mois d'immersion professionnelle enrichissante.
+
+Je tiens également à remercier mon enseignant référent de la faculté pour son suivi pédagogique, ses orientations précieuses et sa disponibilité tout au long de ce projet qui clôture ma première année du cycle d'ingénieur en Génie Logiciel et Intelligence Artificielle.
+
+Pour finir, une pensée toute particulière pour ma famille et mes amis, qui m'ont soutenu et encouragé tout au long de cette période. Leur présence a été un moteur essentiel pour mener à bien ce travail.
+
+\chapter*{Résumé}
+\addcontentsline{toc}{chapter}{Résumé}
+
+Ce document présente le travail réalisé dans le cadre de mon Projet de Fin d'Année (PFA) de première année du cycle d'ingénieur en Génie Logiciel et Intelligence Artificielle. Le projet FanRadar a consisté en la conception et le développement d'une interface web complète pour un réseau social dédié aux communautés de fans (fandoms).
+
+Sur le plan technique, j'ai développé une interface utilisateur avec des technologies web modernes (Vue.js 3 et Vite), en m'appuyant sur une base technique existante (API Laravel). L'architecture repose sur une séparation claire des responsabilités, avec des modules dédiés à la gestion des données et à la communication avec les services externes. Un accent particulier a été mis sur l'uniformisation des données et la gestion fiable des adresses des contenus multimédia pour garantir leur affichage.
+
+Les fonctionnalités implémentées couvrent la gestion complète du profil utilisateur, la création et l'organisation de posts multimédia avec système de tags et catégories, ainsi que la visualisation des relations sociales (abonnés et abonnements) et des statistiques d'activité. Le document détaille l'ensemble des choix techniques, les défis rencontrés et les solutions apportées, tout en proposant des pistes d'amélioration pour l'évolution future de la plateforme.
+
+\chapter*{Abstract}
+\addcontentsline{toc}{chapter}{Abstract}
+
+This document presents the work carried out for my First-Year Engineering Project (PFA) in Software Engineering and Artificial Intelligence. The FanRadar project involved the design and development of a comprehensive web interface for a social network dedicated to fan communities (fandoms).
+
+From a technical perspective, I developed a web interface using modern technologies (Vue.js 3 and Vite), building upon an existing technical foundation (a Laravel API). The architecture is based on a clear separation of responsibilities, with dedicated modules for data management and communication with external services. Particular emphasis was placed on standardizing data and reliably managing media addresses to ensure their display.
+
+The implemented features encompass complete user profile management, creation and organization of multimedia posts with a tagging and category system, as well as visualization of social relationships (followers and following) and activity statistics. This document details all technical choices, challenges encountered, and solutions implemented, while also proposing avenues for improvement for the future evolution of the platform.
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+% Liste des abréviations
+\chapter*{Liste des abréviations}
+\addcontentsline{toc}{chapter}{Liste des abréviations}
+\begin{table}[H]
+  \centering
+  \begin{tabular}{|p{4cm}|p{9cm}|}
+    \hline
+    \textbf{Abréviation} & \textbf{Signification} \\
+    \hline
+    API & Application Programming Interface (interface de programmation) \\
+    \hline
+    SPA & Single Page Application (application monopage) \\
+    \hline
+    PFA & Projet de Fin d'Année \\
+    \hline
+    JWT & JSON Web Token (jeton d'authentification) \\
+    \hline
+    RGPD & Règlement Général sur la Protection des Données \\
+    \hline
+    UX & Expérience utilisateur (User Experience) \\
+    \hline
+    UI & Interface utilisateur (User Interface) \\
+    \hline
+    REST & Representational State Transfer (architecture d'API) \\
+  \hline
+  WCAG & Directives pour l'accessibilité des contenus web \\
+  \hline
+  \end{tabular}
+  \caption{Principales abréviations utilisées dans ce rapport}
+  \label{tab:abreviations}
+\end{table}
+
+\chapter{Introduction}
+
+Les communautés de fans, communément appelées \textit{fandoms}, constituent aujourd'hui des écosystèmes numériques dynamiques générant un flux continu de contenus multimédia, d'interactions sociales et de tendances émergentes. Face à cette effervescence, le projet \textbf{FanRadar} a pour objectif de proposer une plateforme dédiée permettant de centraliser la création et la découverte de contenu, d'offrir des outils d'analyse pour suivre les tendances et mesurer l'engagement, et d'ouvrir des pistes de monétisation via une marketplace adaptée aux besoins des communautés.
+
+Sur le plan technique, le projet s'appuie sur des choix modernes : une application web monopage (SPA) développée avec Vue.js 3 et assemblée avec Vite, une interface de programmation (API) REST Laravel (hébergée dans un dépôt séparé) pour l'échange des données, et des principes d'architecture modulaire côté frontend. Aucune expérimentation de modèles distribués avancés n'a été menée dans ce périmètre ; l'effort a porté sur l'intégration fonctionnelle, la structuration des stores Pinia et la cohérence des appels API.
+
+Le développement s'est déroulé selon une approche incrémentale légère (inspirée des sprints) privilégiant l'ajout progressif de fonctionnalités visibles. Les tests automatisés restent limités (quelques tests unitaires prévus via Vitest). Le rapport détaille le cadre du projet, l'analyse des besoins, la conception applicative côté frontend, les réalisations et les pistes d'amélioration.
+
+\chapter{Présentation de l'entreprise et du projet}
+
+\section{NeuralMobi Ltd}
+
+\subsection{Présentation générale}
+
+NeuralMobi Ltd est une entreprise innovante spécialisée dans le développement d'applications mobiles et de solutions intelligentes basées sur l'intelligence artificielle. Fondée à Londres, l'entreprise se positionne comme un pont entre la recherche avancée en IA et les applications grand public, visant à démocratiser l'accès aux technologies d'intelligence artificielle à travers des produits conviviaux et accessibles.
+
+L'entreprise opère dans un secteur en pleine expansion où la convergence entre les technologies mobiles et l'intelligence artificielle ouvre de nouvelles perspectives pour les plateformes sociales et communautaires. NeuralMobi cultive une culture d'innovation continue, encourageant l'expérimentation et l'adaptation aux nouvelles tendances technologiques.
+
+\subsection{Expertises techniques}
+
+NeuralMobi dispose d'un portefeuille de compétences techniques transverses qui lui permet d'aborder des projets complexes avec une approche pluridisciplinaire. L'entreprise maîtrise particulièrement bien le développement d'applications mobiles pour iOS et Android, utilisant aussi bien des technologies natives que des outils permettant de créer des applications pour plusieurs systèmes (comme iOS et Android) avec un seul code, tels que Flutter et React Native.
+
+Dans le domaine du backend et du cloud, NeuralMobi développe des architectures logicielles flexibles, basées sur des services indépendants (microservices) et des interfaces de communication standardisées (API RESTful), avec une expertise particulière dans l'optimisation des performances et la gestion de fortes charges. L'entreprise utilise majoritairement Laravel et Node.js pour le développement backend, avec des déploiements sur des plateformes d'hébergement cloud comme Amazon Web Services (AWS) et DigitalOcean.
+
+L'expertise en intelligence artificielle constitue un atout majeur pour NeuralMobi, avec des compétences en apprentissage automatique (machine learning), la compréhension du langage humain et l'analyse d'images. L'entreprise intègre progressivement ces technologies dans ses produits pour offrir des fonctionnalités innovantes comme la détection automatique de tendances, la modération de contenu assistée par IA, et les systèmes de recommandation personnalisés.
+
+Enfin, NeuralMobi accorde une importance particulière à l'expérience utilisateur, avec une équipe dédiée à la conception d'interfaces modernes, accessibles et intuitives. Cette approche centrée sur l'utilisateur se traduit par des designs qui s'adaptent à toutes les tailles d'écran, des parcours utilisateur optimisés et le respect des normes pour rendre le web accessible à tous, y compris aux personnes en situation de handicap.
+
+\section{Projet FanRadar}
+
+\subsection{Vision globale}
+
+FanRadar est une plateforme dédiée aux communautés de fans (fandoms). Elle vise à rassembler en un seul écosystème : la création de contenu (texte, image, vidéo), la découverte de tendances et, à terme, des opportunités de valorisation économique (produits liés aux communautés, contenus mis en avant, etc.).
+
+Le projet complet comprend quatre volets distincts :
+\begin{itemize}
+  \item \textbf{Interface d'administration} (hors périmètre de mon stage) : outil de gestion interne permettant la modération du contenu, la validation des nouvelles communautés, le suivi des signalements et l'observation synthétique de l'activité (statistiques globales, tendances émergentes). Cette interface est orientée contrôle et qualité de la plateforme.
+  \item \textbf{Application mobile Flutter} (hors périmètre de mon stage) : application native multiplateforme (Android / iOS) développée avec Flutter, focalisée sur une consultation rapide des fils, les notifications en temps quasi réel et l'engagement mobile (réactions, abonnements, navigation gestuelle). Elle vise à capter l'usage majoritaire sur smartphone.
+  \item \textbf{Services backend (API Laravel / MySQL)} (collaboration avec l'équipe backend) : couche serveur responsable de la gestion et structuration des données (utilisateurs, publications, abonnements, médias, produits), de l'application des règles métier (validation, droits d'accès), de la sécurité (authentification, contrôle des actions), de la performance (pagination, filtrage, optimisation des requêtes) et de l'exposition d'endpoints stables pour le web et le mobile. Cette partie prend aussi en charge le stockage des fichiers et la cohérence des transactions.
+  \item \textbf{Site web utilisateur (périmètre de mon travail)} : composant sur lequel j'ai concentré l'intégralité de mon intervention. Il constitue l'interface principale permettant aux utilisateurs de : créer et gérer leurs publications, explorer les communautés, consulter les profils, s'abonner / se désabonner, organiser leurs centres d'intérêt (catégories, mots‑clés), et interagir avec le contenu. Le site est adaptatif (toutes tailles d'écran) et conçu pour être extensible.
+\end{itemize}
+
+L'\textbf{équipe backend} (développeurs Laravel / MySQL) a assuré la conception et l'évolution de l'API, l'optimisation des structures de données, l'ajout de nouvelles routes selon les besoins du front, ainsi que la résolution des incohérences détectées lors des intégrations. Ma collaboration avec eux a principalement porté sur : la définition des formats de réponse JSON, l'ajout de filtres/pagination pour réduire la charge côté navigateur, et l'amélioration de la cohérence des liens médias.
+
+Dans le cadre de ce rapport, toutes les réalisations décrites se limitent strictement au \textbf{site web utilisateur}. Les autres volets (administration et mobile Flutter) sont mentionnés uniquement pour situer le contexte global du produit.
+
+\subsection{Objectifs de la plateforme}
+
+FanRadar poursuit plusieurs objectifs stratégiques alignés avec les besoins identifiés lors de la phase de conception. La plateforme vise d'abord à centraliser les contenus et discussions éparpillés sur de multiples plateformes sociales, offrant ainsi un espace dédié et spécialisé pour les communautés de fans.
+
+Un deuxième objectif important concerne la modération et l'analyse, avec des outils avancés permettant aux administrateurs de maintenir un environnement sain et sécurisé, tout en comprenant les dynamiques et tendances émergentes au sein des communautés.
+
+L'expérience utilisateur constitue un focus particulier, avec la volonté de fournir une interface optimale quel que soit le device utilisé, que ce soit sur desktop, tablette ou mobile. Cette approche multi-support vise à maximiser l'engagement et la satisfaction des utilisateurs.
+
+Enfin, FanRadar ambitionne de créer un écosystème économique viable autour des fandoms, avec des mécanismes de monétisation qui bénéficient à la fois aux créateurs de contenu, aux communautés et à la plateforme elle-même.
+
+\subsection{Périmètre de mon intervention}
+
+Mon intervention s'est concentrée exclusivement sur le développement du site web utilisateur, avec le rôle principal de développeur de l'interface utilisateur avec la technologie Vue.js. Cette mission comprenait la conception et l'implémentation complète de l'interface, depuis la transformation des maquettes graphiques en pages web interactives jusqu'à la connexion avec le service distant (API) qui fournit les données.
+
+J'ai été responsable du développement des fonctionnalités utilisateur essentielles, incluant le système de connexion sécurisé utilisant des jetons d'authentification (JWT), la gestion complète des profils utilisateur avec téléchargement et modification des images de profil, et la création et affichage des publications contenant du texte, des images et des vidéos.
+
+Le développement incluait également la mise en place du système de relations entre utilisateurs avec les fonctionnalités de s'abonner / se désabonner, l'affichage des listes d'abonnements et d'abonnés, et l'intégration avec le système de classement du contenu par catégories et mots-clés.
+
+En parallèle du développement, j'ai assuré la qualité technique à travers des tests avec des utilisateurs pour vérifier le bon fonctionnement, la rédaction de documents expliquant le fonctionnement technique, et la collaboration étroite avec l'équipe backend pour garantir une intégration fluide et robuste.
+
+\subsection{Contexte technique du projet}
+
+Le projet s'appuie sur une architecture modulaire avec une séparation claire des responsabilités entre les différentes couches techniques. L'architecture générale suit un modèle client-serveur avec une API RESTful Laravel côté backend et une application Vue.js 3 côté frontend.
+
+La stack technique frontend que j'ai utilisée incluait Vue.js 3 avec son approche réactive (Composition API) pour une gestion moderne de l'état, Vite comme outil d'assemblage pour des temps de développement et de build optimisés, et Tailwind CSS pour le style avec support natif du mode sombre.
+
+Pour la gestion des données de l'application, j'ai implémenté Pinia comme solution centralisée, offrant une approche modulaire et bien structurée. Axios a été choisi comme client HTTP pour les communications avec l'API, avec une configuration avancée incluant des intercepteurs pour la gestion automatique des jetons d'authentification.
+
+Les principaux défis techniques rencontrés ont concerné la gestion des médias (prévisualisation locale) et la structuration des stores. Le chargement différé avancé et la compression d'images ne sont pas encore généralisés. L'accessibilité de base (mode sombre, contrastes) est en place mais un audit WCAG complet reste à faire.
+
+L'intégration avec l'API backend existante a représenté un défi important, nécessitant une coordination étroite avec l'équipe backend et la mise en place de stratégies de secours pour gérer les éventuels retards ou modifications des points d'accès de l'API. La maintenance du code a été facilitée par l'adoption de bonnes pratiques de documentation et de structure modulaire.
+
+La collaboration avec les autres membres de l'équipe, y compris les développeurs mobile Flutter et les designers UX/UI, a nécessité une communication régulière et la définition d'interfaces claires entre les différentes composantes du projet. Cette approche collaborative a permis de garantir une cohérence d'expérience sur les différentes plateformes.
+
+\section{Processus du développement}
+
+La réalisation de FanRadar a suivi une méthodologie structurée qui combine la rigueur d'une planification classique (le cycle en V) avec la flexibilité des approches agiles pour le travail quotidien.
+
+Le cycle en V est un modèle qui assure un suivi de qualité rigoureux : chaque étape de conception est directement liée à une étape de test. Cela garantit que toutes les exigences de départ sont bien respectées dans le produit final.
+
+Pour la flexibilité, nous avons travaillé par "sprints", des périodes courtes de deux semaines à l'issue desquelles nous présentions des avancées concrètes. Cette méthode nous a permis de nous adapter rapidement aux retours et aux nouvelles idées. La communication était assurée par des réunions quotidiennes et des outils de gestion de projet comme Jira et Confluence. Cette organisation nous a offert le meilleur des deux mondes : une planification solide et une grande capacité d'adaptation.
+
+\begin{figure}[H]
+\centering
+\IfFileExists{Cycle-V-min.png}{\includegraphics[width=0.8\textwidth]{Cycle-V-min.png}}{}
+\caption{Cycle de développement en V adapté pour le projet FanRadar}
+\label{fig:cycle-en-v}
+\end{figure}
+
+
+\chapter{Conception du système}
+
+\section{Méthodologie et approches utilisées}
+\subsection{Langage UML}
+
+Le langage UML (Langage de Modélisation Unifié) est un outil visuel utilisé pour dessiner les plans d'un système logiciel. Tout comme un architecte dessine les plans d'une maison avant de la construire, les développeurs utilisent l'UML pour représenter la structure et le fonctionnement d'une application. Il permet de décrire qui utilise le système, comment ses différentes parties interagissent et comment les données sont organisées. Cela aide à s'assurer que tout le monde dans l'équipe a la même compréhension du projet.
+
+\section{Présentation du projet}
+
+Le projet FanRadar consiste à créer un site web pour les communautés de fans. L'objectif est de rassembler en un seul endroit la création, la découverte et l'analyse de contenus (textes, images, vidéos). Le site est conçu pour s'adapter à tous les écrans (ordinateurs, tablettes, mobiles). Il est composé d'une interface utilisateur (le site web visible) et d'un service en arrière-plan qui gère toutes les données (publications, utilisateurs, communautés, produits de la boutique, etc.).
+
+Objectifs principaux :
+\begin{itemize}
+  \item Fournir un fil d'actualité riche en contenus multimédia (images, vidéos) et adapté aux centres d'intérêt des utilisateurs.
+  \item Permettre la création et la gestion de communautés thématiques (fandoms) avec outils de modération et d'administration.
+  \item Offrir des mécanismes d'analyse et de détection de tendances (taux d'engagement, hashtags, popularité des contenus).
+  \item Intégrer une marketplace pour soutenir la monétisation des créateurs et des communautés.
+  \item Garantir une expérience fluide sur web et mobile, et une intégration robuste avec les APIs backend.
+\end{itemize}
+
+\section{Problématique}
+
+Dans un univers numérique où de nombreuses plateformes existent déjà, FanRadar doit relever plusieurs défis pour se démarquer :
+\begin{itemize}
+  \item \textbf{Pertinence du contenu} : Comment s'assurer que les utilisateurs voient des publications et des tendances qui les intéressent vraiment, parmi une grande quantité d'informations ?
+  \item \textbf{Gestion des médias} : Comment stocker et afficher efficacement les images et les vidéos pour que le site se charge rapidement sans consommer trop de données ?
+  \item \textbf{Sécurité et modération} : Comment protéger les utilisateurs, gérer les contenus inappropriés et garantir le respect de la vie privée, conformément à la réglementation (RGPD) ?
+  \item \textbf{Capacité à grandir} : Comment construire une plateforme capable de fonctionner sans ralentir même avec un grand nombre d'utilisateurs, de publications et de recherches ?
+  \item \textbf{Interactions en temps réel} : Comment faire en sorte que les notifications et les interactions (comme les "j'aime" et les commentaires) apparaissent instantanément pour rendre l'expérience plus vivante ?
+  \item \textbf{Compatibilité} : Comment s'assurer que le service fonctionne de manière fiable avec le site web et l'application mobile, tout en permettant des mises à jour futures sans tout casser ?
+\end{itemize}
+
+\section{Processus du développement}
+
+La réalisation de FanRadar a été conduite selon une approche itérative et agile, privilégiant les incréments de valeur et le retour fréquent des utilisateurs et des parties prenantes. Le processus se compose des étapes suivantes :
+\begin{enumerate}
+  \item \textbf{Analyse des besoins} : collecte des exigences fonctionnelles et non-fonctionnelles, rédaction des cas d'utilisation et priorisation du backlog.
+  \item \textbf{Conception} : modélisation UML (cas d'utilisation, diagrammes de classes, séquences) pour formaliser l'architecture et les interfaces entre composants.
+  \item \textbf{Implémentation} : développement frontend (Vue.js, Pinia, Tailwind). Le backend Laravel est consommé via API (hors dépôt).
+  \item \textbf{Tests} : mise en place prévue de tests unitaires Vitest (actuellement couverture limitée).
+  \item \textbf{Déploiement} : build local via Vite. Aucune pipeline CI/CD encore définie.
+  \item \textbf{Exploitation et monitoring} : non implémentés (outils prévus: Sentry / métriques runtime).
+\end{enumerate}
+
+Le rythme de travail a été organisé en sprints de 2 semaines, chaque sprint aboutissant à des incréments livrables comprenant fonctionnalités, tests et documentation associée. Les décisions critiques (ex: choix du stockage médias, stratégie de cache, politique de pagination) ont été formalisées dans des tickets techniques et validées lors des revues de sprint.
+
+\section{Diagrammes de conception}
+
+\subsection{Diagramme de cas d'utilisation}
+
+% (Diagramme de cas d'utilisation non inclus – fichier image absent dans le dépôt)
+
+La figure \ref{fig:use-case-diagram} présente les actions possibles pour les principaux acteurs du système \textbf{FanRadar} : l'\textit{Utilisateur} et l'\textit{Administrateur}. L'Utilisateur peut réaliser les actions de base comme créer une publication, rejoindre une communauté, parcourir son fil d'actualité, s'inscrire, se connecter, gérer son profil et interagir avec le contenu (aimer, commenter). L'Administrateur, en plus de certaines de ces actions, a des droits supplémentaires pour la modération, la gestion des utilisateurs et l'approbation des nouvelles communautés ou publications. Cette séparation claire entre les rôles permet d'assurer la qualité du contenu et la sécurité de la plateforme.
+
+\subsection{Diagramme de classes}
+
+% (Diagramme de classes non inclus – fichier image absent)
+
+Le diagramme de classes (figure \ref{fig:class-diagram}) montre comment les informations sont structurées. Au cœur du système, on trouve l'\texttt{Utilisateur} et la \texttt{Communauté} (Fandom). Un utilisateur peut rejoindre plusieurs communautés, et une communauté regroupe des \texttt{Publications}. Chaque publication est liée à un utilisateur, à des mots-clés (\texttt{Hashtag}) et à des \texttt{Commentaires}. Le système de suivi (abonnement) permet de créer un réseau social entre les utilisateurs. La partie boutique est composée des \texttt{Produits}, du \texttt{Panier} et des \texttt{Commandes}. Une commande enregistre les informations de l'achat (prix, quantité) pour garantir un suivi fiable. Enfin, les \texttt{Notifications} permettent d'informer les utilisateurs des événements importants. Cette organisation claire sépare bien les aspects sociaux, commerciaux et relationnels, ce qui facilite les évolutions futures.
+
+\subsection{Diagramme de séquence - Processus de commande}
+
+% (Diagramme de séquence commande non inclus – fichier image absent)
+
+La figure \ref{fig:sequence-order} décrit le déroulement d'une commande. Une fois son panier validé, l'utilisateur déclenche une demande de commande. Le système vérifie alors la disponibilité des produits. Si un produit n'est plus en stock, un message d'erreur est envoyé. Sinon, le système procède au paiement. Si le paiement réussit, la commande est enregistrée de manière définitive (les prix et quantités sont "gelés" pour garder une trace exacte de la transaction). L'utilisateur reçoit alors une confirmation. Ce processus garantit qu'une commande n'est passée que si les produits sont disponibles et le paiement validé, évitant ainsi les erreurs.
+
+\subsection{Diagramme de séquence - Système de suivi}
+
+% (Diagramme de séquence suivi non inclus – fichier image absent)
+
+Le diagramme de la figure \ref{fig:sequence-follow} montre comment fonctionne l'action de s'abonner ou se désabonner. Lorsque l'utilisateur clique sur le bouton, l'application vérifie s'il suit déjà la personne. Si ce n'est pas le cas, elle crée la relation d'abonnement. S'il la suit déjà, elle la supprime. Dans les deux cas, l'application renvoie une confirmation et met à jour instantanément les compteurs d'abonnés et d'abonnements. Cette logique simple garantit que chaque clic inverse l'état précédent, offrant une expérience utilisateur claire et prévisible.
+
+\paragraph{Synthèse.} L'ensemble de ces schémas montre que l'architecture est bien organisée en modules indépendants : (1) la partie sociale (communautés, publications), (2) la partie commerciale (produits, commandes), et (3) la partie relationnelle (abonnements, notifications). Cette séparation rend le système plus facile à maintenir et à faire évoluer.
+
+
+\chapter{Analyse et spécification des besoins}
+
+\section{Besoins fonctionnels}
+
+À partir des ateliers et des spécifications produit, FanRadar devra satisfaire les besoins suivants :
+\begin{itemize}
+  \item Authentification et gestion des comptes : inscription, connexion (email ou service d'authentification tiers), récupération de mot de passe, édition du profil (nom, pseudonyme, bio, avatar, image de couverture).
+  \item Création et publication de posts : texte, images, vidéos, avec la possibilité d'ajouter des mots-clés, de mentionner d'autres utilisateurs et de choisir qui peut voir la publication.
+  \item Fil d'actualité personnalisé : un algorithme simple qui affiche les publications les plus récentes et les plus populaires, avec des filtres par communauté, mot-clé ou catégorie.
+  \item Interactions sociales : aimer, commenter, partager, s'abonner ou se désabonner, et recevoir des notifications en temps réel.
+  \item Gestion des communautés (fandoms) : créer, rejoindre, modérer et administrer des communautés thématiques.
+  \item Recherche et découverte : un moteur de recherche pour trouver du contenu par mots-clés, et des suggestions basées sur les centres d'intérêt.
+  \item Modération et signalement : la possibilité de signaler un contenu ou un utilisateur inapproprié, avec des outils pour les modérateurs.
+  \item Boutique : une section simple pour lister des produits, gérer un panier et passer des commandes.
+  \item Gestion des médias : importer des fichiers, avoir un aperçu, suivre la progression du téléchargement, et un traitement automatique des images et vidéos pour optimiser leur affichage.
+  \item API : une interface de programmation documentée pour permettre à d'autres applications (comme l'application mobile) d'accéder aux données.
+  \item Statistiques : des tableaux de bord pour suivre l'engagement, les tendances et d'autres indicateurs clés.
+\end{itemize}
+
+\section{Besoins non-fonctionnels}
+
+Les contraintes non-fonctionnelles définissent la qualité globale du service :
+\begin{itemize}
+  \item \textbf{Performance} : les pages doivent se charger rapidement et l'application doit être réactive.
+  \item \textbf{Évolutivité} : l'architecture doit pouvoir supporter un nombre croissant d'utilisateurs sans perdre en performance.
+  \item \textbf{Disponibilité} : le service doit être accessible en quasi-permanence (objectif de 99.5\% de disponibilité).
+  \item \textbf{Sécurité} : le système doit être protégé contre les attaques courantes, et les données des utilisateurs doivent être sécurisées, en conformité avec le RGPD.
+  \item \textbf{Fiabilité} : des sauvegardes régulières doivent être effectuées et un système de surveillance doit permettre de détecter et de réagir rapidement aux erreurs.
+  \item \textbf{Maintenabilité} : le code doit être bien documenté et organisé de manière modulaire pour faciliter les mises à jour futures.
+  \item \textbf{Accessibilité} : le site doit être utilisable par le plus grand nombre, y compris les personnes en situation de handicap, en respectant les normes en vigueur (WCAG 2.1).
+  \item \textbf{Internationalisation} : le site doit être disponible en plusieurs langues (français et anglais).
+  \item \textbf{Interopérabilité} : l'API doit être bien documentée pour faciliter son utilisation par d'autres applications.
+\end{itemize}
+\section{Critères d'acceptation}
+
+Chaque fonctionnalité doit être validée par des critères clairs. Par exemple :
+\begin{itemize}
+  \item Authentification : un utilisateur doit pouvoir se créer un compte, se connecter et voir son profil. Des tests automatiques doivent vérifier ces étapes.
+  \item Publication : une publication avec du texte et une image doit s'afficher correctement dans le fil d'actualité.
+  \item Suivi : lorsqu'un utilisateur s'abonne à un autre, le compteur d'abonnés doit être mis à jour.
+\end{itemize}
+
+\chapter{Les Choix Techniques}
+
+\section{Comment fonctionne FanRadar ?}
+
+Pour construire FanRadar, nous avons fait des choix techniques importants. Le but était de créer une application qui soit à la fois rapide, agréable à utiliser et facile à mettre à jour.
+
+L'application fonctionne comme une \textbf{application monopage (SPA)}. Imaginez que vous utilisez une application sur votre téléphone : tout se passe au même endroit, sans que la page ne se recharge complètement à chaque clic. C'est beaucoup plus fluide et rapide qu'un site web classique où chaque action vous emmène vers une nouvelle page.
+
+Pour que cela fonctionne, l'interface que vous voyez (le \textit{frontend}) est séparée de la logique qui gère les données (le \textit{backend}). Le frontend (construit avec Vue.js) et le backend (construit avec Laravel) communiquent entre eux, un peu comme un serveur dans un restaurant qui prend votre commande et l'apporte à la cuisine.
+
+\subsection{Pourquoi choisir Vue.js pour l'interface ?}
+
+Pour construire l'interface de FanRadar, nous avons choisi \textbf{Vue.js}. C'est un outil moderne pour créer des interfaces utilisateur. Nous l'avons préféré à d'autres options comme React ou Angular pour plusieurs raisons :
+
+\begin{itemize}
+    \item \textbf{Simplicité et rapidité :} Vue.js est connu pour être facile à prendre en main, ce qui nous a permis de développer le projet plus rapidement.
+    \item \textbf{Flexibilité :} Il est très flexible et s'adapte bien à la taille du projet, qu'il soit petit ou grand.
+    \item \textbf{Bonnes performances :} Les applications construites avec Vue.js sont rapides et réactives.
+    \item \textbf{Communauté solide :} Une grande communauté de développeurs l'utilise, ce qui signifie qu'il y a beaucoup d'aide et d'outils disponibles.
+\end{itemize}
+
+En résumé, Vue.js nous a offert le meilleur équilibre entre vitesse de développement, performance et fiabilité.
+
+\section{L'environnement de Développement}
+
+Pour donner vie à FanRadar, nous avons utilisé une combinaison de langages, de technologies et d'outils qui fonctionnent bien ensemble.
+
+\subsection{Les Langages}
+
+\begin{center}
+\begin{minipage}{\textwidth}
+\centering
+\inlinetech{js.png}{JavaScript}{Le langage principal pour rendre le site interactif. C'est lui qui anime les boutons, envoie les messages, etc.}
+\inlinetech{php.png}{PHP}{Le langage utilisé pour la partie "serveur" (le backend). Il gère la base de données, les utilisateurs et la sécurité.}
+\inlinetech{htmlcss.png}{HTML/CSS}{Les langages de base pour structurer le contenu des pages (HTML) et pour leur donner du style (CSS), comme les couleurs, les polices, etc.}
+\end{minipage}
+\end{center}
+
+\subsection{Les Technologies}
+
+Pour le développement de l'application FanRadar, nous avons utilisé plusieurs technologies modernes qui nous ont permis de créer une application robuste, performante et facile à maintenir.
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{vuejs.png}{Vue.js}{est un kit de développement d'interface utilisateur (UI) open-source. Il permet de développer des applications web monopages (SPA) de manière réactive et performante. Sa flexibilité et sa courbe d'apprentissage douce en font un choix populaire pour les projets de toutes tailles.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{laravel.png}{Laravel}{est un framework PHP côté serveur qui fournit une structure robuste pour construire des API RESTful et des applications web complètes. Il simplifie des tâches comme l'authentification, le routage et l'accès aux bases de données, tout en garantissant la sécurité.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{vite.png}{Vite}{est un outil de build moderne qui améliore significativement l'expérience de développement frontend. Il offre un serveur de développement extrêmement rapide avec rechargement à chaud (HMR) et optimise le code pour la production, le rendant plus léger et plus performant.}
+
+\section{Les Outils du Développeur}
+
+Pour construire FanRadar, nous nous sommes appuyés sur des outils devenus des standards dans le monde du développement web.
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{vscode.png}{Visual Studio Code}{a été notre éditeur de code. C'est un environnement de développement léger mais puissant qui supporte de nombreux langages et peut être enrichi par des milliers d'extensions pour le débogage, le linting et la complétion de code.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{git.png}{Git}{est un système de contrôle de version distribué. Il nous a permis de suivre toutes les modifications du code, de collaborer en équipe sur différentes fonctionnalités en parallèle (branches) et de revenir facilement à une version précédente en cas de problème.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{github.png}{GitHub}{est la plateforme d'hébergement pour nos dépôts Git. Elle facilite la collaboration grâce aux pull requests, au suivi des problèmes (issues) et à l'intégration avec des outils d'automatisation (CI/CD), servant de point central pour le projet.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{postman.png}{Postman}{a été un outil essentiel pour tester l'API. Il permet de construire et d'exécuter des requêtes HTTP, de visualiser les réponses du serveur et d'automatiser les tests d'intégration, assurant que le frontend et le backend communiquent correctement.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{i18n.png}{Vue I18n}{est la bibliothèque d'internationalisation pour Vue.js. Elle nous a permis de gérer les traductions de l'interface de manière centralisée, facilitant la prise en charge de plusieurs langues (français et anglais) dans l'application.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{nodejs.png}{Node.js}{a servi d'environnement d'exécution pour les outils de développement frontend. Bien que le backend soit en PHP, des outils comme Vite et la gestion des dépendances JavaScript (npm/yarn) reposent sur Node.js.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{mysql.png}{MySQL}{est le système de gestion de base de données relationnelle utilisé pour stocker toutes les données de l'application. C'est une solution open-source reconnue pour sa fiabilité, sa performance et sa robustesse pour les applications web.}
+
+\vspace{0.5cm}
+
+\noindent
+\inlinetech{pinia.png}{Pinia.js}{est la bibliothèque de gestion d'état recommandée pour Vue.js. Elle offre un magasin de données centralisé, simple et modulaire pour gérer l'état de l'application (ex: informations de l'utilisateur connecté, contenu du panier) de manière prévisible.}
+
+\vspace{0.5cm}
+
+Cette combinaison d'outils nous a permis de créer un environnement de travail efficace et de construire une application web moderne, performante et agréable à utiliser.
+
+
+
+
+\chapter{Réalisation du projet}
+
+\section{Interfaces de l'application}
+
+% Démarrer la numérotation des figures à 13 pour correspondre à l'exemple souhaité
+\setcounter{figure}{12}
+
+\subsection{Écran de connexion}
+
+Le premier écran présenté à l'utilisateur est l'interface d'authentification, conçue pour offrir une expérience de connexion intuitive et sécurisée. Les utilisateurs disposant déjà d'un compte peuvent saisir leur adresse e-mail et mot de passe pour accéder à leur espace personnel. Un lien "S'inscrire" permet aux nouveaux utilisateurs de créer un compte, tandis qu'une option "Mot de passe oublié" donne accès à la procédure de récupération.
+
+Les champs obligatoires pour la connexion comprennent l'adresse e-mail et le mot de passe, avec validation en temps réel et messages d'erreur contextuels. L'interface intègre également la possibilité de se connecter via des providers OAuth tiers pour une authentification simplifiée.
+
+% (Capture de l'écran de connexion non incluse – image absente)
+
+\begin{figure}[H]
+\centering
+\IfFileExists{login.png}{\includegraphics[width=0.9\linewidth]{login.png}}{\fbox{\rule{0pt}{120pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Écrans de connexion — FanRadar}
+\label{fig:ui-login}
+\end{figure}
+
+\subsection{Création de compte}
+
+Les nouveaux utilisateurs peuvent accéder à l'écran de création de compte via le lien d'inscription. Le formulaire demande des informations personnelles incluant le prénom, nom, date de naissance, ville de résidence, ainsi que des préférences thématiques pour personnaliser l'expérience utilisateur.
+
+Le processus d'inscription intègre une validation robuste des données avec vérification de la disponibilité du nom d'utilisateur et de la validité de l'adresse e-mail. Une fois le formulaire soumis, un e-mail de confirmation est envoyé pour activer le compte.
+
+% (Capture création de compte non incluse – image absente)
+
+\begin{figure}[H]
+\centering
+\IfFileExists{register.png}{\includegraphics[width=0.9\linewidth]{register.png}}{\fbox{\rule{0pt}{120pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Écrans de création de compte — FanRadar}
+\label{fig:ui-register}
+\end{figure}
+
+\subsection{Récupération de mot de passe}
+
+En cas d'oubli de mot de passe, les utilisateurs peuvent initier une procédure de récupération via l'écran dédié. Il suffit de saisir son adresse e-mail pour recevoir un lien de réinitialisation sécurisé et temporaire.
+
+Après soumission de l'e-mail, un écran de confirmation informe l'utilisateur de vérifier sa boîte de réception, incluant les dossiers de courriers indésirables. Le lien de réinitialisation conduit à une interface sécurisée permettant de définir un nouveau mot de passe fort.
+
+% (Capture récupération mot de passe non incluse – image absente)
+
+\begin{figure}[H]
+\centering
+\IfFileExists{password-reset.png}{\includegraphics[width=0.9\linewidth]{password-reset.png}}{\fbox{\rule{0pt}{120pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Récupération de mot de passe et confirmation d'envoi — FanRadar}
+\label{fig:ui-password-reset}
+\end{figure}
+
+\subsection{Tableau de bord principal}
+
+Après authentification réussie, les utilisateurs accèdent au tableau de bord principal qui offre une vue consolidée de leur activité. L'interface présente plusieurs widgets personnalisables organisés en cartes informatives.
+
+Le tableau de bord affiche les statistiques d'engagement, incluant le nombre de publications, les interactions reçues, et les nouveaux abonnés. Un graphique radial interactif visualise la répartition de l'activité par catégories, utilisant un code couleur distinct pour chaque métrique.
+
+La navigation principale s'effectue via une barre latérale contextuelle sur desktop et une barre de navigation inférieure sur mobile, permettant un accès rapide aux différentes sections de l'application.
+
+% (Capture tableau de bord non incluse – image absente)
+
+\begin{figure}[H]
+\centering
+\IfFileExists{dashboard.png}{\includegraphics[width=0.9\linewidth]{dashboard.png}}{\fbox{\rule{0pt}{160pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Tableau de bord et statistiques d'engagement — FanRadar}
+\label{fig:ui-dashboard}
+\end{figure}
+
+\subsection{Gestion des publications}
+
+L'écran de création de publications permet d'ajouter du contenu multimédia riche grâce à un éditeur de texte avancé. Les utilisateurs peuvent télécharger plusieurs images et vidéos, et le système leur suggère des mots-clés pertinents en fonction du contenu.
+
+L'interface inclut un aperçu en temps réel, des options pour choisir qui peut voir la publication (public, privé, ou réservé à une communauté), et la possibilité de planifier la publication pour plus tard. Un système de glisser-déposer facilite l'organisation des médias.
+
+\begin{figure}[H]
+\centering
+\IfFileExists{composer.png}{\includegraphics[width=0.9\linewidth]{composer.png}}{\fbox{\rule{0pt}{140pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Éditeur de publication multimédia — FanRadar}
+\label{fig:ui-composer}
+\end{figure}
+
+\subsection{Gestion de profil}
+
+L'écran de profil permet une gestion complète des informations utilisateur avec plusieurs sections organisées thématiquement. La section informations personnelles permet de mettre à jour les données de base, tandis que les préférences de confidentialité offrent un contrôle granulaire sur la visibilité des contenus.
+
+L'upload d'avatar et de bannière utilise un système de recadrage intégré avec prévisualisation immédiate. La section connexions sociales montre le réseau de l'utilisateur avec statistiques détaillées sur les abonnements et abonnés.
+
+\begin{figure}[H]
+\centering
+\IfFileExists{profile.png}{\includegraphics[width=0.9\linewidth]{profile.png}}{\fbox{\rule{0pt}{140pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Écran de profil et paramètres — FanRadar}
+\label{fig:ui-profile}
+\end{figure}
+
+\subsection{Navigation et accessibilité}
+
+L'application utilise un système de navigation cohérent avec un fil d'Ariane pour aider les utilisateurs à se repérer. Les transitions entre les pages sont fluides pour améliorer l'expérience.
+
+L'accessibilité a été une priorité, avec le respect des standards pour la navigation au clavier et des contrastes de couleurs adaptés. Un mode sombre est également disponible et peut s'activer automatiquement.
+
+% (Capture navigation non incluse – image absente)
+
+\begin{figure}[H]
+\centering
+\IfFileExists{navigation.png}{\includegraphics[width=0.9\linewidth]{navigation.png}}{\fbox{\rule{0pt}{120pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Navigation principale et accessibilité — FanRadar}
+\label{fig:ui-navigation}
+\end{figure}
+
+\subsection{Interface responsive}
+
+L'interface s'adapte à toutes les tailles d'écran pour offrir une expérience optimale sur ordinateur, tablette et mobile.
+
+Les performances reposent actuellement sur la rapidité de Vite, la centralisation des données via Pinia et des composants réutilisables. Des optimisations futures incluront découpage dynamique accru, compression d'images et pré-chargement sélectif.
+
+\begin{figure}[H]
+\centering
+\IfFileExists{responsive.png}{\includegraphics[width=0.9\linewidth]{responsive.png}}{\fbox{\rule{0pt}{120pt}\rule{0.9\linewidth}{0pt}}}
+\caption{Interface responsive (desktop, tablette, mobile) — FanRadar}
+\label{fig:ui-responsive}
+\end{figure}
+
+
+
+
+\chapter{Conclusion}
+
+Le projet FanRadar a été une excellente occasion de participer au développement complet d'une plateforme ambitieuse, de sa conception à sa mise en ligne. Ce stage m'a permis de renforcer mes compétences en développement avec Vue.js et de faire face aux défis concrets de la création d'une application web moderne.
+
+La plateforme atteint ses objectifs initiaux côté interface (navigation, contenu, interactions sociales basiques). Les volets observabilité, tests avancés et optimisation devront être renforcés.
+
+Les principaux défis : structurer les stores, gérer les médias localement avant envoi, homogénéiser les appels API et assurer le responsive.
+
+Ce projet s'inscrit dans la vision de NeuralMobi. Les fonctionnalités intelligentes (détection de tendances, modération assistée) restent à l'état de perspective.
+
+D'un point de vue personnel, cette expérience a été très enrichissante et a confirmé mon intérêt pour le développement d'applications web complexes et innovantes.
+
+\chapter{Bibliographie et webographie}
+
+\begin{itemize}
+  \item Laravel Documentation. \url{https://laravel.com/docs}
+  \item Vue.js Guide. \url{https://vuejs.org/guide}
+  \item Pinia Documentation. \url{https://pinia.vuejs.org}
+  \item Vite Documentation. \url{https://vitejs.dev/guide}
+  \item Tailwind CSS Documentation. \url{https://tailwindcss.com/docs}
+  \item Richardson, L. \& Ruby, S. (2007). RESTful Web Services. O'Reilly Media.
+  \item Fowler, M. (2002). Patterns of Enterprise Application Architecture. Addison-Wesley.
+  \item Microsoft REST API Guidelines. \url{https://github.com/microsoft/api-guidelines}
+  \item OWASP Secure Coding Practices. \url{https://owasp.org/www-project-secure-coding-practices}
+  \item Vitest Documentation. \url{https://vitest.dev/}
+
+\end{itemize}
+
+\chapter*{Travaux futurs}
+\addcontentsline{toc}{chapter}{Travaux futurs}
+\begin{itemize}
+  \item Mise en place CI (lint, tests, build).
+  \item Intégration Sentry et métriques Web Vitals.
+  \item Découpage dynamique systématique des vues lourdes.
+  \item Optimisation médias (compression, redimensionnement, CDN futur).
+  \item Notifications temps réel.
+  \item Audit accessibilité (WCAG) et corrections.
+  \item Internationalisation complète (revue des textes restants).
+\end{itemize}
+
+\end{document}

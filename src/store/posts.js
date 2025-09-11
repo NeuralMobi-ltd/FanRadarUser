@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
-import PostsService, { getMyFavorites } from '@/services/postsService'
 import API_CONFIG from '@/config/api'
+import PostsService, { getMyFavorites } from '@/services/postsService'
+import { defineStore } from 'pinia'
 
 // Helper to resolve media/storage paths to absolute URLs
 function resolveMediaUrl(p) {
@@ -394,21 +394,11 @@ export const usePostsStore = defineStore('posts', {
       }
     },
     async createPost(payload, config = {}) {
-      // Allow callers to skip the immediate local add and rely on a follow-up feed refresh
-      const skipAdd = !!config.__skipAdd
-      const axiosCfg = { ...config }
-      delete axiosCfg.__skipAdd
-      const res = await PostsService.create(payload, axiosCfg)
-      const p = res?.data?.post || res?.data || res?.post || res
-      if (!skipAdd && p) {
-        // Map backend shape defensively (prefer description when content is missing)
-        const mapped = this.mapBackendPost({
-          ...p,
-          description: p.description || p.content || payload?.description || payload?.content || ''
-        })
-        if (mapped) this.posts.unshift(mapped)
-      }
-      return res
+  // Do not mutate Pinia posts list on create; rely on a subsequent feed refresh by callers
+  const axiosCfg = { ...config }
+  delete axiosCfg.__skipAdd
+  const res = await PostsService.create(payload, axiosCfg)
+  return res
     },
     async updatePostApi(postId, payload) {
       // Extract numeric ID; accept composite keys like '2025-09-01T...-123'

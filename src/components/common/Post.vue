@@ -422,7 +422,7 @@ onMounted(() => { isSaved.value = !!props.post.isSaved })
 
 // ---- Asset URL Normalization ----
 // Ensure storage assets don't contain /api and have full base URL.
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api'
 const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '') // strip trailing /api
 const WINDOW_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
 

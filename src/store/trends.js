@@ -55,7 +55,7 @@ export const useTrendsStore = defineStore('trends', {
         this.trendingCommunities = list.map(f => {
           const id = f.id ?? f.fandom_id ?? f._id
           const name = f.name ?? f.title ?? ''
-          const avatar = f.logo_image || f.cover_image || '/images/FanRadar.png'
+          const avatar = f.logo_image || f.cover_image || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
           const membersCount = Number(f.members_count ?? f.members ?? 0) || 0
           const joined = Boolean(f.is_member ?? f.joined ?? false)
           return {

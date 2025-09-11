@@ -221,12 +221,11 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
-import PostsService from '@/services/postsService'
-import { usePostsStore } from '@/store/posts'
-import { useCategoriesStore } from '@/store/categories'
-import { onMounted } from 'vue'
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import PostsService from '@/services/postsService'
+import { useCategoriesStore } from '@/store/categories'
+import { usePostsStore } from '@/store/posts'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -256,7 +255,7 @@ const categoriesStore = useCategoriesStore()
 onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
 
 // ---- Media URL Normalization (remove /api before /storage) ----
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api'
 const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '')
 function normalizeMediaUrl(raw) {
   if (!raw) return raw
@@ -471,20 +470,8 @@ async function submit() {
     }
     let resp
     // Prepare optimistic post to show immediately
-    const optimistic = {
-      id: `temp-${Date.now()}`,
-      content: postContent.value,
-      media: postMedia.value.map(m => ({ type: m.type, url: m.url })),
-      username: props.userName || 'You',
-  avatar: props.userAvatar || '',
-      date: new Date(),
-      likes: 0,
-      comments: 0,
-      isLiked: false,
-      uploading: true,
-      uploadProgress: 0
-    }
-    postsStore.addPost(optimistic)
+    // Emit refresh instead of adding optimistic post
+    emit('refresh')
 
     const config = {
       onUploadProgress: (progressEvent) => {
@@ -495,7 +482,7 @@ async function submit() {
         }
         // Update optimistic post progress
         try {
-          postsStore.updatePost(optimistic.id, { ...optimistic, uploadProgress: uploadProgress.value })
+            // Remove optimistic post update
         } catch (e) {}
       }
     }
@@ -518,44 +505,10 @@ async function submit() {
     }
 
     const created = resp.post || resp.data?.post || resp.data || resp
-    // Replace optimistic with normalized API post preserving username/avatar
-    if (created) {
-      const enriched = { ...created }
-      // Keep existing author fields if backend doesn't send them
-      if (!enriched.author && !enriched.user) {
-        enriched.author = { name: props.userName, avatar: props.userAvatar }
-      }
-      if (typeof postsStore.replaceOptimistic === 'function') {
-        postsStore.replaceOptimistic(optimistic.id, enriched)
-      } else {
-        // Fallback: manual replacement
-        const idx = postsStore.posts.findIndex(p => p.id === optimistic.id)
-        if (idx !== -1) {
-          const media = Array.isArray(enriched.media) ? enriched.media.map(m => {
-            if (typeof m === 'string') {
-              return { type: /(mp4|webm|ogg)$/i.test(m) ? 'video' : 'image', url: m }
-            }
-            return { type: m.type || 'image', url: m.url || m.path || m.src }
-          }) : []
-          postsStore.posts[idx] = {
-            ...postsStore.posts[idx],
-            id: enriched.id || postsStore.posts[idx].id,
-            originalId: enriched.id || postsStore.posts[idx].originalId,
-            text: enriched.description || enriched.content || enriched.body || postsStore.posts[idx].text,
-            media,
-            likes: enriched.likes || enriched.likes_count || 0,
-            comments: enriched.comments || enriched.comments_count || 0,
-            isLiked: !!(enriched.liked || enriched.is_liked),
-            trending: !!enriched.trending,
-            uploading: false,
-            uploadProgress: 100
-          }
-          if (postsStore.lastMutation !== undefined) {
-            postsStore.lastMutation = Date.now()
-          }
-        }
-      }
-    }
+    // Emit the created post and refresh
+    emit('submit', resp)
+    emit('posted', resp)
+    emit('refresh') // let parent trigger a manual refresh if desired
 
   emit('submit', resp)
   emit('posted', resp)

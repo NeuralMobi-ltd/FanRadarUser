@@ -8,7 +8,7 @@ export const API_CONFIG = {
   // Base URL of your backend API (adjust for prod/staging via env if needed)
   // Updated default base URL to Laravel backend
   // If VITE_API_BASE_URL not provided, default includes /api so endpoints can use /Y/...
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api',
 
   // Auth
   auth: {
@@ -21,11 +21,18 @@ export const API_CONFIG = {
     updateProfile: '/Y/users/profile',
     updateAvatar: '/Y/users/profile',
     updateCover: '/Y/users/profile',
-    // OTP endpoints
-    verifyOtp: '/Y/auth/verify-otp',
-    resendOtp: '/Y/auth/resend-otp',
-    sendPasswordResetOtp: '/Y/auth/send-reset-otp',
-    resetPassword: '/Y/auth/reset-password'
+  // OTP & Password reset endpoints (backend current spec)
+  // Forgot password (request OTP)
+  forgotPassword: '/forgetPassword',
+  // Verify OTP for signup registration
+  verifyRegister: '/verifyregister',
+  // Verify OTP for password reset and optionally reset when password fields provided
+  verifyOTPForget: '/verifyOTPforgetPassword',
+  // Legacy endpoints (kept for backward compatibility; not used by current flow)
+  verifyOtp: '/verifyOTP',
+  resetPassword: '/resetPassword',
+  // Optional registration/login OTP flows (keep if backend supports)
+  resendOtp: '/Y/auth/resend-otp'
   },
 
   // Users
@@ -156,6 +163,8 @@ export const API_CONFIG = {
     // Public products listing and details (baseURL already includes /api)
     list: '/products',
     detail: (id) => `/products/${id}`,
+    // Limited edition products (drag products)
+    drag: '/Y/products/drag',
   },
   favorites: {
     // Product wishlist endpoints

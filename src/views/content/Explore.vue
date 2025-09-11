@@ -55,8 +55,9 @@
             <div v-for="category in popularCategories" :key="category.id"
                  @click="navigateToCategory(category.name)"
                  class="relative w-48 h-28 sm:w-56 sm:h-36 lg:w-64 lg:h-40 rounded-xl sm:rounded-2xl overflow-hidden cursor-pointer transform hover:scale-105 active:scale-95 transition-transform flex-shrink-0 touch-manipulation text-white"
-                 :style="tileStyle(category.name)">
-              <div class="absolute inset-0 bg-black/10"></div>
+                 :style="category.image ? {} : tileStyle(category.name)">
+              <img v-if="category.image" :src="resolveImage(category.image)" :alt="category.name" class="absolute inset-0 w-full h-full object-cover" />
+              <div class="absolute inset-0" :class="category.image ? 'bg-black/30' : 'bg-black/10'"></div>
               <div class="absolute bottom-3 sm:bottom-4 left-3 sm:left-4 right-3 sm:right-4">
                 <h3 class="font-bold text-sm sm:text-lg truncate drop-shadow">{{ category.name }}</h3>
                 <p class="text-white/80 text-xs sm:text-sm drop-shadow">{{ $t('common.category') }}</p>
@@ -113,12 +114,13 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
+import { useCategoriesStore } from '@/store/categories'
 import { useNewsStore } from '@/store/news'
 import { useTrendsStore } from '@/store/trends'
-import { useCategoriesStore } from '@/store/categories'
+import { withPlaceholder } from '@/utils/assets'
+import { computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const { locale } = useI18n()
@@ -202,6 +204,10 @@ function tileStyle(name = '') {
   return {
     background: `linear-gradient(135deg, ${from}, ${to})`
   }
+}
+
+function resolveImage(path) {
+  return withPlaceholder(path, 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg')
 }
 </script>
 

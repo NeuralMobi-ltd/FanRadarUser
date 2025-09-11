@@ -8,7 +8,7 @@ export function getHashtagImage(tag = '') {
     anime: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1600&h=600&fit=crop',
     trending: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1600&h=600&fit=crop'
   }
-  return map[key] || '/images/FanRadar.png'
+  return map[key] || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
 }
 
 export function getCategoryImage(categoryName = '') {
@@ -20,7 +20,7 @@ export function getCategoryImage(categoryName = '') {
     music: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1600&h=600&fit=crop',
     movies: 'https://images.unsplash.com/photo-1489599510041-0c5812f0d09d?w=1600&h=600&fit=crop'
   }
-  return map[key] || '/images/FanRadar.png'
+  return map[key] || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
 }
 
 export default { getHashtagImage, getCategoryImage }

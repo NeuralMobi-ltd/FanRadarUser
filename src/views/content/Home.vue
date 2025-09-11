@@ -373,19 +373,21 @@
 </template>
 
 <script setup>
-import { NewsPost } from '@/components/feed'
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import Post from '@/components/common/Post.vue'
+import { NewsPost } from '@/components/feed'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
 import { useNewsStore } from '@/store/news'
 import { usePostsStore } from '@/store/posts'
 import { useTrendsStore } from '@/store/trends'
 import { storeToRefs } from 'pinia'
-import { computed, ref, onMounted, nextTick, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const { locale } = useI18n()
 
 // Stores
 const postsStore = usePostsStore()
@@ -419,6 +421,12 @@ onMounted(async () => {
       trendsStore.fetchTrendingFandoms(10),
       trendsStore.fetchTrendingHashtags(10)
     ])
+  } catch (_) { /* ignore */ }
+  // Fetch home news as this is the first page for users
+  try {
+    if (!newsStore.newsItems?.length) {
+      await newsStore.fetchNews({ language: locale.value })
+    }
   } catch (_) { /* ignore */ }
   // Preload trending posts if user lands with trending active
   if (postsStore.activeFeed === 'trending') {
@@ -600,8 +608,7 @@ async function createPost() {
 
   try {
     // Assume postsStore.createPost forwards axios config (onUploadProgress)
-    await postsStore.createPost(payload, {
-      __skipAdd: true,
+  await postsStore.createPost(payload, {
       onUploadProgress: progressEvent => {
         try {
           if (progressEvent.lengthComputable) {
@@ -612,12 +619,8 @@ async function createPost() {
         }
       }
     })
-
-    // Refresh home feed (page 1) so the new post appears with canonical backend data
-    // Ignore errors silently to preserve optimistic UX
-    try {
-      await postsStore.fetchHomeFeed()
-    } catch (_) { /* ignore */ }
+  // Refresh home feed from backend instead of inserting locally
+  await postsStore.fetchHomeFeed()
 
   // success: clear inputs
   newPostContent.value = ''

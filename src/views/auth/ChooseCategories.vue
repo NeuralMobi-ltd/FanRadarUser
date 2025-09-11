@@ -104,12 +104,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
 import { useRegistrationStore } from '@/store/registration'
-import AuthService from '@/services/authService'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -165,32 +164,35 @@ async function submitCategories() {
   loading.value = true
   errorMsg.value = ''
   try {
+    // Map selected category names to numeric IDs
+    const preferredIds = selected.value
+      .map(name => (categoriesStore.getCategories || []).find(c => c.name === name)?.id)
+      .map(id => Number(id))
+      .filter(n => Number.isFinite(n))
+
+    // Build register payload exactly as backend expects
     const payload = {
-      email: registrationStore.email,
-      password: registrationStore.password,
       first_name: registrationStore.first_name,
       last_name: registrationStore.last_name,
-      username: registrationStore.username || undefined,
-      gender: registrationStore.gender || undefined,
-      date_naissance: registrationStore.birth_date || undefined,
-      preferred_categories: selected.value
-        .map(name => (categoriesStore.getCategories || []).find(c => c.name === name)?.id ?? null)
-        .filter(id => id !== null)
+      email: registrationStore.email,
+      password: registrationStore.password,
+      date_naissance: registrationStore.birth_date,
+      gender: registrationStore.gender,
+      preferred_categories: preferredIds
     }
-    const res = await AuthService.register(payload)
-    const response = res?.data || res
-    const token = response.token
-    const apiUser = response.user
-    if (token) authStore.setToken(token)
-    if (apiUser) {
-      authStore.user = authStore.mapApiUserToState(apiUser)
-      authStore.updateUserProfile({ categories: selected.value })
-      localStorage.setItem('user', JSON.stringify(authStore.user))
+
+    const res = await authStore.register(payload)
+    if (res?.success) {
+      // Proceed to OTP verification step
+      router.push({
+        name: 'OtpVerification',
+        query: { email: registrationStore.email, type: 'signup' }
+      })
+    } else {
+      errorMsg.value = res?.error || 'Registration failed'
     }
-    registrationStore.clear()
-    router.push('/')
   } catch (e) {
-    errorMsg.value = e?.response?.data?.message || 'Registration failed'
+    errorMsg.value = e?.response?.data?.message || e?.message || 'Registration failed'
   } finally {
     loading.value = false
   }

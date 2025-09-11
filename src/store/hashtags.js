@@ -2,12 +2,7 @@ import { defineStore } from 'pinia'
 import { TagsService } from '@/services/tagsService'
 import { usePostsStore } from '@/store/posts'
 // Local helper to resolve a hashtag image
-function getHashtagImage(tag = '') {
-  const key = String(tag || '').toLowerCase()
-  const map = {
-  }
-  return map[key] || '/images/FanRadar.png'
-}
+
 
 export const useHashtagsStore = defineStore('hashtags', {
   state: () => ({

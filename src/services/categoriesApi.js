@@ -1,5 +1,5 @@
-import http from '@/services/http'
 import API_CONFIG from '@/config/api'
+import http from '@/services/http'
 
 // Simple in-memory caches to avoid repeated network calls
 const CATEGORIES_TTL_MS = 5 * 60 * 1000 // 5 minutes
@@ -16,13 +16,17 @@ export async function fetchCategories({ perPage } = {}) {
 
   const endpoint = API_CONFIG?.categories?.list || '/Y/categories'
 
-  // Helper to request a page and normalize response
+  // Helper to request a page and normalize response (supports both array and paginated objects)
   const getPage = async (page) => {
     const params = { page }
     if (perPage) params.per_page = perPage
     const { data } = await http.get(endpoint, { params })
-    const categories = data?.data?.categories || data?.categories || data?.data || []
-    const pagination = data?.data?.pagination || data?.pagination || {}
+    const categories = Array.isArray(data)
+      ? data
+      : (data?.data?.categories || data?.categories || data?.data || [])
+    const pagination = Array.isArray(data)
+      ? { has_more: false }
+      : (data?.data?.pagination || data?.pagination || {})
     return {
       categories: Array.isArray(categories) ? categories : [],
       pagination
@@ -38,7 +42,7 @@ export async function fetchCategories({ perPage } = {}) {
     while (hasMore && guard < 50) { // safety guard
       const { categories, pagination } = await getPage(page)
       for (const c of categories) {
-        all.push({ id: c.id, name: c.name })
+        all.push({ id: c.id, name: c.name, image: c.image || null, description: c.description || null })
       }
       hasMore = Boolean(pagination?.has_more)
       page += 1
@@ -48,8 +52,8 @@ export async function fetchCategories({ perPage } = {}) {
     // Fallback: try a single request without params
     try {
       const { data } = await http.get(endpoint)
-      const listRaw = data?.data?.categories || data?.categories || data?.data || []
-      const list = Array.isArray(listRaw) ? listRaw.map(c => ({ id: c.id, name: c.name })) : []
+      const listRaw = Array.isArray(data) ? data : (data?.data?.categories || data?.categories || data?.data || [])
+      const list = Array.isArray(listRaw) ? listRaw.map(c => ({ id: c.id, name: c.name, image: c.image || null, description: c.description || null })) : []
       categoriesCache = { data: list, fetchedAt: now }
       return list
     } catch (_) {

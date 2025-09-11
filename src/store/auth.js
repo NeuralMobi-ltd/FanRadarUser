@@ -1,7 +1,8 @@
-import { defineStore } from 'pinia'
-import AuthService from '@/services/authService'
 import API_CONFIG from '@/config/api'
-import { setCookie, getCookie, deleteCookie } from '@/utils/cookies'
+import i18n from '@/i18n'
+import AuthService from '@/services/authService'
+import { deleteCookie, getCookie, setCookie } from '@/utils/cookies'
+import { defineStore } from 'pinia'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -298,7 +299,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         const status = error?.response?.status
         if (status === 401) {
-          this.setError('Invalid email or password.')
+          this.setError(i18n.global?.t ? i18n.global.t('auth.signIn.errors.invalidCredentials') : 'Invalid email or password.')
           return { success: false, error: this.error }
         }
   // No mock fallback
@@ -334,12 +335,12 @@ export const useAuthStore = defineStore('auth', {
     },
 
     // Verify OTP for registration, login, or password reset
-    async verifyOtp(payload) {
+  async verifyOtp(payload) {
       this.setLoading(true)
       this.clearError()
       try {
         const res = await AuthService.verifyOtp(payload)
-        const response = res?.data || res
+    const response = res?.data || res
         
         // If verification includes authentication (login/signup), set token and user
         if (response.token) {
@@ -352,15 +353,11 @@ export const useAuthStore = defineStore('auth', {
           setCookie('auth_user', serialized, 30)
         }
         
-        return { 
-          success: true, 
-          user: this.user, 
-          token: response.token,
-          reset_token: response.reset_token // For password reset flow
-        }
+  return { success: true, user: this.user, token: response.token }
       } catch (e) {
-        this.setError(e?.response?.data?.message || 'OTP verification failed')
-        return { success: false, error: this.error }
+  const msg = e?.response?.data?.error || e?.response?.data?.message
+  this.setError(msg || 'OTP verification failed')
+  return { success: false, error: msg || this.error }
       } finally {
         this.setLoading(false)
       }
@@ -382,30 +379,39 @@ export const useAuthStore = defineStore('auth', {
     },
 
     // Send OTP for password reset
-    async sendPasswordResetOtp(email) {
+  async sendPasswordResetOtp(email) {
       this.setLoading(true)
       this.clearError()
       try {
         const res = await AuthService.sendPasswordResetOtp(email)
-        return { success: true, data: res?.data || res }
+    return { success: true, data: res?.data || res }
       } catch (e) {
-        this.setError(e?.response?.data?.message || 'Failed to send reset code')
-        return { success: false, error: this.error }
+    const status = e?.response?.status
+    const body = e?.response?.data
+    const msg = body?.error || body?.message || (status === 404 ? 'Email not found' : 'Failed to send reset code')
+    this.setError(msg)
+    return { success: false, error: msg }
       } finally {
         this.setLoading(false)
       }
     },
 
     // Reset password with token
-    async resetPassword(payload) {
+  async resetPassword(payload) {
       this.setLoading(true)
       this.clearError()
       try {
         const res = await AuthService.resetPassword(payload)
-        return { success: true, data: res?.data || res }
+    return { success: true, data: res?.data || res }
       } catch (e) {
-        this.setError(e?.response?.data?.message || 'Password reset failed')
-        return { success: false, error: this.error }
+    const status = e?.response?.status
+    const body = e?.response?.data
+    let msg = body?.error || body?.message || 'Password reset failed'
+    if (status === 400) msg = body?.error || 'OTP expired'
+    if (status === 404) msg = body?.error || 'Invalid email or OTP'
+    if (status === 422) msg = 'Validation error'
+    this.setError(msg)
+    return { success: false, error: msg }
       } finally {
         this.setLoading(false)
       }

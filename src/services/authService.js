@@ -1,5 +1,5 @@
-import http from '@/services/http'
 import API_CONFIG from '@/config/api'
+import http from '@/services/http'
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -31,6 +31,12 @@ export const AuthService = {
     const body = { ...payload }
     if (body.password && !body.password_confirmation) {
       body.password_confirmation = body.password
+    }
+    // If categories are provided during register, ensure numeric array
+    if (Array.isArray(body.preferred_categories)) {
+      body.preferred_categories = body.preferred_categories
+        .map((x) => Number(x))
+        .filter((n) => Number.isFinite(n))
     }
     const { data } = await http.post(API_CONFIG.auth.register, body)
     return data
@@ -110,7 +116,19 @@ export const AuthService = {
         }
       }
     }
-    const { data } = await http.post(API_CONFIG.auth.verifyOtp || '/api/Y/auth/verify-otp', payload)
+    // For signup: POST /verifyregister
+    // For password reset: POST /verifyOTPforgetPassword (verify-only)
+    // For login legacy: /verifyOTP
+    const body = {
+      email: payload?.email,
+      otp: Number(payload?.otp ?? payload?.otp_code)
+    }
+    const url = payload?.type === 'signup'
+      ? (API_CONFIG.auth.verifyRegister || '/api/verifyregister')
+      : payload?.type === 'password-reset'
+        ? (API_CONFIG.auth.verifyOTPForget || '/api/verifyOTPforgetPassword')
+        : (API_CONFIG.auth.verifyOtp || '/api/verifyOTP')
+    const { data } = await http.post(url, body)
     return data
   },
   
@@ -119,6 +137,12 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, message: 'OTP sent successfully' }
     }
+    // For password reset flow, reuse forgotPassword endpoint
+    if (payload?.type === 'password-reset') {
+      const { data } = await http.post(API_CONFIG.auth.forgotPassword || '/api/forgetPassword', { email: payload?.email })
+      return data
+    }
+    // Otherwise, use auth resend endpoint if available
     const { data } = await http.post(API_CONFIG.auth.resendOtp || '/api/Y/auth/resend-otp', payload)
     return data
   },
@@ -128,7 +152,8 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, message: 'Reset code sent to your email' }
     }
-    const { data } = await http.post(API_CONFIG.auth.sendPasswordResetOtp || '/api/Y/auth/send-reset-otp', { email })
+    // Forgot password -> request OTP
+    const { data } = await http.post(API_CONFIG.auth.forgotPassword || '/api/forgetPassword', { email })
     return data
   },
   
@@ -137,7 +162,15 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, message: 'Password reset successfully' }
     }
-    const { data } = await http.post(API_CONFIG.auth.resetPassword || '/api/Y/auth/reset-password', payload)
+    // Preferred flow: single endpoint verifyOTPforgetPassword supports both verify and reset
+    const body = {
+      email: payload?.email,
+      otp: Number(payload?.otp ?? payload?.token),
+      password: payload?.password,
+      password_confirmation: payload?.password_confirmation ?? payload?.password
+    }
+    const url = API_CONFIG.auth.verifyOTPForget || '/api/verifyOTPforgetPassword'
+    const { data } = await http.post(url, body)
     return data
   }
 }

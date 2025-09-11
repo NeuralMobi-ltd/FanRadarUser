@@ -2,11 +2,11 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
     <!-- Category Header -->
     <div class="relative mb-8">
-      <!-- Cover Image -->
-      <div class="h-64 w-full rounded-xl overflow-hidden">
-        <img 
-          :src="getCategoryImage(categoryName)" 
-          :alt="categoryName" 
+      <!-- Cover Image or Gradient Color -->
+  <div class="h-64 w-full rounded-xl overflow-hidden relative" :style="headerImage ? {} : tileStyle(formattedCategoryName)">
+        <img v-if="headerImage"
+          :src="headerImage"
+          :alt="formattedCategoryName"
           class="w-full h-full object-cover"
         >
         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
@@ -24,7 +24,7 @@
         <h1 class="text-4xl font-bold mb-1">
           <i class="mr-3"></i>{{ formattedCategoryName }}
         </h1>
-        <p class="text-white/90 max-w-xl">{{ categoryDescription }}</p>
+  <p class="text-white/90 max-w-xl">{{ categoryDescription }}</p>
       </div>
     </div>
 
@@ -139,18 +139,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 import Post from '@/components/common/Post.vue'
-import { NewsPost } from '@/components/feed'
 import { CommunityCard } from '@/components/fandom'
-import { getCategoryImage } from '@/utils/media'
-import { useFandomsStore } from '@/store/fandoms'
-import { usePostsStore } from '@/store/posts'
-import { useNewsStore } from '@/store/news'
+import { NewsPost } from '@/components/feed'
 import { useCategoriesStore } from '@/store/categories'
+import { useFandomsStore } from '@/store/fandoms'
+import { useNewsStore } from '@/store/news'
+import { usePostsStore } from '@/store/posts'
 import { useSubcategoriesStore } from '@/store/subcategories'
+import { withPlaceholder } from '@/utils/assets'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -177,6 +177,35 @@ const formattedCategoryName = computed(() => {
 const categoryDescription = computed(() => {
   return categoriesStore.getCategoryDescription(categoryName.value, formattedCategoryName.value)
 })
+
+// Use backend image when available; otherwise show a gradient color (no placeholder stock image)
+const rawHeaderImage = computed(() => categoriesStore.getCategoryImage?.(categoryName.value) || null)
+const headerImage = computed(() => withPlaceholder(rawHeaderImage.value, ''))
+
+// Deterministic gradient per category name (same as Explore)
+const palette = [
+  ['#6366F1', '#8B5CF6'], // indigo → violet
+  ['#10B981', '#34D399'], // emerald → green
+  ['#F59E0B', '#F97316'], // amber → orange
+  ['#EF4444', '#F43F5E'], // red → rose
+  ['#06B6D4', '#3B82F6'], // cyan → blue
+  ['#84CC16', '#22C55E']  // lime → green
+]
+
+function hashString(str = '') {
+  let h = 0
+  for (let i = 0; i < str.length; i++) {
+    h = ((h << 5) - h) + str.charCodeAt(i)
+    h |= 0
+  }
+  return Math.abs(h)
+}
+
+function tileStyle(name = '') {
+  const idx = hashString(String(name)) % palette.length
+  const [from, to] = palette[idx]
+  return { background: `linear-gradient(135deg, ${from}, ${to})` }
+}
 
 // Category statistics using store-backed getter
 const categoryStats = computed(() => categoriesStore.getCategoryStats(categoryName.value))

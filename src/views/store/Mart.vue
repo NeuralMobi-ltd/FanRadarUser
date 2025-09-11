@@ -14,36 +14,66 @@
         </div>
 
         <!-- Product Drops Section -->
-        <div class="mb-6 sm:mb-8">
+        <div v-if="!loadingDrops && dragProducts.length > 0" class="mb-6 sm:mb-8">
           <!-- Section Header -->
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
-            <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Limited edition products with exclusive discounts</p>
+            </div>
             <div class="flex items-center gap-3 text-sm">
-              <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
+              <span v-if="currentDrop && !currentDrop.isExpired" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                 <i class="far fa-clock"></i>
-                <span>Next ends in: {{ countdownText }}</span>
+                <span>{{ currentDrop.isUpcoming ? 'Starts in' : 'Ends in' }}: {{ countdownText }}</span>
               </span>
-              <button class="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800">
-                View all
-              </button>
+              <div class="flex items-center gap-2">
+                <span v-if="dragStatistics.active_products > 0" class="px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
+                  🔥 {{ dragStatistics.active_products }} Live
+                </span>
+                <span v-if="dragStatistics.upcoming_products > 0" class="px-3 py-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                  ⏰ {{ dragStatistics.upcoming_products }} Coming
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- Featured Drop -->
-          <div class="relative bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-5 sm:mb-6 overflow-hidden">
+          <div v-if="currentDrop" class="relative rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-5 sm:mb-6 overflow-hidden"
+               :class="[
+                 currentDrop.isActive ? 'bg-gradient-to-br from-green-600 via-emerald-600 to-teal-600' :
+                 currentDrop.isUpcoming ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600' :
+                 'bg-gradient-to-br from-gray-600 via-gray-700 to-gray-800'
+               ]">
+            <!-- Status overlay for expired items -->
+            <div v-if="currentDrop.isExpired" class="absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
+              <div class="text-center text-white">
+                <i class="fas fa-clock-o text-4xl mb-2 opacity-50"></i>
+                <p class="text-xl font-bold">Drop Ended</p>
+                <p class="text-sm opacity-75">This drop has expired</p>
+              </div>
+            </div>
+            
             <div class="absolute inset-0 bg-black/20"></div>
             <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
             <div class="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
             
-            <div class="relative z-10 text-white" v-if="currentDrop">
+            <div class="relative z-10 text-white">
               <div class="flex flex-col lg:flex-row items-center gap-8">
                 <!-- Left content -->
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-3">
-                    <span class="px-2 py-1 text-xs rounded-full bg-white/20 font-semibold tracking-wide">{{ currentDrop.badge }}</span>
+                    <span class="px-3 py-1 text-sm rounded-full bg-white/20 font-semibold tracking-wide">{{ currentDrop.badge }}</span>
                     <span 
-                      class="px-2 py-1 text-xs rounded-full font-semibold"
+                      class="px-3 py-1 text-sm rounded-full font-semibold animate-pulse"
                       :class="[getUrgencyStyle(currentDrop.urgencyLevel).bgColor, 'text-gray-900']"
+                      v-if="getUrgencyStyle(currentDrop.urgencyLevel).pulse"
+                    >
+                      {{ getUrgencyStyle(currentDrop.urgencyLevel).text }}
+                    </span>
+                    <span 
+                      class="px-3 py-1 text-sm rounded-full font-semibold"
+                      :class="[getUrgencyStyle(currentDrop.urgencyLevel).bgColor, 'text-gray-900']"
+                      v-else
                     >
                       {{ getUrgencyStyle(currentDrop.urgencyLevel).text }}
                     </span>
@@ -51,34 +81,68 @@
                   <h3 class="text-3xl md:text-4xl font-extrabold leading-tight mb-2">{{ currentDrop.title }}</h3>
                   <p class="text-white/90 text-lg mb-5">{{ currentDrop.subtitle }}</p>
 
+                  <!-- Enhanced features with icons -->
                   <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-6">
-                    <li v-for="f in currentDrop.features" :key="f" class="flex items-center gap-2 text-white/90">
-                      <i class="fas fa-check-circle text-green-300"></i>
-                      <span>{{ f }}</span>
+                    <li v-for="feature in currentDrop.features" :key="feature" class="flex items-center gap-2 text-white/90 text-sm">
+                      <span>{{ feature }}</span>
                     </li>
                   </ul>
 
+                  <!-- Price section with better formatting -->
                   <div class="flex flex-wrap items-center gap-4 mb-4">
-                    <div class="text-4xl font-extrabold">${{ currentDrop.dropPrice }}</div>
-                    <div class="text-white/70 line-through text-xl">${{ currentDrop.originalPrice }}</div>
-                    <span class="px-2 py-1 bg-red-600 rounded-full text-white text-sm font-semibold">-{{ currentDrop.discount }}%</span>
+                    <div class="text-4xl font-extrabold">${{ currentDrop.dropPrice.toFixed(2) }}</div>
+                    <div v-if="currentDrop.originalPrice > currentDrop.dropPrice" class="text-white/70 line-through text-xl">${{ currentDrop.originalPrice.toFixed(2) }}</div>
+                    <span v-if="currentDrop.discount > 0" class="px-3 py-1 bg-red-600 rounded-full text-white text-sm font-semibold animate-pulse">-{{ currentDrop.discount }}%</span>
                   </div>
 
-                  <div class="flex items-center gap-3 mb-4">
-                    <div class="w-56 h-2 bg-white/20 rounded-full overflow-hidden">
-                      <div class="h-full bg-emerald-400" :style="{ width: soldPercent(currentDrop) + '%' }"></div>
+                  <!-- Enhanced stock display -->
+                  <div class="mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm text-white/90">Stock Progress</span>
+                      <span class="text-sm text-white/90">{{ currentDrop.stockLeft }} of {{ currentDrop.totalStock }} left</span>
                     </div>
-                    <div class="text-sm text-white/90">{{ currentDrop.totalStock - currentDrop.stockLeft }} sold • {{ currentDrop.stockLeft }} left</div>
+                    <div class="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+                      <div 
+                        class="h-full rounded-full transition-all duration-500"
+                        :class="[
+                          currentDrop.stockPercentage < 10 ? 'bg-red-400' :
+                          currentDrop.stockPercentage < 25 ? 'bg-orange-400' :
+                          'bg-emerald-400'
+                        ]"
+                        :style="{ width: soldPercent(currentDrop) + '%' }"
+                      ></div>
+                    </div>
+                    <div class="text-xs text-white/75 mt-1">
+                      {{ currentDrop.totalStock - currentDrop.stockLeft }} sold ({{ Math.round(currentDrop.stockPercentage) }}% remaining)
+                    </div>
                   </div>
 
+                  <!-- Countdown or status info -->
                   <div class="flex items-center gap-2 mb-6">
                     <i class="far fa-clock"></i>
-                    <span class="font-semibold tracking-wide">{{ countdownText }}</span>
+                    <span v-if="currentDrop.isActive" class="font-semibold tracking-wide">Ends in {{ countdownText }}</span>
+                    <span v-else-if="currentDrop.isUpcoming" class="font-semibold tracking-wide">Starts in {{ Math.abs(currentDrop.daysUntilStart || 0) }} days</span>
+                    <span v-else class="font-semibold tracking-wide text-red-300">Drop Ended</span>
                   </div>
 
+                  <!-- Action buttons -->
                   <div class="flex flex-wrap gap-3">
-                    <button @click="viewDrop(currentDrop)" class="px-4 py-2 rounded-lg bg-white text-gray-900 hover:bg-gray-100 font-medium">Shop drop</button>
-                    <button @click="viewDrop(currentDrop)" class="px-4 py-2 rounded-lg border border-white/40 hover:bg-white/10 font-medium">Details</button>
+                    <button 
+                      v-if="!currentDrop.isExpired"
+                      @click="viewDrop(currentDrop)" 
+                      class="px-6 py-3 rounded-lg bg-white text-gray-900 hover:bg-gray-100 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      :disabled="currentDrop.isUpcoming"
+                    >
+                      {{ currentDrop.isUpcoming ? 'Coming Soon' : 'Shop Now' }}
+                    </button>
+                    <button @click="viewDrop(currentDrop)" class="px-6 py-3 rounded-lg border border-white/40 hover:bg-white/10 font-medium transition-all duration-200">
+                      View Details
+                    </button>
+                    <!-- Favorites count if available -->
+                    <div v-if="currentDrop.favorites > 0" class="flex items-center gap-1 px-3 py-2 bg-white/10 rounded-lg text-sm">
+                      <i class="fas fa-heart text-red-300"></i>
+                      <span>{{ currentDrop.favorites }} favorites</span>
+                    </div>
                   </div>
                 </div>
 
@@ -91,49 +155,142 @@
           </div>
 
           <!-- Other Drops Grid -->
-          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div v-if="otherDrops.length > 0" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div 
               v-for="drop in otherDrops"
               :key="drop.id"
-              class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105"
+              class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] sm:hover:scale-105 relative"
+              :class="{ 'opacity-75': drop.isExpired }"
             >
+              <!-- Expired overlay -->
+              <div v-if="drop.isExpired" class="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
+                <div class="text-center text-white">
+                  <i class="fas fa-clock text-xl mb-1 opacity-75"></i>
+                  <p class="text-sm font-medium">Expired</p>
+                </div>
+              </div>
+              
               <div class="relative">
                 <img :src="drop.image" :alt="drop.title" class="w-full h-36 sm:h-44 object-cover" />
-                <div class="absolute top-2 left-2 flex gap-2">
-                  <span class="px-2 py-0.5 text-[11px] rounded-full bg-black/60 text-white">{{ drop.badge }}</span>
-                  <span :class="[getUrgencyStyle(drop.urgencyLevel).bgColor, 'text-gray-900 px-2 py-0.5 text-[11px] rounded-full font-semibold']">
+                <div class="absolute top-2 left-2 flex gap-2 flex-wrap">
+                  <span class="px-2 py-0.5 text-[11px] rounded-full bg-black/60 text-white font-medium">{{ drop.badge }}</span>
+                  <span 
+                    :class="[
+                      getUrgencyStyle(drop.urgencyLevel).bgColor,
+                      'text-gray-900 px-2 py-0.5 text-[11px] rounded-full font-semibold',
+                      { 'animate-pulse': getUrgencyStyle(drop.urgencyLevel).pulse }
+                    ]"
+                  >
                     {{ getUrgencyStyle(drop.urgencyLevel).text }}
                   </span>
                 </div>
-                <div class="absolute bottom-2 right-2 text-xs bg-black/50 text-white px-2 py-0.5 rounded-full">
-                  <i class="far fa-clock mr-1"></i>{{ formatCountdown(drop.endTime, nowTime) }}
+                <div class="absolute bottom-2 right-2 text-xs bg-black/60 text-white px-2 py-1 rounded-full font-medium">
+                  <i class="far fa-clock mr-1"></i>
+                  <span v-if="drop.isActive">{{ formatCountdown(drop.endTime, nowTime) }}</span>
+                  <span v-else-if="drop.isUpcoming">{{ Math.abs(drop.daysUntilStart || 0) }}d to start</span>
+                  <span v-else>Ended</span>
+                </div>
+                <!-- Stock warning badge -->
+                <div v-if="drop.stockPercentage < 25 && !drop.isExpired" class="absolute top-2 right-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
+                  {{ Math.round(drop.stockPercentage) }}% LEFT
                 </div>
               </div>
               <div class="p-4">
-                <h4 class="font-semibold text-gray-900 dark:text-white mb-1">{{ drop.title }}</h4>
-                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ drop.subtitle }}</p>
-                <div class="flex items-center gap-2 mt-3">
-                  <span class="text-lg font-bold text-gray-900 dark:text-white">${{ drop.dropPrice }}</span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ drop.originalPrice }}</span>
-                  <span class="px-2 py-0.5 text-xs bg-red-600 text-white rounded-full">-{{ drop.discount }}%</span>
+                <h4 class="font-semibold text-gray-900 dark:text-white mb-1 line-clamp-1">{{ drop.title }}</h4>
+                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-3">{{ drop.subtitle }}</p>
+                
+                <!-- Price with enhanced styling -->
+                <div class="flex items-center gap-2 mb-3">
+                  <span class="text-lg font-bold text-gray-900 dark:text-white">${{ drop.dropPrice.toFixed(2) }}</span>
+                  <span v-if="drop.originalPrice > drop.dropPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ drop.originalPrice.toFixed(2) }}</span>
+                  <span v-if="drop.discount > 0" class="px-2 py-0.5 text-xs bg-red-600 text-white rounded-full font-medium">-{{ drop.discount }}%</span>
                 </div>
-                <div class="mt-3">
+                
+                <!-- Enhanced stock display -->
+                <div class="mb-3">
                   <div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
-                    <div class="h-full bg-green-500" :style="{ width: soldPercent(drop) + '%' }"></div>
+                    <div 
+                      class="h-full rounded-full transition-all duration-300"
+                      :class="[
+                        drop.stockPercentage < 10 ? 'bg-red-500' :
+                        drop.stockPercentage < 25 ? 'bg-orange-500' :
+                        'bg-green-500'
+                      ]"
+                      :style="{ width: soldPercent(drop) + '%' }"
+                    ></div>
                   </div>
                   <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <span>{{ drop.totalStock - drop.stockLeft }} sold</span>
-                    <span>{{ drop.stockLeft }} left</span>
+                    <span>{{ drop.stockLeft }} left ({{ Math.round(drop.stockPercentage) }}%)</span>
                   </div>
                 </div>
-                <div class="flex items-center justify-between mt-4">
+                
+                <!-- Enhanced footer with more info -->
+                <div class="flex items-center justify-between">
                   <div class="text-xs text-gray-600 dark:text-gray-300">
-                    <i class="fas fa-tag mr-1 text-green-500"></i>{{ drop.category }}
+                    <div class="flex items-center gap-1 mb-1">
+                      <i class="fas fa-tag text-green-500"></i>
+                      <span>{{ drop.category }}</span>
+                    </div>
+                    <div v-if="drop.favorites > 0" class="flex items-center gap-1">
+                      <i class="fas fa-heart text-red-500"></i>
+                      <span>{{ drop.favorites }} favorites</span>
+                    </div>
                   </div>
-                  <button @click="viewDrop(drop)" class="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded-lg">View</button>
+                  <button 
+                    @click="viewDrop(drop)" 
+                    class="px-3 py-1.5 text-sm rounded-lg font-medium transition-all duration-200"
+                    :class="[
+                      drop.isExpired ? 'bg-gray-400 text-white cursor-not-allowed' :
+                      drop.isUpcoming ? 'bg-blue-600 hover:bg-blue-700 text-white' :
+                      'bg-green-600 hover:bg-green-700 text-white hover:scale-105'
+                    ]"
+                    :disabled="drop.isExpired"
+                  >
+                    {{ drop.isExpired ? 'Expired' : drop.isUpcoming ? 'Notify Me' : 'View' }}
+                  </button>
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        <!-- Loading State for Product Drops -->
+        <div v-else-if="loadingDrops" class="mb-6 sm:mb-8">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
+              <div class="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-64 rounded mt-1"></div>
+            </div>
+            <div class="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-32 rounded-lg"></div>
+          </div>
+          <div class="bg-gradient-to-br from-purple-600 via-pink-600 to-red-600 rounded-xl sm:rounded-2xl p-5 sm:p-8 mb-5 sm:mb-6 overflow-hidden animate-pulse">
+            <div class="h-32 bg-white/20 rounded-lg"></div>
+          </div>
+          <!-- Loading skeleton for other drops -->
+          <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div v-for="i in 3" :key="i" class="bg-white dark:bg-gray-800 rounded-lg sm:rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+              <div class="w-full h-36 sm:h-44 bg-gray-200 dark:bg-gray-700"></div>
+              <div class="p-4 space-y-3">
+                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
+                <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Empty State for No Drops -->
+        <div v-else-if="dragProducts.length === 0" class="mb-6 sm:mb-8">
+          <div class="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600">
+            <div class="text-gray-400 text-5xl mb-4">
+              <i class="fas fa-fire-flame-curved"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No Featured Drops Available</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">Check back soon for exclusive limited-time offers</p>
+            <button @click="fetchDragProducts" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
+              <i class="fas fa-refresh mr-2"></i>Refresh
+            </button>
           </div>
         </div>
 
@@ -420,6 +577,7 @@ import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
 import { useMartStore } from '@/store/mart'
 import { useCartStore } from '@/store/cart'
+import ProductsService from '@/services/productsService'
 import notify from '@/utils/notify'
 import RateProductModal from '@/components/common/RateProductModal.vue'
 // No category/subcategory prefetching here to avoid extra network calls
@@ -449,29 +607,36 @@ const currentDropIndex = ref(0)
 const countdownTimer = ref(null)
 const rotationTimer = ref(null)
 const nowTime = ref(Date.now())
+const dragProducts = ref([])
+const dragStatistics = ref({})
+const loadingDrops = ref(false)
 
 // Use locally loaded categories/subcategories for mapping subcategory names
 const heroFeatures = computed(() => martStore.heroFeatures)
 const heroContent = computed(() => martStore.heroContent)
 
-// Product Drops Computed
-const currentDrop = computed(() => martStore.productDrops[currentDropIndex.value])
-const otherDrops = computed(() => martStore.productDrops.filter((_, index) => index !== currentDropIndex.value))
+// Product Drops Computed - use real API data instead of mock
+const currentDrop = computed(() => dragProducts.value[currentDropIndex.value])
+const otherDrops = computed(() => dragProducts.value.filter((_, index) => index !== currentDropIndex.value))
 const countdownText = computed(() => currentDrop.value ? formatCountdown(currentDrop.value.endTime, nowTime.value) : '')
 
 // Product Drops Methods
 const formatCountdown = (endTime, nowMs) => {
+  if (!endTime) return 'N/A'
   const now = nowMs || new Date().getTime()
   const end = new Date(endTime).getTime()
   const difference = end - now
   if (difference <= 0) return 'EXPIRED'
+  
   const days = Math.floor(difference / (1000 * 60 * 60 * 24))
   const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
   const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
   const seconds = Math.floor((difference % (1000 * 60)) / 1000)
-  if (days > 0) return `${days}d ${hours}h ${minutes}m`
-  if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`
-  return `${minutes}m ${seconds}s`
+  
+  if (days > 0) return `${days}d ${hours}h`
+  if (hours > 0) return `${hours}h ${minutes}m`
+  if (minutes > 0) return `${minutes}m ${seconds}s`
+  return `${seconds}s`
 }
 
 const getUrgencyStyle = (urgencyLevel) => {
@@ -479,8 +644,9 @@ const getUrgencyStyle = (urgencyLevel) => {
 }
 
 const soldPercent = (drop) => {
-  if (!drop?.totalStock) return 0
-  return Math.min(100, Math.round(((drop.totalStock - drop.stockLeft) / drop.totalStock) * 100))
+  if (!drop?.totalStock || drop.totalStock <= 0) return 0
+  const sold = drop.totalStock - drop.stockLeft
+  return Math.min(100, Math.max(0, Math.round((sold / drop.totalStock) * 100)))
 }
 
 const viewDrop = (drop) => {
@@ -488,9 +654,43 @@ const viewDrop = (drop) => {
 }
 
 const startDropRotation = () => {
+  if (dragProducts.value.length <= 1) return // Don't rotate if only one product
   rotationTimer.value = setInterval(() => {
-    currentDropIndex.value = (currentDropIndex.value + 1) % martStore.productDrops.length
+    currentDropIndex.value = (currentDropIndex.value + 1) % dragProducts.value.length
   }, martStore.dropConfig.AUTO_ROTATE_INTERVAL)
+}
+
+const fetchDragProducts = async () => {
+  try {
+    loadingDrops.value = true
+    const { products, statistics } = await ProductsService.getDragProducts({ per_page: 10 })
+    
+    // Sort products to prioritize active ones, then upcoming, then expired
+    const sortedProducts = (products || []).sort((a, b) => {
+      if (a.isActive && !b.isActive) return -1
+      if (!a.isActive && b.isActive) return 1
+      if (a.isUpcoming && !b.isUpcoming && !b.isActive) return -1
+      if (!a.isUpcoming && b.isUpcoming && !a.isActive) return 1
+      return 0
+    })
+    
+    dragProducts.value = sortedProducts
+    dragStatistics.value = statistics || {}
+    
+    // Reset to first product (which should be active if available)
+    currentDropIndex.value = 0
+    
+    // Reset rotation if products changed
+    if (rotationTimer.value) {
+      clearInterval(rotationTimer.value)
+      startDropRotation()
+    }
+  } catch (error) {
+    console.error('Failed to fetch drag products:', error)
+    notify.error('Failed to load product drops')
+  } finally {
+    loadingDrops.value = false
+  }
 }
 
 const startCountdownUpdate = () => {
@@ -508,6 +708,10 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  
+  // Load drag products for the drops section
+  await fetchDragProducts()
+  
   startDropRotation()
   startCountdownUpdate()
 })

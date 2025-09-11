@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia'
 import { fetchCategories, fetchSubcategories } from '@/services/categoriesApi'
+import { defineStore } from 'pinia'
 
 export const useCategoriesStore = defineStore('categories', {
   state: () => ({
@@ -32,6 +32,11 @@ export const useCategoriesStore = defineStore('categories', {
   }),
   getters: {
     getCategories: (state) => state.categories,
+  getCategoryByName: (state) => (name) => {
+    if (!name) return null
+    const needle = String(name).toLowerCase()
+    return state.categories.find(c => String(c.name || '').toLowerCase() === needle) || null
+  },
   categoryIdByName: (state) => (name) => {
     if (!name) return null
     const needle = String(name).toLowerCase()
@@ -47,10 +52,15 @@ export const useCategoriesStore = defineStore('categories', {
   getSubcategories: (state) => (categoryId) => state.subcategories[categoryId] || [],
   hasSubcategories: (state) => (categoryId) => (state.subcategories[categoryId] || []).length > 0,
     getCategoryDescription: (state) => (categoryName, formattedName) => {
-      return state.descriptions[categoryName] || `Join the ${formattedName || categoryName} community and connect with fellow enthusiasts.`
+      const cat = state.categories.find(c => String(c.name || '').toLowerCase() === String(categoryName||'').toLowerCase())
+      return cat?.description || state.descriptions[categoryName] || `Join the ${formattedName || categoryName} community and connect with fellow enthusiasts.`
     },
     getCategoryColor: (state) => (categoryName) => {
       return state.colors[categoryName] || 'bg-blue-600'
+    },
+    getCategoryImage: (state) => (categoryName) => {
+      const cat = state.categories.find(c => String(c.name || '').toLowerCase() === String(categoryName||'').toLowerCase())
+      return cat?.image || null
     },
     getCategoryStats: (state) => (categoryName) => {
       return state.stats[categoryName] || { communities: '250+', members: '1.2M+' }
@@ -72,6 +82,8 @@ export const useCategoriesStore = defineStore('categories', {
               return {
                 id: c.id,
                 name: c.name,
+                image: c.image || fallback.image || null,
+                description: c.description || fallback.description || null,
                 color: fallback.color || '#3B82F6',
                 faIcon: fallback.faIcon || 'fas fa-tag'
               }
