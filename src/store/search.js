@@ -1,5 +1,6 @@
-import { defineStore } from 'pinia'
+import NewsDataService from '@/services/newsDataService'
 import SearchService from '@/services/searchService'
+import { defineStore } from 'pinia'
 
 export const useSearchStore = defineStore('search', {
   state: () => ({
@@ -15,7 +16,11 @@ export const useSearchStore = defineStore('search', {
   fandomResults: [],
   fandomPagination: { page: 1, per_page: 0, total: 0, last_page: 1, has_more: false },
   fandomsLoading: false,
-  currentQueries: { users: '', posts: '', fandoms: '' },
+  // News results via public API
+  newsResults: [],
+  newsPagination: { page: 1, per_page: 10, total: 0, last_page: 1, has_more: false, nextPage: null },
+  newsLoading: false,
+  currentQueries: { users: '', posts: '', fandoms: '', news: '' },
   _debounceTimers: {}
   }),
 
@@ -107,6 +112,47 @@ export const useSearchStore = defineStore('search', {
       const next = this.fandomPagination.page + 1
       return this.fetchFandoms({ q: this.currentQueries.fandoms, page: next, limit: this.fandomPagination.per_page || 20, append: true })
     },
+    // News via NewsData.io public API (client-side). Note: rate limits may apply.
+    async fetchNews({ q, page = 1, limit = 10, append = false, debounce = 0, language = 'en', country, category } = {}) {
+      return this._debounced('news', debounce, async () => {
+        this.newsLoading = true
+        this.currentQueries.news = q || ''
+        try {
+          // Newsdata API uses nextPage token for pagination; we map it into our pagination structure
+          const resp = await NewsDataService.fetchLatestNews({ q, language, country, category, nextPage: append ? this.newsPagination.nextPage : undefined })
+          const results = Array.isArray(resp?.results) ? resp.results : []
+          // Normalize article shape to our NewsPost props
+          const articles = results.map(n => ({
+            id: n.article_id || n.link || `${n.title}-${n.pubDate}`,
+            title: n.title,
+            summary: n.description || n.summary,
+            image: n.image_url || n.image || n.thumbnail,
+            link: n.link || n.url,
+            source: n.source_id || n.source || n.source_id,
+            sourceLogo: null,
+            date: n.pubDate || n.pub_date || n.published_at,
+            category: Array.isArray(n.category) ? n.category[0] : n.category,
+            breaking: false,
+            views: Math.floor(Math.random() * 9000) + 100 // fake views for UI
+          }))
+          const total = typeof resp?.totalResults === 'number' ? resp.totalResults : (resp?.totalResults ? Number(resp.totalResults) : 0)
+          const nextPage = resp?.nextPage || null
+          // Update pagination
+          const pageNum = append ? (this.newsPagination.page + 1) : 1
+          const has_more = !!nextPage
+          this.newsPagination = { page: pageNum, per_page: limit, total, last_page: has_more ? pageNum + 1 : pageNum, has_more, nextPage }
+          if (append) this.newsResults.push(...articles)
+          else this.newsResults = articles
+          return { articles, pagination: this.newsPagination }
+        } finally {
+          this.newsLoading = false
+        }
+      })
+    },
+    async fetchMoreNews() {
+      if (!this.newsPagination.has_more) return
+      return this.fetchNews({ q: this.currentQueries.news, append: true, limit: this.newsPagination.per_page || 10 })
+    },
     _debounced(key, wait, fn) {
       if (!wait) return fn()
       if (this._debounceTimers[key]) clearTimeout(this._debounceTimers[key])
@@ -128,6 +174,7 @@ export const useSearchStore = defineStore('search', {
   getTotalResults: () => () => 0,
   hasMoreUsers: (state) => state.userPagination.has_more,
   hasMorePosts: (state) => state.postPagination.has_more,
-  hasMoreFandoms: (state) => state.fandomPagination.has_more
+  hasMoreFandoms: (state) => state.fandomPagination.has_more,
+  hasMoreNews: (state) => state.newsPagination.has_more
   }
 })

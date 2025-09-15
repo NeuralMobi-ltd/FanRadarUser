@@ -255,7 +255,7 @@ const categoriesStore = useCategoriesStore()
 onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
 
 // ---- Media URL Normalization (remove /api before /storage) ----
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '')
 function normalizeMediaUrl(raw) {
   if (!raw) return raw

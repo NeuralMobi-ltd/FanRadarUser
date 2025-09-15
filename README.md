@@ -44,9 +44,9 @@ FanRadar is a comprehensive social platform designed for fan communities. Connec
 
 For more details, see the [Vue CLI Configuration Reference](https://cli.vuejs.org/config/).
 
-# FanRadarMart
+# FanRadarStore
 
-FanRadarMart is an e-commerce web application where users can search for products, browse categories and brands, manage their cart, and place orders. The site features a modern UI, product search modal, user authentication, dark mode, and more.
+FanRadarStore is an e-commerce web application where users can search for products, browse categories and brands, manage their cart, and place orders. The site features a modern UI, product search modal, user authentication, dark mode, and more.
 
 ## Features
 

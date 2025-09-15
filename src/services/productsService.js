@@ -1,5 +1,5 @@
-import http from '@/services/http'
 import API_CONFIG from '@/config/api'
+import http from '@/services/http'
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -15,7 +15,12 @@ const normalizeProduct = (p) => {
 	if (!p) return null
 	// Backend fields: product_name, price as string, ratings_average/count, subcategory_id, etc.
 	const priceNum = typeof p.price === 'string' ? parseFloat(p.price) : (p.price || 0)
-	const image = p.image || p.images?.[0] || pickFirstMediaUrl(p.medias) || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+	const image = p.image 
+		|| p.images?.[0] 
+		|| p.media?.[0] 
+		|| pickFirstMediaUrl(p.media) 
+		|| pickFirstMediaUrl(p.medias) 
+		|| 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
 	
 	return {
 		id: p.id,
@@ -110,6 +115,29 @@ export const ProductsService = {
 			page: payload?.current_page || params?.page || 1,
 			per_page: payload?.per_page || params?.limit || products.length,
 			total: payload?.total || products.length,
+		}
+		return { products, pagination }
+	},
+
+	async search(params = {}) {
+		// For backend-powered product search
+		if (API_CONFIG.useMocks) {
+			await delay(API_CONFIG.mockLatency)
+			return { products: [], pagination: { page: 1, total: 0, per_page: 0, last_page: 1 } }
+		}
+		const { data } = await http.get(API_CONFIG.search.products(params))
+		const payload = data?.data || data
+		const arr = payload?.products || []
+		const products = Array.isArray(arr) ? arr.map(normalizeProduct) : []
+		const pg = payload?.pagination || {}
+		const page = pg.page || pg.current_page || 1
+		const last = pg.last_page || pg.total_pages || 1
+		const pagination = {
+			page,
+			per_page: pg.per_page || pg.perPage || params?.per_page || 20,
+			total: pg.total || pg.total_items || products.length,
+			last_page: last,
+			has_more: typeof pg.has_more === 'boolean' ? pg.has_more : page < last
 		}
 		return { products, pagination }
 	},

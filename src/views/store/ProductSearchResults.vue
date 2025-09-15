@@ -9,7 +9,7 @@
               Search Results for "{{ searchQuery }}"
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
-              {{ totalResults }} products found
+              {{ serverTotal }} products found
             </p>
           </div>
           
@@ -60,7 +60,7 @@
         </div>
         
         <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto text-center sm:text-right">
-          Showing {{ (currentPage - 1) * itemsPerPage + 1 }}-{{ Math.min(currentPage * itemsPerPage, totalResults) }} of {{ totalResults }} results
+          Showing {{ serverFrom }}-{{ serverTo }} of {{ serverTotal }} results
         </div>
       </div>
 
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Products Grid/List -->
-      <div v-else-if="filteredProducts.length > 0">
+  <div v-else-if="filteredProducts.length > 0">
         <!-- Grid View -->
         <div v-if="viewMode === VIEW_MODES.GRID" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
           <div
@@ -195,7 +195,7 @@
             <span
               v-for="page in visiblePages"
               :key="page"
-              @click="currentPage = page"
+              @click="typeof page === 'number' && (currentPage = page)"
               :class=" [
                 'px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg cursor-pointer text-sm',
                 page === currentPage
@@ -235,6 +235,7 @@
 </template>
 
 <script setup>
+import ProductsService from '@/services/productsService'
 import { useProductsStore } from '@/store/products'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -251,6 +252,12 @@ const sortBy = ref('relevance')
 const currentPage = ref(1)
 const itemsPerPage = ref(20)
 const PAGINATION_DELTA = 2
+
+// Server pagination meta
+const serverTotal = ref(0)
+const serverFrom = ref(0)
+const serverTo = ref(0)
+const serverTotalPages = ref(1)
 
 // Filter states
 const selectedPriceRanges = ref([])
@@ -276,38 +283,35 @@ const ratings = ref([
 ])
 
 // Computed properties
+const products = ref([])
+
 const filteredProducts = computed(() => {
-  // Start with search results from store
-  let products = productsStore.searchProducts(searchQuery.value)
+  // Start with server-fetched search results
+  let list = products.value
 
   // Apply price range filter
-  products = productsStore.filterByPriceRange(products, selectedPriceRanges.value)
+  list = productsStore.filterByPriceRange(list, selectedPriceRanges.value)
 
   // Apply category filter
   if (selectedCategories.value.length > 0) {
     const selectedCategoryNames = categories.value
       .filter(cat => selectedCategories.value.includes(cat.id))
       .map(cat => cat.name)
-    products = productsStore.filterByCategories(products, selectedCategoryNames)
+    list = productsStore.filterByCategories(list, selectedCategoryNames)
   }
 
   // Apply rating filter
-  products = productsStore.filterByRating(products, selectedRatings.value)
+  list = productsStore.filterByRating(list, selectedRatings.value)
 
   // Apply sorting
-  products = productsStore.sortProducts(products, sortBy.value)
+  list = productsStore.sortProducts(list, sortBy.value)
 
-  return products
+  return list
 })
 
-const totalResults = computed(() => filteredProducts.value.length)
-const totalPages = computed(() => Math.ceil(totalResults.value / itemsPerPage.value))
+const totalPages = computed(() => serverTotalPages.value)
 
-const paginatedProducts = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage.value
-  const end = start + itemsPerPage.value
-  return filteredProducts.value.slice(start, end)
-})
+const paginatedProducts = computed(() => filteredProducts.value)
 
 const visiblePages = computed(() => {
   const total = totalPages.value
@@ -343,8 +347,41 @@ const visiblePages = computed(() => {
 })
 
 // Methods
-const loadSearchResults = () => {
+const loadSearchResults = async () => {
   searchQuery.value = route.query.q || ''
+  if (!searchQuery.value) {
+    products.value = []
+    serverTotal.value = 0
+    serverFrom.value = 0
+    serverTo.value = 0
+    serverTotalPages.value = 1
+    return
+  }
+  await fetchProducts()
+}
+
+const fetchProducts = async () => {
+  isLoading.value = true
+  try {
+    const { products: items, pagination } = await ProductsService.search({ q: searchQuery.value, page: currentPage.value, per_page: itemsPerPage.value })
+    products.value = items
+    // Map server pagination to UI
+    serverTotal.value = pagination.total || 0
+    serverTotalPages.value = pagination.last_page || 1
+    // Use server-provided from/to when available; fallback to derived
+    const from = pagination.from ?? ((currentPage.value - 1) * itemsPerPage.value + 1)
+    const to = pagination.to ?? Math.min(currentPage.value * itemsPerPage.value, serverTotal.value)
+    serverFrom.value = items.length > 0 ? from : 0
+    serverTo.value = items.length > 0 ? to : 0
+  } catch (e) {
+    products.value = []
+    serverTotal.value = 0
+    serverFrom.value = 0
+    serverTo.value = 0
+    serverTotalPages.value = 1
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const clearFilters = () => {
@@ -369,12 +406,18 @@ const toggleWishlist = (product) => {
 
 // Watch for route changes
 watch(() => route.query, () => {
+  currentPage.value = 1
   loadSearchResults()
 }, { immediate: true })
 
 // Reset pagination when filters change
 watch([selectedPriceRanges, selectedCategories, selectedBrands, selectedRatings, sortBy], () => {
   currentPage.value = 1
+})
+
+// Fetch new page on currentPage change
+watch(currentPage, () => {
+  fetchProducts()
 })
 
 onMounted(() => {

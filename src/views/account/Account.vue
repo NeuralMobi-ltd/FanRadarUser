@@ -3,6 +3,16 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <!-- Edit Post Modal -->
+      <CreatePostModal
+        v-model="showEditModal"
+        :edit-post="editingPost"
+        :user-avatar="userProfile?.avatar || authStore.user?.avatar"
+        :user-name="userProfile?.username || authStore.user?.userName"
+        @posted="handleEditPosted"
+        @submit="handleEditPosted"
+        @refresh="fetchUserProfile"
+      />
     </div>
 
     <!-- Profile Content -->
@@ -31,7 +41,7 @@
           <div class="flex items-end">
             <div class="relative z-30">
               <AvatarFallback
-                :src="authStore.user?.avatar || userProfile?.avatar"
+                :src="userProfile?.avatar || (isOwnProfile ? authStore.user?.avatar : '')"
                 :first-name="(userProfile?.name || authStore.user?.name || authStore.user?.userName || '').split(' ')[0]"
                 :last-name="(userProfile?.name || authStore.user?.name || '').split(' ').slice(1).join(' ')"
                 :username="userProfile?.username || authStore.user?.userName"
@@ -94,7 +104,7 @@
           </div>
 
           <!-- Stats and Tabs Navigation -->
-          <div class="flex justify-between sm:justify-start space-x-4 sm:space-x-8 text-xs sm:text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
+          <div class="flex justify-start space-x-4 sm:space-x-8 text-xs sm:text-sm border-t border-gray-100 dark:border-gray-700 pt-4">
             <button 
               @click="activeTab = 'posts'"
               class="text-center hover:text-blue-600 transition-colors"
@@ -458,20 +468,22 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch, onUnmounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
+import Post from '@/components/common/Post.vue'
+import { CommunityCard } from '@/components/fandom'
+import API_CONFIG from '@/config/api'
+import AuthService from '@/services/authService'
+import FollowsService from '@/services/followsService'
+import PostsService from '@/services/postsService'
+import UsersService from '@/services/usersService'
 import { useAuthStore } from '@/store/auth'
-import { useUsersStore } from '@/store/users'
 import { useFandomsStore } from '@/store/fandoms'
 import { usePostsStore } from '@/store/posts'
-import Post from '@/components/common/Post.vue'
-import AvatarFallback from '@/components/common/AvatarFallback.vue'
-import { CommunityCard } from '@/components/fandom'
-import AuthService from '@/services/authService'
-import UsersService from '@/services/usersService'
-import PostsService from '@/services/postsService'
-import FollowsService from '@/services/followsService'
-import API_CONFIG from '@/config/api'
+import { useUsersStore } from '@/store/users'
+import notify from '@/utils/notify'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -492,6 +504,9 @@ const followingList = ref([])
 const followersLoading = ref(false)
 const followingLoading = ref(false)
 const savedPosts = ref([])
+// Edit modal state
+const showEditModal = ref(false)
+const editingPost = ref(null)
 
 const isOwnProfile = computed(() => {
   const currentUser = authStore.user
@@ -722,9 +737,12 @@ const formatNumber = (num) => {
   return (num / 1000000).toFixed(1).replace('.0', '') + 'M'
 }
 
-// Prefer authenticated user's cover image when available
+// Use the viewed user's cover when not own profile; prefer auth cover only when viewing own profile
 const coverSrc = computed(() => {
-  return authStore.user?.coverPhoto || authStore.user?.background_image || userProfile.value?.coverPhoto || ''
+  if (isOwnProfile.value) {
+    return authStore.user?.coverPhoto || authStore.user?.background_image || ''
+  }
+  return userProfile.value?.coverPhoto || ''
 })
 
 const formatJoinDate = (date) => {
@@ -811,8 +829,9 @@ const normalizePost = (apiPost, index = 0) => {
     return { type: isVideo ? 'video' : 'image', url: resolveMediaUrl(src) }
   })
 
-  // Resolve avatar (prefer current profile's avatar, then post-level avatar, then authStore) and absolutize
-  let avatar = apiPost.avatar || userProfile.value.avatar || authStore.user?.avatar
+  // Resolve avatar: prefer viewed profile's avatar; only fall back to auth avatar on own profile
+  let avatar = apiPost.avatar || userProfile.value.avatar
+  if (!avatar && isOwnProfile.value) avatar = authStore.user?.avatar
   avatar = resolveMediaUrl(avatar)
 
   const rawDate = apiPost.created_at || apiPost.updated_at
@@ -908,16 +927,64 @@ async function refreshFollowData(userId){
 
 // Add methods for editing and deleting posts
 function deleteUserPost(postId) {
-  userPosts.value = userPosts.value.filter(post => post.id !== postId && post.originalId !== postId)
+  // Confirm deletion with the user
+  const confirmed = window.confirm('Delete this post? This action cannot be undone.')
+  if (!confirmed) return
+
+  // Resolve numeric backend id if possible
+  const resolveId = (id) => {
+    if (typeof id === 'number') return id
+    if (typeof id === 'string') {
+      const tail = id.split('-').pop()
+      if (/^\d+$/.test(tail)) return Number(tail)
+      if (/^\d+$/.test(id)) return Number(id)
+    }
+    // Try to find in local list
+    const rec = userPosts.value.find(p => p.id === id || p.originalId === id)
+    if (rec?.originalId && /^\d+$/.test(String(rec.originalId))) return Number(rec.originalId)
+    if (typeof rec?.id === 'number') return rec.id
+    return null
+  }
+
+  const backendId = resolveId(postId)
+  if (!backendId || backendId <= 0) {
+    notify.error('Invalid post id; cannot delete.')
+    return
+  }
+
+  // Optimistic UI removal; keep a snapshot for rollback
+  const before = [...userPosts.value]
+  userPosts.value = userPosts.value.filter(p => p.id !== postId && p.originalId !== postId && p.id !== backendId)
+  if (userProfile.value) {
+    userProfile.value.posts = Math.max(0, (userProfile.value.posts || 0) - 1)
+  }
+
+  PostsService.remove(backendId)
+    .then((res) => {
+      if (res?.success === false) throw new Error(res?.message || res?.error || 'Delete failed')
+      notify.success('Post deleted')
+    })
+    .catch((err) => {
+      // Rollback on failure
+      userPosts.value = before
+      if (userProfile.value) {
+        userProfile.value.posts = (userProfile.value.posts || 0) + 1
+      }
+      notify.error(err?.message || 'Failed to delete post')
+    })
 }
 
 function editUserPost(postId) {
-  // Implement your edit logic here (open modal, etc.)
-  const post = userPosts.value.find(p => p.id === postId)
-  if (post) {
-  // Placeholder: integrate modal editing later
-  console.debug('Edit post requested', postId)
+  // Open edit modal with the selected post
+  const findPost = (id) => userPosts.value.find(p => p.id === id || p.originalId === id)
+  const post = findPost(postId)
+  if (!post) {
+    notify.error('Post not found for editing')
+    return
   }
+  // Pass through as-is; CreatePostModal understands { id, originalId, text/content, media[] }
+  editingPost.value = { ...post, content: post.text || post.content }
+  showEditModal.value = true
 }
 
 const tabScroll = ref(null)
@@ -1059,6 +1126,34 @@ watch(() => postsStore.lastMutation, (val, old) => {
   storeUserPosts.forEach(p => mergedMap.set(p.id, { ...p }))
   userPosts.value = Array.from(mergedMap.values()).sort((a,b)=> new Date(b.date) - new Date(a.date))
 })
+
+// Handle edit result from modal
+function handleEditPosted(resp) {
+  try {
+    const p = resp?.post || resp?.data?.post || resp?.data || resp
+    if (!p) return
+    // Determine the id we should match on
+    const pid = typeof p.id === 'number' ? p.id : (typeof p.id === 'string' && /^\d+$/.test(p.id) ? Number(p.id) : null)
+    const idx = userPosts.value.findIndex(x => x.originalId === pid || x.id === pid)
+    if (idx !== -1) {
+      // Update minimal fields
+      const updated = { ...userPosts.value[idx] }
+      updated.text = p.description || p.content || updated.text
+      if (Array.isArray(p.media)) {
+        updated.media = p.media.map(m => ({ type: m.type || (/\.(mp4|webm|ogg)$/i.test(m.url || m.path || m.src) ? 'video' : 'image'), url: resolveMediaUrl(m.url || m.path || m.src) }))
+      }
+      updated.trending = !!p.trending
+      updated.originalId = pid || updated.originalId
+      userPosts.value.splice(idx, 1, updated)
+    }
+    notify.success('Post updated')
+  } catch (_) {
+    // ignore
+  } finally {
+    showEditModal.value = false
+    editingPost.value = null
+  }
+}
 </script>
 
 <style scoped>

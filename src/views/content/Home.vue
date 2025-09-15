@@ -352,8 +352,8 @@
           <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-lg border border-gray-200 dark:border-gray-700">
             <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingHashtags') }}</h3>
             <ul class="space-y-3">
-              <li v-for="tag in trendingHashtags" :key="tag.id || tag.name"
-                  @click="goToHashtag(tag.name)"
+        <li v-for="tag in trendingHashtags" :key="tag.id || tag.name"
+          @click="goToHashtag(tag)"
                   class="flex items-center justify-between cursor-pointer hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-xl p-2 transition">
                 <div>
                   <p class="font-medium text-gray-900 dark:text-white">#{{ tag.name }}</p>
@@ -685,8 +685,10 @@ async function toggleJoin(community) {
     joining.value = copy
   }
 }
-function goToHashtag(name) {
-  router.push(`/hashtag/${name}`)
+function goToHashtag(tag) {
+  const name = (tag && tag.name) ? tag.name : tag
+  const id = tag && tag.id
+  router.push({ path: `/hashtag/${encodeURIComponent(name)}`, query: id ? { id } : undefined })
 }
 function goToFandom(community) {
   // Navigate to fandom detail page using the community name or slug

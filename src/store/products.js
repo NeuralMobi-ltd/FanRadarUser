@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia'
-import ProductsService from '@/services/productsService'
-import FavoritesService from '@/services/favoritesService'
 import API_CONFIG from '@/config/api'
+import FavoritesService from '@/services/favoritesService'
+import ProductsService from '@/services/productsService'
 import RatingsService from '@/services/ratingsService'
+import { defineStore } from 'pinia'
 
 export const useProductsStore = defineStore('products', {
   state: () => ({
@@ -119,7 +119,8 @@ export const useProductsStore = defineStore('products', {
 
   async searchProductsApi(query) {
       try {
-    const { products } = await ProductsService.list({ q: query })
+    // Use dedicated backend search endpoint for products
+    const { products } = await ProductsService.search({ q: query, page: 1, per_page: 50 })
     return (products || []).map(p => ({ id: p.id, name: p.name, price: p.price, image: p.image, rating: p.rating }))
       } catch (e) {
         return []

@@ -8,7 +8,7 @@ export const API_CONFIG = {
   // Base URL of your backend API (adjust for prod/staging via env if needed)
   // Updated default base URL to Laravel backend
   // If VITE_API_BASE_URL not provided, default includes /api so endpoints can use /Y/...
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
 
   // Auth
   auth: {
@@ -122,6 +122,18 @@ export const API_CONFIG = {
     suggestions: (q) => `/api/search/suggestions?q=${encodeURIComponent(q)}`,
     // New resource‑specific search endpoints (Y namespace)
     users: (q, page = 1, limit = 20) => `/Y/search/users?q=${encodeURIComponent(q)}&page=${page}&limit=${limit}`,
+    // Products search (Y namespace) - supports q, page, per_page, sort, subcategory_id, tags[] etc.
+    products: (params = {}) => {
+      const { q, page = 1, per_page = 20, sort, subcategory_id, tags } = params
+      const sp = new URLSearchParams()
+      if (q) sp.append('q', q)
+      sp.append('page', page)
+      sp.append('per_page', per_page)
+      if (sort) sp.append('sort', sort)
+      if (subcategory_id) sp.append('subcategory_id', subcategory_id)
+      if (Array.isArray(tags)) tags.forEach(t => sp.append('tags[]', t))
+      return `/Y/search/products?${sp.toString()}`
+    },
     // Posts search supports flexible params; accept an object to build query string at call site if preferred
     posts: (params = {}) => {
       const { q, tag, tags, subcategory_id, page = 1, limit = 20 } = params

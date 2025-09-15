@@ -113,56 +113,7 @@
             <MoonIcon v-else class="h-5 w-5" />
           </button>
 
-          <!-- Notifications (mobile/tablet) - Better design -->
-          <div v-if="isAuthenticated" class="relative">
-            <button
-              class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-              @click="toggleNotificationsDropdown"
-            >
-              <BellIcon class="h-5 w-5" />
-              <span v-if="unreadNotificationsCount > 0" class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white dark:ring-gray-900">
-                {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
-              </span>
-            </button>
-            <!-- Notifications Dropdown for mobile/tablet -->
-            <div
-              v-if="showNotificationsDropdown"
-              class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700"
-            >
-              <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                <span class="font-semibold text-gray-900 dark:text-white text-sm">Notifications</span>
-                <button
-                  v-if="unreadNotificationsCount > 0"
-                  @click="markAllNotificationsRead"
-                  class="text-xs text-blue-500 hover:underline"
-                >Mark all as read</button>
-              </div>
-              <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                <div
-                  v-for="notif in notifications"
-                  :key="notif.id"
-                  class="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                  :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
-                  @click="markNotificationRead(notif.id)"
-                >
-                  <div class="flex-shrink-0">
-                    <img v-if="notif.avatar" :src="notif.avatar" class="w-8 h-8 rounded-full object-cover" />
-                    <div v-else class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300">
-                      <i :class="notif.icon"></i>
-                    </div>
-                  </div>
-                  <div class="ml-3 flex-1 min-w-0">
-                    <div class="text-sm text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
-                  </div>
-                  <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-blue-500"></span>
-                </div>
-                <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-8 text-sm">
-                  No notifications
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- Notifications removed -->
 
           <!-- Mobile/Tablet User Avatar & Logout -->
           <div v-if="isAuthenticated" class="relative">
@@ -312,56 +263,7 @@
               </button>
             </div>
 
-            <!-- Notifications (desktop) - Better design -->
-            <div class="relative">
-              <button
-                class="relative p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
-                @click="toggleNotificationsDropdown"
-              >
-                <BellIcon class="h-4 sm:h-5 w-4 sm:w-5" />
-                <span v-if="unreadNotificationsCount > 0" class="absolute -top-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white ring-2 ring-white dark:ring-gray-900">
-                  {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
-                </span>
-              </button>
-              <!-- Notifications Dropdown for desktop -->
-              <div
-                v-if="showNotificationsDropdown"
-                class="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700"
-              >
-                <div class="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                  <h3 class="font-semibold text-gray-900 dark:text-white text-sm">Notifications</h3>
-                  <button
-                    v-if="unreadNotificationsCount > 0"
-                    @click="markAllNotificationsRead"
-                    class="text-xs text-blue-500 hover:text-blue-600 font-medium hover:underline"
-                  >Mark all as read</button>
-                </div>
-                <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                  <div
-                    v-for="notif in notifications"
-                    :key="notif.id"
-                    class="flex items-start px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                    :class="{ 'bg-blue-50 dark:bg-blue-900/20': !notif.read }"
-                    @click="markNotificationRead(notif.id)"
-                  >
-                    <div class="flex-shrink-0">
-                      <img v-if="notif.avatar" :src="notif.avatar" class="w-8 h-8 rounded-full object-cover" />
-                      <div v-else class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-500 dark:text-blue-300">
-                        <i :class="notif.icon"></i>
-                      </div>
-                    </div>
-                    <div class="ml-3 flex-1 min-w-0">
-                      <div class="text-sm text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
-                    </div>
-                    <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-blue-500"></span>
-                  </div>
-                  <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-8 text-sm">
-                    No notifications
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Notifications removed -->
 
             <!-- User Menu -->
             <div class="relative">
@@ -508,26 +410,23 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import { CreatePostModal } from '@/components/feed'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
-import { useI18n } from 'vue-i18n'
-import SearchModal from '@/components/layout/SearchModal.vue'
-import { CreatePostModal } from '@/components/feed'
 import { usePostsStore } from '@/store/posts'
-import { useNotificationsStore } from '@/store/notifications' // <-- new
-import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 
 import {
-  MagnifyingGlassIcon,
-  BellIcon,
-  SunIcon,
-  MoonIcon,
-  ChevronDownIcon,
-  UserIcon,
-  Cog6ToothIcon,
-  ArrowRightOnRectangleIcon
+    ArrowRightOnRectangleIcon,
+    ChevronDownIcon,
+    Cog6ToothIcon,
+    MagnifyingGlassIcon,
+    MoonIcon,
+    SunIcon,
+    UserIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -540,13 +439,7 @@ const userName = computed(() => authStore.userName)
 const userAvatar = computed(() => authStore.userAvatar)
 const isDark = computed(() => themeStore.isDark)
 
-const notificationsStore = useNotificationsStore()
-const showNotificationsDropdown = ref(false)
-
-const notifications = computed(() => notificationsStore.notifications)
-const unreadNotificationsCount = computed(() =>
-  notificationsStore.notifications.filter(n => !n.read).length
-)
+// notifications removed
 
 const showUserMenu = ref(false)
 const showMobileUserMenu = ref(false)
@@ -609,20 +502,7 @@ async function confirmLogout() {
 }
 function cancelLogout() { if (!loggingOut.value) showLogoutConfirm.value = false }
 
-function toggleNotificationsDropdown() {
-  showNotificationsDropdown.value = !showNotificationsDropdown.value
-  if (showNotificationsDropdown.value) {
-    notificationsStore.markAllAsSeen()
-  }
-}
-
-function markNotificationRead(id) {
-  notificationsStore.markAsRead(id)
-}
-
-function markAllNotificationsRead() {
-  notificationsStore.markAllAsRead()
-}
+// notifications removed
 
 function onModalFileChange(type, event) {
   const files = Array.from(event.target.files)

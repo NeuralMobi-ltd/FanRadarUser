@@ -1,5 +1,6 @@
-import { defineStore } from 'pinia'
+import ProductsService from '@/services/productsService'
 import { useProductsStore } from '@/store/products'
+import { defineStore } from 'pinia'
 
 export const useProductSearchStore = defineStore('productSearch', {
   state: () => ({
@@ -79,21 +80,25 @@ export const useProductSearchStore = defineStore('productSearch', {
       this.setIsSearching(true)
       this.clearError()
       try {
-        // Simulate small latency for UI feedback in mock mode
-        await new Promise(resolve => setTimeout(resolve, 250))
-
         const q = (query || '').toLowerCase().trim()
         if (!q) {
           this.setSearchResults({ products: [], categories: [], brands: [] })
           return
         }
 
-        // Products match (name/category/brand)
-        const productMatches = productsStore.products.filter(p =>
-          (p.name || '').toLowerCase().includes(q) ||
-          (p.category || '').toLowerCase().includes(q) ||
-          (p.brand || '').toLowerCase().includes(q)
-        )
+        // Prefer backend search for live suggestions (limit to 5)
+        let productMatches = []
+        try {
+          const { products } = await ProductsService.search({ q, page: 1, per_page: 5 })
+          productMatches = products || []
+        } catch (e) {
+          // Fallback: filter locally if backend fails
+          productMatches = productsStore.products.filter(p =>
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.category || '').toLowerCase().includes(q) ||
+            (p.brand || '').toLowerCase().includes(q)
+          ).slice(0, 5)
+        }
 
         // Category matches derived from store categories with counts
         const categories = (productsStore.categories || [])

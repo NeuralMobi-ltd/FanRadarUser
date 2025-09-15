@@ -194,7 +194,24 @@
         </div>
       </div>
 
-  <!-- News filter removed (legacy) -->
+  <!-- News Only -->
+  <div v-else-if="activeFilter === 'news'" class="space-y-4">
+    <div v-if="newsLoading" class="text-sm text-gray-500">Loading news...</div>
+    <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
+      <NewsPost
+        v-for="article in newsResults"
+        :key="article.id || article.link"
+        :article="article"
+      />
+    </div>
+    <div v-if="!newsLoading && newsResults.length === 0" class="text-sm text-gray-500">No news</div>
+    <div class="mt-4" v-if="hasMoreNews">
+      <button @click="loadMoreNews" :disabled="newsLoading" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60">
+        <span v-if="!newsLoading">Load more</span>
+        <span v-else class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Loading...</span>
+      </button>
+    </div>
+  </div>
 
       <!-- Fandoms Only -->
       <div v-else-if="activeFilter === 'fandoms'" class="space-y-4">
@@ -216,6 +233,28 @@
         </div>
       </div>
 
+      <!-- News Section (All) -->
+      <div v-if="activeFilter === 'all' && (newsResults.length > 0 || newsLoading)" class="space-y-4">
+        <h2 class="text-base md:text-lg font-semibold text-gray-900 dark:text-white mb-3 md:mb-4 flex items-center">
+          <i class="fas fa-newspaper mr-2 text-red-500"></i>
+          News
+          <span v-if="newsLoading" class="ml-2 text-xs text-gray-500 animate-pulse">loading...</span>
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
+          <NewsPost
+            v-for="article in newsResults"
+            :key="article.id || article.link"
+            :article="article"
+          />
+        </div>
+        <div class="mt-4" v-if="hasMoreNews">
+          <button @click="loadMoreNews" :disabled="newsLoading" class="px-4 py-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-60">
+            <span v-if="!newsLoading">Load more</span>
+            <span v-else class="flex items-center gap-2"><i class="fas fa-spinner fa-spin"></i> Loading...</span>
+          </button>
+        </div>
+      </div>
+
       <!-- No Results -->
       <div v-if="!isAnyLoading && aggregateCount === 0" class="text-center py-12">
         <i class="fas fa-search text-4xl text-gray-300 dark:text-gray-600 mb-4"></i>
@@ -227,14 +266,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import API_CONFIG from '@/config/api'
-import { useRoute, useRouter } from 'vue-router'
-import { useSearchStore } from '@/store/search'
-import Post from '@/components/common/Post.vue'
-import { NewsPost } from '@/components/feed'
-import { CommunityCard } from '@/components/fandom'
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import Post from '@/components/common/Post.vue'
+import { CommunityCard } from '@/components/fandom'
+import { NewsPost } from '@/components/feed'
+import API_CONFIG from '@/config/api'
+import { useSearchStore } from '@/store/search'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
@@ -249,12 +288,15 @@ const postResults = computed(() => searchStore.postResults)
 const postsLoading = computed(() => searchStore.postsLoading)
 const fandomResults = computed(() => searchStore.fandomResults)
 const fandomsLoading = computed(() => searchStore.fandomsLoading)
+const newsResults = computed(() => searchStore.newsResults)
+const newsLoading = computed(() => searchStore.newsLoading)
 const hasMoreUsers = computed(() => searchStore.hasMoreUsers)
 const hasMorePosts = computed(() => searchStore.hasMorePosts)
 const hasMoreFandoms = computed(() => searchStore.hasMoreFandoms)
+const hasMoreNews = computed(() => searchStore.hasMoreNews)
 
-const aggregateCount = computed(() => userResults.value.length + postResults.value.length + fandomResults.value.length)
-const isAnyLoading = computed(() => usersLoading.value || postsLoading.value || fandomsLoading.value)
+const aggregateCount = computed(() => userResults.value.length + postResults.value.length + fandomResults.value.length + newsResults.value.length)
+const isAnyLoading = computed(() => usersLoading.value || postsLoading.value || fandomsLoading.value || newsLoading.value)
 
 // Map backend snake_case fields to camelCase ones consumed by FandomCard
 const mappedFandomResults = computed(() => {
@@ -279,7 +321,8 @@ async function performSearchServer() {
   await Promise.all([
     searchStore.fetchUsers({ q, page: 1, limit: 10, debounce: 300 }),
     searchStore.fetchPosts({ q, page: 1, limit: 10 }, { debounce: 300 }),
-    searchStore.fetchFandoms({ q, page: 1, limit: 10, debounce: 300 })
+    searchStore.fetchFandoms({ q, page: 1, limit: 10, debounce: 300 }),
+    searchStore.fetchNews({ q, limit: 10, debounce: 300 })
   ])
 }
 
@@ -287,6 +330,7 @@ function resetResults() {
   searchStore.userResults = []
   searchStore.postResults = []
   searchStore.fandomResults = []
+  searchStore.newsResults = []
 }
 
 const goToProfile = (person) => {
@@ -323,7 +367,8 @@ const filters = [
   { key: 'all', label: 'All' },
   { key: 'posts', label: 'Posts' },
   { key: 'people', label: 'Users' },
-  { key: 'fandoms', label: 'Fandoms' }
+  { key: 'fandoms', label: 'Fandoms' },
+  { key: 'news', label: 'News' }
 ]
 
 const onSearchSubmit = () => {
@@ -358,6 +403,9 @@ function loadMorePosts() {
 }
 function loadMoreFandoms() {
   searchStore.fetchMoreFandoms()
+}
+function loadMoreNews() {
+  searchStore.fetchMoreNews()
 }
 
 // Normalize backend post shape (raw search) to Post component expectations

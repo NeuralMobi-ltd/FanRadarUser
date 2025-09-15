@@ -11,19 +11,16 @@
               class="w-8 sm:w-10 rounded-xl object-cover"
             />
             <div class="hidden sm:block">
-              <h1 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">FanRadarMart</h1>
+              <h1 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">FanRadarStore</h1>
             </div>
           </router-link>
         </div>
 
         <!-- Search Bar (Desktop only) -->
         <div class="hidden lg:flex flex-1 max-w-2xl mx-2 sm:mx-4 lg:mx-8 ">
-          <div class="relative search-container w-full">
+          <div class="relative w-full">
             <input
               v-model="searchQuery"
-              @focus="showSearchModal = true"
-              @click="showSearchModal = true"
-              @input="showSearchModal = true"
               type="text"
               placeholder="Search products..."
               class="w-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full py-2 px-3 sm:px-4 pl-8 sm:pl-10 pr-10 sm:pr-12 text-sm sm:text-base text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
@@ -39,7 +36,7 @@
               class="absolute right-8 sm:right-9 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               aria-label="Clear search"
             >
-              <i class="fas fa-times text-xs"></i>
+  
             </button>
             <!-- Search Button -->
             <button
@@ -51,16 +48,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-
-            <!-- Product Search Modal positioned relative to search input -->
-            <ProductSearchModal 
-              class="product-search-modal"
-              :is-visible="showSearchModal"
-              :query="searchQuery" 
-              :full-width="false"
-              @close="showSearchModal = false" 
-              @search="performDesktopSearch"
-            />
           </div>
         </div>
     
@@ -91,60 +78,7 @@
               </svg>
             </button>
 
-            <!-- Notifications (mobile) -->
-            <div class="relative">
-              <button
-                class="p-2 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 rounded-md relative"
-                @click="toggleNotificationsDropdown"
-                aria-label="Notifications"
-              >
-                <BellIcon class="h-5 w-5" />
-                <span
-                  v-if="unreadNotificationsCount > 0"
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-semibold rounded-full w-5 h-5 flex items-center justify-center shadow"
-                >
-                  {{ unreadNotificationsCount > 9 ? '9+' : unreadNotificationsCount }}
-                </span>
-              </button>
-              <!-- Mobile Notifications Dropdown -->
-              <div
-                v-if="showNotificationsDropdown"
-                class="absolute right-0 mt-2 w-72 bg-white dark:bg-gray-800 rounded-xl shadow-lg ring-1 ring-black ring-opacity-5 z-50 border border-gray-200 dark:border-gray-700"
-              >
-                <div class="p-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                  <span class="font-semibold text-gray-900 dark:text-white text-sm">Store Notifications</span>
-                  <button
-                    v-if="unreadNotificationsCount > 0"
-                    @click="markAllNotificationsRead"
-                    class="text-xs text-green-500 hover:underline"
-                  >Mark all as read</button>
-                </div>
-                <div class="max-h-64 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                  <div
-                    v-for="notif in notifications"
-                    :key="notif.id"
-                    class="flex items-start px-3 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                    :class="{ 'bg-green-50 dark:bg-green-900/20': !notif.read }"
-                    @click="markNotificationRead(notif.id)"
-                  >
-                    <div class="flex-shrink-0">
-                      <img v-if="notif.avatar" :src="notif.avatar" class="w-8 h-8 rounded-full object-cover" />
-                      <div v-else class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-500 dark:text-green-300">
-                        <i :class="notif.icon"></i>
-                      </div>
-                    </div>
-                    <div class="ml-3 flex-1 min-w-0">
-                      <div class="text-xs text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
-                      <div class="text-[11px] text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
-                    </div>
-                    <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-green-500"></span>
-                  </div>
-                  <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-6 text-sm">
-                    No notifications
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Notifications (mobile) removed -->
 
             <!-- Cart (mobile) -->
             <router-link 
@@ -191,59 +125,7 @@
               </svg>
             </button>
 
-            <!-- Notifications -->
-            <div class="relative">
-              <button
-                class="p-2 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 rounded-md relative"
-                @click="toggleNotificationsDropdown"
-              >
-                <BellIcon class="h-4 sm:h-5 w-4 sm:w-5" />
-                <span
-                  v-if="unreadNotificationsCount > 0"
-                  class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] sm:text-xs font-semibold rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center shadow"
-                >
-                  {{ unreadNotificationsCount }}
-                </span>
-              </button>
-              <!-- Notifications Dropdown -->
-              <div
-                v-if="showNotificationsDropdown"
-                class="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2"
-              >
-                <div class="p-3 sm:p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-                  <span class="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Store Notifications</span>
-                  <button
-                    v-if="unreadNotificationsCount > 0"
-                    @click="markAllNotificationsRead"
-                    class="text-xs text-green-500 hover:underline"
-                  >Mark all as read</button>
-                </div>
-                <div class="max-h-64 sm:max-h-80 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-                  <div
-                    v-for="notif in notifications"
-                    :key="notif.id"
-                    class="flex items-start px-3 sm:px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                    :class="{ 'bg-green-50 dark:bg-green-900/20': !notif.read }"
-                    @click="markNotificationRead(notif.id)"
-                  >
-                    <div class="flex-shrink-0">
-                      <img v-if="notif.avatar" :src="notif.avatar" class="w-8 sm:w-9 h-8 sm:h-9 rounded-full object-cover" />
-                      <div v-else class="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center text-green-500 dark:text-green-300">
-                        <i :class="notif.icon"></i>
-                      </div>
-                    </div>
-                    <div class="ml-3 flex-1 min-w-0">
-                      <div class="text-xs sm:text-sm text-gray-900 dark:text-white font-medium" v-html="notif.text"></div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ notif.time }}</div>
-                    </div>
-                    <span v-if="!notif.read" class="ml-2 w-2 h-2 rounded-full bg-green-500"></span>
-                  </div>
-                  <div v-if="notifications.length === 0" class="text-center text-gray-400 dark:text-gray-500 py-6 sm:py-8 text-sm">
-                    No notifications
-                  </div>
-                </div>
-              </div>
-            </div>
+            <!-- Notifications removed -->
 
             <!-- Cart -->
             <router-link 
@@ -491,27 +373,22 @@
 </template>
 
 <script setup>
-import ProductSearchModal from '@/components/store/ProductSearchModal.vue'
+import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
-import { useStoreNotifications } from '@/store/storeNotifications'
-import { BellIcon } from '@heroicons/vue/24/outline'
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AvatarFallback from '@/components/common/AvatarFallback.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
-const notificationsStore = useStoreNotifications()
 
 const searchQuery = ref('')
 const mobileSearchQuery = ref('')
 const showUserMenu = ref(false)
-const showSearchModal = ref(false)
+// removed desktop search modal
 const showMobileSearchModal = ref(false)
 const showMobileSearchResults = ref(false)
-const showNotificationsDropdown = ref(false)
 const cartItemsCount = ref(3) // Mock cart count
 const mobileSearchInput = ref(null)
 const isSearching = ref(false)
@@ -531,10 +408,7 @@ const searchResults = ref({
 
 const user = computed(() => authStore.user)
 const isDark = computed(() => themeStore.isDark)
-const notifications = computed(() => notificationsStore.notifications)
-const unreadNotificationsCount = computed(() =>
-  notificationsStore.notifications.filter(n => !n.read).length
-)
+// notifications removed
 
 const effectiveQuery = computed(() => (mobileSearchQuery.value || '').trim())
 const hasResults = computed(() => searchResults.value.products.length > 0)
@@ -656,7 +530,6 @@ const performDesktopSearch = () => {
         type: 'products' // Specify that this is a product search
       }
     })
-    showSearchModal.value = false
   }
 }
 
@@ -669,35 +542,8 @@ const logout = () => {
   router.push('/login')
 }
 
-function toggleNotificationsDropdown() {
-  showNotificationsDropdown.value = !showNotificationsDropdown.value
-  if (showNotificationsDropdown.value) {
-    notificationsStore.markAllAsSeen()
-  }
-}
-
-function markNotificationRead(id) {
-  notificationsStore.markAsRead(id)
-}
-
-function markAllNotificationsRead() {
-  notificationsStore.markAllAsRead()
-}
+// notifications removed
 
 // Close search modal when clicking outside
-const closeSearchOnClickOutside = (event) => {
-  const inSearch = event.target.closest('.search-container')
-  const inModal = event.target.closest('.product-search-modal')
-  if (showSearchModal.value && !inSearch && !inModal) {
-    showSearchModal.value = false
-  }
-}
-
-// Add/Remove event listener for click outside
-if (typeof window !== 'undefined') {
-  document.addEventListener('click', closeSearchOnClickOutside)
-  onBeforeUnmount(() => {
-    document.removeEventListener('click', closeSearchOnClickOutside)
-  })
-}
+// desktop search modal removed; no outside-click handling needed
 </script>

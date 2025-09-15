@@ -2,8 +2,8 @@
   <article class="bg-white dark:bg-gray-800/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl p-5 sm:p-7 mb-5 sm:mb-7 shadow-md hover:shadow-xl border border-gray-100/50 dark:border-gray-700/50 transition-all duration-500 hover:scale-[1.01] hover:border-blue-200 dark:hover:border-blue-800/50 group">
     <!-- Post Header -->
     <header class="flex items-start justify-between mb-4 sm:mb-5">
-      <div class="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-  <router-link :to="post.userId ? { name: 'Account', params: { user: String(post.userId) } } : { name: 'Account', params: { user: (post.displayName || '').trim() || 'me' } }" class="relative flex-shrink-0 group-avatar">
+    <div class="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+  <router-link :to="accountLinkTarget" class="relative flex-shrink-0 group-avatar">
           <div class="relative">
             <AvatarFallback
               :src="post.avatar || post.userAvatar"
@@ -17,10 +17,10 @@
         
         <div class="flex-1 min-w-0">
           <!-- Top row: name • time -->
-          <div class="flex items-center gap-1.5 sm:gap-2 min-w-0 w-full leading-none mb-1 overflow-hidden">
+          <div class="flex flex-nowrap items-center gap-1.5 sm:gap-2 min-w-0 w-full leading-none mb-1 overflow-hidden">
             <router-link 
-              :to="post.userId ? { name: 'Account', params: { user: String(post.userId) } } : { name: 'Account', params: { user: (post.displayName || '').trim() || 'me' } }"
-              class="block truncate min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              :to="accountLinkTarget"
+              class="flex items-center truncate min-w-0 text-sm sm:text-base font-semibold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
             >
               {{ post.displayName || post.username || 'User' }}
             </router-link>
@@ -355,11 +355,11 @@
 
 <script setup>
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
-import { ref, watch, computed, nextTick, onMounted } from 'vue'
-import { usePostsStore } from '@/store/posts'
-import { useAuthStore } from '@/store/auth'
-import notify from '@/utils/notify'
 import PostsService from '@/services/postsService'
+import { useAuthStore } from '@/store/auth'
+import { usePostsStore } from '@/store/posts'
+import notify from '@/utils/notify'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 
 const props = defineProps({
   post: {
@@ -397,6 +397,31 @@ const currentUserAvatar = computed(() => {
   return ''
 })
 
+// Build a robust target for account navigation:
+// - If the post belongs to the current user, go to editable profile (by username or 'me')
+// - Otherwise, navigate by numeric id to fetch other user's info
+function extractPostUserId(p) {
+  if (!p) return null
+  const cand = p.userId ?? p.user_id ?? p.user?.id ?? p.authorId ?? p.ownerId
+  if (cand == null) return null
+  const n = Number(cand)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+const accountLinkTarget = computed(() => {
+  const p = props.post || {}
+  const me = authStore.user
+  const uid = extractPostUserId(p)
+  const isSelf = me && uid && String(me.id) === String(uid)
+  if (isSelf) {
+    const uname = me.userName || (me.userEmail ? me.userEmail.split('@')[0] : '') || (p.displayName || p.username || '').trim() || 'me'
+    return { name: 'Account', params: { user: uname } }
+  }
+  if (uid) return { name: 'Account', params: { user: String(uid) } }
+  const fallback = (p.displayName || p.username || '').trim() || 'me'
+  return { name: 'Account', params: { user: fallback } }
+})
+
 // Comments local reactive list (initialized from post.commentsList if present)
 const postComments = ref(props.post.commentsList ? [...props.post.commentsList] : [])
 const commentsLoaded = ref(Array.isArray(props.post.commentsList) && props.post.commentsList.length > 0)
@@ -422,7 +447,7 @@ onMounted(() => { isSaved.value = !!props.post.isSaved })
 
 // ---- Asset URL Normalization ----
 // Ensure storage assets don't contain /api and have full base URL.
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
 const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '') // strip trailing /api
 const WINDOW_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
 
