@@ -693,7 +693,8 @@ const searchByTag = (tag) => {
 function openEditModal() {
   showMenu.value = false
   const backendId = extractBackendId(props.post) || props.post.id
-  emit('edit', backendId)
+  // Emit both id and full post as a second arg for robust parent handling
+  emit('edit', backendId, props.post)
 }
 
 
