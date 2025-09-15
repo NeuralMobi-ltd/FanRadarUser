@@ -26,6 +26,8 @@ export const usePostsStore = defineStore('posts', {
   posts: [],
   // Set of post IDs the current user has liked (from GET /Y/myfavorites/posts)
   favoritesSet: new Set(),
+  favoritesLoading: false,
+  favoritesLoaded: false,
     activeFeed: 'timeline',
     loadingMore: false,
     hasMorePosts: true,
@@ -204,6 +206,7 @@ export const usePostsStore = defineStore('posts', {
   }),
   
   getters: {
+    isPostLiked: (state) => (postId) => state.favoritesSet.has(Number(postId)),
     filteredPosts: (state) => {
       let filtered = state.posts
       switch (state.activeFeed) {
@@ -231,6 +234,21 @@ export const usePostsStore = defineStore('posts', {
   },
   
   actions: {
+    async ensureFavoritesLoaded(params = {}) {
+      try {
+        if (this.favoritesLoaded && this.favoritesSet && this.favoritesSet.size >= 0) return { success: true, loaded: true }
+        this.favoritesLoading = true
+        const favRes = await getMyFavorites(params).catch(() => ({ posts: [] }))
+        this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
+        this.favoritesLoaded = true
+        this.lastMutation = Date.now()
+        return { success: true, loaded: true }
+      } catch (e) {
+        this.favoritesLoaded = false
+        return { success: false, error: e?.message || 'Failed to load favorites' }
+      }
+      finally { this.favoritesLoading = false }
+    },
     mapBackendPost(apiPost) {
       if (!apiPost) return null
       const user = apiPost.user || apiPost.author || {}
@@ -306,6 +324,7 @@ export const usePostsStore = defineStore('posts', {
   const posts = feedRes.posts
   const pagination = feedRes.pagination
   this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
+  this.favoritesLoaded = true
   this.pagination = pagination || { page: 1, limit: this.pagination.limit, hasNext: false }
   this.posts = Array.isArray(posts) ? posts.map(p => {
     const m = this.mapBackendPost(p)
@@ -348,7 +367,8 @@ export const usePostsStore = defineStore('posts', {
           getMyFavorites().catch(() => ({ posts: [] }))
         ])
         const { posts, pagination } = feedRes
-        this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
+  this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
+  this.favoritesLoaded = true
         const mapped = Array.isArray(posts) ? posts.map(p => {
           const m = this.mapBackendPost(p)
           if (!m) return null
@@ -373,6 +393,7 @@ export const usePostsStore = defineStore('posts', {
           getMyFavorites().catch(() => ({ posts: [] }))
         ])
         this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
+        this.favoritesLoaded = true
         const payload = res?.data || res
         const list = (payload.posts || payload.data?.posts || []).map(p => ({
           id: p.id,
@@ -473,7 +494,7 @@ export const usePostsStore = defineStore('posts', {
         // ignore keep existing
       }
     },
-    async favoritePostApi(postId) {
+    async favoritePostApi(postId, nextLikedDesired) {
       try {
         const record = this.posts.find(p => p.id === postId || p.originalId === postId)
         let apiId = record?.originalId || postId
@@ -483,10 +504,10 @@ export const usePostsStore = defineStore('posts', {
         }
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for favorite', id: postId }
-  // Determine current liked state using record OR favoritesSet as source of truth
-  const isLikedNow = (record?.isLiked === true) || this.favoritesSet.has(Number(apiId))
-  // If already liked, call unfavorite
-  if (isLikedNow) {
+  // Determine desired direction: if caller specified, honor it; else infer from record
+  const isLikedNow = !!record?.isLiked
+  const shouldLike = typeof nextLikedDesired === 'boolean' ? nextLikedDesired : !isLikedNow
+  if (!shouldLike) {
           const res = await PostsService.unfavorite(apiId)
           if (record) {
             record.isLiked = false

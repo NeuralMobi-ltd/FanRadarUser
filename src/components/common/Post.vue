@@ -208,7 +208,7 @@
         <!-- Like Button -->
         <button 
           @click="favorite"
-          :disabled="likeProcessing"
+          :disabled="likeProcessing || postsStore.favoritesLoading"
           class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group-like disabled:opacity-60 disabled:cursor-not-allowed"
           :class="{ 'bg-red-50 dark:bg-red-900/20': post.isLiked }"
           :aria-label="post.isLiked ? 'Unlike post' : 'Like post'"
@@ -349,12 +349,23 @@
       </div>
     </section>
 
-  <!-- Internal edit modal removed; parent (e.g., fandom detail) handles editing -->
+    <!-- Internal edit modal fallback (when parent doesn't handle 'edit') -->
+    <CreatePostModal
+      v-if="canEdit"
+      v-model="showEditModal"
+      :edit-post="editingPost"
+      :user-avatar="currentUserAvatar"
+      :user-name="authStore.user?.userName || authStore.user?.name || authStore.user?.userEmail?.split('@')[0]"
+      mode="default"
+      @posted="handleInternalEditPosted"
+      @submit="handleInternalEditPosted"
+    />
   </article>
 </template>
 
 <script setup>
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import PostsService from '@/services/postsService'
 import { useAuthStore } from '@/store/auth'
 import { usePostsStore } from '@/store/posts'
@@ -373,6 +384,11 @@ const props = defineProps({
   canDelete: {
     type: Boolean,
     default: false
+  },
+  // If true, only emit 'edit' and let parent handle; if false, open internal modal fallback
+  preferParentEdit: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -384,7 +400,9 @@ const showComments = ref(false)
 const isSaved = ref(false)
 const newComment = ref('')
 const showMenu = ref(false)
-// Removed local edit modal state; editing delegated to parent component
+// Internal edit modal fallback state
+const showEditModal = ref(false)
+const editingPost = ref(null)
 
 // Current authenticated user's avatar (fallback to default)
 const authStore = useAuthStore()
@@ -441,13 +459,38 @@ watch(() => props.post.commentsList, (val) => {
 
 const postsStore = usePostsStore()
 
+// Ensure we reflect like status from /Y/myfavorites/posts
+function syncLikedFromFavorites() {
+  try {
+    // Don't overwrite optimistic state while processing a click
+    if (likeProcessing.value) return
+    const backendId = extractBackendId(props.post) || props.post.id
+    if (backendId == null) return
+    const liked = typeof postsStore.isPostLiked === 'function' ? postsStore.isPostLiked(backendId) : undefined
+    if (typeof liked === 'boolean') {
+      props.post.isLiked = liked
+    }
+  } catch (_) { /* noop */ }
+}
+
+onMounted(async () => {
+  // Load favorites once and sync current post's like state
+  try { await postsStore.ensureFavoritesLoaded() } catch (_) { /* ignore */ }
+  syncLikedFromFavorites()
+})
+
+// If favorites set changes (ref replaced), resync
+watch(() => postsStore.favoritesSet, () => {
+  syncLikedFromFavorites()
+})
+
 // Keep local saved state in sync with the incoming post prop
 watch(() => props.post.isSaved, (val) => { isSaved.value = !!val }, { immediate: true })
 onMounted(() => { isSaved.value = !!props.post.isSaved })
 
 // ---- Asset URL Normalization ----
 // Ensure storage assets don't contain /api and have full base URL.
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api'
 const BASE_ORIGIN = API_BASE.replace(/\/api\/?$/, '') // strip trailing /api
 const WINDOW_ORIGIN = typeof window !== 'undefined' ? window.location.origin : ''
 
@@ -695,6 +738,11 @@ function openEditModal() {
   const backendId = extractBackendId(props.post) || props.post.id
   // Emit both id and full post as a second arg for robust parent handling
   emit('edit', backendId, props.post)
+  // If parent is handling, don't open internal modal
+  if (props.preferParentEdit) return
+  // Fallback: open internal edit modal
+  editingPost.value = { ...props.post, content: props.post.text || props.post.content }
+  showEditModal.value = true
 }
 
 
@@ -719,45 +767,70 @@ function deletePost() {
 async function favorite() {
   if (likeProcessing.value) return
   const backendId = extractBackendId(props.post) || props.post.id
-  // Determine current liked state from global favorites Set (source of truth) if available
-  const currentlyLiked = postsStore?.favoritesSet?.has(Number(backendId)) || !!props.post.isLiked
-  // Optimistic UI: toggle heart only (let store be the single source for counts)
-  props.post.isLiked = !currentlyLiked
+  // Use the post's own state as the source of truth for UI; the store set may be incomplete on some pages
+  const wasLiked = !!props.post.isLiked
+  // Optimistic: toggle heart + adjust likes count locally
+  props.post.isLiked = !wasLiked
+  const prevLikes = Number(props.post.likes) || 0
+  props.post.likes = props.post.isLiked ? prevLikes + 1 : Math.max(0, prevLikes - 1)
   likeProcessing.value = true
   try {
-    const res = await postsStore.favoritePostApi(backendId)
+    const res = await postsStore.favoritePostApi(backendId, props.post.isLiked)
     if (res?.success === false) {
       // Revert on failure
-      props.post.isLiked = currentlyLiked
+      props.post.isLiked = wasLiked
+      props.post.likes = prevLikes
       notify.error(res?.error || 'Like action failed')
     } else {
-      // Sync with backend-declared action just in case
+      // Respect backend-declared action if provided
       const action = res?.action || (props.post.isLiked ? 'like' : 'unlike')
-      props.post.isLiked = action === 'like'
-      const msg = (res?.message || '').toLowerCase()
-      if (action === 'unlike' && (msg.includes('retiré des favoris') || msg.includes('removed'))) {
-        notify.info(res?.message || 'Unliked')
+      const nextLiked = action === 'like'
+      if (nextLiked !== props.post.isLiked) {
+        // Adjust to backend's truth
+        props.post.isLiked = nextLiked
+        props.post.likes = nextLiked ? prevLikes + 1 : Math.max(0, prevLikes - 1)
       }
-      // Re-sync likes from store record to avoid double adjustments
+      // If the post exists in the global store, sync counts with it
       const refreshed = postsStore.posts.find(p => p.id === backendId || p.originalId === backendId)
       if (refreshed) {
-        const safeLikes = Math.max(0, Number(refreshed.likes) || 0)
-        props.post.likes = safeLikes
+        props.post.likes = Math.max(0, Number(refreshed.likes) || 0)
         props.post.isLiked = !!refreshed.isLiked
       }
     }
   } catch (e) {
-    props.post.isLiked = currentlyLiked
+    // Revert on exception
+    props.post.isLiked = wasLiked
+    props.post.likes = prevLikes
     notify.error(e?.message || 'Like action failed')
   } finally {
     likeProcessing.value = false
   }
-  emit('like', props.post.id)
 }
 
 
 
 // submitEdit removed (handled in parent modal)
+
+// Handle edit result from internal modal fallback
+function handleInternalEditPosted(resp) {
+  try {
+    const p = resp?.post || resp?.data?.post || resp?.data || resp
+    if (!p) return
+    const newText = p.description || p.content
+    if (newText) props.post.text = newText
+    if (Array.isArray(p.media)) {
+      props.post.media = p.media.map(m => ({
+        type: m.type || (/\.(mp4|webm|ogg)$/i.test(m.url || m.path || m.src) ? 'video' : 'image'),
+        url: resolveAsset(m.url || m.path || m.src)
+      }))
+    }
+    props.post.trending = !!p.trending
+  } catch (_) { /* ignore */ }
+  finally {
+    showEditModal.value = false
+    editingPost.value = null
+  }
+}
 </script>
 
 <style scoped>

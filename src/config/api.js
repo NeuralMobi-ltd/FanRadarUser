@@ -8,7 +8,7 @@ export const API_CONFIG = {
   // Base URL of your backend API (adjust for prod/staging via env if needed)
   // Updated default base URL to Laravel backend
   // If VITE_API_BASE_URL not provided, default includes /api so endpoints can use /Y/...
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.fanradars.com/api',
 
   // Auth
   auth: {

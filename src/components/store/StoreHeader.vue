@@ -127,17 +127,6 @@
 
             <!-- Notifications removed -->
 
-            <!-- Cart -->
-            <router-link 
-              to="/cart"
-              class="relative p-2 sm:p-2.5 text-gray-600 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-full transition-all duration-200 group"
-            >
-              <i class="fas fa-shopping-cart w-4 h-4 text-gray-600 dark:text-gray-300 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors"></i>
-              <span v-if="cartItemsCount > 0" class="absolute -top-1 -right-1 bg-gradient-to-r from-green-500 to-green-600 text-white text-xs font-semibold rounded-full w-4 sm:w-5 h-4 sm:h-5 flex items-center justify-center shadow-lg transform scale-100 hover:scale-110 transition-transform">
-                {{ cartItemsCount }}
-              </span>
-            </router-link>
-
             <!-- User Profile -->
             <div class="relative">
               <button 

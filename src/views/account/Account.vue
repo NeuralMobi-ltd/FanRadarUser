@@ -9,6 +9,7 @@
         :edit-post="editingPost"
         :user-avatar="userProfile?.avatar || authStore.user?.avatar"
         :user-name="userProfile?.username || authStore.user?.userName"
+        mode="default"
         @posted="handleEditPosted"
         @submit="handleEditPosted"
         @refresh="fetchUserProfile"
@@ -974,10 +975,15 @@ function deleteUserPost(postId) {
     })
 }
 
-function editUserPost(postId) {
+function editUserPost(postId, fullPost) {
   // Open edit modal with the selected post
-  const findPost = (id) => userPosts.value.find(p => p.id === id || p.originalId === id)
-  const post = findPost(postId)
+  const findPost = (id) => {
+    if (id == null) return null
+    // match numeric id against originalId or id; if string, try trailing numeric
+    const idNum = typeof id === 'number' ? id : (typeof id === 'string' ? ( /^\d+$/.test(id) ? Number(id) : ( /^\d+$/.test(id.split('-').pop()) ? Number(id.split('-').pop()) : null ) ) : null)
+    return userPosts.value.find(p => p.id === id || p.originalId === id || (idNum != null && (p.originalId === idNum || p.id === idNum))) || null
+  }
+  const post = fullPost || findPost(postId)
   if (!post) {
     notify.error('Post not found for editing')
     return
