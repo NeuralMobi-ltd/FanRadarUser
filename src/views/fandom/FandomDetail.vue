@@ -262,6 +262,7 @@
           @delete="deletePost"
           :can-delete="canModifyPost(post)"
           @edit="openEditPost"
+          :prefer-parent-edit="true"
           class="w-full mb-0"
         />
       </div>

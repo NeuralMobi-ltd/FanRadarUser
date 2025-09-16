@@ -308,6 +308,7 @@
               :post="post"
               :can-delete="isOwnProfile"
               :can-edit="isOwnProfile"
+              :prefer-parent-edit="true"
               @delete="deleteUserPost"
               @edit="editUserPost"
             />
@@ -415,6 +416,7 @@
               v-for="post in savedPosts"
               :key="post.id"
               :post="post"
+              :prefer-parent-edit="true"
             />
           </div>
           

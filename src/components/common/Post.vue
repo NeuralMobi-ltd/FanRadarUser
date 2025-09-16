@@ -352,9 +352,8 @@
     </section>
 
     <!-- Internal edit modal fallback (teleported to body to avoid transform containment) -->
-    <Teleport to="body">
+    <Teleport to="body" v-if="canEdit && !preferParentEdit">
       <CreatePostModal
-        v-if="canEdit"
         v-model="showEditModal"
         :edit-post="editingPost"
         :user-avatar="currentUserAvatar"
@@ -412,7 +411,7 @@ const props = defineProps({
   // If true, only emit 'edit' and let parent handle; if false, open internal modal fallback
   preferParentEdit: {
     type: Boolean,
-    default: false
+    default: true
   }
 })
 
