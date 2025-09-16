@@ -11,6 +11,7 @@
 
   <!-- Sidebar -->
   <aside 
+    v-bind="$attrs"
     :class="[
       'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto lg:overflow-visible transition-transform duration-300 ease-in-out z-40',
       // Mobile: Fixed overlay
@@ -126,12 +127,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/store/auth'
+defineOptions({ inheritAttrs: false })
 import { CreatePostModal } from '@/components/feed'
+import { useAuthStore } from '@/store/auth'
 import { usePostsStore } from '@/store/posts'
 import normalizeAsset from '@/utils/assets'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const authStore = useAuthStore()

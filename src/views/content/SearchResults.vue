@@ -442,6 +442,9 @@ function normalizePost(p) {
 
   return {
     id: p.id,
+    // Provide author identifiers for navigation
+    user_id: Number.isInteger(Number(p.user_id)) ? Number(p.user_id) : (Number.isInteger(Number(user.id)) ? Number(user.id) : undefined),
+    user: { id: Number.isInteger(Number(user.id)) ? Number(user.id) : (Number.isInteger(Number(p.user_id)) ? Number(p.user_id) : undefined) },
     username,
     avatar: resolveMedia(user.profile_image || user.avatar || user.profileImage),
     text: p.description || p.content || '',

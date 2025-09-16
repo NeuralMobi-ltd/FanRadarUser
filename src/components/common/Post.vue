@@ -73,7 +73,7 @@
           <button
             v-if="canDelete"
             type="button"
-            @click.prevent.stop="deletePost"
+            @click.prevent.stop="openDeleteConfirm"
             class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center"
           >
             <svg class="w-4 h-4 mr-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,22 +349,42 @@
       </div>
     </section>
 
-    <!-- Internal edit modal fallback (when parent doesn't handle 'edit') -->
-    <CreatePostModal
-      v-if="canEdit"
-      v-model="showEditModal"
-      :edit-post="editingPost"
-      :user-avatar="currentUserAvatar"
-      :user-name="authStore.user?.userName || authStore.user?.name || authStore.user?.userEmail?.split('@')[0]"
-      mode="default"
-      @posted="handleInternalEditPosted"
-      @submit="handleInternalEditPosted"
-    />
+    <!-- Internal edit modal fallback (teleported to body to avoid transform containment) -->
+    <Teleport to="body">
+      <CreatePostModal
+        v-if="canEdit"
+        v-model="showEditModal"
+        :edit-post="editingPost"
+        :user-avatar="currentUserAvatar"
+        :user-name="authStore.user?.userName || authStore.user?.name || authStore.user?.userEmail?.split('@')[0]"
+        mode="default"
+        @posted="handleInternalEditPosted"
+        @submit="handleInternalEditPosted"
+      />
+    </Teleport>
+
+    <!-- Delete confirmation modal (teleported to body to avoid transform containment) -->
+    <Teleport to="body">
+      <ConfirmModal
+        v-if="canDelete"
+        v-model="showDeleteConfirm"
+        title="Delete this post?"
+        message="This action can't be undone. The post and all its comments will be removed."
+        hint="If this post was shared elsewhere, links will no longer work."
+        :confirmText="'Delete'"
+        :cancelText="'Cancel'"
+        :confirmIcon="'fas fa-trash-alt'"
+        tone="danger"
+        :loading="deleting"
+        @confirm="confirmDelete"
+      />
+    </Teleport>
   </article>
 </template>
 
 <script setup>
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
+import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import PostsService from '@/services/postsService'
 import { useAuthStore } from '@/store/auth'
@@ -403,6 +423,9 @@ const showMenu = ref(false)
 // Internal edit modal fallback state
 const showEditModal = ref(false)
 const editingPost = ref(null)
+// Delete confirmation state
+const showDeleteConfirm = ref(false)
+const deleting = ref(false)
 
 // Current authenticated user's avatar (fallback to default)
 const authStore = useAuthStore()
@@ -420,7 +443,8 @@ const currentUserAvatar = computed(() => {
 // - Otherwise, navigate by numeric id to fetch other user's info
 function extractPostUserId(p) {
   if (!p) return null
-  const cand = p.userId ?? p.user_id ?? p.user?.id ?? p.authorId ?? p.ownerId
+  // Prefer backend numeric user_id when available
+  const cand = p.user_id ?? p.userId ?? p.user?.id ?? p.authorId ?? p.ownerId
   if (cand == null) return null
   const n = Number(cand)
   return Number.isFinite(n) && n > 0 ? n : null
@@ -430,6 +454,7 @@ const accountLinkTarget = computed(() => {
   const p = props.post || {}
   const me = authStore.user
   const uid = extractPostUserId(p)
+  console.log('Post user id:', uid, 'Current user id:', me?.id)
   const isSelf = me && uid && String(me.id) === String(uid)
   if (isSelf) {
     const uname = me.userName || (me.userEmail ? me.userEmail.split('@')[0] : '') || (p.displayName || p.username || '').trim() || 'me'
@@ -582,31 +607,38 @@ const formatNumber = (num) => {
   return (n / 1000000).toFixed(1) + 'M'
 }
 
+async function refreshComments() {
+  const backendId = extractBackendId(props.post) || props.post.id
+  if (!backendId) return
+  loadingComments.value = true
+  try {
+    const { comments, count } = await PostsService.getComments(backendId, { page: 1, per_page: 20 })
+    const normalized = (comments || []).map(c => ({
+      id: c.id,
+      content: c.content || c.text,
+      date: c.created_at || c.createdAt,
+      user: {
+        id: c.user?.id,
+        name: c.user?.full_name || [c.user?.first_name, c.user?.last_name].filter(Boolean).join(' ').trim() || c.user?.username,
+        avatar: c.user?.profile_image || c.user?.avatar || c.user?.profile_image_url
+      }
+    }))
+    postComments.value = normalized
+    if (typeof count === 'number') props.post.comments = count
+    commentsLoaded.value = true
+  } finally {
+    loadingComments.value = false
+  }
+}
+
 const toggleComments = async () => {
   showComments.value = !showComments.value
   emit('comment', props.post.id)
   if (showComments.value && !commentsLoaded.value && !loadingComments.value) {
-    loadingComments.value = true
     try {
-      const backendId = extractBackendId(props.post) || props.post.id
-      const { comments, count } = await PostsService.getComments(backendId, { page: 1, per_page: 20 })
-      const normalized = (comments || []).map(c => ({
-        id: c.id,
-        content: c.content || c.text,
-        date: c.created_at || c.createdAt,
-        user: {
-          id: c.user?.id,
-          name: c.user?.full_name || [c.user?.first_name, c.user?.last_name].filter(Boolean).join(' ').trim() || c.user?.username,
-          avatar: c.user?.profile_image || c.user?.avatar || c.user?.profile_image_url
-        }
-      }))
-      postComments.value = normalized
-      if (typeof count === 'number') props.post.comments = count
-      commentsLoaded.value = true
+      await refreshComments()
     } catch (e) {
       notify.error(e?.message || 'Failed to load comments')
-    } finally {
-      loadingComments.value = false
     }
   }
 }
@@ -672,10 +704,18 @@ const addComment = async () => {
   if (!newComment.value.trim() || adding.value) return
   const content = newComment.value.trim()
   adding.value = true
+  const optimisticName = (
+    authStore.user?.name ||
+    [authStore.user?.firstName, authStore.user?.lastName].filter(Boolean).join(' ') ||
+    authStore.userName ||
+    authStore.user?.username ||
+    'You'
+  )
   const optimistic = {
     id: Date.now(),
-    username: authStore.userName || 'You',
+    username: optimisticName,
     userAvatar: currentUserAvatar.value,
+    user: { id: authStore.user?.id, name: optimisticName, avatar: currentUserAvatar.value },
     content,
     date: new Date().toISOString(),
     _optimistic: true
@@ -684,7 +724,8 @@ const addComment = async () => {
   newComment.value = ''
   await nextTick(() => autoResize())
   try {
-    const res = await postsStore.addCommentApi(props.post.id, { content })
+    const backendId = extractBackendId(props.post) || props.post.id
+    const res = await postsStore.addCommentApi(backendId, { content })
     const saved = res?.comment || res?.data?.comment
     if (saved) {
       const idx = postComments.value.findIndex(c => c.id === optimistic.id)
@@ -692,7 +733,12 @@ const addComment = async () => {
         postComments.value[idx] = {
           id: saved.id || optimistic.id,
           username: saved.user?.username || saved.user?.name || optimistic.username,
-          userAvatar: saved.user?.avatar || saved.user?.profile_image_url || optimistic.userAvatar,
+          userAvatar: saved.user?.avatar || saved.user?.profile_image || saved.user?.profile_image_url || optimistic.userAvatar,
+          user: {
+            id: saved.user?.id,
+            name: saved.user?.full_name || saved.user?.name || [saved.user?.first_name, saved.user?.last_name].filter(Boolean).join(' ').trim() || saved.user?.username || optimistic.username,
+            avatar: saved.user?.profile_image || saved.user?.avatar || saved.user?.profile_image_url || optimistic.userAvatar
+          },
           content: saved.content || saved.text || content,
           date: saved.created_at || saved.createdAt || new Date().toISOString()
         }
@@ -700,6 +746,8 @@ const addComment = async () => {
     } else if (res?.success === false) {
       throw new Error(res.error || 'Failed to save comment')
     }
+    // Always refresh from backend after attempting to add, to sync list and count
+    try { await refreshComments() } catch (_) { /* non-fatal */ }
   } catch (e) {
     postComments.value = postComments.value.filter(c => c.id !== optimistic.id)
     commentError.value = e?.message || 'Failed to post comment'
@@ -764,43 +812,50 @@ function deletePost() {
   emit('delete', backendId || props.post.id)
 }
 
+function openDeleteConfirm() {
+  showMenu.value = false
+  showDeleteConfirm.value = true
+}
+
+async function confirmDelete() {
+  const backendId = extractBackendId(props.post) || props.post.id
+  try {
+    deleting.value = true
+    emit('delete', backendId)
+  } finally {
+    deleting.value = false
+    showDeleteConfirm.value = false
+  }
+}
+
 async function favorite() {
   if (likeProcessing.value) return
   const backendId = extractBackendId(props.post) || props.post.id
-  // Use the post's own state as the source of truth for UI; the store set may be incomplete on some pages
+  // Non-optimistic: only update UI on backend success
   const wasLiked = !!props.post.isLiked
-  // Optimistic: toggle heart + adjust likes count locally
-  props.post.isLiked = !wasLiked
   const prevLikes = Number(props.post.likes) || 0
-  props.post.likes = props.post.isLiked ? prevLikes + 1 : Math.max(0, prevLikes - 1)
   likeProcessing.value = true
   try {
-    const res = await postsStore.favoritePostApi(backendId, props.post.isLiked)
-    if (res?.success === false) {
-      // Revert on failure
-      props.post.isLiked = wasLiked
-      props.post.likes = prevLikes
-      notify.error(res?.error || 'Like action failed')
-    } else {
-      // Respect backend-declared action if provided
-      const action = res?.action || (props.post.isLiked ? 'like' : 'unlike')
-      const nextLiked = action === 'like'
-      if (nextLiked !== props.post.isLiked) {
-        // Adjust to backend's truth
+    const res = await postsStore.favoritePostApi(backendId, !wasLiked)
+    if (res?.success === true) {
+      // Sync from store record if present
+      const rec = postsStore.posts.find(p => p.id === backendId || p.originalId === backendId)
+      if (rec) {
+        props.post.isLiked = !!rec.isLiked
+        props.post.likes = Math.max(0, Number(rec.likes) || 0)
+      } else {
+        const action = res?.action || (!wasLiked ? 'like' : 'unlike')
+        const nextLiked = action === 'like'
         props.post.isLiked = nextLiked
         props.post.likes = nextLiked ? prevLikes + 1 : Math.max(0, prevLikes - 1)
       }
-      // If the post exists in the global store, sync counts with it
-      const refreshed = postsStore.posts.find(p => p.id === backendId || p.originalId === backendId)
-      if (refreshed) {
-        props.post.likes = Math.max(0, Number(refreshed.likes) || 0)
-        props.post.isLiked = !!refreshed.isLiked
-      }
+      syncLikedFromFavorites()
+    } else {
+      // Do nothing on non-success to avoid double increments
+      notify.error(res?.message || res?.error || 'Like action failed')
     }
   } catch (e) {
-    // Revert on exception
-    props.post.isLiked = wasLiked
-    props.post.likes = prevLikes
+    // Keep previous state on exception
     notify.error(e?.message || 'Like action failed')
   } finally {
     likeProcessing.value = false

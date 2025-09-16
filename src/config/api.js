@@ -60,6 +60,8 @@ export const API_CONFIG = {
     update: (postId) => `/Y/posts/${postId}/update`,
     delete: (postId) => `/Y/posts/${postId}/delete`,
     favorite: (postId) => `/Y/posts/${postId}/favorite`,
+    // Non-Y detail endpoint for single post
+    detail: (postId) => `/posts/${postId}`,
   // Unsave favorite endpoint (DELETE)
   removeFavorite: (postId) => `/Y/posts/${postId}/removefavorite`,
   // Current user's liked posts

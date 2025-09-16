@@ -1,5 +1,5 @@
-import http from '@/services/http'
 import API_CONFIG from '@/config/api'
+import http from '@/services/http'
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -275,6 +275,13 @@ export const PostsService = {
     const pagination = data?.data?.pagination || data?.pagination || null
     return { posts, pagination }
   }
+}
+
+// Fetch single post details by id (non-Y endpoint /posts/{id})
+export async function getPostDetail(postId) {
+  const { data } = await http.get(API_CONFIG.posts.detail(postId))
+  // Backend sample shape is direct post object
+  return data?.data || data
 }
 
 // Fetch current user's favorites (liked) posts

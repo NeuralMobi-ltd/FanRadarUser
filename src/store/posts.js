@@ -260,9 +260,19 @@ export const usePostsStore = defineStore('posts', {
       const displayName = [user.first_name || user.firstName, user.last_name || user.lastName].filter(Boolean).join(' ').trim() || user.username || (user.email ? user.email.split('@')[0] : '') || 'User'
       let avatar = user.profile_image || user.avatar || user.profileImage
       if (avatar) avatar = resolveMediaUrl(avatar)
+      // Compute numeric author id from either top-level user_id or nested user.id
+      const authorIdRaw = apiPost.user_id != null ? Number(apiPost.user_id) : Number(user.id)
+      const authorId = Number.isInteger(authorIdRaw) && authorIdRaw > 0 ? authorIdRaw : undefined
       return {
         id: apiPost.id,
         originalId: apiPost.id,
+        // Provide author identifiers for account navigation in <Post />
+        user_id: authorId,
+        user: {
+          id: authorId,
+          username: user.username || (user.email ? user.email.split('@')[0] : undefined),
+          profile_image: avatar
+        },
         username: displayName,
         avatar,
         date: new Date(apiPost.created_at || apiPost.createdAt || Date.now()),
@@ -287,9 +297,14 @@ export const usePostsStore = defineStore('posts', {
           url: resolveMediaUrl(raw)
         }
       }) : []
+      const u = apiPost.user || apiPost.author || {}
+      const authorIdRaw = apiPost.user_id != null ? Number(apiPost.user_id) : Number(u.id)
+      const authorId = Number.isInteger(authorIdRaw) && authorIdRaw > 0 ? authorIdRaw : undefined
       return {
         id: apiPost.id,
         originalId: apiPost.id,
+        user_id: authorId,
+        user: { id: authorId },
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media,
         likes: Math.max(0, apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0),
@@ -395,20 +410,26 @@ export const usePostsStore = defineStore('posts', {
         this.favoritesSet = new Set((favRes.posts || []).map(p => Number(p.id)))
         this.favoritesLoaded = true
         const payload = res?.data || res
-        const list = (payload.posts || payload.data?.posts || []).map(p => ({
-          id: p.id,
-          username: p.author?.name,
-          avatar: p.author?.avatar,
-          date: new Date(p.createdAt),
-          text: p.content,
-          media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
-          likes: p.likes || 0,
-          comments: p.comments || 0,
-          // shares removed
-          isLiked: this.favoritesSet.has(Number(p.id)) || !!p.isLiked,
-          fandom: p.fandom?.name || null,
-          trending: !!p.trending
-        }))
+        const list = (payload.posts || payload.data?.posts || []).map(p => {
+          const authorIdRaw = p.user_id != null ? Number(p.user_id) : Number(p.author?.id)
+          const authorId = Number.isInteger(authorIdRaw) && authorIdRaw > 0 ? authorIdRaw : undefined
+          return {
+            id: p.id,
+            user_id: authorId,
+            user: { id: authorId },
+            username: p.author?.name,
+            avatar: p.author?.avatar,
+            date: new Date(p.createdAt),
+            text: p.content,
+            media: (p.media || []).map(m => ({ type: m.type || 'image', url: m })),
+            likes: p.likes || 0,
+            comments: p.comments || 0,
+            // shares removed
+            isLiked: this.favoritesSet.has(Number(p.id)) || !!p.isLiked,
+            fandom: p.fandom?.name || null,
+            trending: !!p.trending
+          }
+        })
         this.posts = list
       } catch (e) {
         // keep mock data
@@ -504,39 +525,33 @@ export const usePostsStore = defineStore('posts', {
         }
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for favorite', id: postId }
-  // Determine desired direction: if caller specified, honor it; else infer from record
-  const isLikedNow = !!record?.isLiked
-  const shouldLike = typeof nextLikedDesired === 'boolean' ? nextLikedDesired : !isLikedNow
-  if (!shouldLike) {
+        // Determine desired direction: if caller specified, honor it; else infer from record
+        const isLikedNow = !!record?.isLiked
+        const shouldLike = typeof nextLikedDesired === 'boolean' ? nextLikedDesired : !isLikedNow
+
+        if (!shouldLike) {
           const res = await PostsService.unfavorite(apiId)
-          if (record) {
-            record.isLiked = false
-            record.likes = Math.max(0, (record.likes || 0) - 1)
+          if (res?.success === true) {
+            if (record) {
+              record.isLiked = false
+              record.likes = Math.max(0, (record.likes || 0) - 1)
+            }
+            this.favoritesSet.delete(Number(apiId))
+            this.lastMutation = Date.now()
           }
-          this.favoritesSet.delete(Number(apiId))
-          this.lastMutation = Date.now()
           return { ...(res || {}), action: 'unlike' }
-        }
-        const res = await PostsService.favorite(apiId)
-        const msg = (res?.message || '').toLowerCase()
-        // Some backends return success:false when already favorited; treat as unlike
-        if (res?.success === false && (msg.includes('déjà') || msg.includes('already'))) {
-          const un = await PostsService.unfavorite(apiId)
-          if (record) {
-            record.isLiked = false
-            record.likes = Math.max(0, (record.likes || 0) - 1)
+        } else {
+          const res = await PostsService.favorite(apiId)
+          if (res?.success === true) {
+            if (record) {
+              record.isLiked = true
+              record.likes = (record.likes || 0) + 1
+            }
+            this.favoritesSet.add(Number(apiId))
+            this.lastMutation = Date.now()
           }
-          this.favoritesSet.delete(Number(apiId))
-          this.lastMutation = Date.now()
-          return { ...(un || {}), action: 'unlike' }
+          return { ...(res || {}), action: 'like' }
         }
-        if (record) {
-          record.isLiked = true
-          record.likes = (record.likes || 0) + 1
-        }
-        this.favoritesSet.add(Number(apiId))
-        this.lastMutation = Date.now()
-        return { ...(res || {}), action: 'like' }
       } catch (e) {
         return { success: false, error: e?.message || 'Favorite failed', id: postId }
       }

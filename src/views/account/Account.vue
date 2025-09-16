@@ -638,8 +638,10 @@ const fetchUserProfile = async () => {
           preferred_categories: foundUser.preferred_categories || []
         }
       } else {
+        // Fallback stub without assigning a fake numeric id
+        // Important: do NOT set a random id here; it would leak into followers API calls.
         userProfile.value = {
-          id: Math.random(),
+          id: null,
           name: username,
           username,
           avatar: '',
@@ -654,9 +656,10 @@ const fetchUserProfile = async () => {
     }
 
     // After we have userProfile, if numeric id and we haven't already filled lists, fetch followers/following/posts (except when already derived from self or embedded posts)
-    const userId = userProfile.value && typeof userProfile.value.id === 'number'
-    if (userId) {
-      const id = userProfile.value.id
+    // Only proceed when we have a valid integer id (prevents accidental float/placeholder ids)
+    const hasValidId = Number.isInteger(userProfile.value?.id)
+    if (hasValidId) {
+      const id = Number(userProfile.value.id)
       if (userPosts.value.length === 0) {
         try {
           const postsResp = await PostsService.userPosts(id)
@@ -846,6 +849,13 @@ const normalizePost = (apiPost, index = 0) => {
   return {
     id: apiPost.id && /^\d+$/.test(String(apiPost.id)) ? apiPost.id : `${apiPost.created_at || 'post'}-${index}`,
     originalId,
+    // Provide author identifiers so <Post /> can navigate correctly
+    user_id: Number.isFinite(Number(userProfile.value.id)) ? Number(userProfile.value.id) : undefined,
+    user: {
+      id: Number.isFinite(Number(userProfile.value.id)) ? Number(userProfile.value.id) : undefined,
+      username: userProfile.value.username,
+      profile_image: userProfile.value.avatar
+    },
     username: userProfile.value.username,
     avatar,
     text: apiPost.description || apiPost.content || '',
@@ -861,8 +871,10 @@ const normalizePost = (apiPost, index = 0) => {
 }
 
 const toggleFollow = async () => {
-  if(!userProfile.value?.id || followProcessing.value) return
-  const targetId = userProfile.value.id
+  // Only allow follow/unfollow when we have a real integer user id
+  if (followProcessing.value) return
+  const targetId = Number.isInteger(userProfile.value?.id) ? Number(userProfile.value.id) : null
+  if (!targetId || targetId <= 0) return
   const wasFollowing = isFollowing.value
   followProcessing.value = true
   // Optimistic update
@@ -908,7 +920,7 @@ const toggleFollow = async () => {
 }
 
 async function refreshFollowData(userId){
-  if(!userId) return
+  if(!Number.isInteger(userId) || userId <= 0) return
   try {
     followersLoading.value = true
     const fResp = await FollowsService.followers(userId)
