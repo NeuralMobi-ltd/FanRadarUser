@@ -79,8 +79,25 @@ const messages = {
     },
     faq: {
       title: 'Frequently Asked Questions',
-      subtitle: 'Everything you need to know about getting started with FanRadar.'
+      subtitle: 'Everything you need to know about getting started with FanRadar.',
+      items: {
+        whatIs: { q: 'What is FanRadar?', a: 'A platform for fans to discover fandoms, follow trends, and connect with communities.' },
+        isFree: { q: 'Is FanRadar free?', a: 'Yes. You can browse, follow fandoms, and participate for free.' },
+        howJoin: { q: 'How do I join a fandom?', a: 'Create an account, search your interest, and follow fandoms to personalize your feed.' }
+      }
     },
+    // Landing specific
+    landing: {
+      footer: {
+        description: 'The ultimate destination for fans to connect, share, and celebrate their passions together.',
+        nav: {
+          product: { title: 'Product', features: 'Features', trending: 'Trending', faq: 'FAQ' },
+          company: { title: 'Company', about: 'About', contact: 'Contact', careers: 'Careers' },
+          social: { title: 'Social' }
+        }
+      }
+    },
+    
     cta: {
       title: 'Ready to Join the Revolution?',
       subtitle: 'Connect with your fandom, discover new passions, and be part of something bigger.',
@@ -231,6 +248,35 @@ const messages = {
     },
     common: {
   all: 'All',
+      new: 'New',
+      fandom: 'Fandom',
+      view: 'View',
+      viewDetails: 'View Details',
+      notifyMe: 'Notify Me',
+      expired: 'Expired',
+      ended: 'Ended',
+      toStart: 'to start',
+      days: 'days',
+      daysShort: 'd',
+      startsIn: 'Starts in',
+      refresh: 'Refresh',
+      rate: 'Rate',
+      reviewsCount: '{count} reviews',
+      favoritesCount: '{count} favorites',
+      gridView: 'Grid view',
+      listView: 'List view',
+      toggleWishlist: 'Toggle wishlist',
+      addedToCart: 'Added to cart',
+      addedToCartWithName: '{name} added to cart!',
+      deletePostConfirm: 'Delete this post? This action cannot be undone.',
+      invalidPostId: 'Invalid post id; cannot delete.',
+      postDeleted: 'Post deleted',
+      failedToDeletePost: 'Failed to delete post',
+      postNotFound: 'Post not found for editing',
+      postUpdated: 'Post updated',
+      ratingSaved: 'Rating saved',
+  failedToSaveRating: 'Failed to save rating',
+  saving: 'Saving...',
       posts: 'Posts',
       news: 'News',
       fandoms: 'Fandoms',
@@ -314,7 +360,13 @@ const messages = {
       clearFiltersCta: 'Clear Filters',
       createAFandom: 'Create a Fandom',
       whatsOnYourMind: "What's on your mind?",
-      addTagsPlaceholder: 'Add tags (press Enter or Tab)...'
+      addTagsPlaceholder: 'Add tags (press Enter or Tab)...',
+      close: 'Close',
+      removing: 'Removing...',
+      deleting: 'Deleting...',
+      actionIrreversible: 'This action cannot be undone.',
+      postCreated: 'Post created',
+      fandomNotLoaded: 'Fandom not loaded'
     },
     content: {
       news: {
@@ -415,7 +467,40 @@ const messages = {
         mod: 'Mod',
         saveChanges: 'Save Changes',
         saveRules: 'Save Rules',
-        cancel: 'Cancel'
+        cancel: 'Cancel',
+        joinedOn: 'Joined {date}',
+        edit: {
+          subtitle: 'Update basic details and media for your fandom',
+          uploadCoverPrompt: 'Upload a cover image',
+          coverHintShort: 'Recommended: 1200x400px, JPG/PNG, max 5MB',
+          uploadLogoPrompt: 'Upload a logo image',
+          logoHintShort: 'Square image, 256x256 recommended',
+          success: 'Fandom updated successfully!',
+          idNotResolved: 'Fandom id not resolved yet.',
+          noChanges: 'No changes to save.',
+          updateFailed: 'Update failed.',
+          updateError: 'Update error.'
+        },
+        searchMembersPlaceholder: 'Search members...',
+        leaveTitle: 'Leave {name}?',
+        leaveDescription: 'You will lose access to posts and member features in this fandom.',
+        leaveInfo: 'You can rejoin anytime if the fandom is public. Some private fandoms may require approval.',
+        removeMemberTitle: 'Remove member?',
+        removeMemberMessage: 'Are you sure you want to remove this member from the fandom? This action cannot be undone.',
+        leftFandom: 'You left the fandom',
+        roleUpdated: 'Role updated',
+        aboutTitle: 'About {name}',
+        aboutSubtitle: 'Learn more about this fandom',
+        aboutFallback: 'No description available yet.',
+        stats: {
+          title: 'Fandom Statistics',
+          subtitle: 'Key numbers for this community',
+          membersTitle: 'Members',
+          membersHint: 'Total number of members in this fandom',
+          postsHint: 'Total number of posts in this fandom',
+          createdTitle: 'Created',
+          createdHint: 'Date when this fandom was created'
+        }
       },
       create: {
         title: 'Create New Fandom',
@@ -464,7 +549,36 @@ const messages = {
       }
     },
     account: {
+      unknownUser: 'Unknown User',
+      thisUser: 'This user',
+      addShortBio: 'Add a short bio to tell people about you.',
       editProfile: 'Edit Profile',
+      edit: {
+        subtitle: 'Update your profile information and settings',
+        coverPhoto: 'Cover Photo',
+        changeCover: 'Change Cover Photo',
+        addCover: 'Add Cover Photo',
+        coverHint: 'Recommended: 1200x400px, JPG or PNG, max 5MB',
+        profilePhoto: 'Profile Photo',
+        changePhoto: 'Change your photo',
+        photoHint: 'Recommended: Square JPG, PNG, or GIF, at least 400x400px and less than 2MB.',
+        uploadPhoto: 'Upload Photo',
+        basicInfo: 'Basic Information',
+        firstName: 'First name',
+        lastName: 'Last name',
+        firstNamePlaceholder: 'First name',
+        lastNamePlaceholder: 'Last name',
+        bio: 'Bio',
+        bioPlaceholder: 'Tell us about yourself...',
+        changePassword: 'Change Password',
+        leaveBlankPassword: 'Leave blank to keep current password',
+        profilePhotoTooLarge: 'Profile photo must be less than 2MB',
+        coverTooLarge: 'Cover photo must be less than 5MB',
+        failedToUpdate: 'Failed to update profile on server',
+        success: 'Profile updated successfully!',
+        genericError: 'Error saving profile. Please try again.',
+        userPlaceholder: 'User'
+      },
       posts: 'Posts',
       followers: 'Followers',
       following: 'Following',
@@ -490,14 +604,37 @@ const messages = {
       }
     },
     store: {
+      favorites: {
+        title: 'My Favorites',
+        itemsCount: '{count} items',
+        emptyTitle: 'No favorites yet',
+        emptyDesc: 'Tap the heart on a product to save it here.',
+        updating: 'Updating...',
+        removeFromFavorites: 'Remove from favorites',
+        failedToLoad: 'Failed to load favorites',
+        removed: 'Removed from favorites',
+        couldNotUpdate: 'Could not update favorite',
+        pageOf: 'Page {page} / {total}'
+      },
       mart: {
         hotDrops: 'Hot Drops',
         hotDropsSubtitle: 'Limited-time exclusive releases',
         dontMissOut: "Don't miss out!",
         endsIn: 'Ends in',
         stockLevel: 'Stock Level',
-        claimThisDrop: 'Claim This Drop',
-        viewDrop: 'View Drop',
+        dropEnded: 'Drop Ended',
+        dropExpired: 'This drop has expired',
+        leftOfTotal: '{left} of {total} left',
+        soldRemaining: '{sold} sold ({remaining}% remaining)',
+        comingSoon: 'Coming Soon',
+        noDrops: 'No Featured Drops Available',
+        checkBack: 'Check back soon for exclusive limited-time offers',
+        failedToLoadDrops: 'Failed to load product drops',
+        sold: '{count} sold',
+        leftPercent: '{left} left ({percent}%)',
+        productsFound: '{count} products found',
+        sortBy: 'Sort by:',
+        showingRange: 'Showing {from}-{to} of {total} results',
         noProductsTitle: 'No products found',
         noProductsDesc: 'Try adjusting your filters to see more products',
         results: 'Results'
@@ -506,6 +643,7 @@ const messages = {
         productsFound: '{count} products found',
         sortBy: 'Sort by:',
         loadingProducts: 'Loading products...',
+        showingRange: 'Showing {from}-{to} of {total} results',
         noProductsTitle: 'No products found',
         noProductsDesc: 'Try adjusting your search criteria or removing some filters'
       },
@@ -589,14 +727,30 @@ const messages = {
     },
     trending: {
       titlePrefix: 'Populaires',
-      title: 'Populaires sur FanRadar',
-      subtitle: 'Rejoignez des millions de fans dans ces fandoms dynamiques où la passion rencontre la connexion.',
+      title: '',
+      subtitle: '',
       explore: 'Explorer tous les fandoms',
-      exploreAll: 'Explorer tous les fandoms'
+      exploreAll: ''
     },
     faq: {
       title: 'Questions fréquentes',
-      subtitle: 'Tout ce qu’il faut savoir pour bien démarrer sur FanRadar.'
+      subtitle: 'Tout ce qu’il faut savoir pour bien démarrer sur FanRadar.',
+      items: {
+      whatIs: { q: 'Qu’est-ce que FanRadar ?', a: 'Une plateforme pour découvrir des fandoms, suivre les tendances et rejoindre des communautés.' },
+      isFree: { q: 'FanRadar est-il gratuit ?', a: 'Oui. Vous pouvez parcourir, suivre des fandoms et participer gratuitement.' },
+      howJoin: { q: 'Comment rejoindre un fandom ?', a: 'Créez un compte, recherchez vos centres d’intérêt et suivez des fandoms pour personnaliser votre fil.' }
+      }
+    },
+    // Landing specific
+    landing: {
+      footer: {
+        description: 'La destination ultime pour connecter, partager et célébrer vos passions entre fans.',
+        nav: {
+          product: { title: 'Produit', features: 'Fonctionnalités', trending: 'Tendances', faq: 'FAQ' },
+          company: { title: 'Entreprise', about: 'À propos', contact: 'Contact', careers: 'Carrières' },
+          social: { title: 'Réseaux' }
+        }
+      }
     },
     cta: {
       title: 'Prêt à rejoindre la révolution ?',
@@ -708,6 +862,35 @@ const messages = {
     },
     common: {
   all: 'Tous',
+      new: 'Nouveau',
+      fandom: 'Fandom',
+      view: 'Voir',
+      viewDetails: 'Voir les détails',
+      notifyMe: 'Me prévenir',
+      expired: 'Expiré',
+      ended: 'Terminé',
+      toStart: 'avant le début',
+      days: 'jours',
+      daysShort: 'j',
+      startsIn: 'Commence dans',
+      refresh: 'Actualiser',
+      rate: 'Noter',
+      reviewsCount: '{count} avis',
+      favoritesCount: '{count} favoris',
+      gridView: 'Vue grille',
+      listView: 'Vue liste',
+      toggleWishlist: 'Basculer la wishlist',
+      addedToCart: 'Ajouté au panier',
+      addedToCartWithName: '{name} a été ajouté au panier !',
+      deletePostConfirm: 'Supprimer cette publication ? Cette action est irréversible.',
+      invalidPostId: 'ID de publication invalide ; suppression impossible.',
+      postDeleted: 'Publication supprimée',
+      failedToDeletePost: 'Échec de suppression de la publication',
+      postNotFound: 'Publication introuvable pour modification',
+      postUpdated: 'Publication mise à jour',
+      ratingSaved: 'Note enregistrée',
+  failedToSaveRating: "Échec de l'enregistrement de la note",
+  saving: 'Enregistrement...',
       posts: 'Publications',
       news: 'Actualités',
       fandoms: 'Fandoms',
@@ -791,7 +974,13 @@ const messages = {
       clearFiltersCta: 'Effacer les filtres',
       createAFandom: 'Créer un fandom',
       whatsOnYourMind: 'Qu’avez‑vous en tête ?',
-      addTagsPlaceholder: 'Ajoutez des tags (Entrée ou Tab)…'
+      addTagsPlaceholder: 'Ajoutez des tags (Entrée ou Tab)…',
+      close: 'Fermer',
+      removing: 'Suppression…',
+      deleting: 'Suppression…',
+      actionIrreversible: 'Cette action est irréversible.',
+      postCreated: 'Publication créée',
+      fandomNotLoaded: 'Fandom non chargé'
     },
     content: {
       news: {
@@ -892,7 +1081,40 @@ const messages = {
         mod: 'Modérateur',
         saveChanges: 'Enregistrer',
         saveRules: 'Enregistrer les règles',
-        cancel: 'Annuler'
+        cancel: 'Annuler',
+        joinedOn: 'Rejoint le {date}',
+        edit: {
+          subtitle: 'Mettez à jour les informations et médias de votre fandom',
+          uploadCoverPrompt: 'Téléverser une image de couverture',
+          coverHintShort: 'Recommandé : 1200x400px, JPG/PNG, max 5 Mo',
+          uploadLogoPrompt: 'Téléverser un logo',
+          logoHintShort: 'Image carrée, 256x256 recommandé',
+          success: 'Fandom mis à jour avec succès !',
+          idNotResolved: 'ID du fandom non résolu.',
+          noChanges: 'Aucune modification à enregistrer.',
+          updateFailed: 'Échec de la mise à jour.',
+          updateError: 'Erreur lors de la mise à jour.'
+        },
+        searchMembersPlaceholder: 'Rechercher des membres...',
+        leaveTitle: 'Quitter {name} ?',
+        leaveDescription: 'Vous perdrez l’accès aux publications et fonctionnalités membres de ce fandom.',
+        leaveInfo: 'Vous pourrez le rejoindre à nouveau s’il est public. Certains fandoms privés peuvent nécessiter une approbation.',
+        removeMemberTitle: 'Supprimer ce membre ?',
+        removeMemberMessage: 'Voulez‑vous vraiment supprimer ce membre du fandom ? Cette action est irréversible.',
+        leftFandom: 'Vous avez quitté le fandom',
+        roleUpdated: 'Rôle mis à jour',
+        aboutTitle: 'À propos de {name}',
+        aboutSubtitle: 'En savoir plus sur ce fandom',
+        aboutFallback: 'Pas encore de description disponible.',
+        stats: {
+          title: 'Statistiques du fandom',
+          subtitle: 'Chiffres clés de cette communauté',
+          membersTitle: 'Membres',
+          membersHint: 'Nombre total de membres de ce fandom',
+          postsHint: 'Nombre total de publications dans ce fandom',
+          createdTitle: 'Créé le',
+          createdHint: 'Date de création de ce fandom'
+        }
       },
       create: {
         title: 'Créer un nouveau fandom',
@@ -941,7 +1163,36 @@ const messages = {
       }
     },
     account: {
+      unknownUser: 'Utilisateur inconnu',
+      thisUser: 'Cet utilisateur',
+      addShortBio: 'Ajoutez une courte bio pour parler de vous.',
       editProfile: 'Modifier le profil',
+      edit: {
+        subtitle: 'Mettez à jour vos informations et paramètres',
+        coverPhoto: 'Image de couverture',
+        changeCover: 'Changer l’image de couverture',
+        addCover: 'Ajouter une image de couverture',
+        coverHint: 'Recommandé : 1200x400px, JPG ou PNG, max 5 Mo',
+        profilePhoto: 'Photo de profil',
+        changePhoto: 'Changez votre photo',
+        photoHint: 'Recommandé : image carrée JPG, PNG ou GIF, au moins 400x400px et moins de 2 Mo.',
+        uploadPhoto: 'Téléverser une photo',
+        basicInfo: 'Informations de base',
+        firstName: 'Prénom',
+        lastName: 'Nom',
+        firstNamePlaceholder: 'Prénom',
+        lastNamePlaceholder: 'Nom',
+        bio: 'Bio',
+        bioPlaceholder: 'Parlez‑nous de vous…',
+        changePassword: 'Changer le mot de passe',
+        leaveBlankPassword: 'Laissez vide pour conserver le mot de passe actuel',
+        profilePhotoTooLarge: 'La photo de profil doit faire moins de 2 Mo',
+        coverTooLarge: 'L’image de couverture doit faire moins de 5 Mo',
+        failedToUpdate: 'Échec de la mise à jour du profil sur le serveur',
+        success: 'Profil mis à jour avec succès !',
+        genericError: 'Erreur lors de l’enregistrement du profil. Réessayez.',
+        userPlaceholder: 'Utilisateur'
+      },
       posts: 'Publications',
       followers: 'Abonnés',
       following: 'Abonnements',
@@ -967,14 +1218,37 @@ const messages = {
       }
     },
     store: {
+      favorites: {
+        title: 'Mes favoris',
+        itemsCount: '{count} éléments',
+        emptyTitle: 'Aucun favori pour le moment',
+        emptyDesc: 'Touchez le cœur sur un produit pour l’enregistrer ici.',
+        updating: 'Mise à jour…',
+        removeFromFavorites: 'Retirer des favoris',
+        failedToLoad: 'Échec du chargement des favoris',
+        removed: 'Retiré des favoris',
+        couldNotUpdate: 'Impossible de mettre à jour le favori',
+        pageOf: 'Page {page} / {total}'
+      },
       mart: {
         hotDrops: 'Drops en vedette',
         hotDropsSubtitle: 'Offres exclusives limitées dans le temps',
         dontMissOut: 'À ne pas manquer !',
         endsIn: 'Se termine dans',
         stockLevel: 'Niveau de stock',
-        claimThisDrop: 'Profiter du drop',
-        viewDrop: 'Voir le drop',
+        dropEnded: 'Drop terminé',
+        dropExpired: 'Ce drop a expiré',
+        leftOfTotal: '{left} sur {total} restants',
+        soldRemaining: '{sold} vendus ({remaining}% restants)',
+        comingSoon: 'Bientôt disponible',
+        noDrops: 'Aucun drop en vedette disponible',
+        checkBack: 'Revenez bientôt pour des offres exclusives',
+        failedToLoadDrops: 'Échec du chargement des drops',
+        sold: '{count} vendus',
+        leftPercent: '{left} restants ({percent}%)',
+        productsFound: '{count} produits trouvés',
+        sortBy: 'Trier par :',
+        showingRange: 'Affichage {from}-{to} sur {total} résultats',
         noProductsTitle: 'Aucun produit trouvé',
         noProductsDesc: 'Essayez d’ajuster vos filtres pour voir plus de produits',
         results: 'Résultats'
@@ -983,6 +1257,7 @@ const messages = {
         productsFound: '{count} produits trouvés',
         sortBy: 'Trier par :',
         loadingProducts: 'Chargement des produits...',
+        showingRange: 'Affichage {from}-{to} sur {total} résultats',
         noProductsTitle: 'Aucun produit trouvé',
         noProductsDesc: 'Essayez d’ajuster vos critères de recherche ou de retirer des filtres'
       },

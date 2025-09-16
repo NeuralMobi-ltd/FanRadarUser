@@ -12,14 +12,13 @@
         mode="default"
         @posted="handleEditPosted"
         @submit="handleEditPosted"
-        @refresh="fetchUserProfile"
       />
     </div>
 
     <!-- Profile Content -->
     <div v-else-if="userProfile" class="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
       <!-- Profile Header -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 mb-8">
         <!-- Cover Photo with gradient fallback -->
         <div class="h-24 sm:h-32 rounded-t-xl relative overflow-visible">
           <!-- Cover Photo if exists, otherwise gradient -->
@@ -62,7 +61,7 @@
             <!-- Profile Details -->
             <div class="mb-4">
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                {{ userProfile?.name || 'Unknown User' }}
+                {{ userProfile?.name || $t('account.unknownUser') }}
               </h1>
               
               <p class="text-gray-600 dark:text-gray-300 mb-3">@{{ userProfile?.username || 'username' }}</p>
@@ -71,7 +70,7 @@
               <p v-if="userProfile?.bio" class="text-gray-700 dark:text-gray-300 max-w-2xl mb-4 whitespace-pre-line">
                 {{ userProfile.bio }}
               </p>
-              <p v-else-if="isOwnProfile" class="text-gray-400 italic mb-4">Add a short bio to tell people about you.</p>
+              <p v-else-if="isOwnProfile" class="text-gray-400 italic mb-4">{{ $t('account.addShortBio') }}</p>
 
               <!-- Action Buttons moved here -->
               <div class="flex flex-wrap gap-2 sm:space-x-3 mb-4">
@@ -81,7 +80,7 @@
                   class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                 >
                   <i class="fas fa-edit"></i>
-                  <span>Edit Profile</span>
+                  <span>{{ $t('common.editProfile') }}</span>
                 </button>
                 <template v-else>
                   <button 
@@ -96,7 +95,7 @@
                   >
                     <i v-if="!followProcessing" :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
                     <i v-else class="fas fa-spinner fa-spin"></i>
-                    <span>{{ isFollowing ? 'Following' : 'Follow' }}</span>
+                    <span>{{ isFollowing ? $t('common.followingVerb') : $t('common.follow') }}</span>
                   </button>
             
                 </template>
@@ -111,21 +110,21 @@
               class="text-center hover:text-blue-600 transition-colors"
             >
               <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.posts || 0) }}</div>
-              <div class="text-gray-600 dark:text-gray-400">Posts</div>
+              <div class="text-gray-600 dark:text-gray-400">{{ $t('account.posts') }}</div>
             </button>
             <button 
               @click="activeTab = 'followers'"
               class="text-center hover:text-blue-600 transition-colors"
             >
               <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.followers || 0) }}</div>
-              <div class="text-gray-600 dark:text-gray-400">Followers</div>
+              <div class="text-gray-600 dark:text-gray-400">{{ $t('account.followers') }}</div>
             </button>
             <button 
               @click="activeTab = 'following'"
               class="text-center hover:text-blue-600 transition-colors"
             >
               <div class="font-bold text-lg text-gray-900 dark:text-white">{{ formatNumber(userProfile?.following || 0) }}</div>
-              <div class="text-gray-600 dark:text-gray-400">Following</div>
+              <div class="text-gray-600 dark:text-gray-400">{{ $t('account.following') }}</div>
             </button>
           </div>
         </div>
@@ -159,7 +158,7 @@
                 ]"
               >
                 <i class="fas fa-th-large text-base"></i>
-                <span>Posts</span>
+                <span>{{ $t('account.posts') }}</span>
               </button>
               
               <button 
@@ -173,7 +172,7 @@
                 ]"
               >
                 <i class="fas fa-users text-base"></i>
-                <span>Followers</span>
+                <span>{{ $t('account.followers') }}</span>
               </button>
               
               <button 
@@ -187,7 +186,7 @@
                 ]"
               >
                 <i class="fas fa-user-plus text-base"></i>
-                <span>Following</span>
+                <span>{{ $t('account.following') }}</span>
               </button>
 
               <button 
@@ -202,7 +201,7 @@
                 ]"
               >
                 <i class="fas fa-users text-base"></i>
-                <span>Fandoms</span>
+                <span>{{ $t('account.myFandoms') }}</span>
               </button>
 
               <button 
@@ -217,7 +216,7 @@
                 ]"
               >
                 <i class="fas fa-bookmark text-base"></i>
-                <span>Saved</span>
+                <span>{{ $t('account.saved') }}</span>
               </button>
             </div>
           </div>
@@ -237,7 +236,7 @@
                 ]"
               >
                 <i class="fas fa-th-large text-base"></i>
-                <span>Posts</span>
+                <span>{{ $t('account.posts') }}</span>
               </button>
               
               <button 
@@ -250,7 +249,7 @@
                 ]"
               >
                 <i class="fas fa-users text-base"></i>
-                <span>Followers</span>
+                <span>{{ $t('account.followers') }}</span>
               </button>
               
               <button 
@@ -263,7 +262,7 @@
                 ]"
               >
                 <i class="fas fa-user-plus text-base"></i>
-                <span>Following</span>
+                <span>{{ $t('account.following') }}</span>
               </button>
 
               <button 
@@ -277,7 +276,7 @@
                 ]"
               >
                 <i class="fas fa-users text-base"></i>
-                <span>Fandoms</span>
+                <span>{{ $t('account.myFandoms') }}</span>
               </button>
 
               <button 
@@ -291,7 +290,7 @@
                 ]"
               >
                 <i class="fas fa-bookmark text-base"></i>
-                <span>Saved</span>
+                <span>{{ $t('account.saved') }}</span>
               </button>
             </div>
           </div>
@@ -318,9 +317,9 @@
             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <i class="fas fa-camera text-3xl text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No posts yet</h3>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.empty.noPostsYet') }}</h3>
             <p class="text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-              {{ isOwnProfile ? "Share your thoughts with the world!" : `${userProfile?.name || 'This user'} hasn't shared anything yet.` }}
+              {{ isOwnProfile ? $t('account.empty.sharePrompt') : $t('account.empty.userHasNoPosts', { name: userProfile?.name || $t('account.thisUser') }) }}
             </p>
           </div>
         </div>
@@ -362,8 +361,8 @@
             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <i class="fas fa-users text-3xl text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No followers yet</h3>
-            <p class="text-gray-500 dark:text-gray-400">When people follow you, they'll appear here.</p>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.empty.noFollowers') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ $t('account.empty.followersHint') }}</p>
           </div>
         </div>
 
@@ -404,8 +403,8 @@
             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <i class="fas fa-user-plus text-3xl text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">Not following anyone</h3>
-            <p class="text-gray-500 dark:text-gray-400">Find interesting people to follow.</p>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.empty.notFollowingAnyone') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ $t('account.empty.findPeople') }}</p>
           </div>
         </div>
 
@@ -423,8 +422,8 @@
             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <i class="fas fa-bookmark text-3xl text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No saved posts</h3>
-            <p class="text-gray-500 dark:text-gray-400">Posts you save will appear here.</p>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.empty.noSavedPosts') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ $t('account.empty.savedHint') }}</p>
           </div>
         </div>
 
@@ -435,15 +434,15 @@
               v-for="fandom in myFandoms"
               :key="fandom.id"
               :community="fandom"
-              button-text="View Fandom"
+              :button-text="$t('common.view')"
             />
           </div>
           <div v-else class="text-center py-16">
             <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
               <i class="fas fa-users text-3xl text-gray-400"></i>
             </div>
-            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No fandoms joined yet</h3>
-            <p class="text-gray-500 dark:text-gray-400">Join a fandom to see it here.</p>
+            <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.empty.noFandomsJoined') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400">{{ $t('account.empty.joinAFandomHint') }}</p>
           </div>
         </div>
       </div>
@@ -455,13 +454,13 @@
         <div class="w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
           <i class="fas fa-user-slash text-3xl text-gray-400"></i>
         </div>
-        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">User not found</h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">The profile you're looking for doesn't exist.</p>
+        <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.notFound.title') }}</h3>
+        <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('account.notFound.description') }}</p>
         <button 
           @click="$router.push('/dashboard')"
           class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
-          Go to Dashboard
+          {{ $t('account.notFound.goToDashboard') }}
         </button>
       </div>
     </div>
@@ -484,6 +483,7 @@ import { usePostsStore } from '@/store/posts'
 import { useUsersStore } from '@/store/users'
 import notify from '@/utils/notify'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -492,6 +492,7 @@ const authStore = useAuthStore()
 const usersStore = useUsersStore()
 const fandomsStore = useFandomsStore()
 const postsStore = usePostsStore()
+const { t } = useI18n()
 
 const loading = ref(true)
 const userProfile = ref(null)
@@ -509,16 +510,16 @@ const savedPosts = ref([])
 const showEditModal = ref(false)
 const editingPost = ref(null)
 
+// Consider "own profile" only when route uses a self-handle (not numeric id)
 const isOwnProfile = computed(() => {
   const currentUser = authStore.user
-  const profileParam = route.params.user
+  const profileParam = String(route.params.user || '')
   if (!currentUser) return false
-  // Direct numeric id match
-  if (String(currentUser.id) === String(profileParam)) return true
-  return currentUser.userEmail === `${profileParam}@fanradars.com` ||
-    currentUser.userName === profileParam ||
-    currentUser.userEmail?.split('@')[0] === profileParam ||
-    profileParam === 'me'
+  const isNumericParam = /^\d+$/.test(profileParam)
+  if (profileParam === 'me') return true
+  if (isNumericParam) return false
+  const handle = currentUser.userName || currentUser.userEmail?.split('@')[0]
+  return handle && handle === profileParam
 })
 
 // All fandoms the user belongs to (admin or member) loaded from backend
@@ -528,15 +529,20 @@ const myFandoms = computed(() => fandomsStore.allFandoms.filter(f => f.role === 
 const fetchUserProfile = async () => {
   loading.value = true
   try {
-    const param = route.params.user
-    const isNumericParam = /^\d+$/.test(String(param))
-  // Determine if route param truly targets the authenticated user.
-  // Do NOT use isOwnProfile (it depends on param and can be polluted if profile data was overwritten).
-  const isSelf = param === 'me' || (authStore.user?.id && String(authStore.user.id) === String(param)) || (
-    authStore.user?.userName && authStore.user.userName === param
-  ) || (
-    authStore.user?.userEmail && authStore.user.userEmail.split('@')[0] === param
-  )
+    // Reset state so we don't carry over the previous profile when navigating between users
+    userProfile.value = null
+    userPosts.value = []
+    followersList.value = []
+    followingList.value = []
+    isFollowing.value = false
+
+    const param = String(route.params.user || '')
+    const isNumericParam = /^\d+$/.test(param)
+    // Treat as self ONLY for 'me' or handle routes; numeric param always fetches that numeric user's profile
+    const isSelf = (param === 'me') || (!isNumericParam && (
+      (authStore.user?.userName && authStore.user.userName === param) ||
+      (authStore.user?.userEmail && authStore.user.userEmail.split('@')[0] === param)
+    ))
 
     // Fetch self profile
   if (isSelf) {
@@ -576,7 +582,7 @@ const fetchUserProfile = async () => {
     }
 
     // Fetch other user by numeric id
-  if (!userProfile.value && isNumericParam && !isSelf) {
+  if (!userProfile.value && isNumericParam) {
       try {
         const resp = await UsersService.profile(param)
         const u = resp?.data?.user || resp?.user || resp?.data || resp
@@ -690,23 +696,32 @@ const fetchUserProfile = async () => {
   }
 }
 
-// Navigate to a profile ensuring we use numeric id for others (so backend /Y/users/{id}/profile is used)
+// Extract a robust numeric user id from various shapes, similar to Post.vue's extractPostUserId
+function extractUserId(u){
+  if(!u) return null
+  const cand = u.id ?? u.user_id ?? u.userId ?? u.user?.id
+  if (cand == null) return null
+  const n = Number(cand)
+  return Number.isInteger(n) && n > 0 ? n : null
+}
+
+// Navigate to profile mirroring Post.vue accountLinkTarget logic
 function navigateToProfile(user){
   if(!user) return
   const current = authStore.user
-  const isSelf = current && user.id && String(current.id) === String(user.id)
-  if(isSelf){
-    const uname = current.userName || current.userEmail?.split('@')[0]
-    if(uname) router.push({ name:'Account', params:{ user: uname } })
+  const uid = extractUserId(user)
+  const isSelf = current && uid && String(current.id) === String(uid)
+  if (isSelf) {
+    const handle = current.userName || current.userEmail?.split('@')[0] || 'me'
+    router.push({ name: 'Account', params: { user: handle } })
     return
   }
-  if(user.id){
-    router.push({ name:'Account', params:{ user: String(user.id) } })
+  if (uid) {
+    router.push({ name: 'Account', params: { user: String(uid) } })
     return
   }
-  if(user.username){
-    router.push({ name:'Account', params:{ user: user.username } })
-  }
+  const fallback = (user.username || (user.email ? user.email.split('@')[0] : '') || 'me')
+  router.push({ name: 'Account', params: { user: fallback } })
 }
 
 // Keep account page in sync with auth store (so header/profile edits reflect immediately)
@@ -940,11 +955,7 @@ async function refreshFollowData(userId){
 
 // Add methods for editing and deleting posts
 function deleteUserPost(postId) {
-  // Confirm deletion with the user
-  const confirmed = window.confirm('Delete this post? This action cannot be undone.')
-  if (!confirmed) return
-
-  // Resolve numeric backend id if possible
+  // Parent now trusts child ConfirmModal; no extra browser confirm.
   const resolveId = (id) => {
     if (typeof id === 'number') return id
     if (typeof id === 'string') {
@@ -952,38 +963,32 @@ function deleteUserPost(postId) {
       if (/^\d+$/.test(tail)) return Number(tail)
       if (/^\d+$/.test(id)) return Number(id)
     }
-    // Try to find in local list
     const rec = userPosts.value.find(p => p.id === id || p.originalId === id)
     if (rec?.originalId && /^\d+$/.test(String(rec.originalId))) return Number(rec.originalId)
     if (typeof rec?.id === 'number') return rec.id
     return null
   }
-
   const backendId = resolveId(postId)
   if (!backendId || backendId <= 0) {
-    notify.error('Invalid post id; cannot delete.')
+    notify.error(t('common.invalidPostId'))
     return
   }
-
-  // Optimistic UI removal; keep a snapshot for rollback
   const before = [...userPosts.value]
   userPosts.value = userPosts.value.filter(p => p.id !== postId && p.originalId !== postId && p.id !== backendId)
   if (userProfile.value) {
     userProfile.value.posts = Math.max(0, (userProfile.value.posts || 0) - 1)
   }
-
   PostsService.remove(backendId)
     .then((res) => {
       if (res?.success === false) throw new Error(res?.message || res?.error || 'Delete failed')
-      notify.success('Post deleted')
+      notify.success(t('common.postDeleted'))
     })
     .catch((err) => {
-      // Rollback on failure
       userPosts.value = before
       if (userProfile.value) {
         userProfile.value.posts = (userProfile.value.posts || 0) + 1
       }
-      notify.error(err?.message || 'Failed to delete post')
+      notify.error(err?.message || t('common.failedToDeletePost'))
     })
 }
 
@@ -997,7 +1002,7 @@ function editUserPost(postId, fullPost) {
   }
   const post = fullPost || findPost(postId)
   if (!post) {
-    notify.error('Post not found for editing')
+    notify.error(t('common.postNotFound'))
     return
   }
   // Pass through as-is; CreatePostModal understands { id, originalId, text/content, media[] }
@@ -1032,44 +1037,7 @@ const onWheelScroll = (e) => {
   }
 }
 
-// Handle global post created event to show new post instantly without full refresh
-function handlePostCreated(e) {
-  try {
-    const created = e?.detail?.post
-    if (!created) return
-    if (!isOwnProfile.value) return
-    if (activeTab.value !== 'posts') return
-    // Avoid duplicates
-    const exists = userPosts.value.some(p => p.id === created.id || p.originalId === created.id)
-    if (exists) return
-    // Basic normalization (reuse resolveMediaUrl)
-    const media = Array.isArray(created.media) ? created.media.map(m => {
-      const src = typeof m === 'string' ? m : (m.url || m.path || m.src || '')
-      const isVideo = /\.(mp4|webm|ogg)$/i.test(src)
-      return { type: isVideo ? 'video' : 'image', url: resolveMediaUrl(src) }
-    }) : []
-    const originalId = created.id && /^\d+$/.test(String(created.id)) ? Number(created.id) : null
-    const newPost = {
-      id: created.id || `temp-${Date.now()}`,
-      originalId,
-      username: userProfile.value.username,
-      avatar: userProfile.value.avatar,
-      text: created.description || created.content || created.body || '',
-      date: new Date(created.created_at || created.createdAt || Date.now()),
-      media,
-      tags: Array.isArray(created.tags) ? created.tags : [],
-      likes: created.likes || created.likes_count || 0,
-      comments: created.comments || created.comments_count || 0,
-      isLiked: false,
-      fandom: created.fandom || null,
-      trending: !!created.trending
-    }
-    userPosts.value.unshift(newPost)
-    if (userProfile.value) {
-      userProfile.value.posts = (userProfile.value.posts || 0) + 1
-    }
-  } catch (_) { /* ignore */ }
-}
+// Removed posts:created injection to prevent immediate display of new posts on Account page
 
 onMounted(() => {
   fetchUserProfile()
@@ -1078,13 +1046,11 @@ onMounted(() => {
   requestAnimationFrame(updateTabScrollState)
   if (tabScroll.value) tabScroll.value.addEventListener('scroll', updateTabScrollState, { passive: true })
   window.addEventListener('resize', updateTabScrollState)
-  window.addEventListener('posts:created', handlePostCreated)
 })
 
 onUnmounted(() => {
   if (tabScroll.value) tabScroll.value.removeEventListener('scroll', updateTabScrollState)
   window.removeEventListener('resize', updateTabScrollState)
-  window.removeEventListener('posts:created', handlePostCreated)
 })
 
 watch(() => route.params.user, () => {
@@ -1111,18 +1077,27 @@ watch(() => activeTab.value, () => {
     if (!postsStore.savedPosts || postsStore.savedPosts.length === 0) {
       postsStore.loadSavedPosts({ page: 1, limit: 20 }).then(res => {
         if (res.success) {
+          const fandomNameById = (id) => {
+            if (!id) return ''
+            const f = fandomsStore.allFandoms.find(f => String(f.id) === String(id))
+            return f?.name || ''
+          }
           savedPosts.value = postsStore.savedPosts.map(p => ({
             ...p,
-            username: userProfile.value.username,
-            avatar: userProfile.value.avatar
+            // keep original author info produced by normalizeApiPost
+            fandom: p.fandom || (p.fandom_id ? { id: p.fandom_id, name: fandomNameById(p.fandom_id) } : null)
           }))
         }
       })
     } else {
+      const fandomNameById = (id) => {
+        if (!id) return ''
+        const f = fandomsStore.allFandoms.find(f => String(f.id) === String(id))
+        return f?.name || ''
+      }
       savedPosts.value = postsStore.savedPosts.map(p => ({
         ...p,
-        username: userProfile.value.username,
-        avatar: userProfile.value.avatar
+        fandom: p.fandom || (p.fandom_id ? { id: p.fandom_id, name: fandomNameById(p.fandom_id) } : null)
       }))
     }
   }
@@ -1164,7 +1139,7 @@ function handleEditPosted(resp) {
       updated.originalId = pid || updated.originalId
       userPosts.value.splice(idx, 1, updated)
     }
-    notify.success('Post updated')
+    notify.success(t('common.postUpdated'))
   } catch (_) {
     // ignore
   } finally {

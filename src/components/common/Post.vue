@@ -31,11 +31,13 @@
           <!-- Badges row: responsive design for all screens -->
           <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-visible no-scrollbar py-0.5 max-w-full">
             <span
-              v-if="post.fandom || post.communityName"
+              v-if="normalizedFandomName"
               class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white dark:bg-blue-500 dark:text-white flex-shrink-0"
             >
               <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white/90 dark:bg-white rounded-full mr-1"></span>
-              {{ post.fandom || post.communityName }}
+              <span class="truncate max-w-[120px] sm:max-w-[160px]" :title="`${t('common.fandom')}: ${normalizedFandomName}`">
+                {{ t('common.fandom') }}: {{ normalizedFandomName }}
+              </span>
             </span>
             <span
               v-if="post.trending"
@@ -44,7 +46,7 @@
               <svg class="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1 opacity-90" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clip-rule="evenodd" />
               </svg>
-              Trending
+              {{ t('common.trending') }}
             </span>
           </div>
         </div>
@@ -391,6 +393,8 @@ import { useAuthStore } from '@/store/auth'
 import { usePostsStore } from '@/store/posts'
 import notify from '@/utils/notify'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 
 const props = defineProps({
   post: {
@@ -417,6 +421,20 @@ const emit = defineEmits(['like', 'comment', 'delete', 'edit'])
 // Instagram-style carousel state
 const currentSlide = ref(0)
 const showComments = ref(false)
+// Normalize fandom/community name which may arrive as string or object ({id,name})
+const normalizedFandomName = computed(()=>{
+  const f = props.post?.fandom
+  if (f) {
+    if (typeof f === 'string') return f
+    if (typeof f === 'object') {
+      // backend returns { id, name }
+      if (f.name) return String(f.name)
+      // if nested
+      if (f.title) return String(f.title)
+    }
+  }
+  return props.post?.communityName || ''
+})
 const isSaved = ref(false)
 const newComment = ref('')
 const showMenu = ref(false)

@@ -71,8 +71,8 @@
             <!-- Login Button (icon-only on phones) -->
             <router-link 
               to="/login"
-              aria-label="{{ $t('header.signIn') }}"
-              title="{{ $t('header.signIn') }}"
+              :aria-label="$t('header.signIn')"
+              :title="$t('header.signIn')"
               class="inline-flex items-center justify-center h-9 w-9 sm:h-auto sm:w-auto px-0 sm:px-6 py-0 sm:py-2 text-sm sm:text-base text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors rounded-xl border border-gray-300/60 dark:border-gray-700"
             >
               <LogIn class="w-5 h-5 sm:mr-2" />
@@ -82,8 +82,8 @@
             <!-- Get Started Button (icon-only on phones) -->
             <router-link 
               to="/signup"
-              aria-label="{{ $t('header.signUp') }}"
-              title="{{ $t('header.signUp') }}"
+              :aria-label="$t('header.signUp')"
+              :title="$t('header.signUp')"
               class="inline-flex items-center justify-center h-9 w-9 sm:h-auto sm:w-auto px-0 sm:px-6 py-0 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm sm:text-base transition-colors shadow-lg hover:shadow-xl"
             >
               <UserPlus class="w-5 h-5 sm:mr-2" />
@@ -207,43 +207,6 @@
       </div>
     </section>
 
-    <!-- Communities Section -->
-    <section id="communities" class="py-24 bg-gradient-to-br from-slate-50 via-primary-50/50 to-slate-100 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl md:text-5xl font-black text-gray-900 dark:text-white mb-6">
-            {{ $t('trending.title') }}
-          </h2>
-          <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            {{ $t('trending.subtitle') }}
-          </p>
-        </div>
-
-        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div v-for="community in trendingCommunities" :key="community.name" class="group relative overflow-hidden rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 ring-1 ring-gray-200 dark:ring-gray-700">
-            <div class="aspect-square relative">
-              <img :src="community.image" :alt="community.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-              <div class="absolute bottom-0 left-0 right-0 p-6 text-white">
-                <h3 class="text-xl font-bold mb-2">{{ community.name }}</h3>
-                <div class="flex items-center justify-between text-sm">
-                </div>
-              </div>
-              <div class="absolute top-4 right-4">
-                <span class="px-3 py-1 rounded-full text-xs font-medium text-white bg-gradient-to-r from-primary-600 to-secondary-600 shadow-md">{{ community.category }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="text-center mt-12">
-          <router-link to="/login" class="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300">
-            {{ $t('trending.exploreAll') }}
-          </router-link>
-        </div>
-      </div>
-    </section>
-
     <!-- FAQ Section -->
     <section class="py-24 bg-gradient-to-b from-slate-50 via-gray-50 to-primary-50/50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -297,25 +260,40 @@
               />
             </div>
             <p class="text-gray-400 text-lg leading-relaxed max-w-md">
-              The ultimate destination for fans to connect, share, and celebrate their passions together.
+              {{ $t('landing.footer.description') }}
             </p>
           </div>
-          <div v-for="(section, key) in footerNavigation" :key="key" class="space-y-4">
-            <h3 class="font-bold text-lg capitalize">{{ key }}</h3>
+          <div class="space-y-4">
+            <h3 class="font-bold text-lg capitalize">{{ $t('landing.footer.nav.product.title') }}</h3>
             <ul class="space-y-3">
-              <li v-for="item in section" :key="item.name">
-                <a :href="item.href" class="text-gray-400 hover:text-white transition-colors">{{ item.name }}</a>
+              <li v-for="item in footerNavigation.product" :key="item.name">
+                <a :href="item.href" class="text-gray-400 hover:text-white transition-colors">{{ $t(item.i18n) }}</a>
+              </li>
+            </ul>
+          </div>
+          <div class="space-y-4">
+            <h3 class="font-bold text-lg capitalize">{{ $t('landing.footer.nav.company.title') }}</h3>
+            <ul class="space-y-3">
+              <li v-for="item in footerNavigation.company" :key="item.name">
+                <a :href="item.href" class="text-gray-400 hover:text-white transition-colors">{{ $t(item.i18n) }}</a>
+              </li>
+            </ul>
+          </div>
+          <div class="space-y-4">
+            <h3 class="font-bold text-lg capitalize">{{ $t('landing.footer.nav.social.title') }}</h3>
+            <ul class="space-y-3">
+              <li v-for="item in footerNavigation.social" :key="item.name">
+                <a :href="item.href" class="text-gray-400 hover:text-white transition-colors inline-flex items-center gap-2">
+                  <component :is="item.icon" class="w-5 h-5" />
+                  <span>{{ item.name }}</span>
+                </a>
               </li>
             </ul>
           </div>
         </div>
         <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p class="text-gray-400">&copy; 2024 FanRadar. All rights reserved.</p>
-          <div class="flex space-x-6 mt-4 md:mt-0">
-            <a v-for="social in footerNavigation.social" :key="social.name" :href="social.href" class="text-gray-400 hover:text-white transition-colors">
-              <component :is="social.icon" class="w-6 h-6" />
-            </a>
-          </div>
+          <p class="text-gray-400">&copy; 2025 FanRadar. All rights reserved.</p>
+          
         </div>
       </div>
     </footer>
@@ -323,9 +301,10 @@
 </template>
 
 <script>
-import { Users, MessageCircle, Star, Heart, TrendingUp, Zap, Globe, Shield, Twitter, Facebook, Instagram, Linkedin, LogIn, UserPlus } from 'lucide-vue-next'
-import { computed, ref, onMounted, onBeforeUnmount } from 'vue'
 import { useThemeStore } from '@/store/index'
+import { useTrendsStore } from '@/store/trends'
+import { Facebook, Globe, Heart, Instagram, Linkedin, LogIn, MessageCircle, Shield, Star, TrendingUp, Twitter, UserPlus, Users, Zap } from 'lucide-vue-next'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 
 export default {
@@ -405,29 +384,29 @@ export default {
       { icon: Zap, name: t('features.items.fanEvents.name'), description: t('features.items.fanEvents.desc') },
     ])
 
-    const trendingCommunities = [
-      { name: 'Global Sports', category: 'Sports', image: '/images/F.png' },
-      { name: 'Anime & Manga', category: 'Anime', image: '/images/F.png' },
-      { name: 'Top Games', category: 'Gaming', image: '/images/F.png' },
-      { name: 'Pop Culture', category: 'Culture', image: '/images/F.png' },
-    ]
+    // Store-backed trending communities (no mock data)
+    const trendsStore = useTrendsStore()
+    const trendingCommunities = computed(() => trendsStore.trendingCommunities.slice(0, 8))
+    onMounted(() => {
+      trendsStore.fetchTrendingFandoms(8).catch(() => {})
+    })
 
-    const faqs = [
-      { q: 'What is FanRadar?', a: 'A platform for fans to discover fandoms, follow trends, and connect with communities.' },
-      { q: 'Is FanRadar free?', a: 'Yes. You can browse, follow fandoms, and participate for free.' },
-      { q: 'How do I join a fandom?', a: 'Create an account, search your interest, and follow fandoms to personalize your feed.' },
-    ]
+    const faqs = computed(() => [
+      { q: t('faq.items.whatIs.q'), a: t('faq.items.whatIs.a') },
+      { q: t('faq.items.isFree.q'), a: t('faq.items.isFree.a') },
+      { q: t('faq.items.howJoin.q'), a: t('faq.items.howJoin.a') },
+    ])
 
     const footerNavigation = {
       product: [
-        { name: 'Features', href: '#features' },
-        { name: 'Trending', href: '#communities' },
-        { name: 'FAQ', href: '#faq' },
+        { name: 'Features', i18n: 'landing.footer.nav.product.features', href: '#features' },
+        { name: 'Trending', i18n: 'landing.footer.nav.product.trending', href: '#communities' },
+        { name: 'FAQ', i18n: 'landing.footer.nav.product.faq', href: '#faq' },
       ],
       company: [
-        { name: 'About', href: '#' },
-        { name: 'Contact', href: '#' },
-        { name: 'Careers', href: '#' },
+        { name: 'About', i18n: 'landing.footer.nav.company.about', href: '#' },
+        { name: 'Contact', i18n: 'landing.footer.nav.company.contact', href: '#' },
+        { name: 'Careers', i18n: 'landing.footer.nav.company.careers', href: '#' },
       ],
       social: [
         { name: 'Twitter', href: '#', icon: Twitter },

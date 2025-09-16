@@ -3,13 +3,13 @@
     <div class="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8">
       <!-- Header -->
       <div class="mb-6 sm:mb-8">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Edit Profile</h1>
-        <p class="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">Update your profile information and settings</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{{ $t('account.editProfile') }}</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base">{{ $t('account.edit.subtitle') }}</p>
       </div>
 
       <!-- Cover Photo Section -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">Cover Photo</h2>
+  <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-3 sm:mb-4">{{ $t('account.edit.coverPhoto') }}</h2>
         <div class="relative">
           <!-- Cover Photo Display -->
           <div class="relative w-full h-36 sm:h-48 bg-gradient-to-r from-indigo-500 via-purple-600 to-blue-600 rounded-xl overflow-hidden">
@@ -26,9 +26,9 @@
                   class="inline-flex items-center justify-center h-10 sm:h-11 px-4 sm:px-5 bg-white/20 backdrop-blur-md text-white rounded-lg hover:bg-white/30 transition-colors mb-2 leading-none gap-2"
                 >
                   <CameraIcon class="h-5 w-5" />
-                  <span class="text-sm sm:text-base">{{ profileForm.coverPhoto ? 'Change Cover Photo' : 'Add Cover Photo' }}</span>
+                  <span class="text-sm sm:text-base">{{ profileForm.coverPhoto ? $t('account.edit.changeCover') : $t('account.edit.addCover') }}</span>
                 </button>
-                <p class="text-white/80 text-xs sm:text-sm">Recommended: 1200x400px, JPG or PNG, max 5MB</p>
+                <p class="text-white/80 text-xs sm:text-sm">{{ $t('account.edit.coverHint') }}</p>
               </div>
             </div>
           </div>
@@ -64,7 +64,7 @@
 
       <!-- Profile Photo Section - Centered -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center">Profile Photo</h2>
+  <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4 text-center">{{ $t('account.edit.profilePhoto') }}</h2>
         <div class="flex flex-col items-center space-y-4 sm:space-y-6">
           <div class="relative">
             <div class="relative">
@@ -82,20 +82,20 @@
             </div>
           </div>
           <div class="text-center">
-            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">Change your photo</h3>
-            <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-4">Recommended: Square JPG, PNG, or GIF, at least 400x400px and less than 2MB.</p>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">{{ $t('account.edit.changePhoto') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mb-4">{{ $t('account.edit.photoHint') }}</p>
             <div class="flex flex-col sm:flex-row justify-center gap-2 sm:space-x-3">
               <button 
                 @click="triggerProfilePhotoUpload"
                 class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium w-full sm:w-auto"
               >
-                Upload Photo
+                {{ $t('account.edit.uploadPhoto') }}
               </button>
               <button 
                 @click="removeProfilePhoto"
                 class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm font-medium w-full sm:w-auto"
               >
-                Remove
+                {{ $t('common.remove') }}
               </button>
             </div>
             <input 
@@ -111,42 +111,42 @@
 
       <!-- Basic Information -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 sm:p-6 mb-6">
-        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">Basic Information</h2>
+        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-4">{{ $t('account.edit.basicInfo') }}</h2>
         <form @submit.prevent="saveProfile" class="space-y-5 sm:space-y-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">First name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('account.edit.firstName') }}</label>
               <input
                 v-model="profileForm.first_name"
                 type="text"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="First name"
+                :placeholder="$t('account.edit.firstNamePlaceholder')"
               />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Last name</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('account.edit.lastName') }}</label>
               <input
                 v-model="profileForm.last_name"
                 type="text"
                 class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Last name"
+                :placeholder="$t('account.edit.lastNamePlaceholder')"
               />
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('auth.signIn.emailLabel') }}</label>
             <input 
               v-model="profileForm.email"
               type="email" 
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your email"
+              :placeholder="$t('auth.signIn.emailPlaceholder')"
             />
           </div>
           
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex justify-between">
-              <span>Bio</span>
+              <span>{{ $t('account.edit.bio') }}</span>
               <span class="text-xs text-gray-400">{{ profileForm.bio.length }}/300</span>
             </label>
             <textarea 
@@ -154,50 +154,50 @@
               rows="4" 
               maxlength="300"
               class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              placeholder="Tell us about yourself..."
+              :placeholder="$t('account.edit.bioPlaceholder')"
             ></textarea>
           </div>
 
           <!-- Password Section -->
           <div class="border-t border-gray-200 dark:border-gray-600 pt-5 sm:pt-6">
-            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">Change Password</h3>
+            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">{{ $t('account.edit.changePassword') }}</h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">New Password</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('auth.resetPassword.passwordLabel') }}</label>
                 <div class="relative">
                   <input 
                     v-model="profileForm.password"
                     :type="showPassword ? 'text' : 'password'" 
                     autocomplete="new-password"
                     class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter new password"
+                    :placeholder="$t('auth.resetPassword.passwordPlaceholder')"
                   />
                   <button 
                     type="button"
                     @click="showPassword = !showPassword"
                     class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg"></i>
+                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg" :title="showPassword ? $t('auth.resetPassword.hidePassword') : $t('auth.resetPassword.showPassword')"></i>
                   </button>
                 </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Leave blank to keep current password</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('account.edit.leaveBlankPassword') }}</p>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password</label>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('auth.resetPassword.confirmPasswordLabel') }}</label>
                 <div class="relative">
                   <input 
                     v-model="profileForm.confirmPassword"
                     :type="showConfirmPassword ? 'text' : 'password'" 
                     autocomplete="new-password"
                     class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Confirm new password"
+                    :placeholder="$t('auth.resetPassword.confirmPasswordPlaceholder')"
                   />
                   <button 
                     type="button"
                     @click="showConfirmPassword = !showConfirmPassword"
                     class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                   >
-                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg"></i>
+                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg" :title="showConfirmPassword ? $t('auth.resetPassword.hidePassword') : $t('auth.resetPassword.showPassword')"></i>
                   </button>
                 </div>
                 <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
@@ -211,7 +211,7 @@
               @click="cancelEdit"
               class="px-5 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
             >
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit"
@@ -221,7 +221,7 @@
               <svg v-if="saving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v2m0 12v2m8-8h-2M6 12H4m13.657-6.343l-1.414 1.414M8.757 16.243l-1.414 1.414m0-12.728l1.414 1.414M16.243 16.243l1.414 1.414" />
               </svg>
-              <span>{{ saving ? 'Saving...' : 'Save Changes' }}</span>
+              <span>{{ saving ? $t('common.saving') : $t('common.saveChanges') }}</span>
             </button>
           </div>
         </form>
@@ -231,10 +231,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, getCurrentInstance } from 'vue'
-import { useRouter, onBeforeRouteLeave } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
 import { CameraIcon } from '@heroicons/vue/24/outline'
+import { computed, getCurrentInstance, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -243,6 +244,7 @@ const coverInput = ref(null)
 const saving = ref(false)
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
+const { t } = useI18n()
 
 // Toast access (global plugin previously used in fandom creation)
 let toast
@@ -315,7 +317,7 @@ function handleProfilePhotoChange(event) {
   const file = event.target.files[0]
   if (!file) return
   if (file.size > 2 * 1024 * 1024) {
-    notify('error', 'Profile photo must be less than 2MB')
+  notify('error', t('account.edit.profilePhotoTooLarge'))
     return
   }
   avatarFile.value = file
@@ -326,7 +328,7 @@ function handleProfilePhotoChange(event) {
 }
 
 function removeProfilePhoto() {
-  const name = `${profileForm.value.first_name || ''} ${profileForm.value.last_name || ''}`.trim() || (authStore.user?.userName || authStore.user?.userEmail?.split('@')[0]) || 'User'
+  const name = `${profileForm.value.first_name || ''} ${profileForm.value.last_name || ''}`.trim() || (authStore.user?.userName || authStore.user?.userEmail?.split('@')[0]) || t('account.edit.userPlaceholder')
   profileForm.value.avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=6366f1&color=fff&size=256`
 }
 
@@ -339,7 +341,7 @@ function handleCoverChange(event) {
   const file = event.target.files[0]
   if (!file) return
   if (file.size > 5 * 1024 * 1024) {
-    notify('error', 'Cover photo must be less than 5MB')
+    notify('error', t('account.edit.coverTooLarge'))
     return
   }
   coverFile.value = file
@@ -362,11 +364,11 @@ async function saveProfile() {
   // Validate passwords if provided
   if (profileForm.value.password || profileForm.value.confirmPassword) {
     if (profileForm.value.password !== profileForm.value.confirmPassword) {
-      notify('error', 'Passwords do not match')
+      notify('error', t('auth.resetPassword.errors.passwordsNoMatch'))
       return
     }
     if (profileForm.value.password.length < 6) {
-      notify('error', 'Password must be at least 6 characters long')
+      notify('error', t('auth.resetPassword.errors.passwordTooShort'))
       return
     }
   }
@@ -393,7 +395,7 @@ async function saveProfile() {
 
     const { success, error } = await authStore.updateProfileRemote(fd)
     if (!success) {
-      notify('error', error || 'Failed to update profile on server')
+      notify('error', error || t('account.edit.failedToUpdate'))
       return
     }
 
@@ -406,7 +408,7 @@ async function saveProfile() {
   profileForm.value.coverPhoto = u.coverPhoto || profileForm.value.coverPhoto
   profileForm.value.bio = u.bio || profileForm.value.bio
 
-  notify('success', 'Profile updated successfully!')
+  notify('success', t('account.edit.success'))
     setTimeout(() => {
       const idOrName = authStore.user?.userName || authStore.user?.userEmail?.split('@')[0] || authStore.user?.id
       router.push(`/account/${idOrName}`)
@@ -426,7 +428,7 @@ async function saveProfile() {
         notify('error', JSON.stringify(resp))
       }
     } else {
-      notify('error', 'Error saving profile. Please try again.')
+      notify('error', t('account.edit.genericError'))
     }
   } finally {
     saving.value = false

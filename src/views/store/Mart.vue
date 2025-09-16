@@ -18,13 +18,13 @@
           <!-- Section Header -->
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div>
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
-              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Limited edition products with exclusive discounts</p>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('store.mart.hotDrops') }}</h2>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ $t('store.mart.hotDropsSubtitle') }}</p>
             </div>
             <div class="flex items-center gap-3 text-sm">
               <span v-if="currentDrop && !currentDrop.isExpired" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                 <i class="far fa-clock"></i>
-                <span>{{ currentDrop.isUpcoming ? 'Starts in' : 'Ends in' }}: {{ countdownText }}</span>
+                <span>{{ currentDrop.isUpcoming ? $t('common.startsIn') : $t('store.mart.endsIn') }}: {{ countdownText }}</span>
               </span>
               <div class="flex items-center gap-2">
                 <span v-if="dragStatistics.active_products > 0" class="px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs font-medium">
@@ -48,8 +48,8 @@
             <div v-if="currentDrop.isExpired" class="absolute inset-0 bg-black/50 z-20 flex items-center justify-center">
               <div class="text-center text-white">
                 <i class="fas fa-clock-o text-4xl mb-2 opacity-50"></i>
-                <p class="text-xl font-bold">Drop Ended</p>
-                <p class="text-sm opacity-75">This drop has expired</p>
+                <p class="text-xl font-bold">{{ $t('store.mart.dropEnded') }}</p>
+                <p class="text-sm opacity-75">{{ $t('store.mart.dropExpired') }}</p>
               </div>
             </div>
             
@@ -98,8 +98,8 @@
                   <!-- Enhanced stock display -->
                   <div class="mb-4">
                     <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm text-white/90">Stock Progress</span>
-                      <span class="text-sm text-white/90">{{ currentDrop.stockLeft }} of {{ currentDrop.totalStock }} left</span>
+                      <span class="text-sm text-white/90">{{ $t('store.mart.stockLevel') }}</span>
+                      <span class="text-sm text-white/90">{{ $t('store.mart.leftOfTotal', { left: currentDrop.stockLeft, total: currentDrop.totalStock }) }}</span>
                     </div>
                     <div class="w-full h-3 bg-white/20 rounded-full overflow-hidden">
                       <div 
@@ -113,16 +113,16 @@
                       ></div>
                     </div>
                     <div class="text-xs text-white/75 mt-1">
-                      {{ currentDrop.totalStock - currentDrop.stockLeft }} sold ({{ Math.round(currentDrop.stockPercentage) }}% remaining)
+                      {{ $t('store.mart.soldRemaining', { sold: currentDrop.totalStock - currentDrop.stockLeft, remaining: Math.round(currentDrop.stockPercentage) }) }}
                     </div>
                   </div>
 
                   <!-- Countdown or status info -->
                   <div class="flex items-center gap-2 mb-6">
                     <i class="far fa-clock"></i>
-                    <span v-if="currentDrop.isActive" class="font-semibold tracking-wide">Ends in {{ countdownText }}</span>
-                    <span v-else-if="currentDrop.isUpcoming" class="font-semibold tracking-wide">Starts in {{ Math.abs(currentDrop.daysUntilStart || 0) }} days</span>
-                    <span v-else class="font-semibold tracking-wide text-red-300">Drop Ended</span>
+                    <span v-if="currentDrop.isActive" class="font-semibold tracking-wide">{{ $t('store.mart.endsIn') }} {{ countdownText }}</span>
+                    <span v-else-if="currentDrop.isUpcoming" class="font-semibold tracking-wide">{{ $t('common.startsIn') }} {{ Math.abs(currentDrop.daysUntilStart || 0) }} {{ $t('common.days') }}</span>
+                    <span v-else class="font-semibold tracking-wide text-red-300">{{ $t('store.mart.dropEnded') }}</span>
                   </div>
 
                   <!-- Action buttons -->
@@ -133,15 +133,15 @@
                       class="px-6 py-3 rounded-lg bg-white text-gray-900 hover:bg-gray-100 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                       :disabled="currentDrop.isUpcoming"
                     >
-                      {{ currentDrop.isUpcoming ? 'Coming Soon' : 'Shop Now' }}
+                      {{ currentDrop.isUpcoming ? $t('store.mart.comingSoon') : $t('store.mart.viewDrop') }}
                     </button>
                     <button @click="viewDrop(currentDrop)" class="px-6 py-3 rounded-lg border border-white/40 hover:bg-white/10 font-medium transition-all duration-200">
-                      View Details
+                      {{ $t('common.viewDetails') }}
                     </button>
                     <!-- Favorites count if available -->
                     <div v-if="currentDrop.favorites > 0" class="flex items-center gap-1 px-3 py-2 bg-white/10 rounded-lg text-sm">
                       <i class="fas fa-heart text-red-300"></i>
-                      <span>{{ currentDrop.favorites }} favorites</span>
+                      <span>{{ $t('common.favoritesCount', { count: currentDrop.favorites }) }}</span>
                     </div>
                   </div>
                 </div>
@@ -166,7 +166,7 @@
               <div v-if="drop.isExpired" class="absolute inset-0 bg-black/50 z-10 flex items-center justify-center">
                 <div class="text-center text-white">
                   <i class="fas fa-clock text-xl mb-1 opacity-75"></i>
-                  <p class="text-sm font-medium">Expired</p>
+                  <p class="text-sm font-medium">{{ $t('common.expired') }}</p>
                 </div>
               </div>
               
@@ -187,8 +187,8 @@
                 <div class="absolute bottom-2 right-2 text-xs bg-black/60 text-white px-2 py-1 rounded-full font-medium">
                   <i class="far fa-clock mr-1"></i>
                   <span v-if="drop.isActive">{{ formatCountdown(drop.endTime, nowTime) }}</span>
-                  <span v-else-if="drop.isUpcoming">{{ Math.abs(drop.daysUntilStart || 0) }}d to start</span>
-                  <span v-else>Ended</span>
+                  <span v-else-if="drop.isUpcoming">{{ Math.abs(drop.daysUntilStart || 0) }}{{ $t('common.daysShort') }} {{ $t('common.toStart') }}</span>
+                  <span v-else>{{ $t('common.ended') }}</span>
                 </div>
                 <!-- Stock warning badge -->
                 <div v-if="drop.stockPercentage < 25 && !drop.isExpired" class="absolute top-2 right-2 text-[10px] bg-red-600 text-white px-2 py-0.5 rounded-full font-bold animate-pulse">
@@ -220,8 +220,8 @@
                     ></div>
                   </div>
                   <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    <span>{{ drop.totalStock - drop.stockLeft }} sold</span>
-                    <span>{{ drop.stockLeft }} left ({{ Math.round(drop.stockPercentage) }}%)</span>
+                    <span>{{ $t('store.mart.sold', { count: drop.totalStock - drop.stockLeft }) }}</span>
+                    <span>{{ $t('store.mart.leftPercent', { left: drop.stockLeft, percent: Math.round(drop.stockPercentage) }) }}</span>
                   </div>
                 </div>
                 
@@ -234,7 +234,7 @@
                     </div>
                     <div v-if="drop.favorites > 0" class="flex items-center gap-1">
                       <i class="fas fa-heart text-red-500"></i>
-                      <span>{{ drop.favorites }} favorites</span>
+                      <span>{{ $t('common.favoritesCount', { count: drop.favorites }) }}</span>
                     </div>
                   </div>
                   <button 
@@ -247,7 +247,7 @@
                     ]"
                     :disabled="drop.isExpired"
                   >
-                    {{ drop.isExpired ? 'Expired' : drop.isUpcoming ? 'Notify Me' : 'View' }}
+                    {{ drop.isExpired ? $t('common.expired') : drop.isUpcoming ? $t('common.notifyMe') : $t('common.view') }}
                   </button>
                 </div>
               </div>
@@ -259,7 +259,7 @@
         <div v-else-if="loadingDrops" class="mb-6 sm:mb-8">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
             <div>
-              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Featured Drops</h2>
+              <h2 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('store.mart.hotDrops') }}</h2>
               <div class="animate-pulse bg-gray-200 dark:bg-gray-700 h-4 w-64 rounded mt-1"></div>
             </div>
             <div class="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-32 rounded-lg"></div>
@@ -286,10 +286,10 @@
             <div class="text-gray-400 text-5xl mb-4">
               <i class="fas fa-fire-flame-curved"></i>
             </div>
-            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No Featured Drops Available</h3>
-            <p class="text-gray-500 dark:text-gray-400 mb-4">Check back soon for exclusive limited-time offers</p>
+            <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ $t('store.mart.noDrops') }}</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-4">{{ $t('store.mart.checkBack') }}</p>
             <button @click="fetchDragProducts" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
-              <i class="fas fa-refresh mr-2"></i>Refresh
+              <i class="fas fa-refresh mr-2"></i>{{ $t('common.refresh') }}
             </button>
           </div>
         </div>
@@ -297,16 +297,16 @@
         <!-- Active Filters Display -->
         <div v-if="storeSidebarStore.hasActiveFilters" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-6">
           <div class="flex items-center justify-between mb-3">
-            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">Active Filters</h3>
+            <h3 class="text-sm font-semibold text-gray-700 dark:text-gray-300">{{ $t('common.activeFilters') }}</h3>
             <span class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded-full">
-              {{ storeSidebarStore.getActiveFilterCount }} applied
+              {{ storeSidebarStore.getActiveFilterCount }} {{ $t('common.applied') }}
             </span>
           </div>
           <div class="flex flex-wrap gap-2">
             <!-- Subcategory Filter -->
             <span v-if="storeSidebarStore.appliedFilters.category" class="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
               <i class="fas fa-layer-group"></i>
-              <span>Subcategory: {{ subcategoryName(storeSidebarStore.appliedFilters.category) }}</span>
+              <span>{{ $t('common.category') }}: {{ subcategoryName(storeSidebarStore.appliedFilters.category) }}</span>
               <button class="ml-1 hover:text-blue-900 dark:hover:text-blue-200" @click="storeSidebarStore.clearCategoryFilter()">✕</button>
             </span>
             
@@ -314,7 +314,7 @@
             <span v-if="storeSidebarStore.appliedFilters.priceMin || storeSidebarStore.appliedFilters.priceMax" class="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
               <i class="fas fa-dollar-sign"></i>
               <span>
-                Price: 
+                {{ $t('common.priceRange') }}: 
                 {{ storeSidebarStore.appliedFilters.priceMin ?? 0 }} - 
                 {{ storeSidebarStore.appliedFilters.priceMax ?? '∞' }}
               </span>
@@ -352,10 +352,9 @@
 
               <!-- Clear -->
               <button v-if="hasActiveFilters" @click="clearAllFilters" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700">
-                Clear
+                {{ $t('common.clearFiltersCta') }}
               </button>
-
-              <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredProducts.length }} results</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">{{ filteredProducts.length }} {{ $t('store.mart.results') }}</span>
             </div>
           </div>
         </div>
@@ -380,10 +379,10 @@
           <div class="text-gray-400 text-6xl mb-4 animate-bounce">
             <i class="fas fa-shopping-basket"></i>
           </div>
-          <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">No products found</h3>
-          <p class="text-gray-500 dark:text-gray-400 mb-6">Try adjusting your filters to see more products</p>
+          <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">{{ $t('store.mart.noProductsTitle') }}</h3>
+          <p class="text-gray-500 dark:text-gray-400 mb-6">{{ $t('store.mart.noProductsDesc') }}</p>
           <button @click="clearAllFilters" class="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 transform hover:scale-105">
-            <i class="fas fa-refresh mr-2"></i>Clear Filters
+            <i class="fas fa-refresh mr-2"></i>{{ $t('common.clearFiltersCta') }}
           </button>
         </div>
 
@@ -399,7 +398,7 @@
             <div class="relative overflow-hidden">
               <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
               <div class="absolute top-3 left-3 flex gap-2">
-                <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">New</span>
+                <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">{{ $t('common.new') }}</span>
                 <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
               </div>
               <!-- Wishlist Button Overlay -->
@@ -439,13 +438,13 @@
                   @click.stop="openRate(product)" 
                   class="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-yellow-400 group/rate"
                 >
-                  <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> Rate
+                  <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> {{ $t('common.rate') }}
                 </button>
                 <button 
                   @click.stop="addToCart(product)" 
                   class="flex-1 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                 >
-                  <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+                  <i class="fas fa-cart-plus mr-1"></i> {{ $t('common.addToCart') }}
                 </button>
               </div>
             </div>
@@ -464,7 +463,7 @@
               <div class="relative w-40 h-40 flex-shrink-0">
                 <img :src="product.image" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                 <div class="absolute top-2 left-2 flex flex-col gap-1">
-                  <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">New</span>
+                  <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">{{ $t('common.new') }}</span>
                   <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
                 </div>
                 <!-- Wishlist Button -->
@@ -505,13 +504,13 @@
                       @click.stop="openRate(product)" 
                       class="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 hover:border-yellow-400 group/rate"
                     >
-                      <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> Rate
+                      <i class="fas fa-star text-yellow-400 mr-1 group-hover/rate:animate-pulse"></i> {{ $t('common.rate') }}
                     </button>
                     <button 
                       @click.stop="addToCart(product)" 
                       class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-all duration-200 transform hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
                     >
-                      <i class="fas fa-cart-plus mr-1"></i> Add to Cart
+                      <i class="fas fa-cart-plus mr-1"></i> {{ $t('common.addToCart') }}
                     </button>
                   </div>
                 </div>
@@ -530,7 +529,7 @@
             :disabled="currentPage === 1"
             class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
           >
-            <i class="fas fa-chevron-left mr-1"></i> Previous
+            <i class="fas fa-chevron-left mr-1"></i> {{ $t('common.previous') }}
           </button>
           
           <div class="flex gap-1">
@@ -554,7 +553,7 @@
             :disabled="currentPage === totalPages"
             class="px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-700"
           >
-            Next <i class="fas fa-chevron-right ml-1"></i>
+            {{ $t('common.next') }} <i class="fas fa-chevron-right ml-1"></i>
           </button>
         </div>
     </div>
@@ -572,14 +571,15 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import RateProductModal from '@/components/common/RateProductModal.vue'
+import ProductsService from '@/services/productsService'
+import { useCartStore } from '@/store/cart'
+import { useMartStore } from '@/store/mart'
 import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
-import { useMartStore } from '@/store/mart'
-import { useCartStore } from '@/store/cart'
-import ProductsService from '@/services/productsService'
 import notify from '@/utils/notify'
-import RateProductModal from '@/components/common/RateProductModal.vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 // No category/subcategory prefetching here to avoid extra network calls
 
 // Initialize stores
@@ -587,6 +587,7 @@ const productsStore = useProductsStore()
 const storeSidebarStore = useStoreSidebarStore()
 const martStore = useMartStore()
 const cartStore = useCartStore()
+const { t } = useI18n()
 
 // Subcategory-based selection (id)
 const selectedCategory = ref('')
@@ -687,7 +688,7 @@ const fetchDragProducts = async () => {
     }
   } catch (error) {
     console.error('Failed to fetch drag products:', error)
-    notify.error('Failed to load product drops')
+    notify.error(t('store.mart.failedToLoadDrops'))
   } finally {
     loadingDrops.value = false
   }
@@ -805,9 +806,9 @@ async function submitRating({ evaluation, commentaire }) {
   const { id } = ratingTarget.value
   const res = await productsStore.rateProduct(id, evaluation, commentaire)
   if (res && res.success) {
-    notify.success('Rating saved')
+    notify.success(t('common.ratingSaved'))
   } else {
-    notify.error(res?.error || 'Failed to save rating')
+    notify.error(res?.error || t('common.failedToSaveRating'))
   }
 }
 
@@ -819,7 +820,7 @@ const addToCart = (product) => {
     image: product.image,
     category: product.category
   })
-  notify.success(`${product.name} added to cart!`, {
+  notify.success(t('common.addedToCartWithName', { name: product.name }), {
     autoClose: 3000
   })
 }

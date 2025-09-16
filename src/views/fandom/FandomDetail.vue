@@ -9,7 +9,7 @@
       </button>
       <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
         <!-- TODO: Bind fandom name here -->
-        {{ fandom?.name || 'Fandom' }}
+        {{ fandom?.name || $t('fandom.detail.label') }}
       </div>
       <div class="flex items-center gap-2">
         <!-- TODO: Add quick actions (follow, share, menu) -->
@@ -53,10 +53,10 @@
       <div class="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 md:bottom-6 md:left-6 text-white">
         <div class="flex flex-col sm:flex-row sm:items-center mb-1 sm:mb-2">
           <div class="px-2 py-0.5 sm:px-3 sm:py-1 bg-blue-600 rounded-full text-xs sm:text-sm font-medium mb-1 sm:mb-0 sm:mr-3 flex items-center gap-1 sm:gap-2 w-fit">
-            <span>Fandom</span>
+            <span>{{ $t('fandom.detail.label') }}</span>
           </div>
           <div class="flex items-center text-xs sm:text-sm">
-            <span>{{ fandom.members }} members</span>
+            <span>{{ fandom.members }} {{ $t('fandom.detail.members') }}</span>
           </div>
         </div>
         <h1 class="text-xl sm:text-2xl md:text-4xl font-bold mb-1 leading-tight">{{ fandom.name }}</h1>
@@ -75,14 +75,14 @@
           <div class="w-6 h-6 sm:w-8 sm:h-8 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
             <i class="fas fa-crown text-yellow-600 text-sm sm:text-base"></i>
           </div>
-          <span class="font-medium text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">Admin Panel</span>
+          <span class="font-medium text-yellow-800 dark:text-yellow-200 text-sm sm:text-base">{{ $t('fandom.detail.adminPanel') }}</span>
         </div>
         <div class="grid grid-cols-2 sm:flex gap-2 sm:gap-2">
           <button @click="showEditFandom = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
-            <i class="fas fa-edit mr-1 sm:mr-2"></i><span class="hidden sm:inline">Edit </span>Fandom
+            <i class="fas fa-edit mr-1 sm:mr-2"></i>{{ $t('fandom.detail.editFandom') }}
           </button>
           <button @click="showManageMembers = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors">
-            <i class="fas fa-users mr-1 sm:mr-2"></i><span class="hidden sm:inline">Manage </span>Members
+            <i class="fas fa-users mr-1 sm:mr-2"></i>{{ $t('fandom.detail.manageMembers') }}
           </button>
         </div>
       </div>
@@ -92,8 +92,8 @@
     <div v-if="!isMember" class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg sm:rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="text-center sm:text-left">
-          <h3 class="text-base sm:text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">Join {{ fandom.name }}</h3>
-          <p class="text-sm sm:text-base text-blue-700 dark:text-blue-300">Connect with {{ fandom.members }} passionate fans and never miss an update!</p>
+          <h3 class="text-base sm:text-lg font-bold text-blue-900 dark:text-blue-100 mb-2">{{ $t('fandom.detail.joinTitle', { name: fandom.name }) }}</h3>
+          <p class="text-sm sm:text-base text-blue-700 dark:text-blue-300">{{ $t('fandom.detail.joinSubtitle', { members: fandom.members }) }}</p>
         </div>
         <button 
           @click="joinFandom"
@@ -102,8 +102,8 @@
         >
           <i v-if="!joining" class="fas fa-plus"></i>
           <i v-else class="fas fa-spinner fa-spin"></i>
-          <span v-if="!joining">Join Fandom</span>
-          <span v-else>Joining...</span>
+          <span v-if="!joining">{{ $t('common.joinFandom') }}</span>
+          <span v-else>{{ $t('common.saving') }}</span>
         </button>
       </div>
     </div>
@@ -114,9 +114,9 @@
         <div class="w-6 h-6 sm:w-8 sm:h-8 bg-green-100 dark:bg-green-900/50 rounded-lg flex items-center justify-center mr-2 sm:mr-3">
           <i class="fas fa-check text-green-600 text-sm sm:text-base"></i>
         </div>
-        <span class="font-medium text-green-800 dark:text-green-200 text-sm sm:text-base">You're a member of this fandom!</span>
+        <span class="font-medium text-green-800 dark:text-green-200 text-sm sm:text-base">{{ $t('common.youreMember') }}</span>
       </div>
-  <button @click="showLeaveConfirm = true" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">Leave Fandom</button>
+  <button @click="showLeaveConfirm = true" class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm">{{ $t('common.leaveFandom') }}</button>
     </div>
 
   <!-- Hashtags section removed per request -->
@@ -135,7 +135,7 @@
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           ]"
         >
-          {{ tab.label }}
+          {{ $t(`fandom.detail.tabs.${tab.id}`) }}
           <span v-if="tab.id !== 'about' && tab.count" class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
         </button>
       </div>
@@ -153,7 +153,7 @@
                 : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600'
             ]"
           >
-            {{ tab.label }}
+            {{ $t(`fandom.detail.tabs.${tab.id}`) }}
             <span class="ml-2 px-1.5 py-0.5 text-xs bg-white/70 dark:bg-white/10 rounded-full text-gray-700 dark:text-gray-200" v-if="tab.count">{{ tab.count }}</span>
           </button>
         </div>
@@ -287,11 +287,11 @@
             </div>
             <div class="flex items-center">
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
-                <i class="fas fa-crown mr-1"></i>Admin
+                <i class="fas fa-crown mr-1"></i>{{ $t('fandom.detail.admin') }}
               </span>
               <!-- Moderator badge removed per requirement (only admin/member roles supported) -->
               <span v-else class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full mr-2">
-                <i class="fas fa-user mr-1"></i>Member
+                <i class="fas fa-user mr-1"></i>{{ $t('fandom.detail.member') }}
               </span>
             </div>
           </div>
@@ -304,18 +304,18 @@
                 @change="changeMemberRole(member.id, $event.target.value)"
                 class="text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               >
-                <option value="member">Member</option>
-                <option value="admin">Admin</option>
+                <option value="member">{{ $t('fandom.detail.member') }}</option>
+                <option value="admin">{{ $t('fandom.detail.admin') }}</option>
               </select>
               <button @click="removeMember(member.id)" class="text-red-500 hover:text-red-700 text-xs">
-                <i class="fas fa-trash mr-1"></i>Remove
+                <i class="fas fa-trash mr-1"></i>{{ $t('common.remove') }}
               </button>
             </div>
           </div>
           
           <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-4">
-            <span>{{ member.posts_count || member.posts || 0 }} posts</span>
-            <span v-if="member.joined_at || member.created_at || member.joinedDate">Joined {{ formatJoined(member.joined_at || member.created_at || member.joinedDate) }}</span>
+            <span>{{ member.posts_count || member.posts || 0 }} {{ $t('common.posts') }}</span>
+            <span v-if="member.joined_at || member.created_at || member.joinedDate">{{ $t('fandom.detail.joinedOn', { date: formatJoined(member.joined_at || member.created_at || member.joinedDate) }) }}</span>
           </div>
         </div>
       </div>
@@ -334,14 +334,14 @@
             </div>
             <div class="flex-1">
               <h3 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                About {{ fandom.name }}
+                {{ $t('fandom.detail.aboutTitle', { name: fandom.name }) }}
               </h3>
-              <p class="text-gray-600 dark:text-gray-400 text-sm">Discover what makes this community special</p>
+              <p class="text-gray-600 dark:text-gray-400 text-sm">{{ $t('fandom.detail.aboutSubtitle') }}</p>
             </div>
           </div>
           <div class="prose prose-gray dark:prose-invert max-w-none">
             <p class="text-gray-700 dark:text-gray-300 leading-relaxed text-base sm:text-lg whitespace-pre-line">
-              {{ fandom.fullDescription || 'Welcome to our amazing fandom community! Connect with fellow fans and share your passion.' }}
+              {{ fandom.fullDescription || $t('fandom.detail.aboutFallback') }}
             </p>
           </div>
           
@@ -352,7 +352,7 @@
                 <i class="fas fa-folder-tree text-white"></i>
               </div>
               <div>
-                <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold mb-0.5">Category</p>
+                <p class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold mb-0.5">{{ $t('common.category') }}</p>
                 <p class="text-sm font-bold text-gray-900 dark:text-white">{{ fandom.category }}</p>
               </div>
             </div>
@@ -368,8 +368,8 @@
               <i class="fas fa-chart-line text-white"></i>
             </div>
             <div>
-              <h4 class="text-xl font-bold text-gray-900 dark:text-white">Community Statistics</h4>
-              <p class="text-sm text-gray-500 dark:text-gray-400">Key metrics and insights</p>
+              <h4 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('fandom.detail.stats.title') }}</h4>
+              <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('fandom.detail.stats.subtitle') }}</p>
             </div>
           </div>
         </div>
@@ -385,9 +385,9 @@
                 <div class="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-users text-white text-lg"></i>
                 </div>
-                <p class="text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">Members</p>
+                <p class="text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 font-bold mb-1">{{ $t('fandom.detail.stats.membersTitle') }}</p>
                 <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">{{ fandom.members }}</p>
-                <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">Active community</p>
+                <p class="text-xs text-blue-600/70 dark:text-blue-400/70 mt-1">{{ $t('fandom.detail.stats.membersHint') }}</p>
               </div>
             </div>
 
@@ -400,9 +400,9 @@
                 <div class="w-12 h-12 rounded-xl bg-green-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-file-lines text-white text-lg"></i>
                 </div>
-                <p class="text-xs uppercase tracking-wider text-green-600 dark:text-green-400 font-bold mb-1">Posts</p>
+                <p class="text-xs uppercase tracking-wider text-green-600 dark:text-green-400 font-bold mb-1">{{ $t('common.posts') }}</p>
                 <p class="text-2xl font-bold text-green-700 dark:text-green-300">{{ fandom.totalPosts }}</p>
-                <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">Shared content</p>
+                <p class="text-xs text-green-600/70 dark:text-green-400/70 mt-1">{{ $t('fandom.detail.stats.postsHint') }}</p>
               </div>
             </div>
 
@@ -415,9 +415,9 @@
                 <div class="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <i class="fas fa-calendar-plus text-white text-lg"></i>
                 </div>
-                <p class="text-xs uppercase tracking-wider text-orange-600 dark:text-orange-400 font-bold mb-1">Created</p>
+                <p class="text-xs uppercase tracking-wider text-orange-600 dark:text-orange-400 font-bold mb-1">{{ $t('fandom.detail.stats.createdTitle') }}</p>
                 <p class="text-2xl font-bold text-orange-700 dark:text-orange-300">{{ formattedCreated }}</p>
-                <p class="text-xs text-orange-600/70 dark:text-orange-400/70 mt-1">Community birth</p>
+                <p class="text-xs text-orange-600/70 dark:text-orange-400/70 mt-1">{{ $t('fandom.detail.stats.createdHint') }}</p>
               </div>
             </div>
           </div>
@@ -433,25 +433,25 @@
             <i class="fas fa-edit text-white text-lg"></i>
           </div>
           <div>
-            <h3 class="text-xl font-bold text-gray-900 dark:text-white">Edit Fandom</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Customize your fandom's appearance and details</p>
+            <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('fandom.detail.editFandom') }}</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('fandom.detail.edit.subtitle') }}</p>
           </div>
         </div>
         
         <div class="space-y-6 max-h-[60vh] overflow-y-auto pr-1">
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              <i class="fas fa-tag mr-2 text-blue-500"></i>Fandom Name
+              <i class="fas fa-tag mr-2 text-blue-500"></i>{{ $t('fandom.create.fields.fandomName') }}
             </label>
-            <input v-model="editFandom.name" type="text" placeholder="Enter fandom name..." 
+            <input v-model="editFandom.name" type="text" :placeholder="$t('fandom.create.fields.fandomNamePlaceholder')" 
               class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm">
           </div>
           
           <div>
             <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-              <i class="fas fa-file-alt mr-2 text-green-500"></i>Description
+              <i class="fas fa-file-alt mr-2 text-green-500"></i>{{ $t('fandom.create.fields.description') }}
             </label>
-            <textarea v-model="editFandom.description" rows="4" placeholder="Describe your fandom community..." 
+            <textarea v-model="editFandom.description" rows="4" :placeholder="$t('fandom.create.fields.descriptionPlaceholder')" 
               class="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm resize-none"></textarea>
           </div>
           
@@ -459,36 +459,36 @@
             <!-- Cover Image Section -->
             <div class="space-y-3">
               <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <i class="fas fa-image mr-2 text-purple-500"></i>Cover Image
+                <i class="fas fa-image mr-2 text-purple-500"></i>{{ $t('fandom.create.fields.coverLabel') }}
               </label>
               <div class="relative">
                 <div class="w-full h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 transition-all group cursor-pointer">
                   <img v-if="coverPreview || editFandom.coverImage" :src="coverPreview || editFandom.coverImage" class="object-cover w-full h-full" alt="Cover preview">
                   <div v-else class="text-center group-hover:scale-105 transition-transform">
                     <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload cover</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('fandom.detail.edit.uploadCoverPrompt') }}</p>
                   </div>
                   <input @change="onCoverFileChange" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Recommended: 1200x300px or larger</p>
+                <p class="text-xs text-gray-500 mt-2">{{ $t('fandom.detail.edit.coverHintShort') }}</p>
               </div>
             </div>
 
             <!-- Logo Image Section -->
             <div class="space-y-3">
               <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                <i class="fas fa-shield-alt mr-2 text-orange-500"></i>Logo Image
+                <i class="fas fa-shield-alt mr-2 text-orange-500"></i>{{ $t('fandom.create.fields.logoLabel') }}
               </label>
               <div class="relative">
                 <div class="w-full h-32 rounded-xl overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 flex items-center justify-center border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-orange-400 transition-all group cursor-pointer">
                   <img v-if="logoPreview || editFandom.logo" :src="logoPreview || editFandom.logo" class="object-cover w-full h-full" alt="Logo preview">
                   <div v-else class="text-center group-hover:scale-105 transition-transform">
                     <i class="fas fa-plus-circle text-3xl text-gray-400 mb-2"></i>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Click to upload logo</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $t('fandom.detail.edit.uploadLogoPrompt') }}</p>
                   </div>
                   <input @change="onLogoFileChange" type="file" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
                 </div>
-                <p class="text-xs text-gray-500 mt-2">Recommended: Square format, 512x512px</p>
+                <p class="text-xs text-gray-500 mt-2">{{ $t('fandom.detail.edit.logoHintShort') }}</p>
               </div>
             </div>
           </div>
@@ -505,20 +505,20 @@
             <div class="w-8 h-8 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
               <i class="fas fa-check-circle text-green-600 dark:text-green-400 text-sm"></i>
             </div>
-            <p class="text-sm text-green-700 dark:text-green-300">Fandom updated successfully!</p>
+            <p class="text-sm text-green-700 dark:text-green-300">{{ $t('fandom.detail.edit.success') }}</p>
           </div>
         </div>
         
         <div class="flex justify-end space-x-4 mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
           <button @click="showEditFandom = false" :disabled="updatingFandom" 
             class="px-6 py-3 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white font-medium rounded-xl transition-all disabled:opacity-60 hover:bg-gray-50 dark:hover:bg-gray-800">
-            Cancel
+            {{ $t('common.cancel') }}
           </button>
           <button @click="saveFandomChanges" :disabled="updatingFandom" 
             class="px-8 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-xl transition-all disabled:opacity-60 shadow-lg hover:shadow-xl flex items-center gap-2 min-w-[140px] justify-center">
             <i v-if="!updatingFandom" class="fas fa-save"></i>
             <i v-else class="fas fa-spinner fa-spin"></i>
-            <span>{{ updatingFandom ? 'Saving...' : 'Save Changes' }}</span>
+            <span>{{ updatingFandom ? $t('common.saving') : $t('common.saveChanges') }}</span>
           </button>
         </div>
       </div>
@@ -527,14 +527,14 @@
   <!-- Manage Members Modal (Admin Only) -->
     <div v-if="showManageMembers && isAdmin" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div class="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-4xl max-h-[80vh] overflow-y-auto">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">Manage Members</h3>
+  <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-4">{{ $t('fandom.detail.manageMembers') }}</h3>
         
         <!-- Member Search -->
         <div class="mb-4">
           <input 
             v-model="memberSearch" 
             type="text" 
-            placeholder="Search members..." 
+            :placeholder="$t('fandom.detail.searchMembersPlaceholder')" 
             class="w-full px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
           />
         </div>
@@ -566,7 +566,7 @@
         </div>
         
         <div class="flex justify-end mt-6">
-          <button @click="showManageMembers = false" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">Close</button>
+          <button @click="showManageMembers = false" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">{{ $t('common.close') }}</button>
         </div>
       </div>
     </div>
@@ -580,23 +580,23 @@
             <i class="fas fa-triangle-exclamation text-lg"></i>
           </div>
           <div class="flex-1">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">Leave {{ fandom.name || 'this fandom' }}?</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">{{ $t('fandom.detail.leaveTitle', { name: fandom.name || $t('fandom.detail.label') }) }}</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-              You'll lose member-only access (posts, future announcements). You can rejoin later unless membership becomes restricted.
+              {{ $t('fandom.detail.leaveDescription') }}
             </p>
           </div>
         </div>
         <div class="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-400 mb-5 flex items-start gap-2">
           <i class="fas fa-info-circle mt-0.5"></i>
-          <span>Your existing posts remain unless you delete them individually.</span>
+          <span>{{ $t('fandom.detail.leaveInfo') }}</span>
         </div>
         <div class="flex flex-col sm:flex-row-reverse gap-3">
           <button @click="confirmLeaveFandom" :disabled="leaving" class="px-5 py-2.5 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
             <i v-if="!leaving" class="fas fa-door-open"></i>
             <i v-else class="fas fa-spinner fa-spin"></i>
-            <span>{{ leaving ? 'Leaving...' : 'Leave Fandom' }}</span>
+            <span>{{ leaving ? $t('common.saving') : $t('common.leaveFandom') }}</span>
           </button>
-          <button @click="showLeaveConfirm = false" :disabled="leaving" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Cancel</button>
+          <button @click="showLeaveConfirm = false" :disabled="leaving" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">{{ $t('common.cancel') }}</button>
         </div>
       </div>
     </div>
@@ -606,10 +606,10 @@
   <ConfirmModal
     v-model="showRemoveMember"
     tone="danger"
-    title="Remove member?"
-    :message="'This will remove the user from the fandom.'"
-    confirm-text="Remove"
-    loading-text="Removing..."
+    :title="$t('fandom.detail.removeMemberTitle')"
+    :message="$t('fandom.detail.removeMemberMessage')"
+    :confirm-text="$t('common.remove')"
+    :loading-text="$t('common.removing')"
     :loading="removingMember"
     confirm-icon="fas fa-user-minus"
     icon="fas fa-user-slash"
@@ -619,10 +619,10 @@
   <ConfirmModal
     v-model="showDeletePost"
     tone="danger"
-    title="Delete post?"
-    :message="'This action cannot be undone.'"
-    confirm-text="Delete"
-    loading-text="Deleting..."
+    :title="$t('common.deletePostConfirm')"
+    :message="$t('common.actionIrreversible')"
+    :confirm-text="$t('common.remove')"
+    :loading-text="$t('common.deleting')"
     :loading="deletingPost"
     confirm-icon="fas fa-trash"
     icon="fas fa-trash"
@@ -644,23 +644,24 @@
 </template>
 
 <script setup>
-import Post from '@/components/common/Post.vue'
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import ConfirmModal from '@/components/common/ConfirmModal.vue'
 import CreatePostModal from '@/components/common/CreatePostModal.vue'
-import { notify } from '@/utils/notify'
+import Post from '@/components/common/Post.vue'
+import API_CONFIG from '@/config/api'
 import { useAuthStore } from '@/store/auth'
 import { useFandomsStore } from '@/store/fandoms'
-import { computed, onMounted, ref, watch } from 'vue'
-import API_CONFIG from '@/config/api'
 import { normalizeAsset as normAsset } from '@/utils/assets'
+import { notify } from '@/utils/notify'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { onBeforeUnmount } from 'vue'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 const fandomsStore = useFandomsStore()
+const { t } = useI18n()
 const fandomName = computed(() => route.params.name || '')
 // Map handle to stored fandom to retrieve numeric id for backend endpoints
 const fandomRecord = computed(() => fandomsStore.allFandoms.find(f => f.handle === fandomName.value || f.id === Number(fandomName.value)))
@@ -747,7 +748,7 @@ async function confirmLeaveFandom() {
   try {
     const res = await fandomsStore.leaveFandomApi(fandomRecord.value.id, fandomName.value, currentUser.value.id)
     if (res?.success) {
-      notify.info('You left the fandom')
+      notify.info(t('fandom.detail.leftFandom'))
       showLeaveConfirm.value = false
       // Refresh local fandom stats (members count) without navigating away
       const updated = fandomsStore.allFandoms.find(f=>f.handle===fandomName.value)
@@ -902,7 +903,7 @@ async function createPost(){
   const text = newPostContent.value.trim()
   if(!text && postMedia.value.length===0) return
   const fid = fandomRecord.value?.id || resolvedFandomId.value
-  if(!fid){ notify.error('Fandom not loaded'); return }
+  if(!fid){ notify.error(t('common.fandomNotLoaded')); return }
   // Convert schedule to backend format YYYY-MM-DD HH:MM:SS
   let schedule_at_value = ''
   if (scheduleEnabled.value && scheduleAt.value) {
@@ -923,7 +924,7 @@ async function createPost(){
     medias: mediasFiles
   })
   if(res?.success){
-    notify.success(res.message || 'Post created')
+    notify.success(res.message || t('common.postCreated'))
   } else if(res?.message){
     notify.error(res.message)
   }
@@ -946,7 +947,7 @@ async function changeMemberRole(memberId,newRole){
   if(!['member','admin'].includes(newRole)) return // enforce only allowed roles
   const fid = fandomRecord.value?.id || fandomIdForApi.value
   const res = await fandomsStore.updateMemberRoleApi(fid, memberId, newRole, fandomKey.value)
-  if (res?.success) notify.success('Role updated')
+  if (res?.success) notify.success(t('fandom.detail.roleUpdated'))
   else if (res?.message) notify.error(res.message)
 }
 const showRemoveMember = ref(false)
@@ -955,8 +956,7 @@ const pendingRemoveMemberId = ref(null)
 function removeMember(memberId){ pendingRemoveMemberId.value = memberId; showRemoveMember.value = true }
 async function confirmRemoveMember(){
   if(!pendingRemoveMemberId.value || removingMember.value) return
-  removin
-  gMember.value = true
+  removingMember.value = true
   try { fandomsStore.removeFandomMember(fandomName.value, pendingRemoveMemberId.value) } finally {
     removingMember.value = false
     showRemoveMember.value = false
@@ -982,14 +982,14 @@ async function confirmDeletePost(){
     fandomsStore.deleteFandomPost(handle, pendingDeletePostId.value)
     const res = await fandomsStore.deleteFandomPostApi(fid, handle, pendingDeletePostId.value)
     if(res?.success) {
-      notify.info('Post deleted')
+      notify.info(t('common.postDeleted'))
     } else if(res?.message) {
       // Revert on failure
       fandomsStore.fandomPosts[handle] = previous
       notify.error(res.message)
     } else if(res?.success === false) {
       fandomsStore.fandomPosts[handle] = previous
-      notify.error('Delete failed')
+      notify.error(t('common.failedToDeletePost'))
     }
   } finally {
     deletingPost.value = false
@@ -1022,7 +1022,7 @@ function openEditPost(postId){
 async function submitFandomEdit(payload){
   if(!editingPost.value) return
   const fid = fandomRecord.value?.id || resolvedFandomId.value
-  if(!fid){ notify.error('Fandom not loaded'); return }
+  if(!fid){ notify.error(t('common.fandomNotLoaded')); return }
   const postId = editingPost.value.id
   // First update text + tags
   const res = await fandomsStore.updateFandomPostApi(fid, fandomKey.value, postId, { description: payload.description, content_status: 'published', tags: payload.tags })
@@ -1043,7 +1043,7 @@ async function submitFandomEdit(payload){
       fandomsStore.fetchFandomPosts(fid)
     } catch(e){ console.error('Fandom media update failed', e) }
   }
-  notify.success('Post updated')
+  notify.success(t('common.postUpdated'))
   showEditPostModal.value = false
   editingPost.value = null
 }
@@ -1071,13 +1071,13 @@ async function saveFandomChanges(){
   updateError.value=''
   updateSuccess.value=false
   const id = fandomRecord.value?.id || resolvedFandomId.value
-  if(!id){ updateError.value='Fandom id not resolved yet.'; return }
+  if(!id){ updateError.value=t('fandom.detail.edit.idNotResolved'); return }
   const payload = {}
   if(editFandom.value.name && editFandom.value.name !== fandom.value.name) payload.name = editFandom.value.name
   if(editFandom.value.description && editFandom.value.description !== fandom.value.description) payload.description = editFandom.value.description
   if(coverFile.value) payload.cover_image = coverFile.value
   if(logoFile.value) payload.logo_image = logoFile.value
-  if(Object.keys(payload).length===0){ updateError.value='No changes to save.'; return }
+  if(Object.keys(payload).length===0){ updateError.value=t('fandom.detail.edit.noChanges'); return }
   try {
     updatingFandom.value = true
     const res = await fandomsStore.updateFandomApi(id, payload)
@@ -1090,10 +1090,10 @@ async function saveFandomChanges(){
       fandom.value.logo = fandomsStore.allFandoms.find(f=>f.id===id)?.logo || fandom.value.logo
       setTimeout(()=>{ showEditFandom.value=false; updateSuccess.value=false }, 1200)
     } else {
-      updateError.value = res?.message || 'Update failed.'
+      updateError.value = res?.message || t('fandom.detail.edit.updateFailed')
     }
   } catch(e){
-    updateError.value = e?.message || 'Update error.'
+    updateError.value = e?.message || t('fandom.detail.edit.updateError')
   } finally {
     updatingFandom.value = false
   }

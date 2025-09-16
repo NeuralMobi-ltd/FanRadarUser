@@ -298,19 +298,32 @@ export const usePostsStore = defineStore('posts', {
         }
       }) : []
       const u = apiPost.user || apiPost.author || {}
+      // Derive display name similar to mapBackendPost
+      const displayName = [u.first_name || u.firstName, u.last_name || u.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || u.username || (u.email ? u.email.split('@')[0] : '') || 'User'
+      let avatar = u.profile_image || u.avatar || u.profileImage
+      if (avatar) avatar = resolveMediaUrl(avatar)
       const authorIdRaw = apiPost.user_id != null ? Number(apiPost.user_id) : Number(u.id)
       const authorId = Number.isInteger(authorIdRaw) && authorIdRaw > 0 ? authorIdRaw : undefined
       return {
         id: apiPost.id,
         originalId: apiPost.id,
         user_id: authorId,
-        user: { id: authorId },
+        user: {
+          id: authorId,
+          username: u.username || (u.email ? u.email.split('@')[0] : undefined),
+          profile_image: avatar
+        },
+        username: displayName,
+        avatar,
         text: apiPost.description || apiPost.content || apiPost.body || '',
         media,
         likes: Math.max(0, apiPost.likes || apiPost.likes_count || apiPost.favorites_count || apiPost.stats?.likes || 0),
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
-  isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
+        isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
         fandom: apiPost.fandom || null,
         trending: !!apiPost.trending,
         date: new Date(apiPost.created_at || apiPost.createdAt || Date.now()),

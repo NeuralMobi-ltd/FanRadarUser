@@ -2,9 +2,9 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 pb-16 md:pb-0">
     <div class="p-4 sm:p-6">
       <div class="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">My Favorites</h1>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">{{ $t('store.favorites.title') }}</h1>
         <span class="text-sm px-2 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-          {{ totalItems }} items
+          {{ $t('store.favorites.itemsCount', { count: totalItems }) }}
         </span>
       </div>
 
@@ -16,8 +16,8 @@
         <div class="text-gray-400 text-6xl mb-3">
           <i class="far fa-heart"></i>
         </div>
-        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-1">No favorites yet</h3>
-        <p class="text-gray-500 dark:text-gray-400">Tap the heart on a product to save it here.</p>
+        <h3 class="text-lg sm:text-xl font-semibold text-gray-700 dark:text-gray-300 mb-1">{{ $t('store.favorites.emptyTitle') }}</h3>
+        <p class="text-gray-500 dark:text-gray-400">{{ $t('store.favorites.emptyDesc') }}</p>
       </div>
 
       <div v-else class="space-y-4">
@@ -33,13 +33,13 @@
                 class="absolute top-3 right-3 h-9 w-9 rounded-full bg-white/90 dark:bg-gray-900/80 text-red-500 flex items-center justify-center shadow hover:scale-110 transition"
                 @click="unfavorite(p)"
                 :disabled="processing.has(p.id)"
-                :title="processing.has(p.id) ? 'Updating...' : 'Remove from favorites'"
+                :title="processing.has(p.id) ? $t('store.favorites.updating') : $t('store.favorites.removeFromFavorites')"
               >
                 <i :class="['fas', processing.has(p.id) ? 'fa-spinner fa-spin' : 'fa-heart']"></i>
               </button>
               <div class="absolute top-3 left-3 flex gap-2">
                 <span v-if="p.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ p.discount }}%</span>
-                <span v-if="p.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full">New</span>
+                <span v-if="p.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full">{{ $t('common.new') }}</span>
               </div>
             </div>
             <div class="p-4">
@@ -50,7 +50,7 @@
                   <span class="text-lg font-bold text-gray-900 dark:text-white">${{ p.price }}</span>
                   <span v-if="p.originalPrice" class="text-sm text-gray-500 dark:text-gray-400 line-through">${{ p.originalPrice }}</span>
                 </div>
-                <button @click="addToCart(p)" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">Add</button>
+                <button @click="addToCart(p)" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm">{{ $t('common.addToCart') }}</button>
               </div>
             </div>
           </div>
@@ -63,15 +63,15 @@
             :disabled="page<=1 || loading"
             @click="goTo(page-1)"
           >
-            Prev
+            {{ $t('common.previous') }}
           </button>
-          <span class="text-sm text-gray-600 dark:text-gray-300">Page {{ page }} / {{ pagination.total_pages }}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-300">{{ $t('store.favorites.pageOf', { page, total: pagination.total_pages }) }}</span>
           <button 
             class="px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 disabled:opacity-50"
             :disabled="!pagination.has_more || loading"
             @click="goTo(page+1)"
           >
-            Next
+            {{ $t('common.next') }}
           </button>
         </div>
       </div>
@@ -82,15 +82,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import ProductsService from '@/services/productsService'
 import FavoritesService from '@/services/favoritesService'
-import { useProductsStore } from '@/store/products'
+import ProductsService from '@/services/productsService'
 import { useCartStore } from '@/store/cart'
+import { useProductsStore } from '@/store/products'
 import notify from '@/utils/notify'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const productsStore = useProductsStore()
 const cartStore = useCartStore()
+const { t } = useI18n()
 
 const favorites = ref([])
 const pagination = ref({ current_page: 1, total_pages: 1, has_more: false, total_items: 0, per_page: 10 })
@@ -123,7 +125,7 @@ const loadFavorites = async () => {
     }
     syncWishlistSet(favorites.value)
   } catch (e) {
-    notify.error('Failed to load favorites')
+    notify.error(t('store.favorites.failedToLoad'))
   } finally {
     loading.value = false
   }
@@ -150,9 +152,9 @@ const unfavorite = async (product) => {
     // Update product in global store if exists
     const gp = productsStore.products.find(p => p.id === product.id)
     if (gp) gp.isWishlisted = false
-    notify.success('Removed from favorites')
+    notify.success(t('store.favorites.removed'))
   } catch (e) {
-    notify.error('Could not update favorite')
+    notify.error(t('store.favorites.couldNotUpdate'))
   } finally {
     processing.value.delete(product.id)
   }
@@ -160,7 +162,7 @@ const unfavorite = async (product) => {
 
 const addToCart = (p) => {
   cartStore.addItem({ id: p.id, name: p.name || `Product #${p.id}`, price: p.price, image: p.image, category: p.category })
-  notify.success('Added to cart')
+  notify.success(t('common.addedToCart'))
 }
 </script>
 

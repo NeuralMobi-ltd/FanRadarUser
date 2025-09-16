@@ -468,10 +468,7 @@ async function submit() {
       loading.value = false
       return
     }
-    let resp
-    // Prepare optimistic post to show immediately
-    // Emit refresh instead of adding optimistic post
-    emit('refresh')
+  let resp
 
     const config = {
       onUploadProgress: (progressEvent) => {
@@ -505,14 +502,9 @@ async function submit() {
     }
 
     const created = resp.post || resp.data?.post || resp.data || resp
-    // Emit the created post and refresh
+    // Emit the created post (no auto-refresh)
     emit('submit', resp)
     emit('posted', resp)
-    emit('refresh') // let parent trigger a manual refresh if desired
-
-  emit('submit', resp)
-  emit('posted', resp)
-  emit('refresh') // let parent trigger a manual refresh if desired
   // Also broadcast a global event for any listener (e.g., Account page) without prop drilling
   try { window.dispatchEvent(new CustomEvent('posts:created', { detail: { post: created } })) } catch(_) {}
 
@@ -531,9 +523,7 @@ async function submit() {
     // Mark optimistic post as failed
     error.value = err?.response?.data?.message || err?.message || 'Failed to create post.'
     console.error('CreatePostModal submit error', err)
-    try {
-      postsStore.updatePost(optimistic.id, { ...optimistic, uploading: false, failed: true })
-    } catch (e) {}
+    // no optimistic post to roll back here
   } finally {
     loading.value = false
   }

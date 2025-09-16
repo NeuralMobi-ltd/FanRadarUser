@@ -607,8 +607,8 @@ async function createPost() {
   uploadProgress.value = 0
 
   try {
-    // Assume postsStore.createPost forwards axios config (onUploadProgress)
-  await postsStore.createPost(payload, {
+    // Create the post without refreshing the feed immediately
+    await postsStore.createPost(payload, {
       onUploadProgress: progressEvent => {
         try {
           if (progressEvent.lengthComputable) {
@@ -619,8 +619,7 @@ async function createPost() {
         }
       }
     })
-  // Refresh home feed from backend instead of inserting locally
-  await postsStore.fetchHomeFeed()
+    // Do not auto-refresh home feed; let the new post appear later (manual refresh or next load)
 
   // success: clear inputs
   newPostContent.value = ''

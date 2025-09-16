@@ -6,10 +6,10 @@
         <div class="flex items-start sm:items-center justify-between flex-wrap gap-3 sm:gap-4">
           <div>
             <h1 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-              Search Results for "{{ searchQuery }}"
+              {{ $t('common.searchResultsFor', { q: searchQuery }) }}
             </h1>
             <p class="text-gray-600 dark:text-gray-400 mt-1 text-sm sm:text-base">
-              {{ serverTotal }} products found
+              {{ $t('store.productSearch.productsFound', { count: serverTotal }) }}
             </p>
           </div>
           
@@ -23,7 +23,7 @@
                   ? 'bg-green-500 text-white' 
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
-              aria-label="Grid view"
+              :aria-label="$t('common.gridView')"
             >
               <i class="fas fa-th w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
@@ -35,7 +35,7 @@
                   ? 'bg-green-500 text-white' 
                   : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
               ]"
-              aria-label="List view"
+              :aria-label="$t('common.listView')"
             >
               <i class="fas fa-list w-3 h-3 sm:w-4 sm:h-4"></i>
             </button>
@@ -46,28 +46,28 @@
       <!-- Sort and Filter Bar -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-3 sm:p-4">
         <div class="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 w-full sm:w-auto">
-          <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">Sort by:</span>
+          <span class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 whitespace-nowrap">{{ $t('store.productSearch.sortBy') }}</span>
           <select
             v-model="sortBy"
             class="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-48 lg:w-56"
           >
-            <option value="relevance">Relevance</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="rating">Customer Rating</option>
-            <option value="newest">Newest</option>
+            <option value="relevance">{{ $t('store.sortOptions.relevance') }}</option>
+            <option value="price-low">{{ $t('store.sortOptions.priceLow') }}</option>
+            <option value="price-high">{{ $t('store.sortOptions.priceHigh') }}</option>
+            <option value="rating">{{ $t('store.sortOptions.rating') }}</option>
+            <option value="newest">{{ $t('store.sortOptions.newest') }}</option>
           </select>
         </div>
         
         <div class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 w-full sm:w-auto text-center sm:text-right">
-          Showing {{ serverFrom }}-{{ serverTo }} of {{ serverTotal }} results
+          {{ $t('store.productSearch.showingRange', { from: serverFrom, to: serverTo, total: serverTotal }) }}
         </div>
       </div>
 
       <!-- Loading -->
-      <div v-if="isLoading" class="text-center py-12">
+        <div v-if="isLoading" class="text-center py-12">
         <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500 mx-auto"></div>
-        <p class="text-gray-600 dark:text-gray-400 mt-4">Loading products...</p>
+          <p class="text-gray-600 dark:text-gray-400 mt-4">{{ $t('store.productSearch.loadingProducts') }}</p>
       </div>
 
       <!-- Products Grid/List -->
@@ -111,14 +111,14 @@
                   <span class="flex text-yellow-400 text-xs">
                     <i v-for="i in 5" :key="i" :class="i <= product.rating ? 'fas fa-star' : 'far fa-star'"></i>
                   </span>
-                  <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">({{ product.reviews }})</span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 ml-1">({{ $t('common.reviewsCount', { count: product.reviews }) }})</span>
                 </div>
               </div>
               <button
                 @click.stop="addToCart(product)"
                 class="w-full py-1.5 sm:py-2 px-3 sm:px-4 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
               >
-                Add to Cart
+                {{ $t('common.addToCart') }}
               </button>
             </div>
           </div>
@@ -150,7 +150,7 @@
                   <span class="flex text-yellow-400 text-sm">
                     <i v-for="i in 5" :key="i" :class="i <= product.rating ? 'fas fa-star' : 'far fa-star'"></i>
                   </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">({{ product.reviews }} reviews)</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400 ml-2">({{ $t('common.reviewsCount', { count: product.reviews }) }})</span>
                 </div>
               </div>
               <div class="text-left sm:text-right w-full sm:w-auto">
@@ -166,7 +166,7 @@
                         ? 'bg-red-500 text-white' 
                         : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                     ]"
-                    aria-label="Toggle wishlist"
+                    :aria-label="$t('common.toggleWishlist')"
                   >
                     <i class="fas fa-heart w-3 h-3 sm:w-4 sm:h-4"></i>
                   </button>
@@ -174,7 +174,7 @@
                     @click.stop="addToCart(product)"
                     class="flex-1 sm:block sm:w-full py-1.5 sm:py-2 px-3 sm:px-4 lg:px-6 bg-green-500 hover:bg-green-600 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
                   >
-                    Add to Cart
+                    {{ $t('common.addToCart') }}
                   </button>
                 </div>
               </div>
@@ -219,15 +219,15 @@
       <!-- No Results -->
       <div v-else class="text-center py-8 sm:py-12">
         <i class="fas fa-search text-3xl sm:text-4xl text-gray-300 dark:text-gray-600 mb-3 sm:mb-4"></i>
-        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">No products found</h3>
+        <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">{{ $t('store.productSearch.noProductsTitle') }}</h3>
         <p class="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-3 sm:mb-4">
-          Try adjusting your search criteria or removing some filters
+          {{ $t('store.productSearch.noProductsDesc') }}
         </p>
         <button
           @click="clearFilters"
           class="py-2 px-4 bg-green-500 hover:bg-green-600 text-white font-medium rounded-lg transition-colors text-sm sm:text-base"
         >
-          Clear All Filters
+          {{ $t('common.clearAllFilters') }}
         </button>
       </div>
     </div>
@@ -238,11 +238,13 @@
 import ProductsService from '@/services/productsService'
 import { useProductsStore } from '@/store/products'
 import { computed, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
 const productsStore = useProductsStore()
+const { t } = useI18n()
 
 const searchQuery = ref('')
 const isLoading = ref(false)
