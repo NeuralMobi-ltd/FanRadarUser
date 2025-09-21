@@ -200,6 +200,35 @@ router.beforeEach(async (to, from, next) => {
     try { await authStore.initialize() } catch (_) { /* ignore */ }
   }
 
+  // Auto-ingest token from query string (?token=...) for magic-link / deep-link login
+  // Processing order: after initial store hydration but BEFORE auth checks & redirects
+  if (to.query && to.query.token) {
+    // Support possible duplicated token param arrays (e.g., ?token=a&token=b)
+    const rawToken = Array.isArray(to.query.token) ? to.query.token[0] : to.query.token
+    if (rawToken) {
+      // Only set if different or not present to avoid unnecessary profile fetches
+      const tokenChanged = !authStore.hasToken || authStore.token !== rawToken
+      if (tokenChanged) {
+        try {
+          authStore.setToken(rawToken)
+          // Fetch profile immediately so subsequent guard pass sees authenticated state
+          await authStore.fetchProfile()
+        } catch (e) {
+          console.warn('[router] Failed to hydrate user from URL token:', e?.response?.status || e?.message)
+          authStore.clearSession()
+        }
+      }
+    }
+    // Remove token from URL to avoid leaking it (idempotent: only triggers once)
+    const { token, ...rest } = to.query
+    return next({
+      path: to.path,
+      query: rest,
+      hash: to.hash,
+      replace: true
+    })
+  }
+
   // Handle root path based on authentication status
   if (to.path === '/') {
     if (authStore.isAuthenticated) {
