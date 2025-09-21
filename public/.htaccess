@@ -1,0 +1,19 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  # Ensure Authorization header is passed (some Apache setups strip it)
+  RewriteCond %{HTTP:Authorization} .
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+  # Skip existing files/directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Redirect all other requests to index.html (SPA fallback)
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Fallback if mod_rewrite is not available
+<IfModule !mod_rewrite.c>
+  ErrorDocument 404 /index.html
+</IfModule>

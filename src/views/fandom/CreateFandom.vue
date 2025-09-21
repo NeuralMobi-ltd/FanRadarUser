@@ -3,7 +3,7 @@
     <!-- Header -->
     <header class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-700/50 shadow-sm">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
+        <div class="flex items-center justify-between h">
           <div class="flex items-center space-x-4">
             <div>
               <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ $t('fandom.create.title') }}</h1>
@@ -16,12 +16,17 @@
     </header>
 
     <!-- Main Content -->
-    <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid grid-cols-1 gap-8">
+  <!-- Expanded max width on larger screens for better desktop usage -->
+  <!-- Further widened container for large desktop -->
+    <main class="flex-1 max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-14 py-8 xl:px-20">
+  <!-- Allow future multi-column expansion on xl screens -->
+  <div class="grid grid-cols-1 gap-8 xl:gap-12"> <!-- simplified: use full width, no extra empty columns -->
         <!-- Form Section -->
-        <div class="space-y-8">
+  <!-- Primary form column (span 2 on wide screens) -->
+  <!-- Use full width (span all 3 columns) since sidebar is currently empty to avoid wasted space -->
+  <div class="space-y-8 w-full">
           <!-- Logo & Cover Image -->
-          <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/60 p-8 shadow-md">
+          <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/60 p-8 shadow-md xl:p-12 w-full max-w-none">
             <div class="flex items-center mb-6">
               <div class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,12 +36,13 @@
               <h2 class="text-xl font-bold text-gray-900 dark:text-white">{{ $t('fandom.create.sections.media') }}</h2>
             </div>
             <div class="space-y-6">
-              <div class="flex flex-col sm:flex-row gap-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-8"> <!-- switch to grid so both blocks align and stretch -->
                 <!-- Logo Upload -->
                 <div class="flex-1">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('fandom.create.fields.logoLabel') }}</label>
                   <div class="relative group">
-                    <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-200/80 dark:border-gray-600/80 bg-gray-100/50 dark:bg-gray-700/50 flex items-center justify-center cursor-pointer transition-all hover:border-indigo-500">
+                    <!-- Enlarged avatar circle on desktop -->
+                    <div class="w-28 h-28 md:w-40 md:h-40 rounded-full overflow-hidden border-2 border-gray-200/80 dark:border-gray-600/80 bg-gray-100/50 dark:bg-gray-700/50 flex items-center justify-center cursor-pointer transition-all hover:border-indigo-500">
                       <input type="file" @change="onLogoChange" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       <template v-if="formData.avatar">
                         <img :src="formData.avatar" alt="Fandom Logo" class="w-full h-full object-cover" />
@@ -54,7 +60,8 @@
                 <div class="flex-1">
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('fandom.create.fields.coverLabel') }}</label>
                   <div class="relative group">
-                    <div class="w-full h-24 rounded-lg overflow-hidden border-2 border-gray-200/80 dark:border-gray-600/80 bg-gray-100/50 dark:bg-gray-700/50 flex items-center justify-center cursor-pointer transition-all hover:border-indigo-500">
+                    <!-- Taller cover box on desktop -->
+                    <div class="w-full h-32 md:h-48 rounded-lg overflow-hidden border-2 border-gray-200/80 dark:border-gray-600/80 bg-gray-100/50 dark:bg-gray-700/50 flex items-center justify-center cursor-pointer transition-all hover:border-indigo-500">
                       <input type="file" @change="onCoverChange" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       <template v-if="formData.coverImage">
                         <img :src="formData.coverImage" alt="Fandom Cover" class="w-full h-full object-cover" />
@@ -108,7 +115,7 @@
           </div>
 
           <!-- Basic Information -->
-    <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/60 p-8 shadow-md">
+  <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 dark:border-gray-700/60 p-8 shadow-md xl:p-12 w-full max-w-none">
             <div class="flex items-center mb-6">
               <div class="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 mr-3">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,8 +152,8 @@
         <!-- You may have a sidebar or additional content here for the 3rd column -->
       </div> <!-- end .grid -->
       <!-- Sticky action bar -->
-      <div class="sticky bottom-0 mt-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 pb-6 pt-4">
-        <div class="relative mx-auto max-w-xl">
+      <div class="sticky bottom-0 mt-10 -mx-4 sm:-mx-6 lg:-mx-14 xl:-mx-20 px-4 sm:px-6 lg:px-14 xl:px-20 pb-6 pt-4">
+        <div class="relative mx-auto max-w-4xl w-full">
           <div class="group rounded-2xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-gray-200/60 dark:border-gray-700/60 shadow-xl ring-1 ring-black/5 dark:ring-white/5 flex flex-col sm:flex-row items-center sm:items-stretch gap-4 p-4 transition-all">
             <!-- Progress / Status -->
             <div class="flex-1 w-full text-center sm:text-left">
@@ -189,9 +196,11 @@ import { useCategoriesStore } from '@/store/categories'
 import { useFandomsStore } from '@/store/fandoms'
 import { notify } from '@/utils/notify'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const { t } = useI18n()
 const fandomsStore = useFandomsStore()
 const categoriesStore = useCategoriesStore()
 
@@ -332,11 +341,11 @@ async function createFandom() {
   const res = await fandomsStore.createFandomApi(payload)
     const f = res?.data?.fandom || res?.fandom
     if (f) {
-  notify.success('Fandom created successfully!')
+  notify.success(t('fandom.create.notify.success'))
       const handle = (f.name || '').toLowerCase().replace(/\s+/g, '-')
       router.push(`/fandom/${handle}`)
     } else {
-  notify.error('Failed to create fandom')
+  notify.error(t('fandom.create.notify.failed'))
     }
   } catch (e) {
     console.error('Create fandom error', e)
@@ -346,7 +355,7 @@ async function createFandom() {
     } else if (resp?.message) {
   notify.error(resp.message)
     } else {
-  notify.error('Error creating fandom')
+  notify.error(t('fandom.create.notify.error'))
     }
   } finally {
     creating.value = false

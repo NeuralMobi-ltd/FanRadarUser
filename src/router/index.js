@@ -176,6 +176,12 @@ const routes = [
     component: () => import('@/views/auth/ResetPassword.vue'),
     meta: { requiresAuth: false, titleKey: 'routes.resetPassword', showBottomNav: false }
   }
+  ,{
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('@/views/general/NotFound.vue'),
+    meta: { requiresAuth: false, titleKey: 'routes.notFound', showBottomNav: false }
+  }
 ]
 
 const router = createRouter({
@@ -185,6 +191,14 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
+
+  // 1. Path normalization: collapse multiple leading or internal slashes so links like //mart work
+  if (/\/\//.test(to.path)) {
+    const normalized = to.path.replace(/\/+/g, '/').replace(/^\/(?!$)/, '/')
+    if (normalized !== to.path) {
+      return next({ path: normalized, query: to.query, hash: to.hash, replace: true })
+    }
+  }
 
   // Initialize auth store if needed
   if (!authStore.user) {

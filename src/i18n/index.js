@@ -128,7 +128,8 @@ const messages = {
       chooseCategories: 'Choose Categories',
       otpVerification: 'Verify Account',
       forgotPassword: 'Forgot Password',
-      resetPassword: 'Reset Password'
+      resetPassword: 'Reset Password',
+      notFound: 'Not Found'
     },
     auth: {
       signIn: {
@@ -342,6 +343,7 @@ const messages = {
       editProfile: 'Edit Profile',
       userNotFound: 'User not found',
       goToDashboard: 'Go to Dashboard',
+  goHome: 'Go Home',
       editFandom: 'Edit Fandom',
       manageMembers: 'Manage Members',
       editRules: 'Edit Rules',
@@ -368,6 +370,22 @@ const messages = {
       postCreated: 'Post created',
       fandomNotLoaded: 'Fandom not loaded'
     },
+    errors: {
+      notFound: {
+        title: 'Page not found',
+        message: 'The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.'
+      }
+    },
+    navigation: {},
+    footer: {},
+    seo: {},
+    marketing: {},
+    onboarding: {},
+    commonExtra: {},
+    forms: {},
+    validation: {},
+    notifications: {},
+    misc: {},
     content: {
       news: {
         subtitle: 'Stay updated with the latest news from all your favorite fandoms',
@@ -778,7 +796,8 @@ const messages = {
       fandomDetail: 'Fandom',
       signIn: 'Se connecter',
       signUp: 'S’inscrire',
-      chooseCategories: 'Choisir des catégories'
+      chooseCategories: 'Choisir des catégories',
+      notFound: 'Introuvable'
     },
     auth: {
       signIn: {
@@ -956,6 +975,7 @@ const messages = {
       editProfile: 'Modifier le profil',
       userNotFound: 'Utilisateur introuvable',
       goToDashboard: 'Aller au tableau de bord',
+  goHome: 'Accueil',
       editFandom: 'Modifier le fandom',
       manageMembers: 'Gérer les membres',
       editRules: 'Modifier les règles',
@@ -982,6 +1002,22 @@ const messages = {
       postCreated: 'Publication créée',
       fandomNotLoaded: 'Fandom non chargé'
     },
+    errors: {
+      notFound: {
+        title: 'Page introuvable',
+        message: 'La page que vous recherchez a peut-être été supprimée, renommée ou est temporairement indisponible.'
+      }
+    },
+    navigation: {},
+    footer: {},
+    seo: {},
+    marketing: {},
+    onboarding: {},
+    commonExtra: {},
+    forms: {},
+    validation: {},
+    notifications: {},
+    misc: {},
     content: {
       news: {
         subtitle: 'Restez informé des dernières actualités de vos fandoms préférés',

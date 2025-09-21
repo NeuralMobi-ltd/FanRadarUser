@@ -15,6 +15,15 @@
   body {
     @apply font-sans;
   }
+
+  /* Slight global scale reduction on wider screens so 100% browser zoom feels more compact
+     We don't change mobile base size for readability. */
+  @media (min-width: 1024px) {
+    html { font-size: 15px; } /* ~6.25% reduction from 16px */
+  }
+  @media (min-width: 1536px) { /* 2xl screens */
+    html { font-size: 14.5px; }
+  }
 }
 
 @layer components {
