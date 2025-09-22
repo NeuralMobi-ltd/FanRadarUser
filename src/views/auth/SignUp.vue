@@ -5,7 +5,7 @@
       <div class="absolute -inset-0.5 rounded-3xl bg-gradient-to-r from-blue-500/40 via-blue-400/40 to-sky-400/40 opacity-40 blur transition group-hover:opacity-70 dark:opacity-60 dark:group-hover:opacity-90"></div>
       <div class="relative rounded-3xl overflow-hidden shadow-xl dark:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.55)] border border-blue-100/60 dark:border-white/5 bg-white/95 supports-[backdrop-filter]:bg-white/90 dark:bg-gray-800/70 backdrop-blur-xl">
         <!-- Logo/Brand Section -->
-        <div class="pt-10 px-10 text-center flex flex-col items-center">
+        <div class="pt-8 sm:pt-10 px-6 sm:px-10 text-center flex flex-col items-center">
           <div class="w-24 h-24 mb-4 flex items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 via-blue-500 to-sky-400 p-[2px] shadow-[0_10px_28px_-6px_rgba(37,99,235,0.5)] animate-[fadeIn_0.55s_ease] relative after:content-[''] after:absolute after:inset-0 after:rounded-2xl after:pointer-events-none after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.9),0_0_0_1px_rgba(255,255,255,0.4)] dark:after:[box-shadow:inset_0_1px_2px_0_rgba(255,255,255,0.25),0_0_0_1px_rgba(255,255,255,0.08)] after:opacity-90">
             <div class="w-full h-full rounded-2xl bg-white/70 dark:bg-gray-900/40 backdrop-blur-md flex items-center justify-center ring-1 ring-white/60 dark:ring-white/10">
               <img src="/images/F.png" alt="FanRadar Logo" class="w-16 h-16 object-contain" />
@@ -14,7 +14,7 @@
           <h1 class="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 bg-clip-text text-transparent drop-shadow-sm">Create Account</h1>
           <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Join the community today</p>
         </div>
-        <div class="px-8 pb-10 pt-6">
+        <div class="px-6 sm:px-8 pb-8 sm:pb-10 pt-4 sm:pt-6">
           <!-- Error message -->
           <div v-if="errorMessage" class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl animate-[fadeIn_0.3s_ease]">
             <div class="flex items-center">
@@ -30,7 +30,7 @@
               <div class="grid grid-cols-2 gap-4">
                 <div class="space-y-2">
                   <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="first_name">
-                    First Name
+                    First Name <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -52,7 +52,7 @@
                 
                 <div class="space-y-2">
                   <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="last_name">
-                    Last Name
+                    Last Name <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -76,7 +76,7 @@
               
               <div class="space-y-2 animate-[fadeIn_0.55s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="email">
-                  Email Address
+                  Email Address <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -96,26 +96,31 @@
                 </div>
               </div>
               
-              <div class="grid grid-cols-2 gap-4 animate-[fadeIn_0.6s_ease]">
-                <div class="space-y-2">
+              <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 animate-[fadeIn_0.6s_ease]">
+                <div class="flex-1 space-y-2">
                   <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="birth_date">
-                    Birth Date
+                    Birth Date <span class="text-red-500">*</span>
                   </label>
                   <input
                     v-model="birth_date"
                     id="birth_date"
                     type="date"
                     required
+                    :max="maxBirthDate"
+                    :min="minBirthDate"
                     :disabled="loading"
-                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white transition-all duration-200"
+                    @blur="validateBirthDate"
+                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:text-white transition-all duration-200"
+                    :class="birthDateError ? 'border-red-400 dark:border-red-500' : 'border-gray-200 dark:border-gray-600'"
                   />
+                  <p v-if="birthDateError" class="text-xs font-medium text-red-600 dark:text-red-400">{{ birthDateError }}</p>
                 </div>
                 
-                <div class="space-y-2">
+                <div class="flex-1 space-y-2">
                   <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                    Gender
+                    Gender <span class="text-red-500">*</span>
                   </label>
-                  <div class="flex gap-3 pt-2">
+                  <div class="flex gap-2 sm:gap-3 pt-2">
                     <label class="relative flex-1 cursor-pointer">
                       <input type="radio" v-model="gender" value="male" required class="sr-only peer" :disabled="loading" />
                       <div class="h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-300 transition-all duration-200
@@ -140,7 +145,7 @@
               
               <div class="space-y-2 animate-[fadeIn_0.65s_ease]">
                 <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300" for="password">
-                  Password
+                  Password <span class="text-red-500">*</span>
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -172,7 +177,7 @@
             <button 
               type="submit"
               :disabled="loading"
-              class="w-full mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              class="w-full mt-8 sm:mt-10 bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 hover:from-blue-600 hover:via-blue-500 hover:to-sky-600 text-white font-semibold py-3 sm:py-3.5 rounded-xl transition-all duration-300 flex items-center justify-center shadow-lg hover:shadow-2xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               <span v-if="loading" class="mr-3">
                 <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -184,7 +189,7 @@
             </button>
           </form>
           
-          <div class="mt-10 pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
+          <div class="mt-8 sm:mt-10 pt-4 sm:pt-6 border-t border-gray-200/60 dark:border-gray-700/60">
             <p class="text-center text-gray-600 dark:text-gray-400 text-sm">
               Already have an account?
               <router-link to="/login" class="text-blue-600 dark:text-sky-400 hover:text-blue-500 dark:hover:text-sky-300 font-semibold ml-1 transition-colors">
@@ -201,7 +206,7 @@
 <script setup>
 import { useAuthStore } from '@/store/auth'
 import { useRegistrationStore } from '@/store/registration'
-import { ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 const registrationStore = useRegistrationStore()
@@ -213,6 +218,61 @@ const last_name = ref('')
 const email = ref('')
 const password = ref('')
 const birth_date = ref('')
+const birthDateError = ref('')
+// Minimum acceptable date (optional sanity bound)
+const minBirthDate = '1900-01-01'
+// Computed maximum allowed birth date (today minus 8 years)
+const maxBirthDate = computed(() => {
+  const d = new Date()
+  d.setFullYear(d.getFullYear() - 8) // must be at least 8 years old
+  // format YYYY-MM-DD
+  const pad = (n) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`
+})
+
+function isValidDate(str) {
+  if (!/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(str)) return false
+  const d = new Date(str + 'T00:00:00Z')
+  if (isNaN(d.getTime())) return false
+  // ensure components match (avoid 2025-02-31 normalization issues)
+  const [y,m,day] = str.split('-').map(Number)
+  return d.getUTCFullYear() === y && (d.getUTCMonth()+1) === m && d.getUTCDate() === day
+}
+
+function validateBirthDate() {
+  birthDateError.value = ''
+  const val = birth_date.value?.trim()
+  if (!val) {
+    birthDateError.value = 'Birth date is required.'
+    return false
+  }
+  if (!isValidDate(val)) {
+    birthDateError.value = 'Enter a valid date (YYYY-MM-DD).'
+    return false
+  }
+  if (val < minBirthDate) {
+    birthDateError.value = 'Date is too early.'
+    return false
+  }
+  if (val > maxBirthDate.value) {
+    birthDateError.value = 'You must be at least 8 years old.'
+    return false
+  }
+  // Optional: upper age bound (e.g., 120 years)
+  const oldest = new Date()
+  oldest.setFullYear(oldest.getFullYear() - 120)
+  const pad = (n) => String(n).padStart(2, '0')
+  const oldestStr = `${oldest.getFullYear()}-${pad(oldest.getMonth()+1)}-${pad(oldest.getDate())}`
+  if (val < oldestStr) {
+    birthDateError.value = 'Date is unrealistically old.'
+    return false
+  }
+  return true
+}
+
+watch(birth_date, () => {
+  if (birthDateError.value) validateBirthDate()
+})
 const gender = ref('')
 const showPassword = ref(false)
 const loading = ref(false)
@@ -220,6 +280,11 @@ const errorMessage = ref('')
 
 async function onSignUp() {
   errorMessage.value = ''
+  if (!validateBirthDate()) {
+    // surface error high-level as well for accessibility
+    errorMessage.value = birthDateError.value
+    return
+  }
   // Persist locally (optional for later steps)
   registrationStore.setBasicInfo({
     first_name: first_name.value,

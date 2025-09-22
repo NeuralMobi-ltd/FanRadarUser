@@ -1,51 +1,44 @@
 <template>
-  <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-    <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden border border-gray-200 dark:border-gray-700 animate-in fade-in-0 zoom-in-95 duration-300 flex flex-col">
+  <div v-if="modelValue" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-1 sm:p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-[20rem] sm:max-w-2xl max-h-[98vh] overflow-hidden border border-gray-200 dark:border-gray-700 animate-in fade-in-0 zoom-in-95 duration-300 flex flex-col">
       <!-- Header -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800">
+  <div class="flex items-center justify-between p-3 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800">
         <div class="flex items-center space-x-3">
-          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-            <i class="fas fa-plus text-white text-lg"></i>
+          <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+            <i class="fas fa-plus text-white text-base sm:text-lg"></i>
           </div>
-          <h3 class="text-xl font-bold text-gray-900 dark:text-white">
+          <h3 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
             {{ mode === 'fandom-edit' ? (editPost ? 'Edit Fandom Post' : 'New Fandom Post') : (editPost ? 'Edit Post' : 'Create Post') }}
           </h3>
         </div>
         <button
           @click="() => { $emit('close'); $emit('update:modelValue', false) }"
-          class="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700 transition-all duration-200"
+          class="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-white/80 dark:hover:bg-gray-700 transition-all duration-200"
         >
-          <i class="fas fa-times text-lg"></i>
+          <i class="fas fa-times text-base sm:text-lg"></i>
         </button>
       </div>
 
       <!-- Content -->
       <div class="flex-1 overflow-y-auto">
-        <div class="p-6 space-y-6">
-        <!-- User Info for editing -->
-        <div v-if="editPost" class="flex items-center space-x-3 pb-3 border-b border-gray-200 dark:border-gray-700">
-          <AvatarFallback :src="userAvatar" :username="userName" :alt="userName" :size="32" class="w-8 h-8" />
-          <div>
-            <p class="text-sm font-medium text-gray-900 dark:text-white">{{ userName }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400" v-if="editPostDate">{{ editPostDate }}</p>
-          </div>
-        </div>
+  <div class="p-3 sm:p-6 space-y-4 sm:space-y-6">
+        <!-- Removed separate edit header for consistent styling between create & edit modes -->
 
         <!-- Main Text Input -->
-        <div class="flex items-start space-x-4">
+  <div class="flex flex-col sm:flex-row items-start sm:space-x-4 space-y-3 sm:space-y-0">
           <AvatarFallback
             :src="userAvatar"
             :username="userName"
             :alt="userName"
-            :size="48"
-            class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
+            :size="40"
+            class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
           />
           <div class="flex-1 min-w-0">
             <textarea
               v-model="postContent"
               :placeholder="postContent ? '' : 'What\'s on your mind?'"
-              class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-6 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-lg font-medium min-h-[8rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
-              rows="4"
+              class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-xl sm:rounded-2xl px-2.5 py-2 sm:px-6 sm:py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-lg font-medium min-h-[4rem] sm:min-h-[8rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+              rows="3"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -56,16 +49,16 @@
         </div>
 
         <!-- Tags Section -->
-        <div v-if="showTagInput || tags.length" class="pl-16">
-          <div class="flex flex-wrap gap-3 mb-4" v-if="Array.isArray(tags) && tags.length">
+  <div v-if="showTagInput || tags.length" class="pl-0 sm:pl-16">
+          <div class="flex flex-nowrap overflow-x-auto no-scrollbar gap-0.5 sm:flex-wrap sm:overflow-visible sm:gap-3 mb-2 sm:mb-4 -ml-1 pr-2" v-if="Array.isArray(tags) && tags.length">
             <span
               v-for="(tag, idx) in tags"
               :key="idx"
-              class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+              class="inline-flex items-center shrink-0 px-1 py-0.5 sm:px-4 sm:py-2 rounded-full text-[8px] sm:text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-sm sm:shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
             >
               #{{ tag }}
-              <button type="button" class="ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
-                <i class="fas fa-times text-xs"></i>
+              <button type="button" class="ml-0.5 sm:ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
+                <i class="fas fa-times text-[7px] sm:text-xs"></i>
               </button>
             </span>
           </div>
@@ -75,7 +68,7 @@
             @keydown.enter.prevent="addTag"
             @keydown.tab.prevent="addTag"
             type="text"
-            class="w-full px-6 py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+            class="w-full px-2.5 py-1.5 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
             placeholder="Add tags (press Enter or Tab)..."
             autocomplete="off"
             autocorrect="off"
@@ -85,7 +78,7 @@
         </div>
 
   <!-- Category / Subcategory Selection Display (hidden if disableCategory) -->
-  <div v-if="!disableCategory && selectedSubcategoryName" class="pl-16">
+  <div v-if="!disableCategory && selectedSubcategoryName" class="pl-0 sm:pl-16">
           <div class="flex flex-wrap gap-3">
             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <i class="fas fa-tag mr-2 text-sm"></i>
@@ -95,7 +88,7 @@
         </div>
 
   <!-- Scheduling Section (hidden if disableSchedule) -->
-  <div v-if="!disableSchedule && scheduleEnabled" class="pl-16">
+  <div v-if="!disableSchedule && scheduleEnabled" class="pl-0 sm:pl-16">
           <div class="mt-4 space-y-2">
             <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
             <div class="flex items-center gap-3">
@@ -106,12 +99,12 @@
           </div>
         </div>
         <!-- Media Preview -->
-        <div v-if="postMedia.length > 0" class="pl-16">
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <div v-if="postMedia.length > 0" class="pl-0 sm:pl-16">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
             <div 
               v-for="(media, i) in postMedia" 
               :key="i" 
-              class="relative bg-gray-100 dark:bg-gray-800 rounded-2xl overflow-hidden aspect-square group hover:shadow-lg transition-all duration-200"
+              class="relative bg-gray-100 dark:bg-gray-800 rounded-xl sm:rounded-2xl overflow-hidden aspect-video sm:aspect-square group hover:shadow-lg transition-all duration-200"
             >
               <img
                 v-if="media.type === 'image'"
@@ -126,9 +119,9 @@
               ></video>
               <button
                 @click="removeMedia(i)"
-                class="absolute top-3 right-3 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                class="absolute top-2 right-2 sm:top-3 sm:right-3 w-6 h-6 sm:w-8 sm:h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
               >
-                <i class="fas fa-times text-sm"></i>
+                <i class="fas fa-times text-xs sm:text-sm"></i>
               </button>
             </div>
           </div>
@@ -139,43 +132,43 @@
       <!-- Action Bar -->
       <div class="border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
         <!-- Upload progress and errors -->
-        <div class="px-6 pt-4">
+  <div class="px-3 pt-2 sm:px-6 sm:pt-4">
           <div v-if="uploadProgress > 0 && uploadProgress < 100" class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden mb-2">
             <div :style="{ width: uploadProgress + '%' }" class="h-3 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 rounded-full"></div>
           </div>
           <p v-if="error" class="text-sm text-red-600 dark:text-red-400 mb-2 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg">{{ error }}</p>
         </div>
 
-        <div class="flex items-center justify-between p-6">
-          <div class="flex items-center space-x-2">
+  <div class="flex items-center justify-between p-3 sm:p-6">
+          <div class="flex items-center space-x-0.5 sm:space-x-2">
             <!-- Image Upload -->
-            <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
-              <i class="fas fa-image text-xl group-hover:scale-110 transition-transform duration-200"></i>
+            <label class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <i class="fas fa-image text-base sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
               <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
             </label>
             
             <!-- Video Upload -->
-            <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
-              <i class="fas fa-video text-xl group-hover:scale-110 transition-transform duration-200"></i>
+            <label class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <i class="fas fa-video text-base sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
               <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
             </label>
             
             <!-- Tag Input Toggle -->
             <button 
               @click="toggleTagInput" 
-              class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group"
+              class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl text-gray-600 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group"
               :class="{ 'text-blue-600 bg-blue-50 dark:bg-blue-900/20': showTagInput || tags.length }"
               title="Add tags"
             >
-              <i class="fas fa-hashtag text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              <i class="fas fa-hashtag text-base sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
             </button>
 
             <!-- Category Picker (hidden if disableCategory) -->
             <div class="relative" v-if="!disableCategory">
-              <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-12 h-12 rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group" 
+              <button @click="showCategoryPicker = !showCategoryPicker" class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 touch-target group" 
                 :class="{ 'text-green-600 bg-green-50 dark:bg-green-900/20': selectedCategory }"
                 title="Choose category">
-                <i class="fas fa-list text-xl group-hover:scale-110 transition-transform duration-200"></i>
+                <i class="fas fa-list text-base sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
               </button>
               <div v-if="showCategoryPicker" class="absolute left-0 bottom-full mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-bottom-2 duration-200">
                 <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">Choose Category</div>
@@ -199,9 +192,9 @@
             </div>
 
             <!-- Schedule Toggle (hidden if disableSchedule) -->
-            <button v-if="!disableSchedule" @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
+            <button v-if="!disableSchedule" @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl transition-all duration-200 touch-target group"
               :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
-              <i class="fas fa-clock text-xl group-hover:scale-110 transition-transform duration-200"></i>
+              <i class="fas fa-clock text-base sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
             </button>
           </div>
 
@@ -209,7 +202,7 @@
           <button
             @click="submit"
             :disabled="loading || (!postContent.trim() && postMedia.length === 0) || (needSubcategory && selectedCategory && !selectedSubcategoryId)"
-            class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
+            class="px-3 py-1.5 sm:px-8 sm:py-3 rounded-lg sm:rounded-2xl font-bold shadow-lg transition-all duration-200 text-xs sm:text-base touch-target min-w-[5rem] sm:min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-1 sm:space-x-2 transform hover:scale-105 disabled:hover:scale-100"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin text-lg"></i>
             <span>{{ loading ? (editPost ? 'Updating...' : 'Posting...') : (editPost ? 'Update' : 'Post') }}</span>

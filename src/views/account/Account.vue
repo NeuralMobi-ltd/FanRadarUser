@@ -3,16 +3,6 @@
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center min-h-screen">
       <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      <!-- Edit Post Modal -->
-      <CreatePostModal
-        v-model="showEditModal"
-        :edit-post="editingPost"
-        :user-avatar="userProfile?.avatar || authStore.user?.avatar"
-        :user-name="userProfile?.username || authStore.user?.userName"
-        mode="default"
-        @posted="handleEditPosted"
-        @submit="handleEditPosted"
-      />
     </div>
 
     <!-- Profile Content -->
@@ -466,6 +456,17 @@
         </button>
       </div>
     </div>
+
+    <!-- Edit Post Modal (kept outside loading condition so it works on mobile & after data load) -->
+    <CreatePostModal
+      v-model="showEditModal"
+      :edit-post="editingPost"
+      :user-avatar="userProfile?.avatar || authStore.user?.avatar"
+      :user-name="userProfile?.username || authStore.user?.userName"
+      mode="default"
+      @posted="handleEditPosted"
+      @submit="handleEditPosted"
+    />
   </div>
 </template>
 

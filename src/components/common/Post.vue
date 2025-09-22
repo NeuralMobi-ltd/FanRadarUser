@@ -31,15 +31,6 @@
           <!-- Badges row: responsive design for all screens -->
           <div class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto sm:overflow-visible no-scrollbar py-0.5 max-w-full">
             <span
-              v-if="normalizedFandomName"
-              class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-600 text-white dark:bg-blue-500 dark:text-white flex-shrink-0"
-            >
-              <span class="w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white/90 dark:bg-white rounded-full mr-1"></span>
-              <span class="truncate max-w-[120px] sm:max-w-[160px]" :title="`${t('common.fandom')}: ${normalizedFandomName}`">
-                {{ t('common.fandom') }}: {{ normalizedFandomName }}
-              </span>
-            </span>
-            <span
               v-if="post.trending"
               class="inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-xs font-medium text-white bg-gradient-to-r from-rose-600 to-fuchsia-600 flex-shrink-0"
             >

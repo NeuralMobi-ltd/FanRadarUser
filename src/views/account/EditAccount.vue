@@ -205,18 +205,19 @@
             </div>
           </div>
 
-          <div class="flex flex-col sm:flex-row justify-end gap-2 sm:space-x-4">
+          <!-- Action buttons: horizontal with space-between on mobile, right-aligned on larger screens -->
+          <div class="flex flex-row w-full justify-between sm:justify-end gap-2 sm:space-x-4">
             <button 
               type="button"
               @click="cancelEdit"
-              class="px-5 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-full sm:w-auto"
+              class="px-5 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors w-auto"
             >
               {{ $t('common.cancel') }}
             </button>
             <button 
               type="submit"
               :disabled="saving"
-              class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 w-full sm:w-auto flex items-center gap-2"
+              class="px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 w-auto flex items-center gap-2"
             >
               <svg v-if="saving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v2m0 12v2m8-8h-2M6 12H4m13.657-6.343l-1.414 1.414M8.757 16.243l-1.414 1.414m0-12.728l1.414 1.414M16.243 16.243l1.414 1.414" />

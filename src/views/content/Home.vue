@@ -1,19 +1,19 @@
 <template>
-  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 overflow-hidden pt-4">
+  <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-8 overflow-hidden pt-3 md:pt-4">
     <div class="flex flex-col lg:flex-row min-h-screen gap-4 lg:gap-6 overflow-hidden">
       <!-- Main Content -->
       <div class="flex-1 max-w-full lg:max-w-2xl xl:max-w-none flex flex-col overflow-hidden">
         <!-- Create Post Section (updated to mirror CreatePostModal design) -->
-        <div class="bg-white dark:bg-gray-900 rounded-3xl p-5 lg:p-6 mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
+  <div class="bg-white dark:bg-gray-900 rounded-3xl p-4 sm:p-5 lg:p-6 mb-5 mt-4 sm:mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
           <!-- User Avatar and Text Input -->
-          <div class="flex items-start space-x-4">
+          <div class="flex items-start space-x-3 sm:space-x-4">
             <AvatarFallback
               :src="authStore.user?.avatar || fetchedProfile?.avatar || currentUser.avatar"
               :firstName="currentUser.firstName || (currentUser.name || 'U').split(' ')[0]"
               :lastName="currentUser.lastName || (currentUser.name || '').split(' ').slice(1).join(' ')"
               :alt="currentUser.name"
-              :size="48"
-              class="w-12 h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
+              :size="44"
+              class="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-3 border-gradient-to-r from-blue-400 to-purple-400 shadow-lg flex-shrink-0"
             />
             <div class="flex-1 min-w-0">
               <textarea
@@ -33,16 +33,16 @@
           </div>
 
           <!-- Tags Section -->
-          <div v-if="showTagInput || tags.length" class="mt-5 pl-16">
-            <div class="flex flex-wrap gap-3 mb-4" v-if="Array.isArray(tags) && tags.length">
+          <div v-if="showTagInput || tags.length" class="mt-4 sm:mt-5 pl-14 sm:pl-16">
+            <div class="flex flex-wrap gap-2.5 sm:gap-3 mb-3 sm:mb-4" v-if="Array.isArray(tags) && tags.length">
               <span
                 v-for="(tag, idx) in tags"
                 :key="idx"
-                class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
+                class="inline-flex items-center px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
               >
                 #{{ tag }}
-                <button type="button" class="ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
-                  <i class="fas fa-times text-xs"></i>
+                <button type="button" class="ml-1.5 sm:ml-2 text-white/80 hover:text-white transition-colors" @click="removeTag(idx)">
+                  <i class="fas fa-times text-[10px] sm:text-xs"></i>
                 </button>
               </span>
             </div>
@@ -62,7 +62,7 @@
           </div>
 
       <!-- Selected Subcategory Badge -->
-      <div v-if="selectedSubcategoryName" class="mt-2 pl-16">
+  <div v-if="selectedSubcategoryName" class="mt-2 pl-14 sm:pl-16">
             <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <i class="fas fa-tag mr-2 text-sm"></i>
         {{ selectedSubcategoryName }}
@@ -70,7 +70,7 @@
           </div>
 
           <!-- Scheduling Section -->
-          <div v-if="scheduleEnabled" class="pl-16 mt-4">
+          <div v-if="scheduleEnabled" class="pl-14 sm:pl-16 mt-4">
             <div class="space-y-2">
               <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
               <div class="flex items-center gap-3">
@@ -82,7 +82,7 @@
           </div>
 
           <!-- Media Preview -->
-          <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-5 pl-16">
+          <div v-if="Array.isArray(postMedia) && postMedia.length > 0" class="mt-4 sm:mt-5 pl-14 sm:pl-16">
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
               <div 
                 v-for="(media, index) in postMedia" 
@@ -111,15 +111,15 @@
           </div>
 
           <!-- Action Bar -->
-          <div class="mt-6 pt-5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
+          <div class="mt-5 sm:mt-6 pt-4 sm:pt-5 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <div class="flex items-center space-x-1.5 sm:space-x-2">
               <!-- Image Upload -->
-              <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <label class="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer transition-all duration-200 touch-target group">
                 <i class="fas fa-image text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 <input type="file" accept="image/*" multiple class="hidden" @change="onFileChange('image', $event)" />
               </label>
               <!-- Video Upload -->
-              <label class="flex items-center justify-center w-12 h-12 rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
+              <label class="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:hover:bg-purple-900/20 cursor-pointer transition-all duration-200 touch-target group">
                 <i class="fas fa-video text-xl group-hover:scale-110 transition-transform duration-200"></i>
                 <input type="file" accept="video/*" multiple class="hidden" @change="onFileChange('video', $event)" />
               </label>
@@ -159,13 +159,13 @@
                 </div>
               </div>
               <!-- Schedule Toggle -->
-              <button @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-12 h-12 rounded-2xl transition-all duration-200 touch-target group"
+              <button @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl transition-all duration-200 touch-target group"
                 :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
                 <i class="fas fa-clock text-xl group-hover:scale-110 transition-transform duration-200"></i>
               </button>
             </div>
             <!-- Post Button -->
-            <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2.5 sm:space-x-3">
               <div v-if="creating" class="w-40 mr-2">
                 <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
                   <div :style="{ width: `${uploadProgress}%` }" class="h-2 bg-gradient-to-r from-blue-500 to-purple-500 transition-all"></div>
@@ -175,7 +175,7 @@
               <button
                 @click="createPost"
                 :disabled="creating || (!newPostContent.trim() && postMedia.length === 0) || (needSubcategory && !selectedSubcategoryId)"
-                class="px-8 py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-base touch-target min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
+                class="px-6 sm:px-8 py-2.5 sm:py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-sm sm:text-base touch-target min-w-[7rem] sm:min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
               >
                 <i v-if="creating" class="fas fa-spinner fa-spin text-lg"></i>
                 <span>{{ $t('common.post') }}</span>
@@ -186,9 +186,9 @@
         <p v-if="createError" class="text-sm text-red-600 dark:text-red-400 mt-2">{{ createError }}</p>
 
         <!-- News Section (Horizontal Scroll ONLY) -->
-        <div class="py-2 border-b border-gray-200 dark:border-gray-800 mb-3 sm:mb-4 overflow-hidden">
+  <div class="py-1.5 sm:py-2 border-b border-gray-200 dark:border-gray-800 mb-3 sm:mb-4 overflow-hidden">
           <div class="flex justify-between items-center mb-2 sm:mb-3">
-            <h2 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 dark:text-white">{{ $t('content.home.newsToday') }}</h2>
+            <h2 class="text-base sm:text-lg lg:text-2xl font-bold text-gray-900 dark:text-white">{{ $t('content.home.newsToday') }}</h2>
             <router-link to="/news" class="text-blue-500 text-xs sm:text-sm hover:text-blue-600 transition-colors touch-button">{{ $t('common.showMore') }}</router-link>
           </div>
           <!-- Natural height container for news scrolling -->
@@ -210,7 +210,7 @@
         </div>
 
         <!-- Modern Feed Toggle with Sliding Indicator -->
-        <div class="relative bg-gray-100 dark:bg-gray-800 rounded-xl lg:rounded-2xl p-1 mb-4 sm:mb-6 overflow-hidden shadow-inner mx-1 sm:mx-0">
+  <div class="relative bg-gray-100 dark:bg-gray-800 rounded-xl lg:rounded-2xl p-1 mb-3 sm:mb-5 overflow-hidden shadow-inner mx-0.5 sm:mx-0">
           <!-- Sliding background indicator -->
           <div 
             class="absolute top-1 bottom-1 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg lg:rounded-xl transition-all duration-300 ease-out shadow-lg"
@@ -224,7 +224,7 @@
           <div class="relative flex">
             <button
               @click="postsStore.setActiveFeed('timeline')"
-              class="flex-1 relative z-10 px-2 sm:px-4 py-2.5 sm:py-3 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button"
+              class="flex-1 relative z-10 px-1.5 sm:px-3 py-2 sm:py-2.5 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button text-xs sm:text-sm"
               :class="activeFeed === 'timeline' ? 
                 'text-white transform scale-105' : 
                 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:scale-102'"
@@ -237,7 +237,7 @@
             
             <button
               @click="postsStore.setActiveFeed('trending')"
-              class="flex-1 relative z-10 px-2 sm:px-4 py-2.5 sm:py-3 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button"
+              class="flex-1 relative z-10 px-1.5 sm:px-3 py-2 sm:py-2.5 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button text-xs sm:text-sm"
               :class="activeFeed === 'trending' ? 
                 'text-white transform scale-105' : 
                 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:scale-102'"
@@ -250,7 +250,7 @@
             
             <button
               @click="postsStore.setActiveFeed('following')"
-              class="flex-1 relative z-10 px-2 sm:px-4 py-2.5 sm:py-3 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button"
+              class="flex-1 relative z-10 px-1.5 sm:px-3 py-2 sm:py-2.5 text-center font-semibold rounded-lg lg:rounded-xl transition-all duration-300 touch-button text-xs sm:text-sm"
               :class="activeFeed === 'following' ? 
                 'text-white transform scale-105' : 
                 'text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:scale-102'"
@@ -264,22 +264,22 @@
         </div>
 
         <!-- Posts Section -->
-        <div class="space-y-3 sm:space-y-4 lg:space-y-6">
+  <div class="space-y-2.5 sm:space-y-4 lg:space-y-6">
           <Post 
             v-for="post in filteredPosts"
             :key="post.id"
             :post="post"
-            class="bg-white dark:bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all duration-200"
+            class="bg-white dark:bg-gray-900 rounded-lg sm:rounded-xl lg:rounded-2xl p-2.5 sm:p-4 lg:p-6 shadow-sm border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-all duration-200"
             @like="likePost"
             @comment="openComments"
           />
           
           <!-- Load More Button -->
-          <div class="flex justify-center pt-3 sm:pt-4 lg:pt-6" v-if="hasMorePosts">
+          <div class="flex justify-center pt-2.5 sm:pt-4 lg:pt-6" v-if="hasMorePosts">
             <button
               @click="loadMorePosts"
               :disabled="loadingMore"
-              class="px-6 sm:px-8 lg:px-10 py-2.5 sm:py-3 lg:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl lg:rounded-2xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 touch-button text-sm sm:text-base lg:text-lg"
+              class="px-5 sm:px-7 lg:px-10 py-2 sm:py-2.5 lg:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl lg:rounded-2xl hover:from-blue-600 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95 touch-button text-sm sm:text-base lg:text-lg"
             >
               <span class="flex items-center space-x-2">
                 <i v-if="loadingMore" class="fas fa-spinner fa-spin text-xs sm:text-sm"></i>

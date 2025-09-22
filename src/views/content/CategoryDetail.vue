@@ -1,9 +1,10 @@
 <template>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+  <div class="max-w-7xl mx-auto px-3 sm:px-5 lg:px-8 pt-3 md:pt-4">
     <!-- Category Header -->
-    <div class="relative mb-8">
+  <div class="relative mb-6 md:mb-8">
       <!-- Cover Image or Gradient Color -->
-  <div class="h-64 w-full rounded-xl overflow-hidden relative" :style="headerImage ? {} : tileStyle(formattedCategoryName)">
+      <!-- Responsive hero height (smaller on phones) -->
+      <div class="h-44 sm:h-56 md:h-64 w-full rounded-xl overflow-hidden relative" :style="headerImage ? {} : tileStyle(formattedCategoryName)">
         <img v-if="headerImage"
           :src="headerImage"
           :alt="formattedCategoryName"
@@ -13,28 +14,28 @@
       </div>
       
       <!-- Category Info -->
-      <div class="absolute bottom-6 left-6 text-white">
-        <div class="flex items-center mb-2">
-          <div class="px-3 py-1 rounded-full text-sm font-medium mr-3 flex items-center gap-2" :class="categoriesStore.getCategoryColor(categoryName)">
-            <span>{{ $t('content.category.label') }}</span>
+      <div class="absolute bottom-4 left-4 md:bottom-6 md:left-6 text-white max-w-[90%]">
+        <div class="flex items-center mb-1.5 md:mb-2">
+          <div class="px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium mr-2.5 md:mr-3 flex items-center gap-1.5" :class="categoriesStore.getCategoryColor(categoryName)">
+            <span class="leading-none">{{ $t('content.category.label') }}</span>
           </div>
           <div class="flex items-center text-sm">
           </div>
         </div>
-        <h1 class="text-4xl font-bold mb-1">
-          <i class="mr-3"></i>{{ formattedCategoryName }}
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 tracking-tight">
+          <i class="mr-2 md:mr-3"></i>{{ formattedCategoryName }}
         </h1>
-  <p class="text-white/90 max-w-xl">{{ categoryDescription }}</p>
+  <p class="text-white/90 text-sm sm:text-base md:text-lg max-w-xl leading-snug md:leading-normal line-clamp-3">{{ categoryDescription }}</p>
       </div>
     </div>
 
     <!-- Subcategories (quick nav) -->
-    <div v-if="subcategories && subcategories.length" class="mb-4 flex flex-wrap gap-2">
+    <div v-if="subcategories && subcategories.length" class="mb-4 flex flex-wrap gap-1.5 md:gap-2">
       <!-- All chip -->
       <button
         @click="selectAll"
         :class="[
-          'px-3 py-1.5 rounded-full text-xs border text-gray-700 dark:text-gray-300',
+          'px-2.5 py-1 rounded-full text-[11px] sm:text-xs border text-gray-700 dark:text-gray-300',
           selectedSubId === null
             ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
             : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'
@@ -46,7 +47,7 @@
         v-for="s in subcategories" :key="s.id"
         @click="selectSubcategory(s)"
         :class="[
-          'px-3 py-1.5 rounded-full text-xs border text-gray-700 dark:text-gray-300',
+          'px-2.5 py-1 rounded-full text-[11px] sm:text-xs border text-gray-700 dark:text-gray-300',
           selectedSubId === s.id
             ? 'border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
             : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400'
@@ -57,27 +58,27 @@
     </div>
 
     <!-- Tabs Navigation -->
-    <div class="border-b border-gray-200 dark:border-gray-700 mb-6">
-      <div class="flex gap-8">
+    <div class="border-b border-gray-200 dark:border-gray-700 mb-5 md:mb-6">
+      <div class="flex gap-5 sm:gap-6 md:gap-8 overflow-x-auto scrollbar-none -mx-1 px-1">
         <button 
           v-for="tab in tabs" 
           :key="tab.id"
           @click="activeTab = tab.id"
           :class="[
-            'pb-4 px-1 font-medium',
+            'pb-3 md:pb-4 px-0.5 font-medium text-sm sm:text-base whitespace-nowrap',
             activeTab === tab.id 
               ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
           ]"
         >
           {{ tab.label }}
-          <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
+          <span class="ml-1.5 md:ml-2 px-1.5 md:px-2 py-0.5 text-[10px] sm:text-xs bg-gray-100 dark:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">{{ tab.count }}</span>
         </button>
       </div>
     </div>
 
     <!-- Dynamic Content Based on Active Tab -->
-    <div v-if="activeTab === 'fandoms'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div v-if="activeTab === 'fandoms'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
       <template v-if="fandoms && fandoms.length > 0">
         <CommunityCard
           v-for="fandom in fandoms"
@@ -94,7 +95,7 @@
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'posts'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div v-else-if="activeTab === 'posts'" class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       <template v-if="posts && posts.length > 0">
         <Post
           v-for="post in posts"
@@ -113,7 +114,7 @@
       </div>
     </div>
 
-    <div v-else-if="activeTab === 'news'" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div v-else-if="activeTab === 'news'" class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
       <template v-if="newsData && newsData.length > 0">
         <NewsPost
           v-for="news in newsData"

@@ -1,33 +1,5 @@
 <template>
-  <!-- MOBILE PATCH: You can move/duplicate blocks inside these wrappers -->
-  <!-- MOBILE-ONLY header placeholder (show back button, title, actions) -->
-  <div class="sm:hidden sticky top-0 z-30 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700">
-    <div class="max-w-4xl mx-auto px-3 py-2 flex items-center justify-between">
-      <!-- TODO: Replace with your back navigation -->
-      <button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" @click="$router.back()">
-        <i class="fas fa-arrow-left"></i>
-      </button>
-      <div class="text-sm font-semibold text-gray-900 dark:text-white truncate">
-        <!-- TODO: Bind fandom name here -->
-        {{ fandom?.name || $t('fandom.detail.label') }}
-      </div>
-      <div class="flex items-center gap-2">
-        <!-- TODO: Add quick actions (follow, share, menu) -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Use these helpers to hide sidebars on phones, keep desktop layout intact -->
-  <!-- Example markers (wrap your existing sections accordingly) -->
-  <!-- MOBILE PATCH START: Hide left sidebar on phones -->
-  <!-- <aside class="hidden md:block"> ... </aside> -->
-  <!-- MOBILE PATCH END -->
-
-  <!-- MOBILE PATCH START: Turn tab bar into horizontal chips on phones -->
-  <!-- <div class="sm:hidden overflow-x-auto no-scrollbar -mx-3 px-3 py-2"> ... </div> -->
-  <!-- MOBILE PATCH END -->
-
-  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 pt-2 sm:pt-4">
+  <div class="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8  mt-4 pt-2 sm:pt-4">
     <!-- Fandom Header -->
     <div class="relative mb-4 sm:mb-8">
       <!-- Cover Image -->

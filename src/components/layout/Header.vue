@@ -1,6 +1,6 @@
 <template>
   <header class="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 fixed top-0 left-0 right-0 z-50 overflow-visible">
-    <div class="flex items-center justify-between px-2 sm:px-4 py-2">
+    <div class="flex items-center justify-between px-2 sm:px-4 py-2 relative">
       <!-- Left: Logo -->
       <div class="flex items-center flex-shrink-0">
         <router-link to="/" class="flex items-center space-x-2">
@@ -50,10 +50,13 @@
           <!-- Mobile Search Button with better design -->
           <button
             v-if="isAuthenticated"
-            @click="openSearchModal"
+            @click="toggleMobileSearch"
+            :aria-expanded="showMobileSearchInput ? 'true' : 'false'"
+            aria-controls="mobile-search-bar"
             class="p-2.5 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all duration-200"
           >
-            <MagnifyingGlassIcon class="h-5 w-5" />
+            <MagnifyingGlassIcon v-if="!showMobileSearchInput" class="h-5 w-5" />
+            <i v-else class="fas fa-times text-sm"></i>
           </button>
 
           <!-- Language Selector (mobile) - Better design -->
@@ -331,6 +334,40 @@
         </div>
       </div>
     </div>
+
+    <!-- Mobile inline search input (only phones) -->
+    <transition name="fade-slide">
+      <div
+        v-if="showMobileSearchInput && isAuthenticated"
+        id="mobile-search-bar"
+        class="sm:hidden px-3 pb-3 -mt-1"
+      >
+        <form @submit.prevent="performSearch" class="relative">
+          <span class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+            <MagnifyingGlassIcon class="h-5 w-5" />
+          </span>
+          <input
+            ref="mobileSearchRef"
+            v-model="searchQuery"
+            type="text"
+            autocomplete="off"
+            inputmode="search"
+            @keyup.enter="performSearch"
+            @keydown.esc.prevent="closeMobileSearch"
+            class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-gray-100/70 dark:bg-gray-800/70 border border-gray-300/70 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-inner"
+            :placeholder="mobileSearchPlaceholder"
+          />
+          <button
+            v-if="searchQuery"
+            type="button"
+            @click="clearSearch"
+            class="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+          >
+            <i class="fas fa-times text-xs"></i>
+          </button>
+        </form>
+      </div>
+    </transition>
   </header>
 
   <!-- Get App Modal -->
@@ -415,18 +452,18 @@ import { CreatePostModal } from '@/components/feed'
 import { useAuthStore } from '@/store/auth'
 import { useThemeStore } from '@/store/index'
 import { usePostsStore } from '@/store/posts'
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import {
-    ArrowRightOnRectangleIcon,
-    ChevronDownIcon,
-    Cog6ToothIcon,
-    MagnifyingGlassIcon,
-    MoonIcon,
-    SunIcon,
-    UserIcon
+  ArrowRightOnRectangleIcon,
+  ChevronDownIcon,
+  Cog6ToothIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  SunIcon,
+  UserIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -444,7 +481,10 @@ const isDark = computed(() => themeStore.isDark)
 const showUserMenu = ref(false)
 const showMobileUserMenu = ref(false)
 const showAppModal = ref(false)
-const showSearchModal = ref(false)
+// Desktop search uses inline bar; mobile uses inline dropdown
+const showSearchModal = ref(false) // reserved if modal is later reintroduced
+const showMobileSearchInput = ref(false)
+const mobileSearchRef = ref(null)
 const showCreatePostModal = ref(false)
 const postsStore = usePostsStore()
 const showLanguageDropdown = ref(false)
@@ -458,8 +498,21 @@ function toggleTheme() {
 }
 
 
-function openSearchModal() {
+function openSearchModal() { // legacy (desktop already shows search input)
   showSearchModal.value = true
+}
+
+function toggleMobileSearch() {
+  showMobileSearchInput.value = !showMobileSearchInput.value
+  if (showMobileSearchInput.value) {
+    nextTick(() => {
+      mobileSearchRef.value?.focus()
+    })
+  }
+}
+
+function closeMobileSearch() {
+  showMobileSearchInput.value = false
 }
 
 function clearSearch() {
@@ -473,6 +526,7 @@ function performSearch() {
       query: { q: searchQuery.value.trim() }
     })
     showSearchModal.value = false
+    closeMobileSearch()
   }
 }
 
@@ -481,6 +535,10 @@ function handleSearchFromModal(term) {
   searchQuery.value = term
   performSearch()
 }
+
+const mobileSearchPlaceholder = computed(() => {
+  return 'Search FanRadar'
+})
 
 // Logout flow with custom confirmation modal
 const showLogoutConfirm = ref(false)

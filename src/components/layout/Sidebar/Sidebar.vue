@@ -40,49 +40,53 @@
         <router-link
           to="/"
           @click="closeMobileMenu"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
-          :class="isActiveRoute('/home') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative overflow-hidden"
+          :class="isActiveRoute('/') ? 
+            'text-indigo-600 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-900/30 font-medium shadow-sm' : 
+            'text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70'"
         >
-          <i class="fas fa-home w-5 h-5 mr-3"></i>
-          Home
+          <span class="absolute inset-y-1 left-0 w-1 rounded-r bg-indigo-500 transition-opacity" :class="isActiveRoute('/') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"></span>
+          <i class="fas fa-home w-5 h-5 flex-shrink-0"></i>
+          <span class="leading-none">Home</span>
         </router-link>
 
         <router-link
           to="/explore"
           @click="closeMobileMenu"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative overflow-hidden"
           :class="isActiveRoute('/explore') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            'text-indigo-600 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-900/30 font-medium shadow-sm' : 
+            'text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70'"
         >
-          <i class="fas fa-compass w-5 h-5 mr-3"></i>
-          Explore
+          <span class="absolute inset-y-1 left-0 w-1 rounded-r bg-indigo-500 transition-opacity" :class="isActiveRoute('/explore') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"></span>
+          <i class="fas fa-compass w-5 h-5 flex-shrink-0"></i>
+          <span class="leading-none">Explore</span>
         </router-link>
 
         <router-link
           to="/fandoms/browse"
           @click="closeMobileMenu"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative overflow-hidden"
           :class="isActiveRoute('/fandoms/browse') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            'text-indigo-600 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-900/30 font-medium shadow-sm' : 
+            'text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70'"
         >
-          <i class="fas fa-users w-5 h-5 mr-3"></i>
-          Fandoms
+          <span class="absolute inset-y-1 left-0 w-1 rounded-r bg-indigo-500 transition-opacity" :class="isActiveRoute('/fandoms/browse') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"></span>
+          <i class="fas fa-users w-5 h-5 flex-shrink-0"></i>
+          <span class="leading-none">Fandoms</span>
         </router-link>
 
         <router-link
           to="/mart"
           @click="closeMobileMenu"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative overflow-hidden"
           :class="isActiveRoute('/mart') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            'text-indigo-600 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-900/30 font-medium shadow-sm' : 
+            'text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70'"
         >
-          <i class="fas fa-shopping-bag w-5 h-5 mr-3"></i>
-          FanRadar Store
+          <span class="absolute inset-y-1 left-0 w-1 rounded-r bg-indigo-500 transition-opacity" :class="isActiveRoute('/mart') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"></span>
+          <i class="fas fa-shopping-bag w-5 h-5 flex-shrink-0"></i>
+          <span class="leading-none">FanRadar Store</span>
         </router-link>
       </div>
 
@@ -98,13 +102,14 @@
         <router-link
           to="/create-fandom"
           @click="closeMobileMenu"
-          class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+          class="group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all whitespace-nowrap relative overflow-hidden"
           :class="isActiveRoute('/create-fandom') ? 
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300' : 
-            'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+            'text-indigo-600 dark:text-indigo-300 bg-indigo-50/70 dark:bg-indigo-900/30 font-medium shadow-sm' : 
+            'text-gray-700 dark:text-gray-300 hover:bg-gray-100/70 dark:hover:bg-gray-700/70'"
         >
-          <i class="fas fa-plus w-5 h-5 mr-3"></i>
-          Create Fandom
+          <span class="absolute inset-y-1 left-0 w-1 rounded-r bg-indigo-500 transition-opacity" :class="isActiveRoute('/create-fandom') ? 'opacity-100' : 'opacity-0 group-hover:opacity-40'"></span>
+          <i class="fas fa-plus w-5 h-5 flex-shrink-0"></i>
+          <span class="leading-none">Create Fandom</span>
         </router-link>
       </div>
 
