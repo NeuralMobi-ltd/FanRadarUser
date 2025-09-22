@@ -16,14 +16,18 @@
     @apply font-sans;
   }
 
-  /* Slight global scale reduction on wider screens so 100% browser zoom feels more compact
-     We don't change mobile base size for readability. */
+  /* Desktop compact scaling
+     Previously the design only felt right after manually zooming browser to 90%.
+     We mirror that look at native 100% by lowering the rem base on large breakpoints.
+     (16px * 0.9 ≈ 14.4px). Keep mobile ( <1024px ) at full 16px for readability / accessibility. */
   @media (min-width: 1024px) {
-    html { font-size: 15px; } /* ~6.25% reduction from 16px */
+    html { font-size: 13.9px; } /* Further compact (~87% of 16px) */
   }
-  @media (min-width: 1536px) { /* 2xl screens */
-    html { font-size: 14.5px; }
+  @media (min-width: 1536px) { /* 2xl screens slightly smaller */
+    html { font-size: 13.4px; }
   }
+  /* Optional override: add .text-base-normal on <html> or <body> to restore default 16px if desired */
+  .text-base-normal { font-size: 16px !important; }
 }
 
 @layer components {

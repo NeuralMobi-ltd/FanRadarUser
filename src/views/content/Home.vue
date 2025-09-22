@@ -1,10 +1,10 @@
 <template>
-  <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-8 overflow-hidden pt-3 md:pt-4">
+  <div class="max-w-7xl mx-auto px-2.5 sm:px-4 lg:px-8 overflow-hidden pt-3 md:pt-4 xl:pt-6">
     <div class="flex flex-col lg:flex-row min-h-screen gap-4 lg:gap-6 overflow-hidden">
       <!-- Main Content -->
       <div class="flex-1 max-w-full lg:max-w-2xl xl:max-w-none flex flex-col overflow-hidden">
         <!-- Create Post Section (updated to mirror CreatePostModal design) -->
-  <div class="bg-white dark:bg-gray-900 rounded-3xl p-4 sm:p-5 lg:p-6 mb-5 mt-4 sm:mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
+  <div class="bg-white dark:bg-gray-900 rounded-3xl p-4 sm:p-5 lg:p-6 mb-5 xl:mt-0 mt-4 sm:mb-6 shadow-2xl border border-gray-200 dark:border-gray-700 transition-all duration-300">
           <!-- User Avatar and Text Input -->
           <div class="flex items-start space-x-3 sm:space-x-4">
             <AvatarFallback
