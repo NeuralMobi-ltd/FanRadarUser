@@ -61,7 +61,7 @@
             <svg class="w-4 h-4 mr-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
-            Edit Post
+            {{ t('post.actions.edit') }}
           </button>
           <button
             v-if="canDelete"
@@ -72,7 +72,7 @@
             <svg class="w-4 h-4 mr-3 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
             </svg>
-            Delete Post
+            {{ t('post.actions.delete') }}
           </button>
         </div>
       </div>
@@ -171,7 +171,7 @@
                 ? 'bg-blue-500 scale-110' 
                 : 'bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500'
             "
-            aria-label="Go to media"
+            :aria-label="t('post.media.goToSlideAria')"
             type="button"
           ></button>
         </div>
@@ -204,7 +204,7 @@
           :disabled="likeProcessing || postsStore.favoritesLoading"
           class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 group-like disabled:opacity-60 disabled:cursor-not-allowed"
           :class="{ 'bg-red-50 dark:bg-red-900/20': post.isLiked }"
-          :aria-label="post.isLiked ? 'Unlike post' : 'Like post'"
+          :aria-label="post.isLiked ? t('post.actions.unlikeAria') : t('post.actions.likeAria')"
         >
           <div class="relative">
             <svg 
@@ -231,7 +231,7 @@
           @click="toggleComments"
           class="flex items-center space-x-2 sm:space-x-3 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group-comment"
           :class="{ 'bg-blue-50 dark:bg-blue-900/20': showComments }"
-          :aria-label="showComments ? 'Hide comments' : 'Show comments'"
+          :aria-label="showComments ? t('post.actions.hideCommentsAria') : t('post.actions.showCommentsAria')"
         >
           <svg class="w-5 h-5 sm:w-6 sm:h-6 text-gray-500 dark:text-gray-400 group-comment:hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -245,7 +245,7 @@
         @click="toggleSave"
   class="p-2 sm:p-2.5 rounded-xl hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-all duration-200 group-save"
         :class="{ 'bg-yellow-50 dark:bg-yellow-900/20': isSaved }"
-        :aria-label="isSaved ? 'Unsave post' : 'Save post'"
+  :aria-label="isSaved ? t('post.actions.unsaveAria') : t('post.actions.saveAria')"
       >
         <svg 
           :class="isSaved ? 'text-yellow-500 scale-110' : 'text-gray-500 dark:text-gray-400 group-save:hover:text-yellow-500'"
@@ -274,7 +274,7 @@
             <textarea
               ref="commentTextarea"
               v-model="newComment"
-              placeholder="Write a thoughtful comment..."
+              :placeholder="t('post.comment.placeholder')"
               :maxlength="commentMax"
               @input="autoResize"
               class="w-full resize-none bg-transparent border-0 outline-none text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 leading-relaxed scrollbar-thin"
@@ -302,7 +302,7 @@
                   <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
                   <path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/>
                 </svg>
-                <span>{{ adding ? 'Posting' : 'Post' }}</span>
+                <span>{{ adding ? t('post.comment.posting') : t('post.comment.post') }}</span>
               </button>
             </div>
           </div>
@@ -331,7 +331,7 @@
                     <span class="text-gray-400 dark:text-gray-500">•</span>
                     <span class="text-gray-500 dark:text-gray-400">{{ formatDate(comment.date || comment.created_at) }}</span>
                     <span v-if="comment._optimistic" class="animate-pulse text-[10px] px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium tracking-wide">
-                      sending...
+                      {{ t('post.comment.sending') }}
                     </span>
                   </div>
                   <p class="text-gray-700 dark:text-gray-300 text-sm leading-relaxed whitespace-pre-wrap break-words">{{ comment.content || comment.text }}</p>
@@ -360,11 +360,11 @@
       <ConfirmModal
         v-if="canDelete"
         v-model="showDeleteConfirm"
-        title="Delete this post?"
-        message="This action can't be undone. The post and all its comments will be removed."
-        hint="If this post was shared elsewhere, links will no longer work."
-        :confirmText="'Delete'"
-        :cancelText="'Cancel'"
+  :title="t('post.delete.confirmTitle')"
+  :message="t('post.delete.confirmMessage')"
+  :hint="t('post.delete.confirmHint')"
+  :confirmText="t('post.actions.deleteShort')"
+  :cancelText="t('modal.confirm.cancel')"
         :confirmIcon="'fas fa-trash-alt'"
         tone="danger"
         :loading="deleting"

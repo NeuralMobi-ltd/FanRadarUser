@@ -158,53 +158,6 @@
             ></textarea>
           </div>
 
-          <!-- Password Section -->
-          <div class="border-t border-gray-200 dark:border-gray-600 pt-5 sm:pt-6">
-            <h3 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">{{ $t('account.edit.changePassword') }}</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('auth.resetPassword.passwordLabel') }}</label>
-                <div class="relative">
-                  <input 
-                    v-model="profileForm.password"
-                    :type="showPassword ? 'text' : 'password'" 
-                    autocomplete="new-password"
-                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :placeholder="$t('auth.resetPassword.passwordPlaceholder')"
-                  />
-                  <button 
-                    type="button"
-                    @click="showPassword = !showPassword"
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg" :title="showPassword ? $t('auth.resetPassword.hidePassword') : $t('auth.resetPassword.showPassword')"></i>
-                  </button>
-                </div>
-                <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ $t('account.edit.leaveBlankPassword') }}</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{{ $t('auth.resetPassword.confirmPasswordLabel') }}</label>
-                <div class="relative">
-                  <input 
-                    v-model="profileForm.confirmPassword"
-                    :type="showConfirmPassword ? 'text' : 'password'" 
-                    autocomplete="new-password"
-                    class="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    :placeholder="$t('auth.resetPassword.confirmPasswordPlaceholder')"
-                  />
-                  <button 
-                    type="button"
-                    @click="showConfirmPassword = !showConfirmPassword"
-                    class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                  >
-                    <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg" :title="showConfirmPassword ? $t('auth.resetPassword.hidePassword') : $t('auth.resetPassword.showPassword')"></i>
-                  </button>
-                </div>
-                <p v-if="passwordError" class="text-xs text-red-500 mt-1">{{ passwordError }}</p>
-              </div>
-            </div>
-          </div>
-
           <!-- Action buttons: horizontal with space-between on mobile, right-aligned on larger screens -->
           <div class="flex flex-row w-full justify-between sm:justify-end gap-2 sm:space-x-4">
             <button 

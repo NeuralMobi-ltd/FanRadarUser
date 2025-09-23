@@ -287,7 +287,6 @@
           </div>
           
           <div class="flex items-center justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-4">
-            <span>{{ member.posts_count || member.posts || 0 }} {{ $t('common.posts') }}</span>
             <span v-if="member.joined_at || member.created_at || member.joinedDate">{{ $t('fandom.detail.joinedOn', { date: formatJoined(member.joined_at || member.created_at || member.joinedDate) }) }}</span>
           </div>
         </div>

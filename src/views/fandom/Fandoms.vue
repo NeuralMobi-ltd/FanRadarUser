@@ -1,7 +1,10 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
     <!-- Header -->
-    <header class="sticky top-0 z-10 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 backdrop-blur-sm px-4 sm:px-6 py-6">
+    <header 
+      class="sticky top-0 z-30 border-b border-gray-200 dark:border-gray-700 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md supports-[backdrop-filter]:bg-white/65 dark:supports-[backdrop-filter]:bg-gray-800/65 px-4 sm:px-6 py-6 transition-all duration-300"
+      :class="{ '!py-3 shadow-lg shadow-black/5 dark:shadow-black/40': isShrunk }"
+    >
       <div class="max-w-7xl mx-auto">
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
@@ -55,14 +58,14 @@
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
       <!-- Featured Banner -->
-  <div v-if="activeCategory === 'All'" class="mb-12">
-        <div class="relative bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-800 rounded-2xl overflow-hidden p-8 text-white">
+  <div v-if="activeCategory === 'All'" class="mb-12 mt-2 sm:mt-4">
+        <div class="relative bg-gradient-to-r from-primary-600 via-secondary-600 to-primary-800 rounded-2xl sm:rounded-3xl overflow-hidden p-6 sm:p-8 text-white ring-1 ring-white/10 dark:ring-black/20 shadow-xl">
           <div class="absolute inset-0 bg-black/20"></div>
           <div class="relative z-10">
             <div class="flex items-center justify-between">
               <div>
-    <h2 class="text-2xl font-bold mb-2">🔥 {{ $t('fandom.list.trendingTitle') }}</h2>
-    <p class="text-blue-100 mb-4">{{ $t('fandom.list.trendingSubtitle') }}</p>
+    <h2 class="text-xl sm:text-2xl font-bold mb-1 sm:mb-2 flex items-center gap-2"><span class="text-base sm:text-lg">🔥</span> {{ $t('fandom.list.trendingTitle') }}</h2>
+    <p class="text-blue-100 text-sm sm:text-base mb-3 sm:mb-4 max-w-xl">{{ $t('fandom.list.trendingSubtitle') }}</p>
               </div>
               <div class="hidden md:block">
                 <div class="w-32 h-32 bg-white/10 rounded-full flex items-center justify-center">
@@ -128,10 +131,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
 import { FandomCard } from '@/components/fandom'
-import { useFandomsStore } from '@/store/fandoms'
 import { useCategoriesStore } from '@/store/categories'
+import { useFandomsStore } from '@/store/fandoms'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 
 // Initialize stores
 const fandomsStore = useFandomsStore()
@@ -140,6 +143,13 @@ const categoriesStore = useCategoriesStore()
 const search = ref('')
 const activeCategory = ref('All')
 const loading = ref(false)
+const isShrunk = ref(false)
+
+// Scroll listener for shrinking header
+const onScroll = () => {
+  if (typeof window === 'undefined') return
+  isShrunk.value = window.scrollY > 40
+}
 
 // Get categories from store
 const categories = computed(() => categoriesStore.getCategories)
@@ -169,6 +179,14 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  if (typeof window !== 'undefined') {
+    window.addEventListener('scroll', onScroll, { passive: true })
+    onScroll()
+  }
+})
+
+onBeforeUnmount(() => {
+  if (typeof window !== 'undefined') window.removeEventListener('scroll', onScroll)
 })
 
 </script>

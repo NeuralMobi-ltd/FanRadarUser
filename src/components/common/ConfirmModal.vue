@@ -6,7 +6,7 @@
           <i :class="[icon, iconColorClass, 'text-lg']"></i>
         </div>
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">{{ title }}</h3>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white leading-snug">{{ titleComputed }}</h3>
           <p v-if="message" class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed whitespace-pre-line">{{ message }}</p>
           <slot />
         </div>
@@ -19,9 +19,9 @@
         <button @click="onConfirm" :disabled="loading" :class="['px-5 py-2.5 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition-colors', confirmBtnClass, loading ? 'opacity-70 cursor-not-allowed' : '']">
           <i v-if="loading" class="fas fa-spinner fa-spin"></i>
           <i v-else :class="confirmIcon"></i>
-          <span>{{ loading ? loadingText : confirmText }}</span>
+          <span>{{ loading ? loadingTextComputed : confirmTextComputed }}</span>
         </button>
-        <button @click="onCancel" :disabled="loading" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">{{ cancelText }}</button>
+        <button @click="onCancel" :disabled="loading" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">{{ cancelTextComputed }}</button>
       </div>
     </div>
   </div>
@@ -29,19 +29,27 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
 const props = defineProps({
   modelValue: { type: Boolean, default: false },
-  title: { type: String, default: 'Are you sure?' },
+  title: { type: String, default: '' },
   message: { type: String, default: '' },
   hint: { type: String, default: '' },
-  confirmText: { type: String, default: 'Confirm' },
-  cancelText: { type: String, default: 'Cancel' },
-  loadingText: { type: String, default: 'Working...' },
+  confirmText: { type: String, default: '' },
+  cancelText: { type: String, default: '' },
+  loadingText: { type: String, default: '' },
   loading: { type: Boolean, default: false },
   confirmIcon: { type: String, default: 'fas fa-check' },
   icon: { type: String, default: 'fas fa-question' },
   tone: { type: String, default: 'danger' } // danger | warning | info | neutral
 })
+
+// i18n computed fallbacks
+const titleComputed = computed(() => props.title || t('modal.confirm.title'))
+const confirmTextComputed = computed(() => props.confirmText || t('modal.confirm.confirm'))
+const cancelTextComputed = computed(() => props.cancelText || t('modal.confirm.cancel'))
+const loadingTextComputed = computed(() => props.loadingText || t('modal.confirm.working'))
 
 const emit = defineEmits(['update:modelValue', 'confirm', 'cancel'])
 

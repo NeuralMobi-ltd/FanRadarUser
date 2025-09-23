@@ -9,7 +9,7 @@
             <i class="fas fa-plus text-white text-lg"></i>
           </div>
           <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-            {{ mode === 'fandom-edit' ? (editPost ? 'Edit Fandom Post' : 'New Fandom Post') : (editPost ? 'Edit Post' : 'Create Post') }}
+            {{ mode === 'fandom-edit' ? (editPost ? t('post.actions.edit') : t('common.post')) : (editPost ? t('post.actions.edit') : t('common.post')) }}
           </h3>
         </div>
         <button
@@ -35,7 +35,7 @@
             <div class="flex-1 min-w-0">
               <textarea
                 v-model="postContent"
-                :placeholder="postContent ? '' : 'What\'s on your mind?'"
+                :placeholder="postContent ? '' : t('common.whatsOnYourMind')"
                 class="w-full resize-none border-none outline-none bg-gray-50 dark:bg-gray-800 rounded-2xl px-5 py-4 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 text-base font-medium min-h-[6rem] focus:bg-gray-100 dark:focus:bg-gray-700 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
                 rows="3"
                 autocomplete="off"
@@ -68,7 +68,7 @@
               @keydown.tab.prevent="addTag"
               type="text"
               class="w-full px-5 py-2.5 sm:px-6 sm:py-3 rounded-2xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm sm:text-base placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-              placeholder="Add tags (press Enter or Tab)..."
+              :placeholder="t('common.addTagsPlaceholder')"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
@@ -89,7 +89,7 @@
           <!-- Scheduling Section -->
           <div v-if="!disableSchedule && scheduleEnabled" class="pl-16">
             <div class="mt-4 space-y-2">
-              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">Schedule (optional)</label>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-gray-600 dark:text-gray-300">{{ t('commonExtra.scheduleOptional') || 'Schedule (optional)' }}</label>
               <div class="flex items-center gap-3">
                 <input type="datetime-local" v-model="scheduleAt" class="px-4 py-2.5 rounded-xl border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full" />
                 <button type="button" @click="clearSchedule" class="px-3 py-2 rounded-lg text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition" v-if="scheduleAt">Clear</button>
@@ -171,7 +171,7 @@
                 <i class="fas fa-list text-lg sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
               </button>
               <div v-if="showCategoryPicker" class="absolute left-0 bottom-full mb-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 w-64 z-50 animate-in slide-in-from-bottom-2 duration-200">
-                <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">Choose Category</div>
+                <div class="mb-3 text-sm font-semibold text-gray-700 dark:text-white">{{ t('content.category.label') || 'Category' }}</div>
                 <ul class="max-h-48 overflow-auto space-y-1">
                   <li v-for="(c, idx) in categoriesStore.getCategories" :key="idx">
                     <button @click.prevent="() => selectCategory(c.name)" class="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl text-sm transition-colors duration-200 text-gray-900 dark:text-white"
@@ -181,18 +181,18 @@
                   </li>
                 </ul>
                 <div v-if="availableSubcategories.length" class="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">Choose Subcategory <span class="text-red-500">*</span></div>
+                  <div class="mb-2 text-sm font-semibold text-gray-700 dark:text-white">{{ t('fandom.create.fields.subcategory') || 'Subcategory' }} <span class="text-red-500">*</span></div>
                   <select ref="subcategorySelectEl" v-model="selectedSubcategoryId" @change="onSubcategorySelect" class="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                     <option :value="null">— select subcategory —</option>
                     <option v-for="(s, i) in availableSubcategories" :key="i" :value="s.id">{{ s.name }}</option>
                   </select>
-                  <p v-if="needSubcategory && !selectedSubcategoryId" class="mt-2 text-xs text-red-500">Subcategory required.</p>
+                  <p v-if="needSubcategory && !selectedSubcategoryId" class="mt-2 text-xs text-red-500">{{ t('forms.subcategoryRequired') || 'Subcategory required.' }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Schedule Toggle -->
-            <button v-if="!disableSchedule" @click="toggleSchedule" :title="scheduleEnabled ? 'Disable scheduling' : 'Schedule post'" class="flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl transition-all duration-200 touch-target group"
+            <button v-if="!disableSchedule" @click="toggleSchedule" :title="scheduleEnabled ? (t('commonExtra.disableScheduling')||'Disable scheduling') : (t('commonExtra.schedulePost')||'Schedule post')" class="flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl transition-all duration-200 touch-target group"
               :class="scheduleEnabled ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700'">
               <i class="fas fa-clock text-lg sm:text-xl group-hover:scale-110 transition-transform duration-200"></i>
             </button>
@@ -205,7 +205,7 @@
             class="px-6 py-2.5 sm:px-8 sm:py-3 rounded-2xl font-bold shadow-lg transition-all duration-200 text-sm sm:text-base touch-target min-w-[7.5rem] sm:min-w-[8rem] bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white disabled:from-gray-300 disabled:to-gray-300 dark:disabled:from-gray-600 dark:disabled:to-gray-600 disabled:cursor-not-allowed flex items-center justify-center space-x-2 transform hover:scale-105 disabled:hover:scale-100"
           >
             <i v-if="loading" class="fas fa-spinner fa-spin text-lg"></i>
-            <span>{{ loading ? (editPost ? 'Updating...' : 'Posting...') : (editPost ? 'Update' : 'Post') }}</span>
+            <span>{{ loading ? (editPost ? (t('common.saving')||'Saving...') : (t('post.comment.posting')||'Posting...')) : (editPost ? (t('common.saveChanges')||'Save') : t('common.post')) }}</span>
           </button>
         </div>
       </div>
@@ -219,6 +219,7 @@ import PostsService from '@/services/postsService'
 import { useCategoriesStore } from '@/store/categories'
 import { usePostsStore } from '@/store/posts'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -244,6 +245,7 @@ const error = ref('')
 const uploadProgress = ref(0)
 const postsStore = usePostsStore()
 const categoriesStore = useCategoriesStore()
+const { t } = useI18n()
 onMounted(() => { categoriesStore.fetchCategoriesIfNeeded().catch(()=>{}) })
 
 // Media URL Normalization

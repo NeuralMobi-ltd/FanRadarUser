@@ -5,7 +5,22 @@ const messages = {
     header: {
       signIn: 'Sign In',
       signUp: 'Sign up',
-      language: 'Language'
+      language: 'Language',
+      searchPlaceholder: 'Search FanRadar',
+      profile: 'Profile',
+      logout: 'Log Out',
+      loggingOut: 'Logging out... ',
+      logoutTitle: 'Log out of FanRadar?',
+      logoutMessage: 'You can always log back in. Any unsaved changes in open forms will be lost.',
+      logoutHint: "You'll still appear in fandom member lists where applicable.",
+      create: 'Create',
+      getApp: 'Get App',
+      getAppTitle: 'Get the FanRadar app',
+      getAppSubtitle: 'Scan this QR code to download the app now',
+      getAppStoreHint: 'Or check it out in the app stores',
+      userSettings: 'User Settings',
+      english: 'English',
+      french: 'Français'
     },
     hero: {
       titleBefore: 'Where',
@@ -20,6 +35,32 @@ const messages = {
       fandoms: 'Fandoms',
       dailyPosts: 'Daily Posts',
       countries: 'Countries'
+    },
+    explore: {
+      badgeTrendingNow: 'TRENDING NOW',
+      titleBefore: "Discover What's",
+      titleHighlight: 'Buzzing',
+      titleAfter: '',
+      subtitle: 'Join millions exploring fandoms, following celebrities, shopping exclusive drops, and staying updated with the latest news.',
+      subtitleEmphasis: 'Your adventure starts with one click.',
+      hottestFandoms: 'Hottest Fandoms',
+      hottestFandomsSubtitle: 'Communities where passion meets purpose',
+      exploreAll: 'Explore All',
+      view: 'View',
+      celebrityHub: 'Celebrity Hub',
+      celebrityHubSubtitle: 'Follow your favorite stars and influencers',
+      seeAll: 'See All',
+      trendingCategories: 'Trending Categories',
+      trendingCategoriesSubtitle: 'Explore diverse communities and interests',
+      browseAll: 'Browse All',
+      breakingNews: 'Breaking News',
+      breakingNewsSubtitle: 'Stay updated with the latest happenings',
+      readMore: 'Read More',
+      read: 'Read',
+      exclusiveDrops: 'Exclusive Drops',
+      exclusiveDropsSubtitle: 'Limited edition merchandise from your favorite fandoms',
+      shopNow: 'Shop Now',
+      shop: 'Shop'
     },
     howItWorks: {
       title: 'How FanRadar Works',
@@ -37,7 +78,8 @@ const messages = {
           title: 'Engage',
           desc: 'Post, vote in polls, and share moments — all in one place.'
         }
-      }
+      },
+      stepLabel: 'Step {number}'
     },
     features: {
       titleBefore: 'Everything You Need to',
@@ -94,7 +136,8 @@ const messages = {
           product: { title: 'Product', features: 'Features', trending: 'Trending', faq: 'FAQ' },
           company: { title: 'Company', about: 'About', contact: 'Contact', careers: 'Careers' },
           social: { title: 'Social' }
-        }
+        },
+        copyright: '© {year} FanRadar. All rights reserved.'
       }
     },
     
@@ -370,6 +413,16 @@ const messages = {
       postCreated: 'Post created',
       fandomNotLoaded: 'Fandom not loaded'
     },
+    labels: {
+      members: 'members',
+      fans: 'fans',
+      fandoms: 'fandoms',
+      posts: 'posts',
+      views: 'views',
+      comments: 'comments',
+      left: 'left',
+      new: 'NEW'
+    },
     errors: {
       notFound: {
         title: 'Page not found',
@@ -482,6 +535,7 @@ const messages = {
         addNewMember: 'Add New Member',
         addMember: 'Add Member',
         member: 'Member',
+  admin: 'Admin',
         mod: 'Mod',
         saveChanges: 'Save Changes',
         saveRules: 'Save Rules',
@@ -673,12 +727,63 @@ const messages = {
         newest: 'Newest'
       }
     }
+    ,
+    post: {
+      actions: {
+        edit: 'Edit Post',
+        delete: 'Delete Post',
+        deleteShort: 'Delete',
+        likeAria: 'Like post',
+        unlikeAria: 'Unlike post',
+        showCommentsAria: 'Show comments',
+        hideCommentsAria: 'Hide comments',
+        saveAria: 'Save post',
+        unsaveAria: 'Unsave post'
+      },
+      comment: {
+        placeholder: 'Write a thoughtful comment...',
+        posting: 'Posting',
+        post: 'Post',
+        sending: 'sending...'
+      },
+      delete: {
+        confirmTitle: 'Delete this post?',
+        confirmMessage: "This action can't be undone. The post and all its comments will be removed.",
+        confirmHint: 'If this post was shared elsewhere, links will no longer work.'
+      },
+      media: {
+        goToSlideAria: 'Go to media'
+      }
+    },
+    modal: {
+      confirm: {
+        title: 'Are you sure?',
+        confirm: 'Confirm',
+        cancel: 'Cancel',
+        working: 'Working...'
+      }
+    }
   },
   fr: {
     header: {
       signIn: 'Se connecter',
       signUp: 'S’inscrire',
-      language: 'Langue'
+      language: 'Langue',
+      searchPlaceholder: 'Rechercher FanRadar',
+      profile: 'Profil',
+      logout: 'Se déconnecter',
+      loggingOut: 'Déconnexion...',
+      logoutTitle: 'Se déconnecter de FanRadar ?',
+      logoutMessage: 'Vous pourrez toujours vous reconnecter. Les modifications non enregistrées seront perdues.',
+      logoutHint: 'Vous apparaîtrez toujours dans les listes de membres des fandoms le cas échéant.',
+      create: 'Créer',
+      getApp: 'Obtenir l’app',
+      getAppTitle: "Obtenez l'application FanRadar",
+      getAppSubtitle: 'Scannez ce QR code pour télécharger l’application',
+      getAppStoreHint: 'Ou consultez-la dans les stores',
+      userSettings: 'Paramètres utilisateur',
+      english: 'Anglais',
+      french: 'Français'
     },
     hero: {
       titleBefore: 'Où',
@@ -693,6 +798,32 @@ const messages = {
       fandoms: 'Fandoms',
       dailyPosts: 'Publications quotidiennes',
       countries: 'Pays'
+    },
+    explore: {
+      badgeTrendingNow: 'EN TENDANCE',
+      titleBefore: 'Découvrez ce qui',
+      titleHighlight: 'fait le buzz',
+      titleAfter: '',
+      subtitle: 'Rejoignez des millions de personnes explorant des fandoms, suivant des célébrités, achetant des produits exclusifs et restant informées des dernières actualités.',
+      subtitleEmphasis: 'Votre aventure commence en un clic.',
+      hottestFandoms: 'Fandoms les plus chauds',
+      hottestFandomsSubtitle: 'Des communautés où la passion rencontre le sens',
+      exploreAll: 'Tout explorer',
+      view: 'Voir',
+      celebrityHub: 'Hub des célébrités',
+      celebrityHubSubtitle: 'Suivez vos stars et influenceurs préférés',
+      seeAll: 'Tout voir',
+      trendingCategories: 'Catégories tendance',
+      trendingCategoriesSubtitle: 'Explorez des communautés et intérêts variés',
+      browseAll: 'Tout parcourir',
+      breakingNews: 'Dernières nouvelles',
+      breakingNewsSubtitle: 'Restez informé des derniers événements',
+      readMore: 'En savoir plus',
+      read: 'Lire',
+      exclusiveDrops: 'Drops exclusifs',
+      exclusiveDropsSubtitle: 'Produits en édition limitée de vos fandoms favoris',
+      shopNow: 'Acheter maintenant',
+      shop: 'Acheter'
     },
     howItWorks: {
       title: 'Comment fonctionne FanRadar',
@@ -710,7 +841,8 @@ const messages = {
           title: 'Interagir',
           desc: 'Publiez, votez dans des sondages et partagez des moments — au même endroit.'
         }
-      }
+      },
+      stepLabel: 'Étape {number}'
     },
     features: {
       titleBefore: 'Tout ce dont vous avez besoin pour',
@@ -1002,6 +1134,16 @@ const messages = {
       postCreated: 'Publication créée',
       fandomNotLoaded: 'Fandom non chargé'
     },
+    labels: {
+      members: 'membres',
+      fans: 'fans',
+      fandoms: 'fandoms',
+      posts: 'publications',
+      views: 'vues',
+      comments: 'commentaires',
+      left: 'restants',
+      new: 'NOUVEAU'
+    },
     errors: {
       notFound: {
         title: 'Page introuvable',
@@ -1114,6 +1256,7 @@ const messages = {
         addNewMember: 'Ajouter un membre',
         addMember: 'Ajouter un membre',
         member: 'Membre',
+  admin: 'Admin',
         mod: 'Modérateur',
         saveChanges: 'Enregistrer',
         saveRules: 'Enregistrer les règles',
@@ -1303,6 +1446,42 @@ const messages = {
         priceHigh: 'Prix : du plus cher au moins cher',
         rating: 'Avis clients',
         newest: 'Plus récents'
+      }
+    }
+    ,
+    post: {
+      actions: {
+        edit: 'Modifier le post',
+        delete: 'Supprimer le post',
+        deleteShort: 'Supprimer',
+        likeAria: 'Aimer le post',
+        unlikeAria: 'Ne plus aimer le post',
+        showCommentsAria: 'Afficher les commentaires',
+        hideCommentsAria: 'Masquer les commentaires',
+        saveAria: 'Enregistrer le post',
+        unsaveAria: 'Retirer des enregistrés'
+      },
+      comment: {
+        placeholder: 'Écrire un commentaire réfléchi...',
+        posting: 'Publication...',
+        post: 'Publier',
+        sending: 'envoi...'
+      },
+      delete: {
+        confirmTitle: 'Supprimer ce post ?',
+        confirmMessage: 'Cette action est irréversible. Le post et tous ses commentaires seront supprimés.',
+        confirmHint: 'Si ce post a été partagé ailleurs, les liens ne fonctionneront plus.'
+      },
+      media: {
+        goToSlideAria: 'Aller au média'
+      }
+    },
+    modal: {
+      confirm: {
+        title: 'Êtes-vous sûr ?',
+        confirm: 'Confirmer',
+        cancel: 'Annuler',
+        working: 'Traitement...'
       }
     }
   }

@@ -31,7 +31,7 @@
             @keyup.enter="performSearch"
             type="text"
             class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-full bg-gray-50 dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm text-gray-900 dark:text-white"
-            placeholder="Search FanRadar"
+            :placeholder="t('header.searchPlaceholder')"
             />
           <button 
             v-if="searchQuery"
@@ -87,7 +87,7 @@
                   ]"
                 >
                   <span class="text-lg">🇺🇸</span>
-                  <span>English</span>
+                  <span>{{ t('header.english') }}</span>
                   <i v-if="locale === 'en'" class="fas fa-check ml-auto text-xs"></i>
                 </button>
                 <button
@@ -100,7 +100,7 @@
                   ]"
                 >
                   <span class="text-lg">🇫🇷</span>
-                  <span>Français</span>
+                  <span>{{ t('header.french') }}</span>
                   <i v-if="locale === 'fr'" class="fas fa-check ml-auto text-xs"></i>
                 </button>
               </div>
@@ -145,14 +145,14 @@
                   class="flex items-center px-3 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   <UserIcon class="w-4 h-4 mr-2" />
-                  Profile
+                  {{ t('header.profile') }}
                 </router-link>
                 <button
                   @click="requestLogout"
                   class="flex items-center w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                 >
                   <ArrowRightOnRectangleIcon class="w-4 h-4 mr-2" />
-                  Logout
+                  {{ t('header.logout') }}
                 </button>
               </div>
             </div>
@@ -238,7 +238,7 @@
               <svg class="h-3 sm:h-4 w-3 sm:w-4" fill="currentColor" viewBox="0 0 20 20">
                 <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
               </svg>
-              <span class="hidden sm:inline">Create</span>
+              <span class="hidden sm:inline">{{ t('header.create') }}</span>
             </button>
 
             <!-- Mobile Create Button -->
@@ -262,7 +262,7 @@
                   <circle cx="12" cy="12" r="3" stroke="currentColor" />
                   <path d="M7 7h.01M17 7h.01M7 17h.01M17 17h.01" stroke="currentColor" />
                 </svg>
-                <span>Get App</span>
+                <span>{{ t('header.getApp') }}</span>
               </button>
             </div>
 
@@ -296,7 +296,7 @@
                     class="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <UserIcon class="w-4 h-4 mr-2" />
-                    Profile
+                    {{ t('header.profile') }}
                   </router-link>
                   <router-link 
                     to="/edit-account"
@@ -304,14 +304,14 @@
                     class="flex items-center px-3 sm:px-4 py-2 text-xs sm:text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <Cog6ToothIcon class="w-4 h-4 mr-2" />
-                    User Settings
+                    {{ t('header.userSettings') }}
                   </router-link>
                   <button
                     @click="requestLogout"
                     class="flex items-center w-full text-left px-3 sm:px-4 py-2 text-xs sm:text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                   >
                     <ArrowRightOnRectangleIcon class="w-4 h-4 mr-2" />
-                    Log Out
+                    {{ t('header.logout') }}
                   </button>
                 </div>
               </div>
@@ -322,13 +322,13 @@
               to="/login"
               class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium text-blue-500 hover:text-blue-600 rounded-xl border border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200"
             >
-              Log In
+              {{ t('auth.signIn.title') }}
             </router-link>
             <router-link
               to="/register"
               class="px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium bg-blue-500 hover:bg-blue-600 text-white rounded-xl transition-all duration-200"
             >
-              Sign Up
+              {{ t('auth.signUp.title') }}
             </router-link>
           </template>
         </div>
@@ -355,7 +355,7 @@
             @keyup.enter="performSearch"
             @keydown.esc.prevent="closeMobileSearch"
             class="w-full pl-10 pr-10 py-2.5 rounded-xl bg-gray-100/70 dark:bg-gray-800/70 border border-gray-300/70 dark:border-gray-700 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 shadow-inner"
-            :placeholder="mobileSearchPlaceholder"
+            :placeholder="t('header.searchPlaceholder')"
           />
           <button
             v-if="searchQuery"
@@ -384,10 +384,8 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
-      <h3 class="text-lg sm:text-xl font-bold mb-2 text-center text-gray-900 dark:text-white">Get the FanRadar app</h3>
-      <p class="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm">
-        Scan this QR code to download the app now
-      </p>
+  <h3 class="text-lg sm:text-xl font-bold mb-2 text-center text-gray-900 dark:text-white">{{ t('header.getAppTitle') }}</h3>
+      <p class="text-center text-gray-600 dark:text-gray-300 mb-4 text-sm">{{ t('header.getAppSubtitle') }}</p>
       <div class="flex justify-center mb-4">
         <img
           src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://fanradar.app"
@@ -395,7 +393,7 @@
           class="rounded-lg border w-32 h-32 sm:w-40 sm:h-40"
         />
       </div>
-      <p class="text-center text-gray-500 dark:text-gray-400 mb-3 text-xs">Or check it out in the app stores</p>
+  <p class="text-center text-gray-500 dark:text-gray-400 mb-3 text-xs">{{ t('header.getAppStoreHint') }}</p>
       <div class="flex justify-center gap-2">
         <a href="https://play.google.com/store" target="_blank">
           <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" class="h-8 sm:h-10"/>
@@ -424,23 +422,21 @@
           <i class="fas fa-sign-out-alt text-lg"></i>
         </div>
         <div class="flex-1">
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Log out of FanRadar?</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
-            You can always log back in. Any unsaved changes in open forms will be lost.
-          </p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ t('header.logoutTitle') }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">{{ t('header.logoutMessage') }}</p>
         </div>
       </div>
       <div class="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-400 mb-5 flex gap-2 items-start">
         <i class="fas fa-info-circle mt-0.5"></i>
-        <span>You'll still appear in fandom member lists where applicable.</span>
+  <span>{{ t('header.logoutHint') }}</span>
       </div>
       <div class="flex flex-col sm:flex-row-reverse gap-3">
         <button @click="confirmLogout" :disabled="loggingOut" class="px-5 py-2.5 rounded-lg font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm">
           <i v-if="!loggingOut" class="fas fa-door-open"></i>
           <i v-else class="fas fa-spinner fa-spin"></i>
-          <span>{{ loggingOut ? 'Logging out...' : 'Log Out' }}</span>
+          <span>{{ loggingOut ? t('header.loggingOut') : t('header.logout') }}</span>
         </button>
-        <button @click="cancelLogout" :disabled="loggingOut" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">Cancel</button>
+  <button @click="cancelLogout" :disabled="loggingOut" class="px-5 py-2.5 rounded-lg font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 text-sm">{{ t('modal.confirm.cancel') }}</button>
       </div>
     </div>
   </div>
@@ -457,19 +453,19 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import {
-  ArrowRightOnRectangleIcon,
-  ChevronDownIcon,
-  Cog6ToothIcon,
-  MagnifyingGlassIcon,
-  MoonIcon,
-  SunIcon,
-  UserIcon
+    ArrowRightOnRectangleIcon,
+    ChevronDownIcon,
+    Cog6ToothIcon,
+    MagnifyingGlassIcon,
+    MoonIcon,
+    SunIcon,
+    UserIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const themeStore = useThemeStore()
-const { locale: i18nLocale } = useI18n()
+const { t, locale: i18nLocale } = useI18n()
 
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const userName = computed(() => authStore.userName)
@@ -536,9 +532,8 @@ function handleSearchFromModal(term) {
   performSearch()
 }
 
-const mobileSearchPlaceholder = computed(() => {
-  return 'Search FanRadar'
-})
+// (Optional) If needed elsewhere, compute placeholder via i18n.
+// const mobileSearchPlaceholder = computed(() => t('header.searchPlaceholder'))
 
 // Logout flow with custom confirmation modal
 const showLogoutConfirm = ref(false)

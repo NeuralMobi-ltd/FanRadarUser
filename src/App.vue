@@ -101,7 +101,7 @@ const isAuthPage = computed(() =>
   ['/login', '/signup', '/choose-categories', '/'].includes(route.path)
 )
 
-// Home or Explore routes
+// Home or Explore routes 
 const isHomeOrExplore = computed(() => {
   const p = route.path
   return p === '/' || p === '/home' || p.startsWith('/explore')
@@ -110,7 +110,7 @@ const isHomeOrExplore = computed(() => {
 // Honor route meta to show/hide MobileBottomNav
 const showBottomNav = computed(() => {
   const allow = route.meta?.showBottomNav !== false
-  const notAuthPage = !['/login', '/signup', '/choose-categories'].includes(route.path)
+  const notAuthPage = !['/login', '/signup', '/choose-categories', '/:pathMatch(.*)*'].includes(route.path)
   const notLanding = route.path !== '/'
   return isAuthenticated.value && allow && notAuthPage && notLanding
 })
