@@ -65,16 +65,16 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/store/auth'
-import { useThemeStore } from '@/store/index'
 import Header from '@/components/layout/Header.vue'
+import MobileBottomNav from '@/components/layout/MobileBottomNav.vue'
+import SearchPageSidebar from '@/components/layout/SearchPageSidebar.vue'
 import Sidebar from '@/components/layout/Sidebar/Sidebar.vue'
 import StoreHeader from '@/components/store/StoreHeader.vue'
 import StoreSidebar from '@/components/store/StoreSidebar.vue'
-import SearchPageSidebar from '@/components/layout/SearchPageSidebar.vue'
-import MobileBottomNav from '@/components/layout/MobileBottomNav.vue'
+import { useAuthStore } from '@/store/auth'
+import { useThemeStore } from '@/store/index'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -107,12 +107,42 @@ const isHomeOrExplore = computed(() => {
   return p === '/' || p === '/home' || p.startsWith('/explore')
 })
 
+// When opening from deep links/webviews, allow hiding bottom nav via URL flag
+// Works for both proper query (?mobile=true) and cases where it appears inside another param value
+const hideBottomNavFlag = computed(() => {
+  // Vue Router parsed param
+  if (route.query?.mobile === 'true' || route.query?.mobile === true) return true
+
+  // Check token param for embedded or encoded mobile flag
+  try {
+    const tokenParam = Array.isArray(route.query?.token) ? route.query.token[0] : route.query?.token
+    const lowerToken = typeof tokenParam === 'string' ? tokenParam.toLowerCase() : ''
+    let decodedToken = lowerToken
+    try { decodedToken = typeof tokenParam === 'string' ? decodeURIComponent(tokenParam).toLowerCase() : '' } catch { /* noop */ }
+
+    if (
+      (lowerToken && (lowerToken.includes('mobile=true') || lowerToken.includes('%3fmobile%3dtrue') || lowerToken.includes('mobile%3dtrue')))
+      || (decodedToken && decodedToken.includes('mobile=true'))
+    ) {
+      return true
+    }
+  } catch { /* noop */ }
+
+  // Fallback: raw search/href string check (handles malformed/query-inside-token cases)
+  try {
+    const href = typeof window !== 'undefined' ? window.location.href.toLowerCase() : ''
+    return href.includes('mobile=true') || href.includes('%3fmobile%3dtrue')
+  } catch {
+    return false
+  }
+})
+
 // Honor route meta to show/hide MobileBottomNav
 const showBottomNav = computed(() => {
   const allow = route.meta?.showBottomNav !== false
   const notAuthPage = !['/login', '/signup', '/choose-categories', '/:pathMatch(.*)*'].includes(route.path)
   const notLanding = route.path !== '/'
-  return isAuthenticated.value && allow && notAuthPage && notLanding
+  return isAuthenticated.value && allow && notAuthPage && notLanding && !hideBottomNavFlag.value
 })
 </script>
 

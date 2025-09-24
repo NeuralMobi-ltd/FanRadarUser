@@ -219,12 +219,37 @@ router.beforeEach(async (to, from, next) => {
   if (to.query && to.query.token) {
     // Support possible duplicated token param arrays (e.g., ?token=a&token=b)
     const rawToken = Array.isArray(to.query.token) ? to.query.token[0] : to.query.token
-    if (rawToken) {
+    // Sanitize token in case extra flags got appended (e.g., `?mobile=true` or encoded forms)
+    let sanitizedToken = typeof rawToken === 'string' ? rawToken : ''
+    if (sanitizedToken) {
+      // Try to decode once for easier inspection, but keep original for slicing
+      let decoded = sanitizedToken
+      try { decoded = decodeURIComponent(sanitizedToken) } catch { /* noop */ }
+      // Remove any trailing query/hash markers inside token
+      const markers = ['?', '%3F', '%3f', '#']
+      for (const m of markers) {
+        const idx = sanitizedToken.indexOf(m)
+        if (idx !== -1) { sanitizedToken = sanitizedToken.slice(0, idx) }
+      }
+      // If decoding revealed a '?', prefer cut at that position as well
+      const dIdx = decoded.indexOf('?')
+      if (dIdx !== -1) {
+        // best-effort: cut original at first encoded '%3F' if present, else fallback to current sanitizedToken
+        const encIdx = Math.min(
+          ...[sanitizedToken.indexOf('%3F'), sanitizedToken.indexOf('%3f')].filter(i => i !== -1)
+        )
+        if (Number.isFinite(encIdx)) {
+          sanitizedToken = sanitizedToken.slice(0, encIdx)
+        }
+      }
+      sanitizedToken = sanitizedToken.trim()
+    }
+    if (sanitizedToken) {
       // Only set if different or not present to avoid unnecessary profile fetches
-      const tokenChanged = !authStore.hasToken || authStore.token !== rawToken
+      const tokenChanged = !authStore.hasToken || authStore.token !== sanitizedToken
       if (tokenChanged) {
         try {
-          authStore.setToken(rawToken)
+          authStore.setToken(sanitizedToken)
           // Fetch profile immediately so subsequent guard pass sees authenticated state
           await authStore.fetchProfile()
         } catch (e) {
@@ -233,11 +258,40 @@ router.beforeEach(async (to, from, next) => {
         }
       }
     }
+    // Preserve `mobile=true` if it appears anywhere in the incoming URL (including inside token)
+    let hasMobileFlag = false
+    try {
+      const tokenStr = typeof rawToken === 'string' ? rawToken : ''
+      const tokenLower = tokenStr.toLowerCase()
+      let tokenDecoded = tokenLower
+      try { tokenDecoded = decodeURIComponent(tokenStr).toLowerCase() } catch { /* noop */ }
+
+      if (
+        tokenLower.includes('mobile=true') || tokenLower.includes('%3fmobile%3dtrue') || tokenLower.includes('mobile%3dtrue') ||
+        tokenDecoded.includes('mobile=true')
+      ) {
+        hasMobileFlag = true
+      }
+
+      // Fallback: also scan the raw location in case the flag is present outside token or encoded
+      if (!hasMobileFlag && typeof window !== 'undefined') {
+        const href = window.location.href.toLowerCase()
+        if (href.includes('mobile=true') || href.includes('%3fmobile%3dtrue')) {
+          hasMobileFlag = true
+        }
+      }
+    } catch { /* noop */ }
+
     // Remove token from URL to avoid leaking it (idempotent: only triggers once)
     const { token, ...rest } = to.query
+    const nextQuery = { ...rest }
+    if (hasMobileFlag && nextQuery.mobile !== 'true') {
+      nextQuery.mobile = 'true'
+    }
+
     return next({
       path: to.path,
-      query: rest,
+      query: nextQuery,
       hash: to.hash,
       replace: true
     })
@@ -269,6 +323,14 @@ router.beforeEach(async (to, from, next) => {
       return next()
     }
     if (!authStore.isAuthenticated) {
+      // If deep link indicates mobile webview mode, allow route to proceed once to render shell
+      try {
+        const href = typeof window !== 'undefined' ? window.location.href.toLowerCase() : ''
+        const mobileFlag = href.includes('mobile=true') || href.includes('%3fmobile%3dtrue') || to.query?.mobile === 'true'
+        if (mobileFlag && to.path.startsWith('/mart')) {
+          return next()
+        }
+      } catch { /* noop */ }
       return next('/login')
     }
   }
