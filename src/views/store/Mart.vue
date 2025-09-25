@@ -580,6 +580,7 @@ import { useStoreSidebarStore } from '@/store/storeSidebar'
 import notify from '@/utils/notify'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { resolveStorageUrl } from '@/utils/media'
 // No category/subcategory prefetching here to avoid extra network calls
 
 // Initialize stores
@@ -706,6 +707,11 @@ onMounted(async () => {
   try {
     loading.value = true
     await productsStore.loadProducts({ page: 1, limit: 48 })
+    // Defensive normalization in case any product.image came as relative
+    productsStore.products = productsStore.products.map(p => ({
+      ...p,
+      image: p.image ? resolveStorageUrl(p.image) : p.image
+    }))
   } finally {
     loading.value = false
   }

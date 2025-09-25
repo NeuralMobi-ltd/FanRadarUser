@@ -404,7 +404,7 @@ async function submit() {
   const payload = {
     title: derivedTitle,
     description: postContent.value,
-    content_status: 'draft',
+    content_status: (props.editPost && (props.editPost.id || props.editPost.originalId)) ? 'published' : 'draft',
     tags: tags.value || []
   }
 

@@ -548,34 +548,41 @@ const fetchUserProfile = async () => {
     ))
 
     // Fetch self profile
-  if (isSelf) {
+    if (isSelf) {
       try {
         const resp = await AuthService.getProfile()
         const u = resp?.user || resp?.data || resp
         if (u) {
-          const resolveImage = (p) => {
-            if (!p) return p
-            if (/^https?:\/\//i.test(p)) return p
-            let rawBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
-            const assetBase = /\/api$/i.test(rawBase) ? rawBase.replace(/\/api$/i, '') : rawBase
-            const cleaned = String(p).replace(/^\/+/, '')
-            return assetBase ? `${assetBase}/${cleaned}` : cleaned
+          const baseOrigin = (API_CONFIG && API_CONFIG.baseURL)
+            ? API_CONFIG.baseURL.replace(/\/api\/?$/i, '').replace(/\/$/, '')
+            : ''
+          const assetUrl = (p) => {
+            if (!p) return ''
+            if (/^https?:\/\//i.test(p)) {
+              return p.replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
+            }
+            let cleaned = String(p).replace(/^\/+/, '')
+            if (/^storage\//i.test(cleaned)) return baseOrigin + '/' + cleaned
+            return baseOrigin + '/storage/' + cleaned
           }
           userProfile.value = {
             id: u.id,
-            name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.username || u.email?.split('@')[0],
-            username: u.username || (u.email ? u.email.split('@')[0] : undefined),
-            email: u.email,
-            avatar: resolveImage(u.profile_image || u.avatar) || '',
-            coverPhoto: resolveImage(u.background_image || u.coverPhoto || ''),
-            followers: u.followers_count || u.stats?.followers || 0,
-            following: u.following_count || u.stats?.following || 0,
-            posts: u.posts_count || u.stats?.posts || 0,
+            name: `${u.first_name || ''} ${u.last_name || ''}`.trim() || u.name || u.userName || u.username || (u.userEmail ? u.userEmail.split('@')[0] : ''),
+            username: u.userName || u.username || (u.userEmail ? u.userEmail.split('@')[0] : ''),
+            email: u.userEmail || u.email || '',
+            avatar: assetUrl(u.avatar || u.profile_image || ''),
+            coverPhoto: assetUrl(u.coverPhoto || u.background_image || ''),
+            followers: (u.stats && u.stats.followers) || u.followers_count || 0,
+            following: (u.stats && u.stats.following) || u.following_count || 0,
+            posts: (u.stats && u.stats.posts) || u.posts_count || (Array.isArray(u.posts) ? u.posts.length : 0),
             role: u.role || 'user',
-            date_naissance: u.date_naissance || null,
+            date_naissance: u.date_naissance || u.birthDate || null,
             gender: u.gender || null,
-            preferred_categories: u.preferred_categories || [],
+            preferred_categories: u.preferred_categories || u.categories || [],
             bio: u.bio || u.description || ''
+          }
+          if (Array.isArray(u.posts) && u.posts.length) {
+            userPosts.value = u.posts.map((p, idx) => normalizePost(p, idx))
           }
           isFollowing.value = false // can't follow self
         }
@@ -782,8 +789,28 @@ const normalizeUserItem = (item) => {
   const rawAvatar = item.profile_image || item.avatar || item.profileImage || ''
   let avatarUrl = rawAvatar
   if (rawAvatar && !/^https?:\/\//i.test(rawAvatar)) {
-    const base = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
-    avatarUrl = base ? `${base}/${String(rawAvatar).replace(/^\/+/, '')}` : rawAvatar
+    // Build origin WITHOUT trailing /api so storage paths become https://api.fanradars.com/storage/...
+    const origin = (API_CONFIG && API_CONFIG.baseURL)
+      ? API_CONFIG.baseURL.replace(/\/api\/?$/i, '').replace(/\/$/, '')
+      : ''
+    let cleaned = String(rawAvatar).trim()
+    // Remove any leading slashes
+    cleaned = cleaned.replace(/^\/+/, '')
+    // If path already starts with storage/, just prepend origin
+    if (/^storage\//i.test(cleaned)) {
+      avatarUrl = origin + '/' + cleaned
+    } else if (/^api\/storage\//i.test(cleaned)) {
+      // Rare case: path contains api/storage
+      avatarUrl = origin + '/' + cleaned.replace(/^api\//i, '')
+    } else if (/^\/storage\//i.test(rawAvatar)) {
+      avatarUrl = origin + rawAvatar.replace(/\/api\/storage\//i, '/storage/')
+    } else if (/^profile_images\//i.test(cleaned) || /^avatars?\//i.test(cleaned)) {
+      // Generic bucket-style relative folders
+      avatarUrl = origin + '/storage/' + cleaned
+    } else {
+      // Fallback: assume it's already a usable relative to /storage
+      avatarUrl = origin + '/storage/' + cleaned
+    }
   }
 
   const name = (item.first_name || item.firstName || '') || item.name || ''
@@ -805,38 +832,22 @@ const normalizeUserItem = (item) => {
 
 // Helper to resolve any media/asset path to absolute URL
 const apiBase = (API_CONFIG && API_CONFIG.baseURL) ? API_CONFIG.baseURL.replace(/\/$/, '') : ''
+// Use origin without trailing /api for public asset URLs
+// (Do not change existing endpoint usage; this is only for media path building below.)
+const apiBaseOrigin = apiBase.replace(/\/api\/?$/i, '')
 const resolveMediaUrl = (p) => {
   if (!p) return p
-  // If absolute URL
   if (/^https?:\/\//i.test(p)) {
-    // If it points to our API base but uses /posts/... (no storage), rewrite to /storage/posts/...
-    if (apiBase) {
-      try {
-        const u = new URL(p)
-        const baseUrl = new URL(apiBase)
-        if (u.host === baseUrl.host) {
-          const path = u.pathname.replace(/^\/+/, '')
-          if (/^posts\/(images|videos)\//i.test(path)) {
-            return `${apiBase}/storage/${path}`
-          }
-        }
-      } catch (e) {
-        // ignore URL parsing errors and fall back to returning p
-      }
-    }
-    return p
+    return p.replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
   }
-
-  const cleaned = String(p).replace(/^\/+/, '') // remove leading slashes
-
-  // Some backend responses give post media paths as "posts/images/..." or "posts/videos/..." (missing 'storage/')
-  // Convert those to the public storage path: /storage/posts/images/... or /storage/posts/videos/...
+  const cleaned = String(p).replace(/^\/+/, '')
   if (/^posts\/(images|videos)\//i.test(cleaned)) {
-    return apiBase ? `${apiBase}/storage/${cleaned}` : `storage/${cleaned}`
+    return apiBaseOrigin ? `${apiBaseOrigin}/storage/${cleaned}` : `storage/${cleaned}`
   }
-
-  // If already under storage/, or any other relative path, prefix base normally
-  return apiBase ? `${apiBase}/${cleaned}` : cleaned
+  if (/^storage\//i.test(cleaned)) {
+    return apiBaseOrigin ? `${apiBaseOrigin}/${cleaned}` : cleaned
+  }
+  return apiBaseOrigin ? `${apiBaseOrigin}/storage/${cleaned}` : cleaned
 }
 
 // Normalize post data returned by API to what <Post /> expects

@@ -36,21 +36,6 @@
 
         <!-- Categories Filter -->
         <div class="overflow-x-auto">
-          <div class="flex space-x-3 pb-2">
-            <button 
-              v-for="category in categories"
-              :key="category.name"
-              @click="activeCategory = category.name"
-              class="px-4 py-2.5 rounded-full whitespace-nowrap transition-all duration-200 font-medium flex items-center gap-2 min-w-fit"
-              :class="{
-                [category.color + ' text-white shadow-lg']: activeCategory === category.name,
-                'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-600': activeCategory !== category.name
-              }"
-            >
-              <i :class="category.icon" class="text-sm"></i>
-              <span>{{ category.name }}</span>
-            </button>
-          </div>
         </div>
       </div>
     </header>

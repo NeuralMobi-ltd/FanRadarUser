@@ -240,6 +240,7 @@ import { useProductsStore } from '@/store/products'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
+import { resolveStorageUrl } from '@/utils/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -366,7 +367,10 @@ const fetchProducts = async () => {
   isLoading.value = true
   try {
     const { products: items, pagination } = await ProductsService.search({ q: searchQuery.value, page: currentPage.value, per_page: itemsPerPage.value })
-    products.value = items
+    products.value = (items || []).map(p => ({
+      ...p,
+      image: p.image ? resolveStorageUrl(p.image) : p.image
+    }))
     // Map server pagination to UI
     serverTotal.value = pagination.total || 0
     serverTotalPages.value = pagination.last_page || 1

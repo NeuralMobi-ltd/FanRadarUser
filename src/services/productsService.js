@@ -1,4 +1,5 @@
 import API_CONFIG from '@/config/api'
+import { resolveStorageUrl } from '@/utils/media'
 import http from '@/services/http'
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
@@ -15,12 +16,25 @@ const normalizeProduct = (p) => {
 	if (!p) return null
 	// Backend fields: product_name, price as string, ratings_average/count, subcategory_id, etc.
 	const priceNum = typeof p.price === 'string' ? parseFloat(p.price) : (p.price || 0)
-	const image = p.image 
+	let image = p.image 
 		|| p.images?.[0] 
 		|| p.media?.[0] 
 		|| pickFirstMediaUrl(p.media) 
-		|| pickFirstMediaUrl(p.medias) 
-		|| 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+		|| pickFirstMediaUrl(p.medias)
+
+	// Some APIs return media as { file_path: 'products/images/xyz.png' }
+	if (!image && Array.isArray(p.medias) && p.medias[0]?.file_path) {
+		image = p.medias[0].file_path
+	}
+
+	// Normalize storage URLs
+	if (image) {
+		image = resolveStorageUrl(image)
+	}
+
+	if (!image) {
+		image = 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+	}
 	
 	return {
 		id: p.id,
@@ -49,7 +63,12 @@ const normalizeDragProduct = (p) => {
 	const priceNum = typeof p.price === 'string' ? parseFloat(p.price) : (p.price || 0)
 	const originalPriceNum = typeof p.original_price === 'string' ? parseFloat(p.original_price) : (p.original_price || priceNum)
 	const discountPercent = originalPriceNum > priceNum ? Math.round(((originalPriceNum - priceNum) / originalPriceNum) * 100) : 0
-	const image = p.image || p.images?.[0] || pickFirstMediaUrl(p.medias) || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+	let image = p.image || p.images?.[0] || pickFirstMediaUrl(p.medias)
+	if (!image && Array.isArray(p.medias) && p.medias[0]?.file_path) {
+		image = p.medias[0].file_path
+	}
+	if (image) image = resolveStorageUrl(image)
+	if (!image) image = 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
 	
 	// Enhanced status handling
 	const isActive = p.status === 'active'

@@ -79,9 +79,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import OrdersService from '@/services/ordersService'
+import ProductsService from '@/services/productsService'
+import { resolveStorageUrl } from '@/utils/media'
+import { computed, onMounted, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const orderId = computed(() => route.params.id)
@@ -94,13 +96,15 @@ const toNum = (v) => {
 }
 
 const normalizeOrder = (o) => {
-  const items = Array.isArray(o.products) ? o.products.map(p => ({
-    id: p.id,
-    name: p.product_name || p.name || `Product #${p.id}`,
-    price: toNum(p.price),
-    quantity: p.pivot?.quantity || 1,
-  image: p.image || p.images?.[0] || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
-  })) : []
+  const items = Array.isArray(o.items) && o.items.length > 0
+    ? o.items
+    : (Array.isArray(o.products) ? o.products.map(p => ({
+        id: p.id,
+        name: p.product_name || p.name || `Product #${p.id}`,
+        price: toNum(p.price),
+        quantity: p.pivot?.quantity || 1,
+        image: resolveStorageUrl(p.image || p.images?.[0] || p.medias?.[0]?.file_path || '') || 'https://static.vecteezy.com/system/resources/thumbnails/004/141/669/small_2x/no-photo-or-blank-image-icon-loading-images-or-missing-image-mark-image-not-available-or-image-coming-soon-sign-simple-nature-silhouette-in-frame-isolated-illustration-vector.jpg'
+      })) : [])
   return {
     id: o.id,
     date: new Date(o.order_date || o.created_at || Date.now()),
@@ -111,11 +115,37 @@ const normalizeOrder = (o) => {
   }
 }
 
+const enrichItems = async (ord) => {
+  if (!Array.isArray(ord.products) || ord.products.length === 0) return ord
+  const items = await Promise.all(ord.products.map(async (p) => {
+    try {
+      const { product } = await ProductsService.detail(p.id)
+      return {
+        id: product.id,
+        name: product.name || p.product_name || `Product #${p.id}`,
+        price: Number(product.price ?? p.price ?? 0),
+        quantity: p.pivot?.quantity || 1,
+        image: product.image || resolveStorageUrl(p.image || p.images?.[0] || p.medias?.[0]?.file_path || '')
+      }
+    } catch {
+      return {
+        id: p.id,
+        name: p.product_name || p.name || `Product #${p.id}`,
+        price: Number(typeof p.price === 'string' ? parseFloat(p.price) : (p.price || 0)),
+        quantity: p.pivot?.quantity || 1,
+        image: resolveStorageUrl(p.image || p.images?.[0] || p.medias?.[0]?.file_path || '')
+      }
+    }
+  }))
+  return { ...ord, items }
+}
+
 const loadOrder = async () => {
   try {
     const res = await OrdersService.getById(orderId.value)
     const raw = res?.order || res
-    order.value = normalizeOrder(raw)
+    const enriched = await enrichItems(raw)
+    order.value = normalizeOrder(enriched)
   } catch (e) {
     order.value = null
   }

@@ -86,6 +86,7 @@ import FavoritesService from '@/services/favoritesService'
 import ProductsService from '@/services/productsService'
 import { useCartStore } from '@/store/cart'
 import { useProductsStore } from '@/store/products'
+import { resolveStorageUrl } from '@/utils/media'
 import notify from '@/utils/notify'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -115,7 +116,31 @@ const loadFavorites = async () => {
   loading.value = true
   try {
     const { products, pagination: pag } = await ProductsService.myFavoriteProducts({ page: page.value, limit })
-    favorites.value = products || []
+    const basics = products || []
+    const ids = basics.map(p => p.id).filter(Boolean)
+    // Fetch full product details for each favorite to get image and full info
+    const detailed = await Promise.all(ids.map(async (id) => {
+      try {
+        const { product } = await ProductsService.detail(id)
+        return product
+      } catch {
+        // Fallback to basic entry if detail fails
+        const fallback = basics.find(b => b.id === id) || null
+        if (!fallback) return null
+        return {
+          id: fallback.id,
+          name: fallback.name || `Product #${fallback.id}`,
+          description: fallback.description || '',
+          price: typeof fallback.price === 'string' ? parseFloat(fallback.price) : (fallback.price || 0),
+          category: fallback.category || '',
+          subcategoryName: fallback.subcategory?.name || null,
+          image: fallback.image ? resolveStorageUrl(fallback.image) : '',
+          rating: fallback.rating_average || 0,
+          reviews: fallback.rating_count || 0,
+        }
+      }
+    }))
+    favorites.value = detailed.filter(Boolean)
     pagination.value = {
       current_page: pag?.page || 1,
       total_pages: pag?.total_pages || pag?.total || 1,

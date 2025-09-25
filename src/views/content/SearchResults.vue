@@ -71,7 +71,7 @@
           </h2>
           <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
             <div
-              v-for="person in userResults"
+              v-for="person in normalizedUsers"
               :key="person.id"
               class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
             >
@@ -158,7 +158,7 @@
         <div v-if="usersLoading" class="text-sm text-gray-500">Loading users...</div>
         <div class="grid sm:grid-cols-2 gap-3 md:gap-4">
           <div
-            v-for="person in userResults"
+            v-for="person in normalizedUsers"
             :key="person.id"
             class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:shadow-lg transition-shadow"
           >
@@ -297,6 +297,33 @@ const hasMoreNews = computed(() => searchStore.hasMoreNews)
 
 const aggregateCount = computed(() => userResults.value.length + postResults.value.length + fandomResults.value.length + newsResults.value.length)
 const isAnyLoading = computed(() => usersLoading.value || postsLoading.value || fandomsLoading.value || newsLoading.value)
+
+// Build base origin without trailing /api for asset normalization
+let _baseOrigin = (import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || '').trim()
+if (_baseOrigin.endsWith('/')) _baseOrigin = _baseOrigin.slice(0, -1)
+_baseOrigin = _baseOrigin.replace(/\/api$/i, '')
+
+function normalizeProfileImage(path) {
+  if (!path) return ''
+  if (/^(https?:|data:|blob:)/i.test(path)) {
+    // Strip duplicate /api before /storage if present
+    return path.replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
+  }
+  let cleaned = String(path).trim()
+  cleaned = cleaned.replace(/^\/+/, '')
+  if (/^api\/storage\//i.test(cleaned)) cleaned = cleaned.replace(/^api\//i, '')
+  if (!/^storage\//i.test(cleaned) && !/^public\//i.test(cleaned)) {
+    // Assume it's under storage root when relative
+    cleaned = 'storage/' + cleaned
+  }
+  return _baseOrigin + '/' + cleaned
+}
+
+// Decorated users with normalized profile_image
+const normalizedUsers = computed(() => (userResults.value || []).map(u => ({
+  ...u,
+  profile_image: normalizeProfileImage(u.profile_image)
+})))
 
 // Map backend snake_case fields to camelCase ones consumed by FandomCard
 const mappedFandomResults = computed(() => {

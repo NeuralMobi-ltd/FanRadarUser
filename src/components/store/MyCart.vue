@@ -95,12 +95,16 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/store/cart'
 import OrdersService from '@/services/ordersService'
 import notify from '@/utils/notify'
+import { resolveStorageUrl } from '@/utils/media'
 
 const router = useRouter()
 const cart = useCartStore()
 const placing = ref(false)
 
-const cartItems = computed(() => cart.items)
+const cartItems = computed(() => cart.items.map(i => ({
+  ...i,
+  image: i.image ? resolveStorageUrl(i.image) : i.image
+})))
 const subtotal = computed(() => cart.totalPrice)
 const tax = computed(() => subtotal.value * 0.08)
 const total = computed(() => subtotal.value + tax.value)

@@ -53,9 +53,7 @@
           <button @click="showEditFandom = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors">
             <i class="fas fa-edit mr-1 sm:mr-2"></i>{{ $t('fandom.detail.editFandom') }}
           </button>
-          <button @click="showManageMembers = true" class="px-2 py-1.5 sm:px-3 sm:py-2 bg-green-600 text-white rounded-lg text-xs sm:text-sm font-medium hover:bg-green-700 transition-colors">
-            <i class="fas fa-users mr-1 sm:mr-2"></i>{{ $t('fandom.detail.manageMembers') }}
-          </button>
+      
         </div>
       </div>
     </div>

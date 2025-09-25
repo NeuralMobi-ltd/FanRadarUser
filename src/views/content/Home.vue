@@ -316,7 +316,7 @@
           <div class="bg-gradient-to-br from-primary-50 via-secondary-50 to-primary-100 dark:from-dark-800 dark:via-dark-800 dark:to-dark-900 rounded-xl lg:rounded-2xl p-4 lg:p-5 shadow-lg border border-gray-200 dark:border-gray-700">
             <h3 class="text-base lg:text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ $t('common.trendingFandoms') }}</h3>
             <ul class="space-y-4">
-              <li v-for="community in trendingCommunities" :key="community.id" class="flex items-center justify-between">
+              <li v-for="community in normalizedTrendingCommunities" :key="community.id" class="flex items-center justify-between">
                 <div 
                   class="flex items-center gap-3 cursor-pointer flex-1 hover:bg-white/60 dark:hover:bg-gray-800/60 rounded-lg p-2 -m-2 transition-colors"
                   @click="goToFandom(community)"
@@ -333,17 +333,6 @@
                     <p class="text-xs text-gray-600 dark:text-gray-400">{{ community.members }} {{ $t('common.members') }}</p>
                   </div>
                 </div>
-                <button 
-                  @click.stop="toggleJoin(community)"
-                  :disabled="!!joining[community.id]"
-                  class="px-3 py-1.5 text-xs font-semibold rounded-full shadow transition-colors"
-                  :class="community.joined 
-                    ? 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600' 
-                    : 'bg-blue-600 hover:bg-blue-700 text-white'"
-                >
-                  <i v-if="joining[community.id]" class="fas fa-spinner fa-spin mr-1"></i>
-                  <span>{{ community.joined ? $t('common.leaveFandom') : $t('common.join') }}</span>
-                </button>
               </li>
             </ul>
           </div>
@@ -376,6 +365,7 @@
 import AvatarFallback from '@/components/common/AvatarFallback.vue'
 import Post from '@/components/common/Post.vue'
 import { NewsPost } from '@/components/feed'
+import API_CONFIG from '@/config/api'
 import { useAuthStore } from '@/store/auth'
 import { useCategoriesStore } from '@/store/categories'
 import { useNewsStore } from '@/store/news'
@@ -404,6 +394,31 @@ const hasMorePosts = computed(() => postsStore.hasMorePosts)
 // Sidebar data
 const trendingCommunities = computed(() => (trendsStore.trendingCommunities || []).slice(0, 6))
 const trendingHashtags = computed(() => trendsStore.trendingHashtags)
+
+// Base origin without trailing /api for storage URLs
+let _baseOrigin = (import.meta.env.VITE_API_BASE_URL || API_CONFIG.baseURL || '').trim()
+if (_baseOrigin.endsWith('/')) _baseOrigin = _baseOrigin.slice(0, -1)
+_baseOrigin = _baseOrigin.replace(/\/api$/i, '')
+
+function resolveStorageUrl(path) {
+  if (!path) return ''
+  // absolute: strip duplicate /api before /storage
+  if (/^(https?:|data:|blob:)/i.test(path)) {
+    return String(path).replace('/api/storage/', '/storage/').replace(/\/api(\/storage\/)/, '$1')
+  }
+  let cleaned = String(path).trim().replace(/^\/+/, '')
+  if (/^api\/storage\//i.test(cleaned)) cleaned = cleaned.replace(/^api\//i, '')
+  if (!/^storage\//i.test(cleaned) && !/^public\//i.test(cleaned)) cleaned = 'storage/' + cleaned
+  return _baseOrigin + '/' + cleaned
+}
+
+// Normalized list for sidebar avatars
+const normalizedTrendingCommunities = computed(() =>
+  (trendingCommunities.value || []).map(c => ({
+    ...c,
+    avatar: resolveStorageUrl(c.avatar || c.logo_image || c.cover_image)
+  }))
+)
 
 // Current user for alt text and initials (no username)
 import AuthService from '@/services/authService'

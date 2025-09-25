@@ -7,6 +7,11 @@
       </main>
     </div>
 
+    <!-- Not Found (404) - render bare without app layouts -->
+    <div v-else-if="isNotFound">
+      <router-view />
+    </div>
+
     <!-- Store Layout for mart, cart, orders -->
     <div v-else-if="isStoreRoute && isAuthenticated">
       <StoreHeader />
@@ -85,6 +90,9 @@ const themeStore = useThemeStore()
 // Check if current route is landing page
 const isLandingPage = computed(() => route.path === '/')
 
+// NotFound route by name (pattern path won't match directly on actual 404 URL)
+const isNotFound = computed(() => route.name === 'NotFound')
+
 // Check if current route is store-related
 const isStoreRoute = computed(() => 
   ['/mart', '/cart', '/orders', '/favorites'].some(path => route.path.startsWith(path))
@@ -98,7 +106,7 @@ const isSearchRoute = computed(() => route.path === '/search')
 
 // Hide header on login, signup, choose-categories (but not landing page)
 const isAuthPage = computed(() =>
-  ['/login', '/signup', '/choose-categories', '/'].includes(route.path)
+  ['/login', '/signup', '/choose-categories', '/'].includes(route.path) || isNotFound.value
 )
 
 // Home or Explore routes 
@@ -140,7 +148,7 @@ const hideBottomNavFlag = computed(() => {
 // Honor route meta to show/hide MobileBottomNav
 const showBottomNav = computed(() => {
   const allow = route.meta?.showBottomNav !== false
-  const notAuthPage = !['/login', '/signup', '/choose-categories', '/:pathMatch(.*)*'].includes(route.path)
+  const notAuthPage = !['/login', '/signup', '/choose-categories'].includes(route.path) && !isNotFound.value
   const notLanding = route.path !== '/'
   return isAuthenticated.value && allow && notAuthPage && notLanding && !hideBottomNavFlag.value
 })
