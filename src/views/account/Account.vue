@@ -64,7 +64,8 @@
 
               <!-- Action Buttons moved here -->
               <div class="flex flex-wrap gap-2 sm:space-x-3 mb-4">
-                <button 
+                <!-- Edit profile (only when viewing own profile) -->
+                <button
                   v-if="isOwnProfile"
                   @click="$router.push('/edit-account')"
                   class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
@@ -72,23 +73,22 @@
                   <i class="fas fa-edit"></i>
                   <span>{{ $t('common.editProfile') }}</span>
                 </button>
-                <template v-else>
-                  <button 
-                    @click="toggleFollow"
-                    :disabled="followProcessing"
-                    :class=" [
-                      'flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors font-medium disabled:opacity-60 disabled:cursor-not-allowed',
-                      isFollowing 
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600' 
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    ]"
-                  >
-                    <i v-if="!followProcessing" :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
-                    <i v-else class="fas fa-spinner fa-spin"></i>
-                    <span>{{ isFollowing ? $t('common.followingVerb') : $t('common.follow') }}</span>
-                  </button>
-            
-                </template>
+
+                <!-- Follow / Unfollow (only when viewing another user's profile) -->
+                <button
+                  v-else
+                  @click="toggleFollow"
+                  :class="[
+                    'flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors',
+                    isFollowing
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 hover:bg-red-100 hover:text-red-600'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  ]"
+                >
+                  <i v-if="!followProcessing" :class="isFollowing ? 'fas fa-user-minus' : 'fas fa-user-plus'"></i>
+                  <i v-else class="fas fa-spinner fa-spin"></i>
+                  <span>{{ isFollowing ? $t('common.followingVerb') : $t('common.follow') }}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -180,7 +180,7 @@
               </button>
 
               <button 
-                v-if="myFandoms.length > 0"
+                v-if="isOwnProfile && myFandoms.length > 0"
                 @click="activeTab = 'fandoms'"
                 :data-tab="'fandoms'"
                 :class="[
@@ -256,7 +256,7 @@
               </button>
 
               <button 
-                v-if="myFandoms.length > 0"
+                v-if="isOwnProfile && myFandoms.length > 0"
                 @click="activeTab = 'fandoms'"
                 :class="[
                   'flex-1 h-12 rounded-xl inline-flex items-center justify-center gap-2 text-sm font-semibold transition-all duration-200',
@@ -419,8 +419,8 @@
           </div>
         </div>
 
-        <!-- My Fandoms Tab -->
-        <div v-if="activeTab === 'fandoms'">
+  <!-- My Fandoms Tab -->
+  <div v-if="activeTab === 'fandoms' && isOwnProfile">
           <div v-if="myFandoms.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <CommunityCard
               v-for="fandom in myFandoms"
@@ -891,9 +891,12 @@ const normalizePost = (apiPost, index = 0) => {
     date: dateVal,
     media,
     tags: Array.isArray(apiPost.tags) ? apiPost.tags.map(t => String(t).replace(/^"|"$/g, '')) : [],
-    likes: apiPost.likes || 0,
-    comments: apiPost.comments || 0,
-    isLiked: false,
+    likes: Number(apiPost.likes_count ?? apiPost.likes ?? apiPost.likesCount ?? 0),
+    comments: Number(apiPost.comments_count ?? apiPost.comments ?? apiPost.commentsCount ?? 0),
+    isLiked: Boolean(apiPost.is_favorite ?? apiPost.isFavorite ?? apiPost.is_liked ?? apiPost.isLiked ?? false),
+    // Pass through backend saved flags for <Post/>
+    isSaved: Boolean(apiPost.is_saved ?? apiPost.saved_at ?? false),
+    is_saved: Boolean(apiPost.is_saved ?? apiPost.saved_at ?? false),
     fandom: apiPost.fandom || null,
     trending: apiPost.trending || false
   }

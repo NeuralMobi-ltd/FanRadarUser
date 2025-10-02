@@ -1,6 +1,7 @@
-import { defineStore } from 'pinia'
+import SearchService from '@/services/searchService'
 import { TagsService } from '@/services/tagsService'
 import { usePostsStore } from '@/store/posts'
+import { defineStore } from 'pinia'
 // Local helper to resolve a hashtag image
 
 
@@ -8,6 +9,10 @@ export const useHashtagsStore = defineStore('hashtags', {
   state: () => ({
     // Hashtag-specific posts
     hashtagPosts: {
+    },
+    // Pagination for name-based hashtag queries
+    postsByNamePagination: {
+      // [name]: { page, limit, hasNext, lastPage, total }
     },
     // Backend posts keyed by hashtagId
     postsById: {
@@ -120,6 +125,59 @@ export const useHashtagsStore = defineStore('hashtags', {
         }
         this.postsById[key] = { ...slot }
         return { success: true, count: mapped.length, pagination: slot.pagination }
+      } catch (e) {
+        return { success: false, error: e?.message || 'fetch failed' }
+      }
+    },
+    // Fetch posts by hashtag name using the search API and cache them
+    async fetchPostsByName(name, { page = 1, limit = 12 } = {}) {
+      if (!name) return { success: false, error: 'missing name' }
+      try {
+        const { posts, pagination } = await SearchService.posts({ tag: name, page, limit })
+        const postsStore = usePostsStore()
+        const mapped = Array.isArray(posts) ? posts.map(p => postsStore.mapBackendPost(p)).filter(Boolean) : []
+        this.hashtagPosts[name] = mapped
+        // Normalize pagination shape to match postsById
+        const norm = {
+          page: Number(pagination?.page ?? page ?? 1),
+          limit: Number(pagination?.per_page ?? pagination?.limit ?? limit ?? 12),
+          total: Number(pagination?.total ?? 0),
+          lastPage: Number(pagination?.last_page ?? pagination?.total_pages ?? 1),
+          hasNext: Boolean(
+            typeof pagination?.has_more === 'boolean'
+              ? pagination.has_more
+              : (Number(pagination?.page || 1) < Number(pagination?.last_page || 1))
+          )
+        }
+        this.postsByNamePagination[name] = norm
+        return { success: true, count: mapped.length, pagination: norm }
+      } catch (e) {
+        return { success: false, error: e?.message || 'fetch failed' }
+      }
+    },
+    async loadMoreByName(name) {
+      if (!name) return { success: false, error: 'missing name' }
+      const slot = this.postsByNamePagination[name]
+      if (!slot?.hasNext) return { success: true, count: 0, done: true }
+      const nextPage = (Number(slot.page) || 1) + 1
+      try {
+        const { posts, pagination } = await SearchService.posts({ tag: name, page: nextPage, limit: slot.limit || 12 })
+        const postsStore = usePostsStore()
+        const mapped = Array.isArray(posts) ? posts.map(p => postsStore.mapBackendPost(p)).filter(Boolean) : []
+        if (!Array.isArray(this.hashtagPosts[name])) this.hashtagPosts[name] = []
+        this.hashtagPosts[name].push(...mapped)
+        this.postsByNamePagination[name] = {
+          page: Number(pagination?.page ?? nextPage),
+          limit: Number((pagination?.per_page ?? slot.limit) || 12),
+          total: Number(pagination?.total ?? slot.total ?? 0),
+          lastPage: Number(pagination?.last_page ?? pagination?.total_pages ?? slot.lastPage ?? nextPage),
+          hasNext: Boolean(
+            typeof pagination?.has_more === 'boolean'
+              ? pagination.has_more
+              : (Number(pagination?.page || nextPage) < Number(pagination?.last_page || nextPage))
+          )
+        }
+        return { success: true, count: mapped.length, pagination: this.postsByNamePagination[name] }
       } catch (e) {
         return { success: false, error: e?.message || 'fetch failed' }
       }

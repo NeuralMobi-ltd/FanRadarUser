@@ -343,8 +343,8 @@ async function createFandom() {
     const f = res?.data?.fandom || res?.fandom
     if (f) {
   notify.success(t('fandom.create.notify.success'))
-      const handle = (f.name || '').toLowerCase().replace(/\s+/g, '-')
-      router.push(`/fandom/${handle}`)
+      // Redirect to home; fandoms must be approved by admin before becoming visible
+      router.push('/')
     } else {
   notify.error(t('fandom.create.notify.failed'))
     }

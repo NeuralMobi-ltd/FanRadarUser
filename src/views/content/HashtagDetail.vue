@@ -131,16 +131,23 @@ const tabs = computed(() => [
 const loading = ref(false)
 const canLoadMore = computed(() => {
   const id = hashtagId.value
-  if (!id) return false
-  const slot = hashtagsStore.postsById?.[String(id)]
-  return !!slot?.pagination?.hasNext
+  if (id) {
+    const slot = hashtagsStore.postsById?.[String(id)]
+    return !!slot?.pagination?.hasNext
+  }
+  const name = String(hashtagName.value || '')
+  if (!name) return false
+  const slotByName = hashtagsStore.postsByNamePagination?.[name]
+  return !!slotByName?.hasNext
 })
 const posts = computed(() => {
   // Prefer backend by id when available
   const byId = hashtagId.value ? hashtagsStore.getPostsByHashtagId(hashtagId.value) : []
   if (byId && byId.length) return byId
-  const hashtagPosts = hashtagsStore.getPostsByHashtag(hashtagName.value)
-  return hashtagPosts.length > 0 ? hashtagPosts : hashtagsStore.getDefaultPostsForHashtag(hashtagName.value)
+  // Then prefer name-based fetched list
+  const byName = hashtagsStore.getPostsByHashtag(hashtagName.value)
+  if (byName && byName.length) return byName
+  return hashtagsStore.getDefaultPostsForHashtag(hashtagName.value)
 })
 
 const newsData = computed(() => {
@@ -155,23 +162,28 @@ function likePost(postId) { hashtagsStore.likeHashtagPost(hashtagName.value, pos
 function commentPost(postId) { console.log('Comment on post:', postId) }
 // sharePost removed
 
-async function loadById() {
-  if (!hashtagId.value) return
+async function loadHashtagContent() {
   loading.value = true
   try {
-    await hashtagsStore.fetchPostsById(hashtagId.value, { page: 1, limit: 12 })
+    if (hashtagId.value) {
+      await hashtagsStore.fetchPostsById(hashtagId.value, { page: 1, limit: 12 })
+    } else if (hashtagName.value) {
+      await hashtagsStore.fetchPostsByName(String(hashtagName.value), { page: 1, limit: 12 })
+    }
   } finally {
     loading.value = false
   }
 }
 
 async function loadMore() {
-  if (!hashtagId.value) return
-  await hashtagsStore.loadMoreById(hashtagId.value)
+  if (hashtagId.value) {
+    await hashtagsStore.loadMoreById(hashtagId.value)
+  } else if (hashtagName.value) {
+    await hashtagsStore.loadMoreByName(String(hashtagName.value))
+  }
 }
-
-onMounted(loadById)
-watch(hashtagId, loadById)
+onMounted(loadHashtagContent)
+watch([hashtagId, hashtagName], loadHashtagContent)
 
 // Deterministic gradient based on hashtag text
 function hashToHue(str = '') {

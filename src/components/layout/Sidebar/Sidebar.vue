@@ -202,12 +202,8 @@ function openCreatePostModal() {
 
 function handleCreatePost(post) {
   if (!post) return
-  const created = post.post || post.data || post
-  try {
-    postsStore.addPost(created)
-  } catch (e) {
-    console.warn('Failed to add post to store', e)
-  }
+  // Avoid injecting a local post; close modal and let feeds refresh from backend
+  showCreatePostModal.value = false
 }
 
 // Avatar helpers: normalize URL, or fallback to gradient + initials

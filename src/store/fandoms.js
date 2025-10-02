@@ -1,6 +1,6 @@
-import { defineStore } from 'pinia'
 import FandomsService from '@/services/fandomsService'
 import { normalizeAsset } from '@/utils/assets'
+import { defineStore } from 'pinia'
 
 export const useFandomsStore = defineStore('fandoms', {
   state: () => ({
@@ -28,13 +28,15 @@ export const useFandomsStore = defineStore('fandoms', {
     },
     // New config to replace constants
     config: {
-      // Allowed roles limited to admin and member (moderator removed per requirement)
+      // Allowed roles in fandoms
       memberRoles: {
         ADMIN: 'admin',
+        MODERATOR: 'moderator',
         MEMBER: 'member'
       },
       roleOptions: [
         { value: 'member', label: 'Member' },
+        { value: 'moderator', label: 'Moderator' },
         { value: 'admin', label: 'Admin' }
       ],
       tabs: [
@@ -183,7 +185,10 @@ export const useFandomsStore = defineStore('fandoms', {
             tags: p.tags || [],
             likes: p.likes_count || p.likes || 0,
             comments: p.comments_count || p.comments || 0,
-            isLiked: !!p.is_liked,
+            isLiked: !!(p.is_liked || p.is_favorite),
+            // Provide both snake_case and camelCase saved flags for UI compatibility
+            isSaved: !!p.is_saved,
+            is_saved: !!p.is_saved,
             fandom: handle
           }
         })
@@ -535,6 +540,41 @@ export const useFandomsStore = defineStore('fandoms', {
       } catch (e) {
         // swallow errors for now; could add notification later
         return null
+      }
+    }
+    ,
+    // Remove a member via API (admin only) then update local state
+    async removeMemberApi(fandomId, fandomHandle, memberId) {
+      try {
+        const res = await FandomsService.removeMember(fandomId, memberId)
+        if (res?.success) {
+          // Remove from members list
+          if (fandomHandle) this.removeFandomMember(fandomHandle, memberId)
+          // Decrement counts in allFandoms
+          if (fandomHandle) {
+            const rec = this.allFandoms.find(f => f.handle === fandomHandle)
+            if (rec) {
+              if (typeof rec.membersCount === 'string' && /^\d+$/.test(rec.membersCount)) {
+                rec.membersCount = String(Math.max(0, parseInt(rec.membersCount, 10) - 1))
+              } else if (typeof rec.membersCount === 'number') {
+                rec.membersCount = Math.max(0, rec.membersCount - 1)
+              }
+              // keep alias (members) in sync if present
+              if (rec.members != null) {
+                if (typeof rec.members === 'string' && /^\d+$/.test(rec.members)) {
+                  rec.members = String(Math.max(0, parseInt(rec.members, 10) - 1))
+                } else if (typeof rec.members === 'number') {
+                  rec.members = Math.max(0, rec.members - 1)
+                } else {
+                  rec.members = rec.membersCount
+                }
+              }
+            }
+          }
+        }
+        return res
+      } catch (e) {
+        return { success: false, message: e?.message || 'Remove member failed' }
       }
     }
   },

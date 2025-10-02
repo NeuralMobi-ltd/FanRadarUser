@@ -453,13 +453,13 @@ import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
 import {
-    ArrowRightOnRectangleIcon,
-    ChevronDownIcon,
-    Cog6ToothIcon,
-    MagnifyingGlassIcon,
-    MoonIcon,
-    SunIcon,
-    UserIcon
+  ArrowRightOnRectangleIcon,
+  ChevronDownIcon,
+  Cog6ToothIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  SunIcon,
+  UserIcon
 } from '@heroicons/vue/24/outline'
 
 const router = useRouter()
@@ -590,12 +590,9 @@ function submitModalPost() {
 function handleCreatePost(post) {
   if (!post) return
   // If PostsService returned wrapper like { post: {...} } prefer post.post
-  const created = post.post || post.data || post
-  try {
-    postsStore.addPost(created)
-  } catch (e) {
-    console.warn('Failed to add post to store', e)
-  }
+  // Previously we injected a temporary post into the feed here.
+  // Remove this to avoid showing fake posts locally; the feed will refresh normally from backend.
+  showCreatePostModal.value = false
 }
 
 const onChangeLocale = () => {

@@ -133,7 +133,7 @@
     <!-- Dynamic Content Based on Active Tab -->
     <div v-if="activeTab === 'posts'" class="space-y-4 sm:space-y-6">
       <!-- Create Post (match Home.vue design) -->
-      <div v-if="isMember" class="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
+      <div v-if="isModeratorOrAdmin" class="bg-white dark:bg-gray-900 rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 mb-4 sm:mb-5 lg:mb-6 shadow-md border border-gray-200 dark:border-gray-700 transition-all duration-200">
         <!-- User Avatar and Text Input -->
         <div class="flex items-start space-x-3 sm:space-x-4">
           <img :src="currentUser.avatar" class="w-10 sm:w-12 h-10 sm:h-12 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 flex-shrink-0" :alt="currentUser.name">
@@ -260,7 +260,9 @@
               <span v-if="member.role === 'admin'" class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full mr-2">
                 <i class="fas fa-crown mr-1"></i>{{ $t('fandom.detail.admin') }}
               </span>
-              <!-- Moderator badge removed per requirement (only admin/member roles supported) -->
+              <span v-else-if="member.role === 'moderator'" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full mr-2">
+                <i class="fas fa-shield-alt mr-1"></i>{{ $t('fandom.detail.moderator') || 'Moderator' }}
+              </span>
               <span v-else class="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded-full mr-2">
                 <i class="fas fa-user mr-1"></i>{{ $t('fandom.detail.member') }}
               </span>
@@ -276,6 +278,7 @@
                 class="text-xs px-2 py-1 border border-gray-200 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 <option value="member">{{ $t('fandom.detail.member') }}</option>
+                <option value="moderator">{{ $t('fandom.detail.moderator') || 'Moderator' }}</option>
                 <option value="admin">{{ $t('fandom.detail.admin') }}</option>
               </select>
               <button @click="removeMember(member.id)" class="text-red-500 hover:text-red-700 text-xs">
@@ -696,6 +699,12 @@ const isMember = computed(() => {
   if (local) return true
   return fandomsStore.isMember(fandomKey.value)
 })
+// Moderators have elevated permissions similar to admins for post management
+const isModerator = computed(() => {
+  const role = fandomRecord.value?.role || fandomsStore.getUserRole(fandomKey.value)
+  return role === 'moderator'
+})
+const isModeratorOrAdmin = computed(() => isAdmin.value || isModerator.value)
 
 // Media normalization
 const baseOrigin = API_CONFIG.baseURL.replace(/\/?api\/?$/, '')
@@ -914,7 +923,9 @@ const sortedPosts = computed(() => {
 })
 // addMember removed
 async function changeMemberRole(memberId,newRole){
-  if(!['member','admin'].includes(newRole)) return // enforce only allowed roles
+  // Only admins can change roles
+  if(!isAdmin.value) return
+  if(!['member','moderator','admin'].includes(newRole)) return // enforce only allowed roles
   const fid = fandomRecord.value?.id || fandomIdForApi.value
   const res = await fandomsStore.updateMemberRoleApi(fid, memberId, newRole, fandomKey.value)
   if (res?.success) notify.success(t('fandom.detail.roleUpdated'))
@@ -927,7 +938,24 @@ function removeMember(memberId){ pendingRemoveMemberId.value = memberId; showRem
 async function confirmRemoveMember(){
   if(!pendingRemoveMemberId.value || removingMember.value) return
   removingMember.value = true
-  try { fandomsStore.removeFandomMember(fandomName.value, pendingRemoveMemberId.value) } finally {
+  try {
+    const fid = fandomRecord.value?.id || resolvedFandomId.value || fandomIdForApi.value
+    const handle = fandomKey.value
+    // Optimistic update: remove locally first
+    const prevMembers = [...(fandomsStore.fandomMembers[handle] || [])]
+    fandomsStore.removeFandomMember(handle, pendingRemoveMemberId.value)
+    const res = await fandomsStore.removeMemberApi(fid, handle, pendingRemoveMemberId.value)
+    if (res?.success) {
+      notify.success(res.message || t('fandom.detail.memberRemoved', 'Member removed'))
+    } else if (res?.message) {
+      // Revert on failure
+      fandomsStore.fandomMembers[handle] = prevMembers
+      notify.error(res.message)
+    } else if (res?.success === false) {
+      fandomsStore.fandomMembers[handle] = prevMembers
+      notify.error(t('fandom.detail.removeFailed', 'Failed to remove member'))
+    }
+  } finally {
     removingMember.value = false
     showRemoveMember.value = false
     pendingRemoveMemberId.value = null
@@ -974,7 +1002,7 @@ const editingPost = ref(null)
 // Determine if current user can edit/delete a post
 function canModifyPost(post){
   if(!post) return false
-  if(isAdmin.value) return true
+  if(isModeratorOrAdmin.value) return true
   // Prefer userId equality for ownership
   if (post.userId && authStore.user?.id) return String(post.userId) === String(authStore.user.id)
   // Fallback: compare displayName to current name (case-insensitive)

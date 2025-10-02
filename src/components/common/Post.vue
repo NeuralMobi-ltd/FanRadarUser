@@ -315,19 +315,25 @@
             <article v-for="comment in postComments" :key="comment.id" class="group/item">
               <div class="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors duration-200">
                 <!-- Avatar -->
-                <AvatarFallback
-                  :src="getCommentAvatar(comment)"
-                  :alt="(comment.user?.name || comment.username || 'comment user')"
-                  :firstName="comment.firstName || comment.user?.first_name || (comment.user?.name || comment.username || '').split(' ')[0] || 'U'"
-                  :lastName="comment.lastName || comment.user?.last_name || (comment.user?.name || comment.username || '').split(' ').slice(1).join(' ') || ''"
-                  customClass="w-9 h-9 ring-2 ring-gray-100 dark:ring-gray-700 object-cover flex-shrink-0"
-                />
+                <router-link :to="commentAccountLinkTarget(comment)" class="flex-shrink-0 group/avatar-link">
+                  <AvatarFallback
+                    :src="getCommentAvatar(comment)"
+                    :alt="(comment.user?.name || comment.username || 'comment user')"
+                    :firstName="comment.firstName || comment.user?.first_name || (comment.user?.name || comment.username || '').split(' ')[0] || 'U'"
+                    :lastName="comment.lastName || comment.user?.last_name || (comment.user?.name || comment.username || '').split(' ').slice(1).join(' ') || ''"
+                    customClass="w-9 h-9 ring-2 ring-gray-100 dark:ring-gray-700 object-cover cursor-pointer hover:ring-blue-400 transition-all duration-200"
+                  />
+                </router-link>
                 <!-- Body -->
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 text-xs sm:text-sm mb-0.5">
-                    <span class="font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[140px] sm:max-w-[200px]" :class="isOwnComment(comment) ? 'text-blue-600 dark:text-blue-400' : ''">
+                    <router-link 
+                      :to="commentAccountLinkTarget(comment)"
+                      class="font-semibold text-gray-800 dark:text-gray-100 truncate max-w-[140px] sm:max-w-[200px] hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                      :class="isOwnComment(comment) ? 'text-blue-600 dark:text-blue-400' : ''"
+                    >
                       {{ comment.user?.name || comment.username || 'User' }}
-                    </span>
+                    </router-link>
                     <span class="text-gray-400 dark:text-gray-500">•</span>
                     <span class="text-gray-500 dark:text-gray-400">{{ formatDate(comment.date || comment.created_at) }}</span>
                     <span v-if="comment._optimistic" class="animate-pulse text-[10px] px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 font-medium tracking-wide">
@@ -381,10 +387,14 @@ import CreatePostModal from '@/components/common/CreatePostModal.vue'
 import PostsService from '@/services/postsService'
 import { useAuthStore } from '@/store/auth'
 import { usePostsStore } from '@/store/posts'
+import { useTrendsStore } from '@/store/trends'
 import notify from '@/utils/notify'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
 const { t } = useI18n()
+const router = useRouter()
+const trendsStore = useTrendsStore()
 
 const props = defineProps({
   post: {
@@ -473,6 +483,29 @@ const accountLinkTarget = computed(() => {
   return { name: 'Account', params: { user: fallback } }
 })
 
+// ----- Commenter navigation helpers -----
+function extractCommentUserId(c) {
+  if (!c) return null
+  const cand = c.user_id ?? c.userId ?? c.user?.id ?? c.authorId ?? c.ownerId
+  if (cand == null) return null
+  const n = Number(cand)
+  return Number.isFinite(n) && n > 0 ? n : null
+}
+
+function commentAccountLinkTarget(comment) {
+  const me = authStore.user
+  const uid = extractCommentUserId(comment)
+  const isSelf = me && uid && String(me.id) === String(uid)
+  if (isSelf) {
+    const handle = me.userName || me.name || me.userEmail?.split('@')[0] || 'me'
+    return { name: 'Account', params: { user: handle } }
+  }
+  if (uid) return { name: 'Account', params: { user: String(uid) } }
+  const uname = comment?.user?.username || comment?.username || ''
+  const fallback = uname.trim() || 'me'
+  return { name: 'Account', params: { user: fallback } }
+}
+
 // Comments local reactive list (initialized from post.commentsList if present)
 const postComments = ref(props.post.commentsList ? [...props.post.commentsList] : [])
 const commentsLoaded = ref(Array.isArray(props.post.commentsList) && props.post.commentsList.length > 0)
@@ -517,9 +550,14 @@ watch(() => postsStore.favoritesSet, () => {
   syncLikedFromFavorites()
 })
 
-// Keep local saved state in sync with the incoming post prop
-watch(() => props.post.isSaved, (val) => { isSaved.value = !!val }, { immediate: true })
-onMounted(() => { isSaved.value = !!props.post.isSaved })
+// Keep local saved state in sync with the incoming post prop, preferring backend is_saved
+const incomingSaved = computed(() => {
+  // Prefer snake_case from backend when present, else camelCase
+  if (typeof props.post?.is_saved !== 'undefined') return !!props.post.is_saved
+  return !!props.post?.isSaved
+})
+watch(incomingSaved, (val) => { isSaved.value = !!val }, { immediate: true })
+onMounted(() => { isSaved.value = incomingSaved.value })
 
 // ---- Asset URL Normalization ----
 // Ensure storage assets don't contain /api and have full base URL.
@@ -655,28 +693,34 @@ const toggleSave = () => {
   // Optimistic toggle with API call
   if (adding.value) return
   const target = props.post.id
-  const currentlySaved = isSaved.value || props.post.isSaved
+  const currentlySaved = (typeof props.post.is_saved !== 'undefined' ? !!props.post.is_saved : !!props.post.isSaved) || isSaved.value
   isSaved.value = !currentlySaved
+  // Keep both keys in sync for compatibility (backend uses is_saved)
+  props.post.is_saved = isSaved.value
   props.post.isSaved = isSaved.value
   if (!currentlySaved) {
     postsStore.savePostApi(target).then(res => {
       if (res?.success === false) {
         isSaved.value = currentlySaved
+        props.post.is_saved = currentlySaved
         props.post.isSaved = currentlySaved
         notify.error(res.error || 'Failed to save')
       } else if (res?.action === 'unsave') {
         // Backend reported already saved; we toggled to unsave
         isSaved.value = false
+        props.post.is_saved = false
         props.post.isSaved = false
         notify.info(res?.message || 'Removed from saved')
       } else {
         // Saved as normal
         isSaved.value = true
+        props.post.is_saved = true
         props.post.isSaved = true
         notify.success(res?.message || 'Saved')
       }
     }).catch(err => {
       isSaved.value = currentlySaved
+      props.post.is_saved = currentlySaved
       props.post.isSaved = currentlySaved
       notify.error(err?.message || 'Failed to save')
     })
@@ -684,15 +728,18 @@ const toggleSave = () => {
     postsStore.unsavePostApi(target).then(res => {
       if (res?.success === false) {
         isSaved.value = currentlySaved
+        props.post.is_saved = currentlySaved
         props.post.isSaved = currentlySaved
         notify.error(res.error || 'Failed to unsave')
       } else {
         isSaved.value = false
+        props.post.is_saved = false
         props.post.isSaved = false
         notify.info(res?.message || 'Removed from saved')
       }
     }).catch(err => {
       isSaved.value = currentlySaved
+      props.post.is_saved = currentlySaved
       props.post.isSaved = currentlySaved
       notify.error(err?.message || 'Failed to unsave')
     })
@@ -785,8 +832,27 @@ function getCommentAvatar(comment) {
   return currentUserAvatar.value
 }
 
-const searchByTag = (tag) => {
-  console.log('Searching for tag:', tag)
+const searchByTag = async (tag) => {
+  try {
+    // Accept either string tags or objects with name/id
+    const raw = typeof tag === 'string' ? tag : (tag?.name || tag?.label || '')
+    const name = String(raw || '').replace(/^#/, '').trim()
+    if (!name) return
+    // Prefer id if present on the tag object
+    let id = typeof tag === 'object' ? (tag.id || tag._id || tag.tag_id) : undefined
+    // If no id present, try to resolve from trendingHashtags list by name (case-insensitive)
+    if (!id) {
+      if (!Array.isArray(trendsStore.trendingHashtags) || trendsStore.trendingHashtags.length === 0) {
+        // Best-effort load trending list to resolve ids
+        try { await trendsStore.fetchTrendingHashtags(50) } catch (_) { /* ignore */ }
+      }
+      if (Array.isArray(trendsStore.trendingHashtags) && trendsStore.trendingHashtags.length) {
+        const match = trendsStore.trendingHashtags.find(h => String(h.name || '').toLowerCase() === name.toLowerCase())
+        if (match?.id) id = match.id
+      }
+    }
+    router.push({ path: `/hashtag/${encodeURIComponent(name)}`, query: id ? { id } : undefined })
+  } catch (_) { /* noop */ }
 }
 
 function openEditModal() {

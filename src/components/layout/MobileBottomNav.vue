@@ -72,11 +72,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
-import { useAuthStore } from '@/store/auth'
 import { CreatePostModal } from '@/components/feed'
+import { useAuthStore } from '@/store/auth'
 import { usePostsStore } from '@/store/posts'
+import { computed, ref } from 'vue'
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -102,12 +102,8 @@ const isActiveRoute = (path) => {
 
 function handleCreatePost(post) {
   if (!post) return
-  const created = post.post || post.data || post
-  try {
-    postsStore.addPost(created)
-  } catch (e) {
-    console.warn('Failed to add post to store', e)
-  }
+  // Do not inject a local post into feed; rely on backend refresh
+  showCreateModal.value = false
 }
 </script>
 

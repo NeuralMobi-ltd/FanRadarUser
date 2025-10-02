@@ -402,7 +402,8 @@ export const useAuthStore = defineStore('auth', {
       this.clearError()
       try {
         const res = await AuthService.resetPassword(payload)
-    return { success: true, data: res?.data || res }
+        const response = res?.data || res
+        return { success: true, message: response?.message, data: response }
       } catch (e) {
     const status = e?.response?.status
     const body = e?.response?.data

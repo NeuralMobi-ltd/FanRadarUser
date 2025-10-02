@@ -162,14 +162,15 @@ export const AuthService = {
       await delay(API_CONFIG.mockLatency)
       return { success: true, message: 'Password reset successfully' }
     }
-    // Preferred flow: single endpoint verifyOTPforgetPassword supports both verify and reset
+    // Backend provides dedicated reset endpoint: POST /resetPassword
+    // Keep OTP as provided to avoid stripping leading zeros.
     const body = {
       email: payload?.email,
-      otp: Number(payload?.otp ?? payload?.token),
+      otp: payload?.otp ?? payload?.token,
       password: payload?.password,
       password_confirmation: payload?.password_confirmation ?? payload?.password
     }
-    const url = API_CONFIG.auth.verifyOTPForget || '/api/verifyOTPforgetPassword'
+    const url = API_CONFIG.auth.resetPassword || '/api/resetPassword'
     const { data } = await http.post(url, body)
     return data
   }

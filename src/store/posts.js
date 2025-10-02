@@ -283,6 +283,8 @@ export const usePostsStore = defineStore('posts', {
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
         isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
+        // Duplicate snake_case flag for components expecting backend shape
+        is_saved: !!apiPost.is_saved || !!apiPost.saved_at,
         fandom: apiPost.fandom || null,
         trending: !!apiPost.trending,
         likedBy: []
@@ -324,6 +326,8 @@ export const usePostsStore = defineStore('posts', {
         comments: apiPost.comments || apiPost.comments_count || 0,
         isLiked: !!apiPost.liked || !!apiPost.is_liked,
         isSaved: !!apiPost.is_saved || !!apiPost.saved_at,
+        // Keep both camelCase and snake_case for compatibility
+        is_saved: !!apiPost.is_saved || !!apiPost.saved_at,
         fandom: apiPost.fandom || null,
         trending: !!apiPost.trending,
         date: new Date(apiPost.created_at || apiPost.createdAt || Date.now()),
@@ -519,7 +523,9 @@ export const usePostsStore = defineStore('posts', {
             media: (p.media || []).map(m => ({ type: m.type || 'image', url: typeof m === 'string' ? m : m.url })),
             likes: p.likes || p.likes_count || 0,
             comments: p.comments || p.comments_count || 0,
-            isLiked: !!p.isLiked || !!p.liked,
+            isLiked: !!p.isLiked || !!p.liked || !!p.is_favorite,
+            isSaved: !!p.is_saved,
+            is_saved: !!p.is_saved,
             fandom: p.fandom?.name || p.fandom || null,
             trending: !!p.trending
           }))
@@ -580,7 +586,10 @@ export const usePostsStore = defineStore('posts', {
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for save', id: postId }
   const res = await PostsService.save(apiId)
-  if (record) record.isSaved = true
+  if (record) {
+    record.isSaved = true
+    record.is_saved = true
+  }
   this.lastMutation = Date.now()
   return { ...(res || {}), action: 'save' }
       } catch (e) {
@@ -598,7 +607,10 @@ export const usePostsStore = defineStore('posts', {
         if (typeof apiId === 'string' && /^\d+$/.test(apiId)) apiId = Number(apiId)
         if (typeof apiId !== 'number' || apiId <= 0) return { success: false, error: 'Invalid post id for unsave', id: postId }
         const res = await PostsService.unsave(apiId)
-        if (record) record.isSaved = false
+        if (record) {
+          record.isSaved = false
+          record.is_saved = false
+        }
         this.lastMutation = Date.now()
         return { ...(res || {}), action: 'unsave' }
       } catch (e) {

@@ -114,6 +114,8 @@ export const API_CONFIG = {
     update: (id) => `/Y/fandoms/${id}`,
     uploadImage: '/Y/fandoms/upload-image',
     changeRole: (id, userId) => `/Y/fandoms/${id}/members/${userId}/role`,
+    // Remove a member from a fandom (admin only)
+    removeMember: (id, userId) => `/Y/fandoms/${id}/members/${userId}`,
     hashtags: (id) => `/Y/fandoms/${id}/hashtags`,
     categories: '/Y/fandoms/categories'
   },

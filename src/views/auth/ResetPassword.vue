@@ -201,7 +201,7 @@ async function onResetPassword() {
     })
 
     if (result.success) {
-      successMessage.value = t('auth.resetPassword.success')
+      successMessage.value = result.message || t('auth.resetPassword.success')
       
       // Redirect to login after a short delay
       setTimeout(() => {

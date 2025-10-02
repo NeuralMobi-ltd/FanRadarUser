@@ -1,5 +1,5 @@
-import http from '@/services/http'
 import API_CONFIG from '@/config/api'
+import http from '@/services/http'
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -104,6 +104,14 @@ export const FandomsService = {
       return { success: true }
     }
     const { data } = await http.delete(API_CONFIG.fandoms.leave(id))
+    return data
+  },
+  async removeMember(id, userId) {
+    if (API_CONFIG.useMocks) {
+      await delay(API_CONFIG.mockLatency)
+      return { success: true, message: 'Member removed', data: { id: userId } }
+    }
+    const { data } = await http.delete(API_CONFIG.fandoms.removeMember(id, userId))
     return data
   },
   async create(payload) {
