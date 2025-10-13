@@ -17,6 +17,10 @@
           <i class="fas fa-crown"></i>
           <span>My Fandom</span>
         </div>
+        <div v-else-if="userRole === 'moderator'" class="bg-purple-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <i class="fas fa-shield-halved"></i>
+          <span>Moderator</span>
+        </div>
         <div v-else-if="userRole === 'member'" class="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
           <i class="fas fa-check"></i>
           <span>Joined</span>
@@ -42,6 +46,7 @@
         <!-- User indicator icon -->
         <div v-if="userRole" class="flex items-center">
           <i v-if="userRole === 'admin'" class="fas fa-crown text-yellow-500 text-lg" title="You're the admin"></i>
+          <i v-else-if="userRole === 'moderator'" class="fas fa-shield-halved text-purple-500 text-lg" title="You're a moderator"></i>
           <i v-else-if="userRole === 'member'" class="fas fa-heart text-red-500 text-lg" title="You're a member"></i>
         </div>
       </div>
@@ -66,6 +71,7 @@
             'px-3 py-1 rounded-full text-sm font-medium transition-colors flex items-center gap-1',
             joining ? 'opacity-80 cursor-not-allowed' : '',
             userRole === 'admin' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' :
+            userRole === 'moderator' ? 'bg-purple-600 hover:bg-purple-700 text-white' :
             userRole === 'member' ? 'bg-green-500 hover:bg-green-600 text-white' :
             'bg-primary-600 hover:bg-primary-700 text-white'
           ]"
@@ -80,11 +86,11 @@
 </template>
 
 <script setup>
+import API_CONFIG from '@/config/api'
+import { useFandomsStore } from '@/store/fandoms'
+import { notify } from '@/utils/notify'
 import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useFandomsStore } from '@/store/fandoms'
-import API_CONFIG from '@/config/api'
-import { notify } from '@/utils/notify'
 
 const props = defineProps({
   fandom: {
@@ -142,10 +148,14 @@ const API_ORIGIN = (() => {
 
 function resolveMedia(path) {
   if (!path) return ''
-  if (/^(https?:|data:|blob:)/i.test(path)) return path
-  const cleaned = path.replace(/^\//,'')
-  if (!API_ORIGIN) return cleaned // will resolve relative (may 404 if different host)
-  return `${API_ORIGIN}/${cleaned}`
+  const p = String(path)
+  if (/^(https?:|data:|blob:)/i.test(p)) return p
+  // Normalize common backend-relative patterns
+  if (p.startsWith('/api/storage/')) return `${API_ORIGIN}${p.replace(/^\/api/i, '')}`
+  if (p.startsWith('/storage/')) return `${API_ORIGIN}${p}`
+  if (p.startsWith('storage/')) return `${API_ORIGIN}/${p}`
+  const cleaned = p.replace(/^\//,'')
+  return API_ORIGIN ? `${API_ORIGIN}/${cleaned}` : cleaned
 }
 
 const coverSrc = computed(() => {
@@ -175,6 +185,7 @@ const membersCount = computed(() => {
 // Get appropriate button text based on user role
 const getButtonText = () => {
   if (userRole.value === 'admin') return 'Manage'
+  if (userRole.value === 'moderator') return 'Moderate'
   if (userRole.value === 'member') return 'Joined'
   return props.buttonText
 }
@@ -189,6 +200,11 @@ const handleClick = () => {
 const handlePrimaryAction = async () => {
   if (userRole.value === 'admin') {
     // future: manage route
+    handleClick()
+    return
+  }
+  if (userRole.value === 'moderator') {
+    // moderators can navigate to manage or detail as well
     handleClick()
     return
   }

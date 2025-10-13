@@ -54,7 +54,7 @@
                 {{ userProfile?.name || $t('account.unknownUser') }}
               </h1>
               
-              <p class="text-gray-600 dark:text-gray-300 mb-3">@{{ userProfile?.username || 'username' }}</p>
+              <p v-if="userProfile?.username" class="text-gray-600 dark:text-gray-300 mb-3">{{ userProfile.username }}</p>
               
               <!-- Bio -->
               <p v-if="userProfile?.bio" class="text-gray-700 dark:text-gray-300 max-w-2xl mb-4 whitespace-pre-line">
@@ -341,7 +341,7 @@
                   >
                     {{ follower.name }}
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">@{{ follower.username }}</p>
+                  <p v-if="follower.username" class="text-sm text-gray-500 dark:text-gray-400">{{ follower.username }}</p>
                   <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ follower.bio }}</p>
                 </div>
               </div>
@@ -383,7 +383,7 @@
                   >
                     {{ following.name }}
                   </h3>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">@{{ following.username }}</p>
+                  <p v-if="following.username" class="text-sm text-gray-500 dark:text-gray-400">{{ following.username }}</p>
                   <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">{{ following.bio }}</p>
                 </div>
               </div>
@@ -882,10 +882,13 @@ const normalizePost = (apiPost, index = 0) => {
     user_id: Number.isFinite(Number(userProfile.value.id)) ? Number(userProfile.value.id) : undefined,
     user: {
       id: Number.isFinite(Number(userProfile.value.id)) ? Number(userProfile.value.id) : undefined,
-      username: userProfile.value.username,
+      username: userProfile.value.username || (userProfile.value.email ? userProfile.value.email.split('@')[0] : undefined),
+      name: userProfile.value.name || undefined,
       profile_image: userProfile.value.avatar
     },
-    username: userProfile.value.username,
+    // For Post.vue header line: prefer displayName, then username
+    displayName: userProfile.value.name || userProfile.value.username || (userProfile.value.email ? userProfile.value.email.split('@')[0] : 'User'),
+    username: userProfile.value.username || (userProfile.value.email ? userProfile.value.email.split('@')[0] : ''),
     avatar,
     text: apiPost.description || apiPost.content || '',
     date: dateVal,

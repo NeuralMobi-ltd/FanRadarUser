@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
 import { SubcategoriesService } from '@/services/subcategoriesService'
 import { usePostsStore } from '@/store/posts'
 import { normalizeAsset } from '@/utils/assets'
+import { defineStore } from 'pinia'
 
 export const useSubcategoriesStore = defineStore('subcategories', {
   state: () => ({
@@ -59,8 +59,16 @@ export const useSubcategoriesStore = defineStore('subcategories', {
               .map(f => ({
                 id: f.id,
                 name: f.name,
-                avatar: normalizeAsset(f.cover_image || f.logo_image || f.avatar || ''),
+                // Preserve both fields so UI components can choose appropriately
+                cover_image: normalizeAsset(f.cover_image || ''),
+                coverImage: normalizeAsset(f.coverImage || f.cover_image || ''),
+                logo_image: normalizeAsset(f.logo_image || ''),
+                logoImage: normalizeAsset(f.logoImage || f.logo_image || ''),
+                // Backward-compat fallback used by some cards
+                avatar: normalizeAsset(f.avatar || f.logo_image || f.cover_image || ''),
+                members_count: f.members_count || f.members || 0,
                 members: f.members_count || f.members || 0,
+                posts_count: f.posts_count || f.posts || 0,
                 posts: f.posts_count || f.posts || 0
               }))
           }
@@ -107,8 +115,15 @@ export const useSubcategoriesStore = defineStore('subcategories', {
           ? list.map(f => ({
               id: f.id,
               name: f.name,
-              avatar: normalizeAsset(f.cover_image || f.logo_image || f.avatar || ''),
+              // Preserve both cover and logo fields, plus a generic avatar fallback
+              cover_image: normalizeAsset(f.cover_image || ''),
+              coverImage: normalizeAsset(f.coverImage || f.cover_image || ''),
+              logo_image: normalizeAsset(f.logo_image || ''),
+              logoImage: normalizeAsset(f.logoImage || f.logo_image || ''),
+              avatar: normalizeAsset(f.avatar || f.logo_image || f.cover_image || ''),
+              members_count: f.members_count || f.members || 0,
               members: f.members_count || f.members || 0,
+              posts_count: f.posts_count || f.posts || 0,
               posts: f.posts_count || f.posts || 0
             }))
           : []

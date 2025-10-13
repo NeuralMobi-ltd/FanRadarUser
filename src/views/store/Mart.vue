@@ -341,11 +341,23 @@
               </select>
 
               <!-- View toggle -->
-              <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
-                <button :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='grid' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']" @click="viewMode='grid'">
+              <div class="hidden sm:flex items-center bg-gray-100 dark:bg-gray-700 rounded-lg p-1 touch-manipulation" @click.stop>
+                <button
+                  type="button"
+                  :aria-pressed="viewMode==='grid'"
+                  aria-label="Grid view"
+                  :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='grid' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']"
+                  @click.stop="setViewMode('grid')"
+                >
                   <i class="fas fa-th-large"></i>
                 </button>
-                <button :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='list' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']" @click="viewMode='list'">
+                <button
+                  type="button"
+                  :aria-pressed="viewMode==='list'"
+                  aria-label="List view"
+                  :class="['px-3 py-1.5 rounded-md text-sm', viewMode==='list' ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow' : 'text-gray-600 dark:text-gray-300']"
+                  @click.stop="setViewMode('list')"
+                >
                   <i class="fas fa-list"></i>
                 </button>
               </div>
@@ -577,10 +589,10 @@ import { useCartStore } from '@/store/cart'
 import { useMartStore } from '@/store/mart'
 import { useProductsStore } from '@/store/products'
 import { useStoreSidebarStore } from '@/store/storeSidebar'
+import { resolveStorageUrl } from '@/utils/media'
 import notify from '@/utils/notify'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { resolveStorageUrl } from '@/utils/media'
 // No category/subcategory prefetching here to avoid extra network calls
 
 // Initialize stores
@@ -621,6 +633,17 @@ const heroContent = computed(() => martStore.heroContent)
 const currentDrop = computed(() => dragProducts.value[currentDropIndex.value])
 const otherDrops = computed(() => dragProducts.value.filter((_, index) => index !== currentDropIndex.value))
 const countdownText = computed(() => currentDrop.value ? formatCountdown(currentDrop.value.endTime, nowTime.value) : '')
+
+// Screen helpers: force grid on phones (below Tailwind's sm: 640px)
+const SM_BREAKPOINT_PX = 640
+const isPhoneScreen = () => {
+  try { return window.innerWidth < SM_BREAKPOINT_PX } catch (_) { return false }
+}
+const screenSizeHandler = () => {
+  if (isPhoneScreen()) {
+    viewMode.value = 'grid'
+  }
+}
 
 // Product Drops Methods
 const formatCountdown = (endTime, nowMs) => {
@@ -703,6 +726,30 @@ const startCountdownUpdate = () => {
 
 // Lifecycle
 onMounted(async () => {
+  // Phone defaults to grid; otherwise restore saved preference
+  let initializedView = false
+  try {
+    if (isPhoneScreen()) {
+      viewMode.value = 'grid'
+      initializedView = true
+    }
+  } catch (_) { /* ignore */ }
+
+  if (!initializedView) {
+    try {
+      const savedView = localStorage.getItem('mart:viewMode')
+      if (savedView === 'grid' || savedView === 'list') {
+        viewMode.value = savedView
+      }
+    } catch (_) { /* ignore storage access issues */ }
+  }
+
+  // Keep enforcing grid when screen shrinks to phone size
+  try {
+    window.addEventListener('resize', screenSizeHandler)
+    window.addEventListener('orientationchange', screenSizeHandler)
+  } catch (_) { /* ignore */ }
+
   // Load products from backend and hydrate wishlist state
   try {
     loading.value = true
@@ -726,6 +773,10 @@ onMounted(async () => {
 onUnmounted(() => {
   if (rotationTimer.value) clearInterval(rotationTimer.value)
   if (countdownTimer.value) clearInterval(countdownTimer.value)
+  try {
+    window.removeEventListener('resize', screenSizeHandler)
+    window.removeEventListener('orientationchange', screenSizeHandler)
+  } catch (_) { /* ignore */ }
 })
 
 // Brands not used
@@ -836,6 +887,16 @@ const viewProduct = (product) => {
   console.log('Viewing product:', product.name)
   // router.push(`/product/${product.id}`)
 }
+
+// View mode helpers (persist on change for better mobile UX)
+function setViewMode(mode) {
+  if (mode !== 'grid' && mode !== 'list') return
+  viewMode.value = mode
+}
+
+watch(viewMode, (mode) => {
+  try { localStorage.setItem('mart:viewMode', mode) } catch (_) { /* ignore */ }
+})
 
 // Pagination helpers
 const visiblePages = computed(() => {
@@ -978,5 +1039,10 @@ html {
 /* Product card hover effects */
 .group:hover .group-hover\:animate-pulse {
   animation: pulse 1s infinite;
+}
+
+/* Improve mobile tap responsiveness */
+.touch-manipulation {
+  touch-action: manipulation;
 }
 </style>
