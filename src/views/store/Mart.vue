@@ -124,31 +124,11 @@
                     <span v-else-if="currentDrop.isUpcoming" class="font-semibold tracking-wide">{{ $t('common.startsIn') }} {{ Math.abs(currentDrop.daysUntilStart || 0) }} {{ $t('common.days') }}</span>
                     <span v-else class="font-semibold tracking-wide text-red-300">{{ $t('store.mart.dropEnded') }}</span>
                   </div>
-
-                  <!-- Action buttons -->
-                  <div class="flex flex-wrap gap-3">
-                    <button 
-                      v-if="!currentDrop.isExpired"
-                      @click="viewDrop(currentDrop)" 
-                      class="px-6 py-3 rounded-lg bg-white text-gray-900 hover:bg-gray-100 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-                      :disabled="currentDrop.isUpcoming"
-                    >
-                      {{ currentDrop.isUpcoming ? $t('store.mart.comingSoon') : $t('store.mart.viewDrop') }}
-                    </button>
-                    <button @click="viewDrop(currentDrop)" class="px-6 py-3 rounded-lg border border-white/40 hover:bg-white/10 font-medium transition-all duration-200">
-                      {{ $t('common.viewDetails') }}
-                    </button>
-                    <!-- Favorites count if available -->
-                    <div v-if="currentDrop.favorites > 0" class="flex items-center gap-1 px-3 py-2 bg-white/10 rounded-lg text-sm">
-                      <i class="fas fa-heart text-red-300"></i>
-                      <span>{{ $t('common.favoritesCount', { count: currentDrop.favorites }) }}</span>
-                    </div>
-                  </div>
                 </div>
 
                 <!-- Right image -->
                 <div class="flex-1 w-full">
-                  <img :src="currentDrop.image" :alt="currentDrop.title" class="rounded-lg sm:rounded-xl w-full max-h-56 sm:max-h-80 object-cover ring-1 sm:ring-2 ring-white/30 shadow-xl" />
+                  <img :src="currentDrop.image" :alt="currentDrop.title" class="rounded-lg sm:rounded-xl w-full max-h-82 sm:max-h-106 object-cover ring-1 sm:ring-2 ring-white/30 shadow-xl" />
                 </div>
               </div>
             </div>
@@ -171,7 +151,7 @@
               </div>
               
               <div class="relative">
-                <img :src="drop.image" :alt="drop.title" class="w-full h-36 sm:h-44 object-cover" />
+                <img :src="drop.image" :alt="drop.title" class="w-full h-44 sm:h-56 object-cover" />
                 <div class="absolute top-2 left-2 flex gap-2 flex-wrap">
                   <span class="px-2 py-0.5 text-[11px] rounded-full bg-black/60 text-white font-medium">{{ drop.badge }}</span>
                   <span 
@@ -408,7 +388,7 @@
           >
             <!-- Product Image -->
             <div class="relative overflow-hidden">
-              <img :src="product.image" :alt="product.name" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" />
+              <img :src="product.image" :alt="product.name" class="w-full h-58 object-cover group-hover:scale-110 transition-transform duration-500" />
               <div class="absolute top-3 left-3 flex gap-2">
                 <span v-if="product.isNew" class="px-2 py-1 text-xs bg-green-600 text-white rounded-full animate-pulse">{{ $t('common.new') }}</span>
                 <span v-if="product.discount" class="px-2 py-1 text-xs bg-red-600 text-white rounded-full">-{{ product.discount }}%</span>
@@ -631,6 +611,7 @@ const heroContent = computed(() => martStore.heroContent)
 
 // Product Drops Computed - use real API data instead of mock
 const currentDrop = computed(() => dragProducts.value[currentDropIndex.value])
+console.log('Current Drop:', currentDrop.features)
 const otherDrops = computed(() => dragProducts.value.filter((_, index) => index !== currentDropIndex.value))
 const countdownText = computed(() => currentDrop.value ? formatCountdown(currentDrop.value.endTime, nowTime.value) : '')
 
@@ -699,7 +680,14 @@ const fetchDragProducts = async () => {
       return 0
     })
     
-    dragProducts.value = sortedProducts
+    // Normalize image for each drop: prefer explicit image, else use first media file_path
+    dragProducts.value = sortedProducts.map(p => {
+      const rawImage = p.image || (p.media && p.media.length ? p.media[0].file_path : '')
+      return {
+        ...p,
+        image: rawImage ? resolveStorageUrl(rawImage) : p.image
+      }
+    })
     dragStatistics.value = statistics || {}
     
     // Reset to first product (which should be active if available)

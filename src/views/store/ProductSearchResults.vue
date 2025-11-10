@@ -84,7 +84,7 @@
               <img
                 :src="product.image"
                 :alt="product.name"
-                class="w-full h-36 sm:h-40 lg:h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                class="w-full h-54 sm:h-62 lg:h-70 object-cover group-hover:scale-105 transition-transform duration-300"
               />
               <div class="absolute top-2 right-2">
                 <button
@@ -136,7 +136,7 @@
               <img
                 :src="product.image"
                 :alt="product.name"
-                class="w-full sm:w-20 lg:w-24 h-32 sm:h-20 lg:h-24 object-cover rounded-lg"
+                class="w-full sm:w-28 lg:w-36 h-40 sm:h-28 lg:h-36 object-cover rounded-lg"
               />
               <div class="flex-1 min-w-0">
                 <h3 class="font-medium text-gray-900 dark:text-white text-base sm:text-lg mb-1 line-clamp-2">
@@ -237,10 +237,10 @@
 <script setup>
 import ProductsService from '@/services/productsService'
 import { useProductsStore } from '@/store/products'
+import { resolveStorageUrl } from '@/utils/media'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
-import { resolveStorageUrl } from '@/utils/media'
 
 const route = useRoute()
 const router = useRouter()
@@ -367,10 +367,14 @@ const fetchProducts = async () => {
   isLoading.value = true
   try {
     const { products: items, pagination } = await ProductsService.search({ q: searchQuery.value, page: currentPage.value, per_page: itemsPerPage.value })
-    products.value = (items || []).map(p => ({
-      ...p,
-      image: p.image ? resolveStorageUrl(p.image) : p.image
-    }))
+    products.value = (items || []).map(p => {
+      // Prefer explicit p.image; fallback to first media file_path
+      const rawImage = p.image || (p.media && p.media.length ? p.media[0].file_path : '')
+      return {
+        ...p,
+        image: rawImage ? resolveStorageUrl(rawImage) : ''
+      }
+    })
     // Map server pagination to UI
     serverTotal.value = pagination.total || 0
     serverTotalPages.value = pagination.last_page || 1
